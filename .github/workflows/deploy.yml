@@ -12,6 +12,10 @@ on: workflow_dispatch
 permissions:
   contents: read
 
+env:
+  ORG_GRADLE_PROJECT_sonatypeUsername: ${{secrets.SONATYPE_USERNAME}}
+  ORG_GRADLE_PROJECT_sonatypePassword: ${{secrets.SONATYPE_PASSWORD}}
+
 jobs:
   build:
     uses: ./.github/workflows/gradle.yml
