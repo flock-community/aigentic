@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 env:
-  SONATYPE_USERNAME: ${{secrets.SONATYPE_USERNAME}}
-  SONATYPE_PASSWORD: ${{secrets.SONATYPE_PASSWORD}}
+  SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+  SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
 
 jobs:
   build:
@@ -24,10 +24,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - target: publishJvmPublicationToSonatypeRepository
-            os: ubuntu-latest
-          - target: publishLinuxX64PublicationToSonatypeRepository
-            os: ubuntu-latest
+#          - target: publishJvmPublicationToSonatypeRepository
+#            os: ubuntu-latest
+#          - target: publishLinuxX64PublicationToSonatypeRepository
+#            os: ubuntu-latest
           - target: publishKotlinMultiplatformPublicationToSonatypeRepository
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
@@ -56,5 +56,5 @@ jobs:
         arguments: |
           ${{ matrix.target }}
           publishToSonatype
-          -Psigning.gnupg.passphrase='${{ secrets.GPG_PASSPHRASE }}'
+#          -Psigning.gnupg.passphrase='${{ secrets.GPG_PASSPHRASE }}'
           -Psigning.gnupg.keyName='${{ secrets.OSSRH_GPG_SECRET_KEY_ID }}'
