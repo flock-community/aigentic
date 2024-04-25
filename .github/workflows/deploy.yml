@@ -53,5 +53,6 @@ jobs:
           ${{ matrix.target }}
           closeSonatypeStagingRepository
           releaseSonatypeStagingRepository
+          --no-configuration-cache
           --stacktrace
           --debug
