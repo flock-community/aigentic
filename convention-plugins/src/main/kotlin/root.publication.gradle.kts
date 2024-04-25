@@ -8,7 +8,8 @@ allprojects {
 }
 
 nexusPublishing {
-    repositoryDescription.set("community.flock.aigentic:0.0.1")
+//    repositoryDescription.set("community.flock.aigentic:0.0.1")
+    useStaging.set(false)
     // Configure maven central repository
     // https://github.com/gradle-nexus/publish-plugin#publishing-to-maven-central-via-sonatype-ossrh
     repositories {
