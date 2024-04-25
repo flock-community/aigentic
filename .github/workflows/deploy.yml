@@ -51,6 +51,6 @@ jobs:
       with:
         arguments: |
           ${{ matrix.target }}
-          closeSonatypeStagingRepository
-          releaseSonatypeStagingRepository
+          publishToSonatype
+          closeAndReleaseSonatypeStagingRepository
           --no-configuration-cache
