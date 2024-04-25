@@ -10,9 +10,10 @@ allprojects {
 nexusPublishing {
 
     val isSnapshot = version.toString().endsWith("-SNAPSHOT")
-    val url = if (isSnapshot) "https://s01.oss.sonatype.org/content/repositories/snapshots/" else "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+    val url = if (isSnapshot) "https://s01.oss.sonatype.org/content/repositories/snapshots/" else "https://s01.oss.sonatype.org/service/local/"
 
-    if(!isSnapshot) useStaging.set(false)
+
+//    if(!isSnapshot) useStaging.set(false)
 
     repositories {
         sonatype {  //only for users registered in Sonatype after 24 Feb 2021
