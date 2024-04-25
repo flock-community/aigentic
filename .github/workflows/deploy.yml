@@ -51,4 +51,5 @@ jobs:
       with:
         arguments: |
           ${{ matrix.target }}
-          publishToSonatype
+          closeSonatypeStagingRepository
+          releaseSonatypeStagingRepository
