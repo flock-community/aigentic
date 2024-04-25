@@ -56,5 +56,5 @@ jobs:
         arguments: |
           ${{ matrix.target }}
           publishToSonatype
-#          -Psigning.gnupg.passphrase='${{ secrets.GPG_PASSPHRASE }}'
+          -Psigning.gnupg.passphrase='${{ secrets.GPG_PASSPHRASE }}'
           -Psigning.gnupg.keyName='${{ secrets.OSSRH_GPG_SECRET_KEY_ID }}'
