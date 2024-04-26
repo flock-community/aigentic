@@ -36,10 +36,9 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     - name: Run lint
-      run: ./gradlew spotlessCheck
+      run: ./gradlew spotlessCheck --no-configuration-cache
     - name: Build with Gradle
       uses: gradle/gradle-build-action@ce999babab2de1c4b649dc15f0ee67e6246c994f
       with:
         arguments: |
           ${{ matrix.target }}
-          --no-configuration-cache
