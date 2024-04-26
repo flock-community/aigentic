@@ -7,7 +7,9 @@
 
 name: Deploy to central
 
-on: workflow_dispatch
+on:
+  push:
+    branches: [ "main" ]
 
 permissions:
   contents: read
