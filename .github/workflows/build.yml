@@ -17,7 +17,9 @@ jobs:
             os: ubuntu-latest
           - target: linuxX64Test
             os: ubuntu-latest
-          - target: allTests
+          - target: jsTest
+            os: ubuntu-latest
+          - target: jsNodeTest
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
 

@@ -7,6 +7,10 @@ plugins {
 kotlin {
     jvm()
     linuxX64()
+    js(IR) {
+        nodejs()
+        generateTypeScriptDefinitions()
+    }
 
     sourceSets {
         val commonMain by getting {

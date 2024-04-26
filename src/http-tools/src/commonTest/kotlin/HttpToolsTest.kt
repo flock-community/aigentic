@@ -4,7 +4,7 @@ import kotlin.test.assertTrue
 class HttpToolsTest {
 
     @Test
-    fun `test run`() {
+    fun `testrun`() {
         assertTrue(true)
     }
 }
