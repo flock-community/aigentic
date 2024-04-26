@@ -26,7 +26,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Build docs
-        run: ./gradlew dokkaHtmlMultiModule
+        run: ./gradlew dokkaHtmlMultiModule --no-configuration-cache
 
       - name: Deploy docs
         uses: JamesIves/github-pages-deploy-action@releases/v4
