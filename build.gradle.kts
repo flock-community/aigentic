@@ -19,3 +19,7 @@ subprojects {
         }
     }
 }
+
+tasks.withType<DokkaMultiModuleTask> {
+    outputDirectory.set(projectDir.resolve("docs"))
+}
