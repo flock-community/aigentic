@@ -25,9 +25,9 @@ At this stage, you have everything set to work with Kotlin Multiplatform. The pr
 
 ## How do I make it build on GitHub Actions?
 
-To make it work on GitHub actions, you need to update the [`matrix` section in `gradle.yml`](.github/workflows/gradle.yml#L25-L34). If you didn't change platforms in `build.gradle.kts` you don't need to touch anything. But still read it to understand how it works.
+To make it work on GitHub actions, you need to update the [`matrix` section in `gradle.yml`](.github/workflows/build.yml#L25-L34). If you didn't change platforms in `build.gradle.kts` you don't need to touch anything. But still read it to understand how it works.
 
-Also, currently, it only runs tests, but you can change this behaviour as you wish by modifying `matrix` and the Gradle [build command](.github/workflows/gradle.yml#L52)
+Also, currently, it only runs tests, but you can change this behaviour as you wish by modifying `matrix` and the Gradle [build command](.github/workflows/build.yml#L52)
 
 ## How do I deploy it to Maven Central?
 

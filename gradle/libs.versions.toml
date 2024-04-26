@@ -8,3 +8,5 @@ nexus-publish = { module = "io.github.gradle-nexus.publish-plugin:io.github.grad
 
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+spotless = { id = "com.diffplug.gradle.spotless", version = "6.20.0" }
+dokka = { id = "org.jetbrains.dokka", version = "1.8.20" }
