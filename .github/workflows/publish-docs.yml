@@ -1,0 +1,35 @@
+name: Publish docs
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  publish-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Build docs
+        run: ./gradlew dokkaHtmlMultiModule --no-configuration-cache
+
+      - name: Deploy docs
+        uses: JamesIves/github-pages-deploy-action@releases/v4
+        with:
+          folder: docs
+          single-commit: true
