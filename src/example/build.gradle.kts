@@ -15,9 +15,14 @@ kotlin {
             dependencies {
                 api(libs.coroutines.core)
                 implementation(libs.serialization.json) // FIXME temporary needed for tool Handler arguments
-                implementation(libs.ktor.client.okhttp)
                 implementation(project(":src:core"))
                 implementation(project(":src:providers:openai"))
+            }
+        }
+
+        val jvmMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.okhttp)
             }
         }
     }

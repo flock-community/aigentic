@@ -52,10 +52,10 @@ val getAllEmployeesOverviewTool = object : Tool {
         """
             Employee: Niels
             Telephone number: 0612345678
-            
+
             Employee: Henk
             Telephone number: 0687654321
-            
+
             Employee: Jan
             Telephone number: 0643211234
         """.trimIndent()
@@ -87,14 +87,14 @@ val getEmployeeDetailByNameTool = object : Tool {
             Employee: Henk
             Telephone number: 0687654321
             Has completed hours: YES
-            Number of reminders sent: 2    
+            Number of reminders sent: 2
             """.trimIndent()
 
             "Jan" -> """
             Employee: Jan
             Telephone number: 0643211234
             Has completed hours: NO
-            Number of reminders sent: 5 
+            Number of reminders sent: 5
             """.trimIndent()
 
             else -> "Unknown employee"
