@@ -40,6 +40,12 @@ kotlin {
             }
         }
 
+        val jvmMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.okhttp)
+            }
+        }
+
         val jvmTest by getting {
             dependencies {
                 implementation(libs.kotest.runner.junit5)

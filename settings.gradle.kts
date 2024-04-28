@@ -19,5 +19,6 @@ include(
     "src:core",
     "src:tools:http",
     "src:tools:openapi",
-    "src:providers:openai"
+    "src:providers:openai",
+    "src:example"
 )
