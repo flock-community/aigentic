@@ -5,7 +5,9 @@ plugins {
     id("root.publication")
     //trick: for the same plugin versions in all sub-modules
     alias(libs.plugins.kotlinMultiplatform).apply(false)
+    alias(libs.plugins.kotlinx.serialization) apply false
     alias(libs.plugins.spotless) apply false
+    alias(libs.plugins.kotest.multiplatform) apply false
     alias(libs.plugins.dokka)
 }
 

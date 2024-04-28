@@ -1,0 +1,48 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Integer Enum API",
+    "version": "1.0.0",
+    "description": "An example API to demonstrate a POST request with an integer enum property."
+  },
+  "servers": [
+    {
+      "url": "https://example.com/api"
+    }
+  ],
+  "paths": {
+    "/submitStatus": {
+      "post": {
+        "summary": "Submit a status",
+        "description": "Submits a status code represented as an integer.",
+        "requestBody": {
+          "description": "Payload containing a status code",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statusCode": {
+                    "type": "integer",
+                    "enum": [0, 1, 2, 3],
+                    "description": "Status code representing the state of an item. 0: New, 1: In Progress, 2: Completed, 3: Archived."
+                  }
+                },
+                "required": ["statusCode"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status submitted successfully"
+          },
+          "400": {
+            "description": "Invalid status code"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Example API",
+    "version": "1.0.0",
+    "description": "An example API to demonstrate an OpenAPI Specification for a POST request with an array of objects."
+  },
+  "servers": [
+    {
+      "url": "https://example.com/api"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "post": {
+        "summary": "Create a new user",
+        "description": "Creates a new user with the provided information, including multiple addresses.",
+        "requestBody": {
+          "description": "User to be created",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                  },
+                  "addresses": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "street": {
+                          "type": "string",
+                          "example": "123 Main St"
+                        },
+                        "city": {
+                          "type": "string",
+                          "example": "Anytown"
+                        },
+                        "zipcode": {
+                          "type": "string",
+                          "example": "12345"
+                        }
+                      },
+                      "required": ["street", "city", "zipcode"]
+                    }
+                  }
+                },
+                "required": ["username", "addresses"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    }
+  }
+}

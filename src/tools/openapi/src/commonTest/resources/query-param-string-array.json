@@ -1,0 +1,68 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Simple API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://example.com/api"
+    }
+  ],
+  "paths": {
+    "/items": {
+      "get": {
+        "summary": "Get items by IDs",
+        "operationId": "getItemsByIds",
+        "parameters": [
+          {
+            "name": "itemIds",
+            "in": "query",
+            "description": "The IDs of the items to retrieve",
+            "required": false,
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Items found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "format": "int64"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "number",
+                        "format": "float"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Items not found"
+          }
+        }
+      }
+    }
+  }
+}

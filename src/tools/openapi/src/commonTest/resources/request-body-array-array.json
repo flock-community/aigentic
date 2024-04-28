@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Complex Array API",
+    "version": "1.0.0",
+    "description": "An example API to demonstrate a POST request with a property that is an array containing arrays."
+  },
+  "servers": [
+    {
+      "url": "https://example.com/api"
+    }
+  ],
+  "paths": {
+    "/projects": {
+      "post": {
+        "summary": "Create a new project",
+        "description": "Creates a new project with the provided information, including team members.",
+        "requestBody": {
+          "description": "Project to be created",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "projectName": {
+                    "type": "string",
+                    "example": "Project Alpha"
+                  },
+                  "teamMembers": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "example": "John Smith"
+                          },
+                          "role": {
+                            "type": "string",
+                            "example": "Developer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": ["projectName", "teamMembers"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    }
+  }
+}
