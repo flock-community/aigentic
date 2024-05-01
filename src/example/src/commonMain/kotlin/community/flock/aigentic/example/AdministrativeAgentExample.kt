@@ -32,7 +32,7 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
     }
 
     val executor = agentExecutor {
-            addAgent(agent)
+        addAgent(agent)
     }.also { logEvents(it) }
 
     executor.start()

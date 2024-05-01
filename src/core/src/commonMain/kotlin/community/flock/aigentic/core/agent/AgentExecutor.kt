@@ -4,16 +4,16 @@ import community.flock.aigentic.core.agent.tool.FinishReason
 import community.flock.aigentic.core.agent.tool.FinishedOrStuck
 import community.flock.aigentic.core.agent.tool.finishOrStuckTool
 import community.flock.aigentic.core.message.*
-import community.flock.aigentic.core.tool.DefaultToolPermissionHandler
 import community.flock.aigentic.core.tool.ToolName
-import community.flock.aigentic.core.tool.ToolPermissionHandler
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.tool.Tool
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.datetime.Clock
 
-class AgentExecutor {
-    var permissionHandler: ToolPermissionHandler = DefaultToolPermissionHandler()
+interface ToolInterceptor { suspend fun intercept(agent: Agent, tool: Tool, toolCall: ToolCall) }
+
+class AgentExecutor(val toolInterceptors: List<ToolInterceptor> = emptyList()) {
     val agents: MutableList<Agent> = mutableListOf()
     val startedAgents = MutableSharedFlow<String>(replay = 100)
 
@@ -100,11 +100,7 @@ class AgentExecutor {
     private suspend fun Agent.execute(toolCall: ToolCall): Message.ToolResult {
         val functionArgs = toolCall.argumentsAsJson()
         val tool = tools[ToolName(toolCall.name)] ?: error("Tool not registered: $toolCall")
-        while (!permissionHandler.hasPermission(tool.toolConfiguration, toolCall)) {
-            setRunningState(AgentRunningState.WAITING_ON_APPROVAL)
-            println("Waiting for permission for ${toolCall.name}")
-            delay(300)
-        }
+        toolInterceptors.forEach { it.intercept(this, tool, toolCall) }
         setRunningState(AgentRunningState.EXECUTING_TOOL)
         val result = tool.handler(functionArgs)
         setRunningState(AgentRunningState.RUNNING)

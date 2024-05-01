@@ -34,7 +34,3 @@ internal interface InternalTool<T> : ToolDescription, Handler<T>
 interface ToolPermissionHandler {
     suspend fun hasPermission(toolConfiguration: ToolConfiguration, toolCall: ToolCall): Boolean
 }
-
-class DefaultToolPermissionHandler: ToolPermissionHandler {
-    override suspend fun hasPermission(toolConfiguration: ToolConfiguration, toolCall: ToolCall): Boolean = true
-}

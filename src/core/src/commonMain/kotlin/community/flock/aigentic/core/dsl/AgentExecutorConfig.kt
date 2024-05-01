@@ -2,6 +2,7 @@ package community.flock.aigentic.core.dsl
 
 import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.AgentExecutor
+import community.flock.aigentic.core.agent.ToolInterceptor
 import community.flock.aigentic.core.tool.DefaultToolPermissionHandler
 import community.flock.aigentic.core.tool.ToolPermissionHandler
 
@@ -13,18 +14,17 @@ fun agentExecutor(agentExecutorBuilder: AgentExecutorConfig.() -> Unit): AgentEx
 class AgentExecutorConfig : Config<AgentExecutor> {
 
     private val agents: MutableList<Agent> = mutableListOf()
-    private var permissionHandler: ToolPermissionHandler = DefaultToolPermissionHandler()
+    private var interceptors: MutableList<ToolInterceptor> = mutableListOf()
 
     fun AgentExecutorConfig.addAgent(agent: Agent) {
         agents.add(agent)
     }
 
-    fun AgentExecutorConfig.toolPermissionHandler(toolPermissionHandler: ToolPermissionHandler) {
-        this.permissionHandler = toolPermissionHandler
+    fun AgentExecutorConfig.addToolInterceptor(interceptor: ToolInterceptor) {
+        this.interceptors.add(interceptor)
     }
 
-    override fun build(): AgentExecutor = AgentExecutor().also {
-        it.permissionHandler = this.permissionHandler
+    override fun build(): AgentExecutor = AgentExecutor(this.interceptors).also {
         it.loadAgents(agents)
     }
 }
