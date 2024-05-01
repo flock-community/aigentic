@@ -1,0 +1,89 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Flexible Elements API",
+    "version": "1.0.0",
+    "description": "An example API to demonstrate a POST request with a property that is an array of items, each conforming to one of several specified types."
+  },
+  "servers": [
+    {
+      "url": "https://example.com/api"
+    }
+  ],
+  "paths": {
+    "/elements": {
+      "post": {
+        "summary": "Submit multiple elements of different types",
+        "description": "Submits an array of elements, each of which conforms to one of several specified types.",
+        "requestBody": {
+          "description": "Array of elements of different types",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "elements": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": ["text"]
+                            },
+                            "content": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["type", "content"],
+                          "example": {
+                            "type": "text",
+                            "content": "This is a text element."
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": ["image"]
+                            },
+                            "url": {
+                              "type": "string",
+                              "format": "uri"
+                            },
+                            "caption": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["type", "url"],
+                          "example": {
+                            "type": "image",
+                            "url": "https://example.com/image.png",
+                            "caption": "An example image."
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": ["elements"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Elements submitted successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    }
+  }
+}

@@ -16,6 +16,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "aigentic"
 include(
-    "src:http-tools",
-    "src:providers:openai"
+    "src:core",
+    "src:tools:http",
+    "src:tools:openapi",
+    "src:providers:openai",
+    "src:example"
 )

@@ -1,0 +1,54 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Task Status API",
+    "version": "1.0.0",
+    "description": "An example API to demonstrate a POST request with a property that is an array containing enums."
+  },
+  "servers": [
+    {
+      "url": "https://example.com/api"
+    }
+  ],
+  "paths": {
+    "/tasks": {
+      "post": {
+        "summary": "Update task statuses",
+        "description": "Updates the statuses of tasks based on the provided information.",
+        "requestBody": {
+          "description": "List of task statuses to be updated",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "taskId": {
+                    "type": "string",
+                    "example": "task_123"
+                  },
+                  "statuses": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["Not Started", "In Progress", "Completed", "Blocked"]
+                    }
+                  }
+                },
+                "required": ["taskId", "statuses"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task statuses updated successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     id("module.publication")
-    id("org.jetbrains.dokka")
+    alias(libs.plugins.dokka)
 }
 
 kotlin {
@@ -15,7 +15,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                //put your multiplatform dependencies here
+                implementation(project(":src:core"))
+                implementation("com.aallam.openai:openai-client:3.7.1")
             }
         }
         val commonTest by getting {
