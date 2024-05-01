@@ -17,7 +17,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(libs.coroutines.core)
-                implementation(libs.serialization.json)
+                api(libs.serialization.json)
             }
         }
         val commonTest by getting {
