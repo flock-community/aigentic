@@ -15,6 +15,11 @@ kotlin {
             dependencies {
                 implementation(project(":src:core"))
                 implementation(project(":src:providers:openai"))
+            }
+        }
+
+        val jvmMain by getting {
+            dependencies {
                 // CIO is for JVM, Android, Native. For other platforms pick the correct engine: https://ktor.io/docs/client-engines.html#platforms
                 implementation(libs.ktor.client.cio)
             }
