@@ -13,16 +13,10 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(libs.coroutines.core)
-                implementation(libs.serialization.json) // FIXME temporary needed for tool Handler arguments
                 implementation(project(":src:core"))
                 implementation(project(":src:providers:openai"))
-            }
-        }
-
-        val jvmMain by getting {
-            dependencies {
-                implementation(libs.ktor.client.okhttp)
+                // CIO is for JVM, Android, Native. For other platforms pick the correct engine: https://ktor.io/docs/client-engines.html#platforms
+                implementation(libs.ktor.client.cio)
             }
         }
     }

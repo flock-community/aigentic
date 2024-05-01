@@ -16,10 +16,8 @@ To build an agent which uses OpenAI as model provider with local (non http tools
 ```
 implementation("community.flock.aigentic:core:0.0.4-SNAPSHOT")
 implementation("community.flock.aigentic:openai:0.0.4-SNAPSHOT")
-implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-
-//JVM: for other platforms pick the right engine: https://ktor.io/docs/client-engines.html#platforms
-implementation("io.ktor:ktor-client-okhttp:2.3.10")
+// CIO is for JVM, Android, Native. For other platforms pick the correct engine: https://ktor.io/docs/client-engines.html#platforms
+implementation(libs.ktor.client.cio)
 ```
 
 ## Example agent
