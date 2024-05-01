@@ -19,6 +19,7 @@ kotlin {
                 api(libs.coroutines.core)
                 implementation(libs.serialization.json)
                 implementation(libs.kotlinx.datetime)
+                api(libs.serialization.json)
             }
         }
         val commonTest by getting {
