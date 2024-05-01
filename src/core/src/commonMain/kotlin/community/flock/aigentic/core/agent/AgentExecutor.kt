@@ -11,9 +11,13 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.datetime.Clock
 
-interface ToolInterceptor { suspend fun intercept(agent: Agent, tool: Tool, toolCall: ToolCall) }
+data class ToolInterceptorResult(val cancelExecution: Boolean, val reason: String?)
 
-class AgentExecutor(val toolInterceptors: List<ToolInterceptor> = emptyList()) {
+interface ToolInterceptor {
+    suspend fun intercept(agent: Agent, tool: Tool, toolCall: ToolCall): ToolInterceptorResult
+}
+
+class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyList()) {
     val agents: MutableList<Agent> = mutableListOf()
     val startedAgents = MutableSharedFlow<String>(replay = 100)
 
@@ -100,12 +104,32 @@ class AgentExecutor(val toolInterceptors: List<ToolInterceptor> = emptyList()) {
     private suspend fun Agent.execute(toolCall: ToolCall): Message.ToolResult {
         val functionArgs = toolCall.argumentsAsJson()
         val tool = tools[ToolName(toolCall.name)] ?: error("Tool not registered: $toolCall")
-        toolInterceptors.forEach { it.intercept(this, tool, toolCall) }
+
+        val cancelMessage = runInterceptors(this, tool, toolCall)
+        if (cancelMessage != null) {
+            setRunningState(AgentRunningState.RUNNING)
+            return cancelMessage
+        }
+
         setRunningState(AgentRunningState.EXECUTING_TOOL)
         val result = tool.handler(functionArgs)
         setRunningState(AgentRunningState.RUNNING)
         return Message.ToolResult(toolCall.id, toolCall.name, ToolResultContent(result))
     }
+
+    private suspend fun runInterceptors(
+        agent: Agent,
+        tool: Tool,
+        toolCall: ToolCall
+    ): Message.ToolResult? = toolInterceptors
+        .map { it.intercept(agent, tool, toolCall) }
+        .firstOrNull { it.cancelExecution }?.let {
+            Message.ToolResult(
+                toolCall.id,
+                toolCall.name,
+                ToolResultContent(it.reason ?: "Tool execution blocked by interceptor")
+            )
+        }
 
     private suspend fun sendToolResponse(agent: Agent, onFinished: (FinishedOrStuck) -> Unit) {
         val response = agent.sendModelRequest()
