@@ -1,14 +1,18 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.AgentExecutor
-import community.flock.aigentic.core.agent.ScheduleType
 import community.flock.aigentic.core.agent.events.toEvents
+import community.flock.aigentic.core.agent.getMessages
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.dsl.agentExecutor
 import community.flock.aigentic.core.tool.*
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.dsl.openAIModel
 import community.flock.aigentic.model.OpenAIModelIdentifier
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
 
 suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
@@ -28,18 +32,21 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
     }
 
     val executor = agentExecutor {
-        schedule(ScheduleType.Single) {
-            addAgent(agent)
-        }
+        addAgent(agent)
     }.also { logEvents(it) }
 
     executor.start()
 }
 
-fun logEvents(it: AgentExecutor) {
-    it.addListener { (agentId, message) ->
-        message.toEvents().forEach {
-            println("[$agentId] - ${it.text}")
+@OptIn(DelicateCoroutinesApi::class)
+fun logEvents(executor: AgentExecutor) {
+    GlobalScope.launch {
+        executor.startedAgents.collect { agentId ->
+            executor.getAgent(agentId).getMessages().map { it.toEvents() }.collect {
+                it.forEach {
+                    println("[$agentId] - ${it.text}")
+                }
+            }
         }
     }
 }

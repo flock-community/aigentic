@@ -1,35 +1,61 @@
 package community.flock.aigentic.core.agent
 
+import community.flock.aigentic.core.agent.tool.FinishReason
 import community.flock.aigentic.core.agent.tool.FinishedOrStuck
 import community.flock.aigentic.core.agent.tool.finishOrStuckTool
 import community.flock.aigentic.core.message.*
-import community.flock.aigentic.core.tool.DefaultToolPermissionHandler
 import community.flock.aigentic.core.tool.ToolName
-import community.flock.aigentic.core.tool.ToolPermissionHandler
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.tool.Tool
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.datetime.Clock
 
-class AgentExecutor(
-    val schedules: List<Schedule>,
-    val permissionHandler: ToolPermissionHandler = DefaultToolPermissionHandler()
-) {
-    private val listeners: MutableList<suspend (event: Pair<String, Message>) -> Unit> = mutableListOf()
+data class ToolInterceptorResult(val cancelExecution: Boolean, val reason: String?)
 
-    suspend fun start() =
-        schedules
-            .flatMap { it.agents }
-            .forEach { runAgent(it) }
+interface ToolInterceptor {
+    suspend fun intercept(agent: Agent, tool: Tool, toolCall: ToolCall): ToolInterceptorResult
+}
+
+class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyList()) {
+    val agents: MutableList<Agent> = mutableListOf()
+    val startedAgents = MutableSharedFlow<String>(replay = 100)
+
+    suspend fun start() {
+        agents
+            .filter { it.status.value.runningState == AgentRunningState.WAITING_TO_START }
+            .forEach {
+                runAgent(it)
+            }
+    }
 
     suspend fun runAgent(agent: Agent): FinishedOrStuck {
-        applyListeners(agent)
+        agent.setRunningState(AgentRunningState.RUNNING)
+        startedAgents.emit(agent.id)
+        agents.add(agent)
+
         agent.initialize() // Maybe move to Agent builder?
         val modelResponse = agent.sendModelRequest()
 
         val result = CompletableDeferred<FinishedOrStuck>()
         processResponse(agent, modelResponse) { result.complete(it) }
-        return result.await()
+        val resultState = result.await()
+
+        agent.updateStatus {
+            val endRunningState = if (resultState.reason is FinishReason.ImStuck) {
+                AgentRunningState.STUCK
+            } else {
+                AgentRunningState.COMPLETED
+            }
+            it.copy(
+                runningState = endRunningState,
+                endTimestamp = Clock.System.now()
+            )
+        }
+        return resultState
     }
+
+    fun getAgent(agentId: String?): Agent = agents.first { it.id == agentId }
 
     private suspend fun Agent.initialize() {
         internalTools[finishOrStuckTool.name] = finishOrStuckTool
@@ -78,13 +104,32 @@ class AgentExecutor(
     private suspend fun Agent.execute(toolCall: ToolCall): Message.ToolResult {
         val functionArgs = toolCall.argumentsAsJson()
         val tool = tools[ToolName(toolCall.name)] ?: error("Tool not registered: $toolCall")
-        while (!permissionHandler.hasPermission(tool.toolConfiguration, toolCall)) {
-            println("Waiting for permission for ${toolCall.name}")
-            delay(300)
+
+        val cancelMessage = runInterceptors(this, tool, toolCall)
+        if (cancelMessage != null) {
+            setRunningState(AgentRunningState.RUNNING)
+            return cancelMessage
         }
+
+        setRunningState(AgentRunningState.EXECUTING_TOOL)
         val result = tool.handler(functionArgs)
+        setRunningState(AgentRunningState.RUNNING)
         return Message.ToolResult(toolCall.id, toolCall.name, ToolResultContent(result))
     }
+
+    private suspend fun runInterceptors(
+        agent: Agent,
+        tool: Tool,
+        toolCall: ToolCall
+    ): Message.ToolResult? = toolInterceptors
+        .map { it.intercept(agent, tool, toolCall) }
+        .firstOrNull { it.cancelExecution }?.let {
+            Message.ToolResult(
+                toolCall.id,
+                toolCall.name,
+                ToolResultContent(it.reason ?: "Tool execution blocked by interceptor")
+            )
+        }
 
     private suspend fun sendToolResponse(agent: Agent, onFinished: (FinishedOrStuck) -> Unit) {
         val response = agent.sendModelRequest()
@@ -94,34 +139,17 @@ class AgentExecutor(
     private suspend fun Agent.sendModelRequest(): ModelResponse =
         model.sendRequest(messages.replayCache, tools.values.toList() + internalTools.values.toList())
 
-    fun getMessages(): Map<String, MutableSharedFlow<Message>> =
-        schedules.flatMap { it.agents }.associate { it.id to it.messages }
-
-    fun addListener(function: suspend (event: Pair<String, Message>) -> Unit) {
-        listeners.add(function)
-    }
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private fun applyListeners(agent: Agent) {
-        listeners.forEach { function ->
-            GlobalScope.launch {
-                agent.messages.collect { function.invoke(Pair(agent.id, it)) }
-            }
-        }
+    fun loadAgents(agents: MutableList<Agent>) {
+        this.agents.addAll(agents)
     }
 }
 
-class Schedule(
-    val agents: List<Agent>,
-    val type: ScheduleType
-)
-
-sealed interface ScheduleType {
-    /**
-     * Just run a single time
-     */
-    data object Single : ScheduleType
+suspend fun Agent.updateStatus(update: (currentStatus: AgentStatus) -> AgentStatus) {
+    update.invoke(status.value).let {
+        status.emit(it)
+    }
 }
 
-
-//suspend fun Agent.execute() = runAgent(this)
+suspend fun Agent.setRunningState(state: AgentRunningState) {
+    updateStatus { status.value.copy(runningState = state) }
+}

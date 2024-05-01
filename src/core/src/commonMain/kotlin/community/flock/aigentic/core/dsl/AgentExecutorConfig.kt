@@ -2,10 +2,7 @@ package community.flock.aigentic.core.dsl
 
 import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.AgentExecutor
-import community.flock.aigentic.core.agent.Schedule
-import community.flock.aigentic.core.agent.ScheduleType
-import community.flock.aigentic.core.tool.DefaultToolPermissionHandler
-import community.flock.aigentic.core.tool.ToolPermissionHandler
+import community.flock.aigentic.core.agent.ToolInterceptor
 
 fun agentExecutor(agentExecutorBuilder: AgentExecutorConfig.() -> Unit): AgentExecutor {
     return AgentExecutorConfig().apply(agentExecutorBuilder).build()
@@ -14,35 +11,18 @@ fun agentExecutor(agentExecutorBuilder: AgentExecutorConfig.() -> Unit): AgentEx
 @AgentDSL
 class AgentExecutorConfig : Config<AgentExecutor> {
 
-    private val schedules: MutableList<Schedule> = mutableListOf()
-    private var permissionHandler: ToolPermissionHandler = DefaultToolPermissionHandler()
+    private val agents: MutableList<Agent> = mutableListOf()
+    private var interceptors: MutableList<ToolInterceptor> = mutableListOf()
 
-    fun AgentExecutorConfig.schedule(scheduleType: ScheduleType, scheduleConfig: ScheduleConfig.() -> Unit) {
-        ScheduleConfig(scheduleType).apply(scheduleConfig).build().also {
-            this.schedules.add(it)
-        }
-    }
-
-    fun AgentExecutorConfig.toolPermissionHandler(toolPermissionHandler: ToolPermissionHandler) {
-        this.permissionHandler = toolPermissionHandler
-    }
-
-    override fun build(): AgentExecutor =
-        AgentExecutor(schedules, permissionHandler)
-}
-
-@AgentDSL
-class ScheduleConfig(
-    private val scheduleType: ScheduleType
-) : Config<Schedule> {
-
-    private val agents = mutableListOf<Agent>()
-
-    fun addAgent(agent: Agent) {
+    fun AgentExecutorConfig.addAgent(agent: Agent) {
         agents.add(agent)
     }
 
+    fun AgentExecutorConfig.addToolInterceptor(interceptor: ToolInterceptor) {
+        this.interceptors.add(interceptor)
+    }
 
-    override fun build(): Schedule =
-        Schedule(agents, scheduleType)
+    override fun build(): AgentExecutor = AgentExecutor(this.interceptors).also {
+        it.loadAgents(agents)
+    }
 }
