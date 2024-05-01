@@ -8,6 +8,8 @@ import community.flock.aigentic.core.tool.InternalTool
 import community.flock.aigentic.core.tool.Tool
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
@@ -46,7 +48,10 @@ data class Agent(
     val contexts: List<Context>,
     val tools: Map<ToolName, Tool>,
 ) {
-    val messages = MutableSharedFlow<Message>(replay = 100)
+    internal val messages = MutableSharedFlow<Message>(replay = 100)
     internal val status = MutableStateFlow(AgentStatus())
     internal val internalTools = mutableMapOf<ToolName, InternalTool<*>>()
 }
+
+fun Agent.getMessages() = messages.asSharedFlow()
+fun Agent.getStatus() = status.asStateFlow()

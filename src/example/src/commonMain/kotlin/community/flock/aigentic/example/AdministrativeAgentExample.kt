@@ -2,6 +2,7 @@ package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.AgentExecutor
 import community.flock.aigentic.core.agent.events.toEvents
+import community.flock.aigentic.core.agent.getMessages
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.dsl.agentExecutor
 import community.flock.aigentic.core.tool.*
@@ -41,7 +42,7 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
 fun logEvents(executor: AgentExecutor) {
     GlobalScope.launch {
         executor.startedAgents.collect { agentId ->
-            executor.getAgent(agentId).messages.map { it.toEvents() }.collect {
+            executor.getAgent(agentId).getMessages().map { it.toEvents() }.collect {
                 it.forEach {
                     println("[$agentId] - ${it.text}")
                 }
