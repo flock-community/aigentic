@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotest.multiplatform)
+    id("module.publication")
 }
 
 kotlin {
