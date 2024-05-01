@@ -105,9 +105,6 @@ class AgentExecutor {
             println("Waiting for permission for ${toolCall.name}")
             delay(300)
         }
-        if (status.value.runningState == AgentRunningState.WAITING_ON_APPROVAL) {
-            setRunningState(AgentRunningState.RUNNING)
-        }
         setRunningState(AgentRunningState.EXECUTING_TOOL)
         val result = tool.handler(functionArgs)
         setRunningState(AgentRunningState.RUNNING)
