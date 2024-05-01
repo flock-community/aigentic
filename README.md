@@ -6,4 +6,31 @@
 
 # AIGENTIC
 
-Framework to configure AI agents
+Framework to configure and run AI agents
+
+
+## How to use
+
+To build an agent which uses OpenAI as model provider with local (non http tools) use the following dependencies:
+
+```
+implementation("community.flock.aigentic:core:0.0.4-SNAPSHOT")
+implementation("community.flock.aigentic:openai:0.0.4-SNAPSHOT")
+implementation("io.ktor:ktor-client-okhttp:2.3.10")
+implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+```
+
+## Example agent
+
+[AdministrativeAgentExample](src/example/src/commonMain/kotlin/community/flock/aigentic/example/AdministrativeAgentExample.kt)
+
+### How to use snapshots
+
+In order to use SNAPSHOT versions of Aigentic please make sure both maven central and the Sonatype snapshot repository are configured:
+
+```
+repositories {
+    mavenCentral()
+    maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
+}
+```
