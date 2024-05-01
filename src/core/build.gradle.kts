@@ -18,6 +18,7 @@ kotlin {
             dependencies {
                 api(libs.coroutines.core)
                 implementation(libs.serialization.json)
+                implementation(libs.kotlinx.datetime)
             }
         }
         val commonTest by getting {

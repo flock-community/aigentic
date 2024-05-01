@@ -1,5 +1,6 @@
 [versions]
 kotlin = "1.9.23"
+kotlinx-datetime = "0.6.0-RC.2"
 coroutines = "1.7.2"
 serialization = "1.6.3"
 ktor = "2.3.10"
@@ -11,6 +12,7 @@ mockk = "1.13.10"
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 # Coroutines
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
