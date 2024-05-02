@@ -35,8 +35,8 @@ sealed interface AgentEvent {
             📡 Sending response to model
             -----------------------------------
         """.trimIndent()
-
     }
+
 }
 
 suspend fun Message.toEvents(): List<AgentEvent> = when (this) {

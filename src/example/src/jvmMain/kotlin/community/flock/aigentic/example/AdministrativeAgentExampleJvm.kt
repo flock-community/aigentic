@@ -7,6 +7,6 @@ private val openAIAPIKey = System.getenv("OPENAI_KEY").also {
     if (it.isNullOrEmpty()) error("Set 'OPENAI_KEY' environment variable!")
 }
 
-fun main() = runBlocking {
+fun main(): Unit = runBlocking {
     runAdministrativeAgentExample(openAIAPIKey)
 }
