@@ -1,5 +1,6 @@
 package community.flock.aigentic.core.agent
 
+import community.flock.aigentic.core.agent.events.toEvents
 import community.flock.aigentic.core.agent.tool.FinishReason
 import community.flock.aigentic.core.agent.tool.FinishedOrStuck
 import community.flock.aigentic.core.agent.tool.finishOrStuckTool
@@ -9,6 +10,9 @@ import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.tool.Tool
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 
 data class ToolInterceptorResult(val cancelExecution: Boolean, val reason: String?)
@@ -17,22 +21,21 @@ interface ToolInterceptor {
     suspend fun intercept(agent: Agent, tool: Tool, toolCall: ToolCall): ToolInterceptorResult
 }
 
-class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyList()) {
-    val agents: MutableList<Agent> = mutableListOf()
-    val startedAgents = MutableSharedFlow<String>(replay = 100)
+suspend fun Agent.run(): FinishedOrStuck = coroutineScope {
 
-    suspend fun start() {
-        agents
-            .filter { it.status.value.runningState == AgentRunningState.WAITING_TO_START }
-            .forEach {
-                runAgent(it)
-            }
+    async {
+        getMessages().flatMapConcat{ it.toEvents().asFlow() }.collect{
+            println(it.text)
+        }
     }
+
+    AgentExecutor().runAgent(this@run)
+}
+
+class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyList()) {
 
     suspend fun runAgent(agent: Agent): FinishedOrStuck {
         agent.setRunningState(AgentRunningState.RUNNING)
-        startedAgents.emit(agent.id)
-        agents.add(agent)
 
         agent.initialize() // Maybe move to Agent builder?
         val modelResponse = agent.sendModelRequest()
@@ -54,8 +57,6 @@ class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyL
         }
         return resultState
     }
-
-    fun getAgent(agentId: String?): Agent = agents.first { it.id == agentId }
 
     private suspend fun Agent.initialize() {
         internalTools[finishOrStuckTool.name] = finishOrStuckTool
@@ -138,10 +139,6 @@ class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyL
 
     private suspend fun Agent.sendModelRequest(): ModelResponse =
         model.sendRequest(messages.replayCache, tools.values.toList() + internalTools.values.toList())
-
-    fun loadAgents(agents: MutableList<Agent>) {
-        this.agents.addAll(agents)
-    }
 }
 
 suspend fun Agent.updateStatus(update: (currentStatus: AgentStatus) -> AgentStatus) {

@@ -1,23 +1,15 @@
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.agent.AgentExecutor
-import community.flock.aigentic.core.agent.events.toEvents
-import community.flock.aigentic.core.agent.getMessages
+import community.flock.aigentic.core.agent.run
 import community.flock.aigentic.core.dsl.agent
-import community.flock.aigentic.core.dsl.agentExecutor
 import community.flock.aigentic.core.tool.*
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.dsl.openAIModel
 import community.flock.aigentic.model.OpenAIModelIdentifier
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
 
 suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
-
-    val agent = agent {
+    agent {
         openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4Turbo)
         task("Retrieve all employees to inspect their hour status") {
             addInstruction("For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent")
@@ -29,26 +21,7 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
         addTool(askManagerForResponseTool)
         addTool(sendSignalMessageTool)
         addTool(updateEmployeeTool)
-    }
-
-    val executor = agentExecutor {
-        addAgent(agent)
-    }.also { logEvents(it) }
-
-    executor.start()
-}
-
-@OptIn(DelicateCoroutinesApi::class)
-fun logEvents(executor: AgentExecutor) {
-    GlobalScope.launch {
-        executor.startedAgents.collect { agentId ->
-            executor.getAgent(agentId).getMessages().map { it.toEvents() }.collect {
-                it.forEach {
-                    println("[$agentId] - ${it.text}")
-                }
-            }
-        }
-    }
+    }.run()
 }
 
 val getAllEmployeesOverviewTool = object : Tool {
