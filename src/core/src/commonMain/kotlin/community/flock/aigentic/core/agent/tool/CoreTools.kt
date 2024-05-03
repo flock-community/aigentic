@@ -13,7 +13,7 @@ internal val finishOrStuckTool =
         val finishReasonParameter =
             Parameter.Complex.Enum(
                 name = "finishReason",
-                description = "The telephone number of the receiver of this message",
+                description = null,
                 isRequired = true,
                 default = null,
                 values = FinishReason.getAllValues().map { PrimitiveValue.String.fromString(it::class.simpleName!!) },
@@ -23,7 +23,7 @@ internal val finishOrStuckTool =
         val descriptionParameter =
             Parameter.Primitive(
                 name = "description",
-                description = "Depending on the finish reason a description of the executed work OR a description of why you're stuck",
+                description = "Depending on the finish reason a description of the executed work or a description of why you're stuck",
                 isRequired = true,
                 type = ParameterType.Primitive.String,
             )
@@ -31,10 +31,10 @@ internal val finishOrStuckTool =
         override val name = ToolName("finishedOrStuck")
         override val description =
             """
-            When you've finished all tasks and met the finish condition OR when you are stuck call this tool.
+            |When you've finished all tasks and met the finish condition OR when you are stuck call this tool.
             |In the case you've finished all tasks please provide a description of the work which has been done.
             |In case you're stuck please provide a description of the problem.
-            """.trimIndent()
+            """.trimMargin()
 
         override val parameters = listOf(finishReasonParameter, descriptionParameter)
         override val handler: suspend (map: JsonObject) -> FinishedOrStuck = { arguments ->

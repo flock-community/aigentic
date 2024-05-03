@@ -44,15 +44,15 @@ val getAllEmployeesOverviewTool =
         override val parameters = emptyList<Parameter>()
         override val handler: suspend (map: JsonObject) -> String = {
             """
-            Employee: Niels
-            Telephone number: 0612345678
+            |Employee: Niels
+            |Telephone number: 0612345678
 
-            Employee: Henk
-            Telephone number: 0687654321
+            |Employee: Henk
+            |Telephone number: 0687654321
 
-            Employee: Jan
-            Telephone number: 0643211234
-            """.trimIndent()
+            |Employee: Jan
+            |Telephone number: 0643211234
+            """.trimMargin()
         }
     }
 
@@ -76,27 +76,27 @@ val getEmployeeDetailByNameTool =
             when (name) {
                 "Niels" ->
                     """
-                    Employee: Niels
-                    Telephone number: 0612345678
-                    Has completed hours: NO
-                    Number of reminders sent: 1
-                    """.trimIndent()
+                    |Employee: Niels
+                    |Telephone number: 0612345678
+                    |Has completed hours: NO
+                    |Number of reminders sent: 1
+                    """.trimMargin()
 
                 "Henk" ->
                     """
-                    Employee: Henk
-                    Telephone number: 0687654321
-                    Has completed hours: YES
-                    Number of reminders sent: 2
-                    """.trimIndent()
+                    |Employee: Henk
+                    |Telephone number: 0687654321
+                    |Has completed hours: YES
+                    |Number of reminders sent: 2
+                    """.trimMargin()
 
                 "Jan" ->
                     """
-                    Employee: Jan
-                    Telephone number: 0643211234
-                    Has completed hours: NO
-                    Number of reminders sent: 5
-                    """.trimIndent()
+                    |Employee: Jan
+                    |Telephone number: 0643211234
+                    |Has completed hours: NO
+                    |Number of reminders sent: 5
+                    """.trimMargin()
 
                 else -> "Unknown employee"
             }

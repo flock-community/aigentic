@@ -32,9 +32,9 @@ sealed interface AgentEvent {
     data object SendingResponse : AgentEvent {
         override val text =
             """
-            📡 Sending response to model
+            |📡 Sending response to model
             -----------------------------------
-            """.trimIndent()
+            """.trimMargin()
     }
 }
 
