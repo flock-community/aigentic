@@ -12,8 +12,10 @@ import community.flock.aigentic.model.OpenAIModelIdentifier
 import community.flock.aigentic.tools.openapi.dsl.openApiTools
 import kotlinx.serialization.json.JsonObject
 
-suspend fun runOpenAPIAgent(openAIAPIKey: String, hackerNewsOpenAPISpec: String) {
-
+suspend fun runOpenAPIAgent(
+    openAIAPIKey: String,
+    hackerNewsOpenAPISpec: String,
+) {
     agent {
         openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4Turbo)
         task("Send Hacker News stories about AI") {
@@ -25,30 +27,42 @@ suspend fun runOpenAPIAgent(openAIAPIKey: String, hackerNewsOpenAPISpec: String)
     }.run()
 }
 
-val sendEmailTool = object : Tool {
+val sendEmailTool =
+    object : Tool {
+        val emailAddressParam =
+            Parameter.Primitive(
+                "emailAddress",
+                "The recipient email address",
+                true,
+                Primitive.String,
+            )
 
-    val emailAddressParam = Parameter.Primitive(
-        "emailAddress", "The recipient email address", true, Primitive.String
-    )
+        val subjectParam =
+            Parameter.Primitive(
+                "subject",
+                "Email subject",
+                true,
+                Primitive.String,
+            )
 
-    val subjectParam = Parameter.Primitive(
-        "subject", "Email subject", true, Primitive.String
-    )
+        val messageParam =
+            Parameter.Primitive(
+                "message",
+                "Email message",
+                true,
+                Primitive.String,
+            )
 
-    val messageParam = Parameter.Primitive(
-        "message", "Email message", true, Primitive.String
-    )
+        override val name = ToolName("SendEmail")
+        override val description = "Sends a Email to the provided recipient"
+        override val parameters = listOf(emailAddressParam, subjectParam, messageParam)
 
-    override val name = ToolName("SendEmail")
-    override val description = "Sends a Email to the provided recipient"
-    override val parameters = listOf(emailAddressParam, subjectParam, messageParam)
+        override val handler: suspend (JsonObject) -> String = { arguments ->
 
-    override val handler: suspend (JsonObject) -> String = { arguments ->
+            val emailAddress = emailAddressParam.getStringValue(arguments)
+            val subject = subjectParam.getStringValue(arguments)
+            val message = messageParam.getStringValue(arguments)
 
-        val emailAddress = emailAddressParam.getStringValue(arguments)
-        val subject = subjectParam.getStringValue(arguments)
-        val message = messageParam.getStringValue(arguments)
-
-        "✉️ Sending email: '$message' with subject: '$subject' to recipient: $emailAddress"
+            "✉️ Sending email: '$message' with subject: '$subject' to recipient: $emailAddress"
+        }
     }
-}

@@ -13,7 +13,7 @@ import community.flock.aigentic.model.OpenAIModelIdentifier
 internal fun createChatCompletionsRequest(
     messages: List<Message>,
     tools: List<ToolDescription>,
-    openAIModelIdentifier: OpenAIModelIdentifier
+    openAIModelIdentifier: OpenAIModelIdentifier,
 ): ChatCompletionRequest {
     return chatCompletionRequest {
 //        temperature = 0.0

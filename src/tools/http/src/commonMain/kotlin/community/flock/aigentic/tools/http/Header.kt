@@ -1,7 +1,6 @@
 package community.flock.aigentic.tools.http
 
 sealed interface Header {
-
     val name: String
     val value: String
 
