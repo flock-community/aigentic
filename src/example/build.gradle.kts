@@ -15,6 +15,7 @@ kotlin {
             dependencies {
                 implementation(project(":src:core"))
                 implementation(project(":src:providers:openai"))
+                implementation(project(":src:tools:openapi"))
             }
         }
 

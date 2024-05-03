@@ -3,7 +3,7 @@ package community.flock.aigentic.tools.http
 import kotlinx.serialization.json.JsonObject
 
 class RestClientExecutor(
-    val restClient: RestClient,
+    val restClient: RestClient ,
     val urlArgumentsResolver: UrlArgumentsResolver,
     val queryParametersArgumentsResolver: QueryParametersArgumentsResolver,
     val requestBodyArgumentsResolver: RequestBodyArgumentsResolver
@@ -26,12 +26,12 @@ class RestClientExecutor(
             headers = headers
         )
 
-//    companion object {
-//        val default = RestClientExecutor(
-//            restClient = KtorRestClient(),
-//            urlArgumentsResolver = DefaultUrlArgumentsResolver(),
-//            queryParametersArgumentsResolver = DefaultQueryParametersArgumentsResolver(),
-//            requestBodyArgumentsResolver = DefaultRequestBodyArgumentsResolver()
-//        )
-//    }
+    companion object {
+        val default = RestClientExecutor(
+            restClient = KtorRestClient(),
+            urlArgumentsResolver = DefaultUrlArgumentsResolver(),
+            queryParametersArgumentsResolver = DefaultQueryParametersArgumentsResolver(),
+            requestBodyArgumentsResolver = DefaultRequestBodyArgumentsResolver()
+        )
+    }
 }

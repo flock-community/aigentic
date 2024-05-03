@@ -23,10 +23,9 @@ interface RestClient {
 }
 
 class KtorRestClient(
-    engine: HttpClientEngine
 ) : RestClient {
 
-    private val ktor = HttpClient(engine) {
+    private val ktor = HttpClient {
         install(ContentNegotiation) {
             json()
         }
