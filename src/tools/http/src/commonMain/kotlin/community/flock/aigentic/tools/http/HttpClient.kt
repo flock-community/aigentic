@@ -30,8 +30,8 @@ class KtorRestClient(
             json()
         }
         install(Logging) {
-//        logger = Logger.SIMPLE
-//        level = LogLevel.ALL
+        logger = Logger.SIMPLE
+        level = LogLevel.NONE
         }
     }
 
