@@ -24,21 +24,19 @@ private fun Agent.createSystemPrompt(): Message.SystemPrompt {
 
     val finishConditionDescription =
         """
-        You are finished when the task is executed successfully: ${task.description}
-
-        If you meet this condition, call the ${finishOrStuckTool.name} tool to indicate that you are done and have finished all tasks.
-
-        When you don't know what to do also call the ${finishOrStuckTool.name} tool to indicate that you are stuck and need help.
+        |You are finished when the task is executed successfully: ${task.description}
+        |If you meet this condition, call the ${finishOrStuckTool.name} tool to indicate that you are done and have finished all tasks.
+        |When you don't know what to do also call the ${finishOrStuckTool.name} tool to indicate that you are stuck and need help.
         """.trimIndent()
 
     return Message.SystemPrompt(
         """
-        $baseInstruction
+        |$baseInstruction
 
-        Instructions:
-        $instructions
+        |Instructions:
+        |$instructions
 
-        $finishConditionDescription
+        |$finishConditionDescription
         """.trimIndent(),
     )
 }
