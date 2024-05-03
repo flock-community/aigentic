@@ -22,19 +22,19 @@ interface RestClient {
     ): String
 }
 
-class KtorRestClient(
-    engine: HttpClientEngine
-) : RestClient {
+class KtorRestClient(engine: HttpClientEngine? = null) : RestClient {
 
-    private val ktor = HttpClient(engine) {
+    private val configuration: HttpClientConfig<*>.() -> Unit = {
         install(ContentNegotiation) {
             json()
         }
         install(Logging) {
-//        logger = Logger.SIMPLE
-//        level = LogLevel.ALL
+            logger = Logger.SIMPLE
+            level = LogLevel.NONE
         }
     }
+
+    private val ktor = if (engine != null) HttpClient(engine, configuration) else HttpClient(configuration)
 
     override suspend fun execute(
         method: EndpointOperation.Method,

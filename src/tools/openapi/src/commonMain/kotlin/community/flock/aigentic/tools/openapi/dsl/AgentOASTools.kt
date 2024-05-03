@@ -10,7 +10,7 @@ import community.flock.aigentic.tools.openapi.OpenAPIv3Parser
 
 fun AgentConfig.openApiTools(
     oasJson: String,
-    restClientExecutor: RestClientExecutor,
+    restClientExecutor: RestClientExecutor = RestClientExecutor.default,
     oasHeaderConfig: (OASHeaderConfig.() -> Unit)? = null
 ) {
     val headerConfig = oasHeaderConfig?.let { OASHeaderConfig().apply(it) }

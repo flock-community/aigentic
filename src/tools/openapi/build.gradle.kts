@@ -18,7 +18,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":src:core"))
-                implementation(project(":src:tools:http"))
+                api(project(":src:tools:http"))
                 implementation(libs.serialization.json)
                 implementation(libs.kotlinx.openapi.bindings)
 

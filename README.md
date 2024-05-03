@@ -11,7 +11,7 @@ Framework to configure and run AI agents
 
 ## How to use
 
-To build an agent which uses OpenAI as model provider with local (non http tools) use the following dependencies:
+To build an agent which uses OpenAI as model provider with local (non-http) tools use the following dependencies:
 
 ```
 implementation("community.flock.aigentic:core:0.0.4-SNAPSHOT")
@@ -20,9 +20,10 @@ implementation("community.flock.aigentic:openai:0.0.4-SNAPSHOT")
 implementation(libs.ktor.client.cio)
 ```
 
-## Example agent
+## Example agents
 
-[AdministrativeAgentExample](src/example/src/commonMain/kotlin/community/flock/aigentic/example/AdministrativeAgentExample.kt)
+- Agent with local tools: [AdministrativeAgentExample](src/example/src/commonMain/kotlin/community/flock/aigentic/example/AdministrativeAgentExample.kt)
+- Agent with OpenAPI tools: [OpenAPIAgentExample](src/example/src/commonMain/kotlin/community/flock/aigentic/example/OpenAPIAgentExample.kt)
 
 ### How to use snapshots
 

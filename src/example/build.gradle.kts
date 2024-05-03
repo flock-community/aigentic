@@ -15,6 +15,8 @@ kotlin {
             dependencies {
                 implementation(project(":src:core"))
                 implementation(project(":src:providers:openai"))
+                implementation(project(":src:tools:openapi"))
+                implementation ("ch.qos.logback:logback-classic:1.2.3")
             }
         }
 
