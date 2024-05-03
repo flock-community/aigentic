@@ -14,6 +14,7 @@ import community.flock.aigentic.mapper.toModelResponse
 import community.flock.aigentic.request.createChatCompletionsRequest
 import kotlin.time.Duration.Companion.seconds
 
+@Suppress("ktlint")
 sealed class OpenAIModelIdentifier(
     val stringValue: String
 ) : ModelIdentifier {
@@ -24,24 +25,31 @@ sealed class OpenAIModelIdentifier(
 class OpenAIModel(
     override val authentication: Authentication.APIKey,
     override val modelIdentifier: OpenAIModelIdentifier,
-    private val openAI: OpenAI = defaultOpenAI(authentication)
+    private val openAI: OpenAI = defaultOpenAI(authentication),
 ) : Model {
-
-    override suspend fun sendRequest(messages: List<Message>, tools: List<ToolDescription>): ModelResponse = openAI
-        .chatCompletion(
-            createChatCompletionsRequest(
-                messages = messages,
-                tools = tools,
-                openAIModelIdentifier = modelIdentifier
+    override suspend fun sendRequest(
+        messages: List<Message>,
+        tools: List<ToolDescription>,
+    ): ModelResponse =
+        openAI
+            .chatCompletion(
+                createChatCompletionsRequest(
+                    messages = messages,
+                    tools = tools,
+                    openAIModelIdentifier = modelIdentifier,
+                ),
             )
-        )
-        .toModelResponse()
+            .toModelResponse()
 
     companion object {
-        fun defaultOpenAI(authentication: Authentication) = OpenAI(
-            token = (authentication as? Authentication.APIKey).let {
-                it?.key ?: error("OpenAI requires API Key authentication")
-            }, logging = LoggingConfig(LogLevel.None), timeout = Timeout(socket = 60.seconds)
-        )
+        fun defaultOpenAI(authentication: Authentication) =
+            OpenAI(
+                token =
+                    (authentication as? Authentication.APIKey).let {
+                        it?.key ?: error("OpenAI requires API Key authentication")
+                    },
+                logging = LoggingConfig(LogLevel.None),
+                timeout = Timeout(socket = 60.seconds),
+            )
     }
 }

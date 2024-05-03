@@ -17,8 +17,10 @@ data class EndpointOperation(
     enum class Method { GET, POST, PUT, DELETE, PATCH }
 }
 
-fun EndpointOperation.toToolDefinition(restClientExecutor: RestClientExecutor, headers: List<Header>): Tool {
-
+fun EndpointOperation.toToolDefinition(
+    restClientExecutor: RestClientExecutor,
+    headers: List<Header>,
+): Tool {
     val allParameterDefinitions = pathParams + queryParams + listOfNotNull(requestBody)
 
     return object : Tool {

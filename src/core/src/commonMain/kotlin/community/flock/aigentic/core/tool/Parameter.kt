@@ -1,13 +1,16 @@
 package community.flock.aigentic.core.tool
 
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmInline
 
-fun Parameter.getStringValue(arguments: JsonObject): String =
-    arguments.getValue(name).jsonPrimitive.content
+fun Parameter.getStringValue(arguments: JsonObject): String = arguments.getValue(name).jsonPrimitive.content
 
-fun Parameter.getIntValue(arguments: JsonObject): Int =
-    arguments.getValue(name).jsonPrimitive.int
+fun Parameter.getIntValue(arguments: JsonObject): Int = arguments.getValue(name).jsonPrimitive.int
 
 inline fun <reified T : Any> Parameter.Complex.Object.getObject(arguments: JsonObject): T {
     val arg = arguments.getValue(name)
@@ -20,44 +23,41 @@ sealed class Parameter(
     open val isRequired: Boolean,
     open val type: ParameterType,
 ) {
-
     data class Primitive(
         override val name: String,
         override val description: String?,
         override val isRequired: Boolean,
-        override val type: ParameterType.Primitive
+        override val type: ParameterType.Primitive,
     ) : Parameter(name, description, isRequired, type)
 
     sealed class Complex(name: String, description: String?, isRequired: Boolean, type: ParameterType) :
         Parameter(name, description, isRequired, type) {
+            data class Enum(
+                override val name: String,
+                override val description: String?,
+                override val isRequired: Boolean,
+                val default: PrimitiveValue<*>?,
+                val values: List<PrimitiveValue<*>>,
+                val valueType: ParameterType.Primitive,
+            ) : Complex(name, description, isRequired, ParameterType.Complex.Enum)
 
-        data class Enum(
-            override val name: String,
-            override val description: String?,
-            override val isRequired: Boolean,
-            val default: PrimitiveValue<*>?,
-            val values: List<PrimitiveValue<*>>,
-            val valueType: ParameterType.Primitive
-        ) : Complex(name, description, isRequired, ParameterType.Complex.Enum)
+            data class Object(
+                override val name: String,
+                override val description: String?,
+                override val isRequired: Boolean,
+                val parameters: List<Parameter>,
+            ) : Complex(name, description, isRequired, ParameterType.Complex.Object)
 
-        data class Object(
-            override val name: String,
-            override val description: String?,
-            override val isRequired: Boolean,
-            val parameters: List<Parameter>
-        ) : Complex(name, description, isRequired, ParameterType.Complex.Object)
-
-        data class Array(
-            override val name: String,
-            override val description: String?,
-            override val isRequired: Boolean,
-            val itemDefinition: Parameter
-        ) : Complex(name, description, isRequired, ParameterType.Complex.Array)
-    }
+            data class Array(
+                override val name: String,
+                override val description: String?,
+                override val isRequired: Boolean,
+                val itemDefinition: Parameter,
+            ) : Complex(name, description, isRequired, ParameterType.Complex.Array)
+        }
 }
 
 sealed interface ParameterType {
-
     sealed interface Primitive : ParameterType {
         data object String : Primitive
         data object Number : Primitive
@@ -73,7 +73,6 @@ sealed interface ParameterType {
 }
 
 sealed interface PrimitiveValue<Type> {
-
     val value: Type
 
     @JvmInline

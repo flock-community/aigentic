@@ -18,6 +18,7 @@ subprojects {
             target("**/*.kt")
             trimTrailingWhitespace()
             endWithNewline()
+            ktlint()
         }
     }
 }

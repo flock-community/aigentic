@@ -12,36 +12,40 @@ import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 
 internal fun ToolDescription.toOpenAITool(): Tool {
-
-    val toolParameters = if (parameters.isEmpty()) {
-        com.aallam.openai.api.core.Parameters.Empty
-    } else {
-        com.aallam.openai.api.core.Parameters.buildJsonObject {
-            put("type", "object")
-            emitPropertiesAndRequired(parameters)
+    val toolParameters =
+        if (parameters.isEmpty()) {
+            com.aallam.openai.api.core.Parameters.Empty
+        } else {
+            com.aallam.openai.api.core.Parameters.buildJsonObject {
+                put("type", "object")
+                emitPropertiesAndRequired(parameters)
+            }
         }
-    }
 
     return Tool.function(
-        name = name.value, description = description, parameters = toolParameters
+        name = name.value,
+        description = description,
+        parameters = toolParameters,
     )
 }
 
-private fun JsonObjectBuilder.emitType(definition: Parameter) = when (definition) {
-    is Parameter.Complex.Array -> "array"
-    is Parameter.Complex.Object -> "object"
-    is Parameter.Complex.Enum -> mapPrimitiveType(definition.valueType)
-    is Parameter.Primitive -> mapPrimitiveType(definition.type)
-}.run {
-    put("type", this)
-}
+private fun JsonObjectBuilder.emitType(definition: Parameter) =
+    when (definition) {
+        is Parameter.Complex.Array -> "array"
+        is Parameter.Complex.Object -> "object"
+        is Parameter.Complex.Enum -> mapPrimitiveType(definition.valueType)
+        is Parameter.Primitive -> mapPrimitiveType(definition.type)
+    }.run {
+        put("type", this)
+    }
 
-private fun mapPrimitiveType(type: ParameterType.Primitive) = when (type) {
-    ParameterType.Primitive.Boolean -> "boolean"
-    ParameterType.Primitive.Integer -> "integer"
-    ParameterType.Primitive.Number -> "number"
-    ParameterType.Primitive.String -> "string"
-}
+private fun mapPrimitiveType(type: ParameterType.Primitive) =
+    when (type) {
+        ParameterType.Primitive.Boolean -> "boolean"
+        ParameterType.Primitive.Integer -> "integer"
+        ParameterType.Primitive.Number -> "number"
+        ParameterType.Primitive.String -> "string"
+    }
 
 private fun JsonObjectBuilder.emit(definition: Parameter) {
     putJsonObject(definition.name) {
@@ -53,10 +57,11 @@ private fun JsonObjectBuilder.emit(definition: Parameter) {
     }
 }
 
-private fun JsonObjectBuilder.emitSpecificPropertiesIfNecessary(definition: Parameter) = when (definition) {
-    is Parameter.Complex -> emitSpecificProperties(definition)
-    is Parameter.Primitive -> Unit // Primitive types don't have any other properties
-}
+private fun JsonObjectBuilder.emitSpecificPropertiesIfNecessary(definition: Parameter) =
+    when (definition) {
+        is Parameter.Complex -> emitSpecificProperties(definition)
+        is Parameter.Primitive -> Unit // Primitive types don't have any other properties
+    }
 
 private fun JsonObjectBuilder.emitSpecificProperties(definition: Parameter.Complex): Unit =
     when (definition) {
@@ -89,9 +94,10 @@ private fun JsonObjectBuilder.emitSpecificProperties(definition: Parameter.Compl
     emitPropertiesAndRequired(definition.parameters)
 }
 
-private fun JsonObjectBuilder.emit(definitions: List<Parameter>): Unit = definitions.forEach { parameter ->
-    emit(parameter)
-}
+private fun JsonObjectBuilder.emit(definitions: List<Parameter>): Unit =
+    definitions.forEach { parameter ->
+        emit(parameter)
+    }
 
 fun JsonObjectBuilder.emitPropertiesAndRequired(parameters: List<Parameter>) {
     putJsonObject("properties") {

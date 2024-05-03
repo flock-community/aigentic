@@ -1,4 +1,4 @@
-package http
+package community.flock.aigentic.tools.http
 
 import community.flock.aigentic.core.tool.PrimitiveValue
 import io.kotest.core.spec.style.DescribeSpec

@@ -10,7 +10,6 @@ import kotlin.jvm.JvmInline
 
 @JvmInline
 value class ResolvedQueryParameters(val values: Map<String, JsonElement>) {
-
     companion object {
         fun empty() = ResolvedQueryParameters(emptyMap())
     }
@@ -22,41 +21,40 @@ value class ResolvedRequestBody(val stringBody: String)
 @JvmInline
 value class ResolvedUrl(val urlString: String)
 
-
 interface QueryParametersArgumentsResolver {
-
     fun resolveQueryParameters(
-        queryParameters: List<Parameter>, callArguments: JsonObject
+        queryParameters: List<Parameter>,
+        callArguments: JsonObject,
     ): ResolvedQueryParameters
 }
 
 class DefaultQueryParametersArgumentsResolver : QueryParametersArgumentsResolver {
-
     override fun resolveQueryParameters(
-        queryParameters: List<Parameter>, callArguments: JsonObject
-    ): ResolvedQueryParameters = queryParameters.mapNotNull { queryParameter ->
+        queryParameters: List<Parameter>,
+        callArguments: JsonObject,
+    ): ResolvedQueryParameters =
+        queryParameters.mapNotNull { queryParameter ->
 
-        val parameterValue = queryParameter.getParameterValue(callArguments)
-        parameterValue?.let {
-            queryParameter.name to it
+            val parameterValue = queryParameter.getParameterValue(callArguments)
+            parameterValue?.let {
+                queryParameter.name to it
+            }
+        }.toMap().let {
+            ResolvedQueryParameters(it)
         }
-
-    }.toMap().let {
-        ResolvedQueryParameters(it)
-    }
 }
-
 
 interface RequestBodyArgumentsResolver {
     fun resolveRequestBody(
-        requestBodyParameter: Parameter.Complex.Object, callArguments: JsonObject
+        requestBodyParameter: Parameter.Complex.Object,
+        callArguments: JsonObject,
     ): ResolvedRequestBody?
 }
 
 class DefaultRequestBodyArgumentsResolver : RequestBodyArgumentsResolver {
-
     override fun resolveRequestBody(
-        requestBodyParameter: Parameter.Complex.Object, callArguments: JsonObject
+        requestBodyParameter: Parameter.Complex.Object,
+        callArguments: JsonObject,
     ): ResolvedRequestBody? {
         val parameterValue = requestBodyParameter.getParameterValue(callArguments)
         return parameterValue?.let { ResolvedRequestBody(Json.encodeToString(it)) }
@@ -65,15 +63,18 @@ class DefaultRequestBodyArgumentsResolver : RequestBodyArgumentsResolver {
 
 interface UrlArgumentsResolver {
     fun resolveUrl(
-        placeHolderUrl: String, pathParameters: List<Parameter>, callArguments: JsonObject
+        placeHolderUrl: String,
+        pathParameters: List<Parameter>,
+        callArguments: JsonObject,
     ): ResolvedUrl
 }
 
 class DefaultUrlArgumentsResolver : UrlArgumentsResolver {
     override fun resolveUrl(
-        placeHolderUrl: String, pathParameters: List<Parameter>, callArguments: JsonObject
+        placeHolderUrl: String,
+        pathParameters: List<Parameter>,
+        callArguments: JsonObject,
     ): ResolvedUrl {
-
         // TODO Url encoding?
         return pathParameters.fold(placeHolderUrl) { url, pathParam ->
             val paramValue = pathParam.getParameterValue(callArguments)

@@ -4,36 +4,43 @@ import community.flock.aigentic.core.agent.events.toEvents
 import community.flock.aigentic.core.agent.tool.FinishReason
 import community.flock.aigentic.core.agent.tool.FinishedOrStuck
 import community.flock.aigentic.core.agent.tool.finishOrStuckTool
-import community.flock.aigentic.core.message.*
-import community.flock.aigentic.core.tool.ToolName
+import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.Sender
+import community.flock.aigentic.core.message.ToolCall
+import community.flock.aigentic.core.message.ToolResultContent
+import community.flock.aigentic.core.message.argumentsAsJson
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.tool.Tool
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableSharedFlow
+import community.flock.aigentic.core.tool.ToolName
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 
 data class ToolInterceptorResult(val cancelExecution: Boolean, val reason: String?)
 
 interface ToolInterceptor {
-    suspend fun intercept(agent: Agent, tool: Tool, toolCall: ToolCall): ToolInterceptorResult
+    suspend fun intercept(
+        agent: Agent,
+        tool: Tool,
+        toolCall: ToolCall,
+    ): ToolInterceptorResult
 }
 
-suspend fun Agent.run(): FinishedOrStuck = coroutineScope {
-
-    async {
-        getMessages().flatMapConcat{ it.toEvents().asFlow() }.collect{
-            println(it.text)
+suspend fun Agent.run(): FinishedOrStuck =
+    coroutineScope {
+        async {
+            getMessages().flatMapConcat { it.toEvents().asFlow() }.collect {
+                println(it.text)
+            }
         }
+
+        AgentExecutor().runAgent(this@run)
     }
 
-    AgentExecutor().runAgent(this@run)
-}
-
 class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyList()) {
-
     suspend fun runAgent(agent: Agent): FinishedOrStuck {
         agent.setRunningState(AgentRunningState.RUNNING)
 
@@ -45,14 +52,15 @@ class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyL
         val resultState = result.await()
 
         agent.updateStatus {
-            val endRunningState = if (resultState.reason is FinishReason.ImStuck) {
-                AgentRunningState.STUCK
-            } else {
-                AgentRunningState.COMPLETED
-            }
+            val endRunningState =
+                if (resultState.reason is FinishReason.ImStuck) {
+                    AgentRunningState.STUCK
+                } else {
+                    AgentRunningState.COMPLETED
+                }
             it.copy(
                 runningState = endRunningState,
-                endTimestamp = Clock.System.now()
+                endTimestamp = Clock.System.now(),
             )
         }
         return resultState
@@ -69,29 +77,34 @@ class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyL
         }.forEach { messages.emit(it) }
     }
 
-    private suspend fun processResponse(agent: Agent, response: ModelResponse, onFinished: (FinishedOrStuck) -> Unit) {
+    private suspend fun processResponse(
+        agent: Agent,
+        response: ModelResponse,
+        onFinished: (FinishedOrStuck) -> Unit,
+    ) {
         val message = response.message
         agent.messages.emit(message)
 
         when (message) {
             is Message.ToolCalls -> {
-                val shouldSendNextRequest = message.toolCalls
-                    .map { toolCall ->
-                        when (toolCall.name) {
-                            finishOrStuckTool.name.value -> {
-                                val finishedOrStuck = finishOrStuckTool.handler(toolCall.argumentsAsJson())
-                                onFinished(finishedOrStuck)
-                                false
-                            }
+                val shouldSendNextRequest =
+                    message.toolCalls
+                        .map { toolCall ->
+                            when (toolCall.name) {
+                                finishOrStuckTool.name.value -> {
+                                    val finishedOrStuck = finishOrStuckTool.handler(toolCall.argumentsAsJson())
+                                    onFinished(finishedOrStuck)
+                                    false
+                                }
 
-                            else -> {
-                                val toolResult = agent.execute(toolCall)
-                                agent.messages.emit(toolResult)
-                                true
+                                else -> {
+                                    val toolResult = agent.execute(toolCall)
+                                    agent.messages.emit(toolResult)
+                                    true
+                                }
                             }
                         }
-                    }
-                    .contains(true)
+                        .contains(true)
 
                 if (shouldSendNextRequest) {
                     sendToolResponse(agent, onFinished)
@@ -121,18 +134,22 @@ class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyL
     private suspend fun runInterceptors(
         agent: Agent,
         tool: Tool,
-        toolCall: ToolCall
-    ): Message.ToolResult? = toolInterceptors
-        .map { it.intercept(agent, tool, toolCall) }
-        .firstOrNull { it.cancelExecution }?.let {
-            Message.ToolResult(
-                toolCall.id,
-                toolCall.name,
-                ToolResultContent(it.reason ?: "Tool execution blocked by interceptor")
-            )
-        }
+        toolCall: ToolCall,
+    ): Message.ToolResult? =
+        toolInterceptors
+            .map { it.intercept(agent, tool, toolCall) }
+            .firstOrNull { it.cancelExecution }?.let {
+                Message.ToolResult(
+                    toolCall.id,
+                    toolCall.name,
+                    ToolResultContent(it.reason ?: "Tool execution blocked by interceptor"),
+                )
+            }
 
-    private suspend fun sendToolResponse(agent: Agent, onFinished: (FinishedOrStuck) -> Unit) {
+    private suspend fun sendToolResponse(
+        agent: Agent,
+        onFinished: (FinishedOrStuck) -> Unit,
+    ) {
         val response = agent.sendModelRequest()
         processResponse(agent, response, onFinished)
     }

@@ -32,5 +32,8 @@ interface Tool : ToolConfigurationSupport, ToolDescription, Handler<String>
 internal interface InternalTool<T> : ToolDescription, Handler<T>
 
 interface ToolPermissionHandler {
-    suspend fun hasPermission(toolConfiguration: ToolConfiguration, toolCall: ToolCall): Boolean
+    suspend fun hasPermission(
+        toolConfiguration: ToolConfiguration,
+        toolCall: ToolCall,
+    ): Boolean
 }

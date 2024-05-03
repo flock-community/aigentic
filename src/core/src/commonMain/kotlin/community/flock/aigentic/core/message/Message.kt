@@ -5,16 +5,15 @@ import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmInline
 
 sealed class Message(
-    open val sender: Sender
+    open val sender: Sender,
 ) {
-
     data class SystemPrompt(
-        val prompt: String
+        val prompt: String,
     ) : Message(Sender.Aigentic)
 
     data class Text(
         override val sender: Sender,
-        val text: String
+        val text: String,
     ) : Message(sender)
 
     data class Image(
@@ -23,21 +22,20 @@ sealed class Message(
     ) : Message(Sender.Aigentic)
 
     data class ToolCalls(
-        val toolCalls: List<ToolCall>
+        val toolCalls: List<ToolCall>,
     ) : Message(Sender.Model)
 
     data class ToolResult(
         val toolCallId: ToolCallId,
         val toolName: String,
-        val response: ToolResultContent
+        val response: ToolResultContent,
     ) : Message(Sender.Aigentic)
-
 }
 
 data class ToolCall(
     val id: ToolCallId,
     val name: String,
-    val arguments: String
+    val arguments: String,
 )
 
 @JvmInline

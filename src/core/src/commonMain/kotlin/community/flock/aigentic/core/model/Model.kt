@@ -13,9 +13,12 @@ interface Model {
     val authentication: Authentication
     val modelIdentifier: ModelIdentifier
 
-    suspend fun sendRequest(messages: List<Message>, tools: List<ToolDescription>): ModelResponse
+    suspend fun sendRequest(
+        messages: List<Message>,
+        tools: List<ToolDescription>,
+    ): ModelResponse
 }
 
 data class ModelResponse(
-    val message: Message
+    val message: Message,
 )
