@@ -9,4 +9,4 @@ fun AgentConfig.openAIModel(
     apiKey: String,
     identifier: OpenAIModelIdentifier,
 ) = OpenAIModel(Authentication.APIKey(apiKey), identifier)
-    .also { model = it }
+    .also { model(it) }

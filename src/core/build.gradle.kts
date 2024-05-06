@@ -14,6 +14,11 @@ kotlin {
     }
 
     sourceSets {
+
+        all {
+            languageSettings.optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+        }
+
         val commonMain by getting {
             dependencies {
                 api(libs.coroutines.core)
@@ -24,7 +29,17 @@ kotlin {
         }
         val commonTest by getting {
             dependencies {
-                implementation(libs.kotlin.test)
+                implementation(libs.kotest.framework.engine)
+                implementation(libs.kotest.assertions.core)
+                implementation(libs.kotest.framework.datatest)
+                implementation(libs.kotest.property)
+            }
+        }
+        val jvmTest by getting {
+            dependencies {
+                implementation(libs.kotest.runner.junit5)
+                implementation(libs.kotlin.reflect)
+                implementation(libs.mockk)
             }
         }
     }

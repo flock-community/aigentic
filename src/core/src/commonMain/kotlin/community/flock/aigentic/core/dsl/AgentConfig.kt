@@ -13,7 +13,7 @@ fun agent(agentConfig: AgentConfig.() -> Unit): Agent = AgentConfig().apply(agen
 
 @AgentDSL
 class AgentConfig : Config<Agent> {
-    var model: Model? = null
+    private var model: Model? = null
     private var id: String = "AgentId"
     private var task: TaskConfig? = null
     private var contexts: List<Context> = emptyList()
@@ -38,6 +38,10 @@ class AgentConfig : Config<Agent> {
 
     fun AgentConfig.systemPrompt(systemPromptBuilder: SystemPromptBuilder) {
         this.systemPromptBuilder = systemPromptBuilder
+    }
+
+    fun AgentConfig.model(model: Model) {
+        this.model = model
     }
 
     override fun build(): Agent =

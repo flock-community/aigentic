@@ -3,6 +3,9 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.run
+import community.flock.aigentic.core.agent.tool.FinishReason
+import community.flock.aigentic.core.agent.tool.FinishReason.FinishedAllTasks
+import community.flock.aigentic.core.agent.tool.FinishReason.ImStuck
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
@@ -16,7 +19,7 @@ import community.flock.aigentic.model.OpenAIModelIdentifier
 import kotlinx.serialization.json.JsonObject
 
 suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
-    agent {
+    val result = agent {
         openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4Turbo)
         task("Retrieve all employees to inspect their hour status") {
             addInstruction(
@@ -35,6 +38,11 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
         addTool(sendSignalMessageTool)
         addTool(updateEmployeeTool)
     }.run()
+
+    when(result.reason){
+        FinishedAllTasks -> "Hours inspected successfully"
+        ImStuck -> "Agent is stuck and could not complete task"
+    }.also(::println)
 }
 
 val getAllEmployeesOverviewTool =

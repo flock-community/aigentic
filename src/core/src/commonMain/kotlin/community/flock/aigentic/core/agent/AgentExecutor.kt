@@ -14,7 +14,9 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.datetime.Clock
@@ -31,13 +33,16 @@ interface ToolInterceptor {
 
 suspend fun Agent.run(): FinishedOrStuck =
     coroutineScope {
-        async {
+        val logging = async {
             getMessages().flatMapConcat { it.toEvents().asFlow() }.collect {
                 println(it.text)
             }
         }
 
-        AgentExecutor().runAgent(this@run)
+        AgentExecutor().runAgent(this@run).also {
+            delay(10) // Allow some time for the logging to finish
+            logging.cancelAndJoin()
+        }
     }
 
 class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyList()) {
@@ -111,7 +116,8 @@ class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyL
                 }
             }
 
-            else -> error("Expected ToolCalls message, got $message")
+            else ->
+                error("Expected ToolCalls message, got $message")
         }
     }
 
