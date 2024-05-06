@@ -8,7 +8,6 @@ plugins {
 
 kotlin {
     jvm()
-    linuxX64()
     js(IR) {
         nodejs()
         generateTypeScriptDefinitions()
@@ -21,9 +20,6 @@ kotlin {
                 api(project(":src:tools:http"))
                 implementation(libs.serialization.json)
                 implementation(libs.kotlinx.openapi.bindings)
-
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
             }
         }
         val commonTest by getting {
@@ -41,20 +37,22 @@ kotlin {
             }
         }
     }
+
+    tasks.named<Test>("jvmTest") {
+        useJUnitPlatform()
+        filter {
+            isFailOnNoMatchingTests = false
+        }
+        testLogging {
+            showExceptions = true
+            showStandardStreams = true
+            events = setOf(
+                org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+                org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
+            )
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
+    }
+
 }
 
-tasks.named<Test>("jvmTest") {
-    useJUnitPlatform()
-    filter {
-        isFailOnNoMatchingTests = false
-    }
-    testLogging {
-        showExceptions = true
-        showStandardStreams = true
-        events = setOf(
-            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
-            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
-        )
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-    }
-}

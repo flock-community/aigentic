@@ -17,10 +17,6 @@ class OASParserTest : DescribeSpec({
 
     describe("PrimitiveParameter") {
 
-        it("test") {
-            true shouldBe false
-        }
-
         it("should parse integer path params") {
 
             val operation = "/path-param-integer.json".parseOperations().first { it.name == "getItemById" }
