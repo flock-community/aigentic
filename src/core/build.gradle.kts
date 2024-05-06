@@ -1,8 +1,9 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    id("module.publication")
+    alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.dokka)
-    kotlin("plugin.serialization")
+    alias(libs.plugins.kotest.multiplatform)
+    id("module.publication")
 }
 
 kotlin {
@@ -42,5 +43,21 @@ kotlin {
                 implementation(libs.mockk)
             }
         }
+    }
+}
+
+tasks.named<Test>("jvmTest") {
+    useJUnitPlatform()
+    filter {
+        isFailOnNoMatchingTests = false
+    }
+    testLogging {
+        showExceptions = true
+        showStandardStreams = true
+        events = setOf(
+            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
+        )
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }

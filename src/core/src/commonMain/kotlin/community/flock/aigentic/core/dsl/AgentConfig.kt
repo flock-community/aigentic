@@ -48,9 +48,13 @@ class AgentConfig : Config<Agent> {
         Agent(
             id = id,
             systemPromptBuilder = systemPromptBuilder,
-            model = checkNotNull(model),
-            task = checkNotNull(task?.build()),
-            tools = tools.associateBy { it.name },
+            model = checkNotNull(model, builderPropertyMissingErrorMessage("model", "model()")),
+            task = checkNotNull(task?.build(), builderPropertyMissingErrorMessage("task", "task()")),
+            tools =
+                check(
+                    tools.isNotEmpty(),
+                    builderPropertyMissingErrorMessage("tools", "addTool()"),
+                ).let { tools.associateBy { it.name } },
             contexts = contexts,
         )
 }

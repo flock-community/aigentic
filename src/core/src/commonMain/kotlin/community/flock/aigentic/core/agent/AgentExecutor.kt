@@ -33,11 +33,12 @@ interface ToolInterceptor {
 
 suspend fun Agent.run(): FinishedOrStuck =
     coroutineScope {
-        val logging = async {
-            getMessages().flatMapConcat { it.toEvents().asFlow() }.collect {
-                println(it.text)
+        val logging =
+            async {
+                getMessages().flatMapConcat { it.toEvents().asFlow() }.collect {
+                    println(it.text)
+                }
             }
-        }
 
         AgentExecutor().runAgent(this@run).also {
             delay(10) // Allow some time for the logging to finish

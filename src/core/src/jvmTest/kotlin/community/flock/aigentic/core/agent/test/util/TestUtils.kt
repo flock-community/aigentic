@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
 fun List<ToolCall>.toModelResponse() = map { it.toModelResponse() }
-fun ToolCall.toModelResponse() = ModelResponse(Message.ToolCalls(listOf(this)))
 
+fun ToolCall.toModelResponse() = ModelResponse(Message.ToolCalls(listOf(this)))
 
 fun JsonObject.encode(): String = Json.encodeToString(this)
