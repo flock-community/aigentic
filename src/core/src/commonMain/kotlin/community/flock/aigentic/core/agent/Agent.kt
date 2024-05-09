@@ -1,7 +1,7 @@
 package community.flock.aigentic.core.agent
 
-import community.flock.aigentic.core.agent.status.toStatus
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.agent.status.toStatus
 import community.flock.aigentic.core.agent.tool.finishOrStuckTool
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.Model
@@ -39,4 +39,5 @@ data class Agent(
 }
 
 fun Agent.getMessages() = messages.asSharedFlow()
+
 fun Agent.getStatus() = messages.flatMapConcat { it.toStatus().asFlow() }

@@ -8,5 +8,5 @@ data class Run(
     val startedAt: Instant,
     val finishedAt: Instant,
     val messages: List<Message>,
-    val result: FinishedOrStuck
+    val result: FinishedOrStuck,
 )

@@ -24,16 +24,17 @@ suspend fun Agent.start(): Run =
 
         val logging = async { getStatus().map { it.text }.collect(::println) }
         val startedAt = Clock.System.now()
-        val finishedOrStuck = executeAction(Initialize(this@start)).also {
-            delay(10) // Allow some time for the logging to finish
-            logging.cancelAndJoin()
-        }
+        val finishedOrStuck =
+            executeAction(Initialize(this@start)).also {
+                delay(10) // Allow some time for the logging to finish
+                logging.cancelAndJoin()
+            }
 
         Run(
             startedAt = startedAt,
             finishedAt = Clock.System.now(),
             messages = messages.replayCache,
-            result = finishedOrStuck
+            result = finishedOrStuck,
         )
     }
 
