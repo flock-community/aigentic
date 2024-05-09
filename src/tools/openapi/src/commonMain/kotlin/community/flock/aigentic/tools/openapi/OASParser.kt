@@ -274,7 +274,7 @@ class OpenAPIv3Parser(
 
                     else ->
                         null.also {
-                            // logger.warning("Cannot determine type for schema: $this")
+                            logger.warning("Cannot determine type for schema: $this")
                         }
                 }
             }
