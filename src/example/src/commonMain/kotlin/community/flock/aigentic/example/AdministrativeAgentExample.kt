@@ -18,7 +18,7 @@ import community.flock.aigentic.model.OpenAIModelIdentifier
 import kotlinx.serialization.json.JsonObject
 
 suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
-    val result =
+    val run =
         agent {
             openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4Turbo)
             task("Retrieve all employees to inspect their hour status") {
@@ -39,7 +39,7 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
             addTool(updateEmployeeTool)
         }.start()
 
-    when (result.reason) {
+    when (run.result.reason) {
         FinishedAllTasks -> "Hours inspected successfully"
         ImStuck -> "Agent is stuck and could not complete task"
     }.also(::println)
