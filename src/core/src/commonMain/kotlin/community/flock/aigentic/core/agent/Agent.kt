@@ -1,17 +1,17 @@
 package community.flock.aigentic.core.agent
 
-import community.flock.aigentic.core.agent.prompt.SystemPromptBuilder
+import community.flock.aigentic.core.agent.status.toStatus
+import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.agent.tool.finishOrStuckTool
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.InternalTool
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlinx.coroutines.flow.flatMapConcat
 
 data class Task(
     val description: String,
@@ -26,21 +26,6 @@ sealed interface Context {
     data class Image(val base64: String) : Context
 }
 
-enum class AgentRunningState(val value: String) {
-    WAITING_TO_START("WAITING_TO_START"),
-    RUNNING("RUNNING"),
-    EXECUTING_TOOL("EXECUTING_TOOL"),
-    WAITING_ON_APPROVAL("WAITING_ON_APPROVAL"),
-    COMPLETED("COMPLETED"),
-    STUCK("STUCK"),
-}
-
-data class AgentStatus(
-    var runningState: AgentRunningState = AgentRunningState.WAITING_TO_START,
-    val startTimestamp: Instant = Clock.System.now(),
-    var endTimestamp: Instant? = null,
-)
-
 data class Agent(
     val id: String,
     val systemPromptBuilder: SystemPromptBuilder,
@@ -49,11 +34,9 @@ data class Agent(
     val contexts: List<Context>,
     val tools: Map<ToolName, Tool>,
 ) {
+    internal val internalTools: Map<ToolName, InternalTool<*>> = mapOf(finishOrStuckTool.name to finishOrStuckTool)
     internal val messages = MutableSharedFlow<Message>(replay = 100)
-    internal val status = MutableStateFlow(AgentStatus())
-    internal val internalTools = mutableMapOf<ToolName, InternalTool<*>>()
 }
 
 fun Agent.getMessages() = messages.asSharedFlow()
-
-fun Agent.getStatus() = status.asStateFlow()
+fun Agent.getStatus() = messages.flatMapConcat { it.toStatus().asFlow() }

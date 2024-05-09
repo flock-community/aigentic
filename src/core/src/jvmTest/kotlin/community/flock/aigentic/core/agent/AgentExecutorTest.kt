@@ -1,25 +1,23 @@
 package community.flock.aigentic.core.agent
 
-import community.flock.aigentic.core.agent.prompt.SystemPromptBuilder
-import community.flock.aigentic.core.agent.test.util.TestData
+import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.agent.test.util.TestData.finishedSuccessfully
 import community.flock.aigentic.core.agent.test.util.TestData.modelFinishDirectly
 import community.flock.aigentic.core.agent.test.util.encode
 import community.flock.aigentic.core.agent.test.util.toModelResponse
 import community.flock.aigentic.core.agent.tool.FinishReason
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.core.message.argumentsAsJson
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Parameter.Primitive
 import community.flock.aigentic.core.tool.ParameterType.Primitive.Integer
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
@@ -69,7 +67,7 @@ class AgentExecutorTest : DescribeSpec({
                     coEvery { sendRequest(any(), any()) } returnsMany
                         listOf(
                             ToolCall(ToolCallId("1"), newsEventTool.name.value, expectedArguments.encode()),
-                            finishedSuccessfully
+                            finishedSuccessfully,
                         ).toModelResponse()
                 }
 
@@ -80,10 +78,10 @@ class AgentExecutorTest : DescribeSpec({
                     addInstruction("Summarize the results")
                 }
                 addTool(newsEventTool)
-            }.run().apply {
+            }.start().apply {
 
-                reason shouldBe FinishReason.FinishedAllTasks
-                description shouldBe "Finished all tasks"
+                result.reason shouldBe FinishReason.FinishedAllTasks
+                result.description shouldBe "Finished all tasks"
 
                 coVerify(exactly = 1) { mockHandler.invoke(expectedArguments) }
                 coVerify(exactly = 2) { modelMock.sendRequest(any(), any()) }
@@ -106,7 +104,7 @@ class AgentExecutorTest : DescribeSpec({
                     addTool(mockk(relaxed = true))
                 }
 
-            agent.run().apply {
+            agent.start().apply {
                 agent.messages.replayCache[0] shouldBe expectedSystemPrompt
                 verify(exactly = 1) { systemPromptMock.buildSystemPrompt(any()) }
             }
@@ -128,7 +126,7 @@ class AgentExecutorTest : DescribeSpec({
                     addTool(mockk(relaxed = true))
                 }
 
-            agent.run().apply {
+            agent.start().apply {
                 agent.messages.replayCache.drop(1).take(2) shouldBe
                     listOf(
                         Message.Text(Sender.Aigentic, expectedTextContext),
@@ -140,40 +138,63 @@ class AgentExecutorTest : DescribeSpec({
         it("should add ToolCall and ToolResult to messages") {
             val toolCall = ToolCall(ToolCallId("1"), "toolName", "{}")
 
-            val modelMock = mockk<Model>().apply {
-                coEvery { sendRequest(any(), any()) } returnsMany
-                    listOf(
-                        toolCall,
-                        finishedSuccessfully,
-                    ).toModelResponse()
-            }
+            val modelMock =
+                mockk<Model>().apply {
+                    coEvery { sendRequest(any(), any()) } returnsMany
+                        listOf(
+                            toolCall,
+                            finishedSuccessfully,
+                        ).toModelResponse()
+                }
 
-            val testTool = object: Tool {
-                override val name = ToolName(toolCall.name)
-                override val description = null
-                override val parameters = emptyList<Primitive>()
-                override val handler: suspend (map: JsonObject) -> String = { "toolResult" }
-            }
+            val testTool =
+                object : Tool {
+                    override val name = ToolName(toolCall.name)
+                    override val description = null
+                    override val parameters = emptyList<Primitive>()
+                    override val handler: suspend (map: JsonObject) -> String = { "toolResult" }
+                }
 
-            val agent = agent {
-                model(modelMock)
-                task("Execute some task") {}
-                addTool(testTool)
-            }
+            val agent =
+                agent {
+                    model(modelMock)
+                    task("Execute some task") {}
+                    addTool(testTool)
+                }
 
-            agent.run().apply {
+            agent.start().apply {
                 agent.messages.replayCache[1] shouldBe Message.ToolCalls(listOf(toolCall))
-                agent.messages.replayCache[2] shouldBe Message.ToolResult(
-                    toolCallId = toolCall.id,
-                    toolName = testTool.name.value,
-                    response = ToolResultContent("toolResult"),
-                )
+                agent.messages.replayCache[2] shouldBe
+                    Message.ToolResult(
+                        toolCallId = toolCall.id,
+                        toolName = testTool.name.value,
+                        response = ToolResultContent("toolResult"),
+                    )
             }
         }
     }
 
     describe("exceptions") {
-        // Implement in https://aigentic.youtrack.cloud/issue/AIGENTIC-29/Improve-Aigentic-client-Add-error-handling
+
+        it("should not be able to start agent twice") {
+
+            val agent =
+                agent {
+                    model(modelFinishDirectly)
+                    task("Execute some task") {}
+                    addTool(mockk(relaxed = true))
+                }
+
+            agent.start()
+
+            val exception =
+                shouldThrow<IllegalStateException> {
+                    agent.start()
+                }
+            exception.message shouldBe ("Agent already started")
+        }
+
+        // Implement more in https://aigentic.youtrack.cloud/issue/AIGENTIC-29/Improve-Aigentic-client-Add-error-handling
     }
 })
 

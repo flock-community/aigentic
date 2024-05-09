@@ -1,4 +1,4 @@
-package community.flock.aigentic.core.agent.prompt
+package community.flock.aigentic.core.agent.message
 
 import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.tool.finishOrStuckTool

@@ -1,7 +1,7 @@
 package community.flock.aigentic.core.dsl
 
 import community.flock.aigentic.core.agent.Context
-import community.flock.aigentic.core.agent.prompt.SystemPromptBuilder
+import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Tool
 import io.kotest.assertions.throwables.shouldThrow

@@ -1,176 +1,113 @@
 package community.flock.aigentic.core.agent
 
-import community.flock.aigentic.core.agent.events.toEvents
-import community.flock.aigentic.core.agent.tool.FinishReason
+import community.flock.aigentic.core.agent.Action.ExecuteTools
+import community.flock.aigentic.core.agent.Action.Finished
+import community.flock.aigentic.core.agent.Action.Initialize
+import community.flock.aigentic.core.agent.Action.ProcessModelResponse
+import community.flock.aigentic.core.agent.Action.SendModelRequest
+import community.flock.aigentic.core.agent.message.correctionMessage
 import community.flock.aigentic.core.agent.tool.FinishedOrStuck
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
 import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.message.Sender
+import community.flock.aigentic.core.message.Sender.Aigentic
 import community.flock.aigentic.core.message.ToolCall
-import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.core.message.argumentsAsJson
 import community.flock.aigentic.core.model.ModelResponse
-import community.flock.aigentic.core.tool.Tool
-import community.flock.aigentic.core.tool.ToolName
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 
-data class ToolInterceptorResult(val cancelExecution: Boolean, val reason: String?)
-
-interface ToolInterceptor {
-    suspend fun intercept(
-        agent: Agent,
-        tool: Tool,
-        toolCall: ToolCall,
-    ): ToolInterceptorResult
-}
-
-suspend fun Agent.run(): FinishedOrStuck =
+suspend fun Agent.start(): Run =
     coroutineScope {
-        val logging =
-            async {
-                getMessages().flatMapConcat { it.toEvents().asFlow() }.collect {
-                    println(it.text)
-                }
-            }
+        check(agentNotStarted()) { "Agent already started" }
 
-        AgentExecutor().runAgent(this@run).also {
+        val logging = async { getStatus().map { it.text }.collect(::println) }
+        val startedAt = Clock.System.now()
+        val finishedOrStuck = executeAction(Initialize(this@start)).also {
             delay(10) // Allow some time for the logging to finish
             logging.cancelAndJoin()
         }
+
+        Run(
+            startedAt = startedAt,
+            finishedAt = Clock.System.now(),
+            messages = messages.replayCache,
+            result = finishedOrStuck
+        )
     }
 
-class AgentExecutor(private val toolInterceptors: List<ToolInterceptor> = emptyList()) {
-    suspend fun runAgent(agent: Agent): FinishedOrStuck {
-        agent.setRunningState(AgentRunningState.RUNNING)
+private suspend fun executeAction(action: Action): FinishedOrStuck =
+    when (action) {
+        is Initialize -> executeAction(action.process())
+        is SendModelRequest -> executeAction(action.process())
+        is ProcessModelResponse -> executeAction(action.process())
+        is ExecuteTools -> executeAction(action.process())
+        is Finished -> action.process()
+    }
 
-        agent.initialize() // Maybe move to Agent builder?
-        val modelResponse = agent.sendModelRequest()
+private suspend fun Initialize.process(): Action {
+    agent.addMessages(initializeStartMessages(agent))
+    return SendModelRequest(agent)
+}
 
-        val result = CompletableDeferred<FinishedOrStuck>()
-        processResponse(agent, modelResponse) { result.complete(it) }
-        val resultState = result.await()
-
-        agent.updateStatus {
-            val endRunningState =
-                if (resultState.reason is FinishReason.ImStuck) {
-                    AgentRunningState.STUCK
-                } else {
-                    AgentRunningState.COMPLETED
-                }
-            it.copy(
-                runningState = endRunningState,
-                endTimestamp = Clock.System.now(),
-            )
+private suspend fun ProcessModelResponse.process(): Action =
+    when (responseMessage) {
+        is Message.ToolCalls -> ExecuteTools(agent, responseMessage.toolCalls)
+        else -> {
+            agent.messages.emit(correctionMessage)
+            SendModelRequest(agent)
         }
-        return resultState
     }
 
-    private suspend fun Agent.initialize() {
-        internalTools[finishOrStuckTool.name] = finishOrStuckTool
-        messages.emit(systemPromptBuilder.buildSystemPrompt(this))
-        contexts.map {
+private suspend fun SendModelRequest.process(): ProcessModelResponse {
+    val message = agent.sendModelRequest().message
+    agent.addMessage(message)
+    return ProcessModelResponse(agent, message)
+}
+
+private fun Finished.process() = finishedOrStuck
+
+private suspend fun ExecuteTools.process(): Action {
+    val toolResults = executeToolCalls(agent, toolCalls)
+    val finished = toolResults.filterIsInstance<ToolExecutionResult.FinishedToolResult>().firstOrNull()
+
+    return if (finished != null) {
+        Finished(agent, finished.reason)
+    } else {
+        agent.addMessages(toolResults.filterIsInstance<ToolExecutionResult.ToolResult>().map { it.message })
+        SendModelRequest(agent)
+    }
+}
+
+private fun initializeStartMessages(agent: Agent): List<Message> =
+    listOf(
+        agent.systemPromptBuilder.buildSystemPrompt(agent),
+    ) +
+        agent.contexts.map {
             when (it) {
-                is Context.Image -> Message.Image(Sender.Aigentic, it.base64)
-                is Context.Text -> Message.Text(Sender.Aigentic, it.text)
+                is Context.Image -> Message.Image(Aigentic, it.base64)
+                is Context.Text -> Message.Text(Aigentic, it.text)
             }
-        }.forEach { messages.emit(it) }
-    }
-
-    private suspend fun processResponse(
-        agent: Agent,
-        response: ModelResponse,
-        onFinished: (FinishedOrStuck) -> Unit,
-    ) {
-        val message = response.message
-        agent.messages.emit(message)
-
-        when (message) {
-            is Message.ToolCalls -> {
-                val shouldSendNextRequest =
-                    message.toolCalls
-                        .map { toolCall ->
-                            when (toolCall.name) {
-                                finishOrStuckTool.name.value -> {
-                                    val finishedOrStuck = finishOrStuckTool.handler(toolCall.argumentsAsJson())
-                                    onFinished(finishedOrStuck)
-                                    false
-                                }
-
-                                else -> {
-                                    val toolResult = agent.execute(toolCall)
-                                    agent.messages.emit(toolResult)
-                                    true
-                                }
-                            }
-                        }
-                        .contains(true)
-
-                if (shouldSendNextRequest) {
-                    sendToolResponse(agent, onFinished)
-                }
-            }
-
-            else ->
-                error("Expected ToolCalls message, got $message")
-        }
-    }
-
-    private suspend fun Agent.execute(toolCall: ToolCall): Message.ToolResult {
-        val functionArgs = toolCall.argumentsAsJson()
-        val tool = tools[ToolName(toolCall.name)] ?: error("Tool not registered: $toolCall")
-
-        val cancelMessage = runInterceptors(this, tool, toolCall)
-        if (cancelMessage != null) {
-            setRunningState(AgentRunningState.RUNNING)
-            return cancelMessage
         }
 
-        setRunningState(AgentRunningState.EXECUTING_TOOL)
-        val result = tool.handler(functionArgs)
-        setRunningState(AgentRunningState.RUNNING)
-        return Message.ToolResult(toolCall.id, toolCall.name, ToolResultContent(result))
-    }
+private suspend fun Agent.addMessages(messages: List<Message>) = messages.forEach { addMessage(it) }
 
-    private suspend fun runInterceptors(
-        agent: Agent,
-        tool: Tool,
-        toolCall: ToolCall,
-    ): Message.ToolResult? =
-        toolInterceptors
-            .map { it.intercept(agent, tool, toolCall) }
-            .firstOrNull { it.cancelExecution }?.let {
-                Message.ToolResult(
-                    toolCall.id,
-                    toolCall.name,
-                    ToolResultContent(it.reason ?: "Tool execution blocked by interceptor"),
-                )
-            }
+private suspend fun Agent.addMessage(message: Message) = this.messages.emit(message)
 
-    private suspend fun sendToolResponse(
-        agent: Agent,
-        onFinished: (FinishedOrStuck) -> Unit,
-    ) {
-        val response = agent.sendModelRequest()
-        processResponse(agent, response, onFinished)
-    }
+private suspend fun Agent.sendModelRequest(): ModelResponse =
+    model.sendRequest(messages.replayCache, tools.values.toList() + internalTools.values.toList())
 
-    private suspend fun Agent.sendModelRequest(): ModelResponse =
-        model.sendRequest(messages.replayCache, tools.values.toList() + internalTools.values.toList())
+private sealed interface Action {
+    data class Initialize(val agent: Agent) : Action
+
+    data class ExecuteTools(val agent: Agent, val toolCalls: List<ToolCall>) : Action
+
+    data class SendModelRequest(val agent: Agent) : Action
+
+    data class ProcessModelResponse(val agent: Agent, val responseMessage: Message) : Action
+
+    data class Finished(val agent: Agent, val finishedOrStuck: FinishedOrStuck) : Action
 }
 
-suspend fun Agent.updateStatus(update: (currentStatus: AgentStatus) -> AgentStatus) {
-    update.invoke(status.value).let {
-        status.emit(it)
-    }
-}
-
-suspend fun Agent.setRunningState(state: AgentRunningState) {
-    updateStatus { status.value.copy(runningState = state) }
-}
+private fun Agent.agentNotStarted() = messages.replayCache.isEmpty()

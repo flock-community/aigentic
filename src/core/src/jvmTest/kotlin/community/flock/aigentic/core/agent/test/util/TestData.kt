@@ -10,14 +10,15 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 object TestData {
-
-    val finishedSuccessfully = ToolCall(
-        ToolCallId("1"), finishOrStuckTool.name.value,
-        buildJsonObject {
-            put("finishReason", "FinishedAllTasks")
-            put("description", "Finished all tasks")
-        }.encode(),
-    )
+    val finishedSuccessfully =
+        ToolCall(
+            ToolCallId("1"),
+            finishOrStuckTool.name.value,
+            buildJsonObject {
+                put("finishReason", "FinishedAllTasks")
+                put("description", "Finished all tasks")
+            }.encode(),
+        )
 
     val modelFinishDirectly =
         mockk<Model>().apply {
@@ -26,5 +27,4 @@ object TestData {
                     finishedSuccessfully,
                 ).toModelResponse()
         }
-
 }

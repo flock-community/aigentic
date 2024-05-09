@@ -1,6 +1,6 @@
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.agent.run
+import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType.Primitive
@@ -24,7 +24,7 @@ suspend fun runOpenAPIAgent(
         }
         openApiTools(hackerNewsOpenAPISpec)
         addTool(sendEmailTool)
-    }.run()
+    }.start()
 }
 
 val sendEmailTool =

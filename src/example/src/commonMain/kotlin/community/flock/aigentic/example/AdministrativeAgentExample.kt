@@ -2,7 +2,7 @@
 
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.agent.run
+import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.FinishReason.FinishedAllTasks
 import community.flock.aigentic.core.agent.tool.FinishReason.ImStuck
 import community.flock.aigentic.core.dsl.agent
@@ -37,7 +37,7 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
             addTool(askManagerForResponseTool)
             addTool(sendSignalMessageTool)
             addTool(updateEmployeeTool)
-        }.run()
+        }.start()
 
     when (result.reason) {
         FinishedAllTasks -> "Hours inspected successfully"

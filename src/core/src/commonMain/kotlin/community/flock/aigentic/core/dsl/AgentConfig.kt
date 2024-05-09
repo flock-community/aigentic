@@ -4,8 +4,8 @@ import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.Context
 import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.Task
-import community.flock.aigentic.core.agent.prompt.DefaultSystemPromptBuilder
-import community.flock.aigentic.core.agent.prompt.SystemPromptBuilder
+import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
+import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Tool
 
@@ -13,13 +13,13 @@ fun agent(agentConfig: AgentConfig.() -> Unit): Agent = AgentConfig().apply(agen
 
 @AgentDSL
 class AgentConfig : Config<Agent> {
-    private var model: Model? = null
-    private var id: String = "AgentId"
-    private var task: TaskConfig? = null
-    private var contexts: List<Context> = emptyList()
-    private var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
+    internal var model: Model? = null
+    internal var id: String = "AgentId"
+    internal var task: TaskConfig? = null
+    internal var contexts: List<Context> = emptyList()
+    internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
 
-    private val tools = mutableListOf<Tool>()
+    internal val tools = mutableListOf<Tool>()
 
     fun AgentConfig.id(id: String) {
         this.id = id
@@ -63,7 +63,7 @@ class AgentConfig : Config<Agent> {
 class TaskConfig(
     val description: String,
 ) : Config<Task> {
-    private val instructions = mutableListOf<Instruction>()
+    internal val instructions = mutableListOf<Instruction>()
 
     fun TaskConfig.addInstruction(instruction: String) = instructions.add(Instruction(instruction))
 
@@ -72,7 +72,7 @@ class TaskConfig(
 
 @AgentDSL
 class ContextConfig : Config<List<Context>> {
-    private val contexts = mutableListOf<Context>()
+    internal val contexts = mutableListOf<Context>()
 
     fun ContextConfig.addText(text: String) =
         Context.Text(text)
