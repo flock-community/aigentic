@@ -1,17 +1,11 @@
 package community.flock.aigentic.core.agent
 
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
-import community.flock.aigentic.core.agent.status.toStatus
 import community.flock.aigentic.core.agent.tool.finishOrStuckTool
-import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.InternalTool
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.flatMapConcat
 
 data class Task(
     val description: String,

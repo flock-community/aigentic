@@ -17,7 +17,6 @@ import community.flock.aigentic.core.tool.Parameter.Primitive
 import community.flock.aigentic.core.tool.ParameterType.Primitive.Integer
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery

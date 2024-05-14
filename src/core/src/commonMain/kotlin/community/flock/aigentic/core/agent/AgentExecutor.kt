@@ -87,7 +87,6 @@ private fun initializeStartMessages(agent: Agent): List<Message> =
             }
         }
 
-
 private suspend fun Agent.sendModelRequest(state: State): ModelResponse =
     model.sendRequest(state.messages.replayCache, tools.values.toList() + internalTools.values.toList())
 
@@ -102,4 +101,3 @@ private sealed interface Action {
 
     data class Finished(val state: State, val agent: Agent, val finishedOrStuck: FinishedOrStuck) : Action
 }
-

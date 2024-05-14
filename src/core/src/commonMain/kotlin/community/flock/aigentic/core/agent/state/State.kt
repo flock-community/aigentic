@@ -14,7 +14,7 @@ import kotlinx.datetime.Instant
 data class State(
     val startedAt: Instant = Clock.System.now(),
     var finishedAt: Instant? = null,
-    val messages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 100)
+    val messages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 100),
 )
 
 fun State.getMessages() = messages.asSharedFlow()
@@ -25,12 +25,12 @@ internal suspend fun State.addMessages(messages: List<Message>) = messages.forEa
 
 internal suspend fun State.addMessage(message: Message) = this.messages.emit(message)
 
-
-fun Pair<State, FinishedOrStuck>.toRun(): Run = with(first) {
-    Run(
-        startedAt = startedAt,
-        finishedAt = finishedAt ?: Clock.System.now(),
-        messages = messages.replayCache,
-        result = second
-    )
-}
+fun Pair<State, FinishedOrStuck>.toRun(): Run =
+    with(first) {
+        Run(
+            startedAt = startedAt,
+            finishedAt = finishedAt ?: Clock.System.now(),
+            messages = messages.replayCache,
+            result = second,
+        )
+    }
