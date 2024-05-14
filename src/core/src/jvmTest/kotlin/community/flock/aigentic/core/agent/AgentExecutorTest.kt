@@ -105,7 +105,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                agent.messages.replayCache[0] shouldBe expectedSystemPrompt
+                messages[0] shouldBe expectedSystemPrompt
                 verify(exactly = 1) { systemPromptMock.buildSystemPrompt(any()) }
             }
         }
@@ -127,7 +127,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                agent.messages.replayCache.drop(1).take(2) shouldBe
+                messages.drop(1).take(2) shouldBe
                     listOf(
                         Message.Text(Sender.Aigentic, expectedTextContext),
                         Message.Image(Sender.Aigentic, expectedImageContext),
@@ -163,8 +163,8 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                agent.messages.replayCache[1] shouldBe Message.ToolCalls(listOf(toolCall))
-                agent.messages.replayCache[2] shouldBe
+                messages[1] shouldBe Message.ToolCalls(listOf(toolCall))
+                messages[2] shouldBe
                     Message.ToolResult(
                         toolCallId = toolCall.id,
                         toolName = testTool.name.value,
@@ -175,24 +175,6 @@ class AgentExecutorTest : DescribeSpec({
     }
 
     describe("exceptions") {
-
-        it("should not be able to start agent twice") {
-
-            val agent =
-                agent {
-                    model(modelFinishDirectly)
-                    task("Execute some task") {}
-                    addTool(mockk(relaxed = true))
-                }
-
-            agent.start()
-
-            val exception =
-                shouldThrow<IllegalStateException> {
-                    agent.start()
-                }
-            exception.message shouldBe ("Agent already started")
-        }
 
         // Implement more in https://aigentic.youtrack.cloud/issue/AIGENTIC-29/Improve-Aigentic-client-Add-error-handling
     }

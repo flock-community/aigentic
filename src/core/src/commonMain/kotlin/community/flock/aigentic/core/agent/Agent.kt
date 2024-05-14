@@ -35,9 +35,4 @@ data class Agent(
     val tools: Map<ToolName, Tool>,
 ) {
     internal val internalTools: Map<ToolName, InternalTool<*>> = mapOf(finishOrStuckTool.name to finishOrStuckTool)
-    internal val messages = MutableSharedFlow<Message>(replay = 100)
 }
-
-fun Agent.getMessages() = messages.asSharedFlow()
-
-fun Agent.getStatus() = messages.flatMapConcat { it.toStatus().asFlow() }
