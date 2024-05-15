@@ -2,7 +2,9 @@
 
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.agent.run
+import community.flock.aigentic.core.agent.start
+import community.flock.aigentic.core.agent.tool.FinishReason.FinishedAllTasks
+import community.flock.aigentic.core.agent.tool.FinishReason.ImStuck
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
@@ -16,25 +18,31 @@ import community.flock.aigentic.model.OpenAIModelIdentifier
 import kotlinx.serialization.json.JsonObject
 
 suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
-    agent {
-        openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4Turbo)
-        task("Retrieve all employees to inspect their hour status") {
-            addInstruction(
-                "For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent",
-            )
-            addInstruction(
-                "If the employee is reminded 5 times and still has still not completed the hours don't send the employee a message but ask the manager on how to respond and send the manager's response to the employee",
-            )
-            addInstruction(
-                "When you for sure know that the signal message is successfully sent (which means the tool call returns a success response), make sure that you update the numberOfRemindersSent for each and every the specific employee.",
-            )
-        }
-        addTool(getAllEmployeesOverviewTool)
-        addTool(getEmployeeDetailByNameTool)
-        addTool(askManagerForResponseTool)
-        addTool(sendSignalMessageTool)
-        addTool(updateEmployeeTool)
-    }.run()
+    val run =
+        agent {
+            openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4Turbo)
+            task("Retrieve all employees to inspect their hour status") {
+                addInstruction(
+                    "For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent",
+                )
+                addInstruction(
+                    "If the employee is reminded 5 times and still has still not completed the hours don't send the employee a message but ask the manager on how to respond and send the manager's response to the employee",
+                )
+                addInstruction(
+                    "When you for sure know that the signal message is successfully sent (which means the tool call returns a success response), make sure that you update the numberOfRemindersSent for each and every the specific employee.",
+                )
+            }
+            addTool(getAllEmployeesOverviewTool)
+            addTool(getEmployeeDetailByNameTool)
+            addTool(askManagerForResponseTool)
+            addTool(sendSignalMessageTool)
+            addTool(updateEmployeeTool)
+        }.start()
+
+    when (run.result.reason) {
+        FinishedAllTasks -> "Hours inspected successfully"
+        ImStuck -> "Agent is stuck and could not complete task"
+    }.also(::println)
 }
 
 val getAllEmployeesOverviewTool =
