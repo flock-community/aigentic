@@ -35,11 +35,11 @@ suspend fun Agent.start(): Run =
 
 private suspend fun executeAction(action: Action): Pair<State, FinishedOrStuck> =
     when (action) {
-        is Finished -> action.process()
         is Initialize -> executeAction(action.process())
         is SendModelRequest -> executeAction(action.process())
         is ProcessModelResponse -> executeAction(action.process())
         is ExecuteTools -> executeAction(action.process())
+        is Finished -> action.process()
     }
 
 private suspend fun Initialize.process(): Action {
