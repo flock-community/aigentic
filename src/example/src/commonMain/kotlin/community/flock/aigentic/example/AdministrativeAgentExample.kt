@@ -20,7 +20,7 @@ import kotlinx.serialization.json.JsonObject
 suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
     val run =
         agent {
-            openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4Turbo)
+            openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4O)
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(
                     "For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent",
@@ -42,7 +42,9 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
     when (run.result.reason) {
         FinishedAllTasks -> "Hours inspected successfully"
         ImStuck -> "Agent is stuck and could not complete task"
-    }.also(::println)
+    }.also {
+        println("$it took ${run.finishedAt - run.startedAt}")
+    }
 }
 
 val getAllEmployeesOverviewTool =

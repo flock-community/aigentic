@@ -35,19 +35,19 @@ suspend fun Agent.start(): Run =
 
 private suspend fun executeAction(action: Action): Pair<State, FinishedOrStuck> =
     when (action) {
-        is Initialize -> executeAction(action.process(action.state))
-        is SendModelRequest -> executeAction(action.process(action.state))
-        is ProcessModelResponse -> executeAction(action.process(action.state))
-        is ExecuteTools -> executeAction(action.process(action.state))
-        is Finished -> action.process(action.state)
+        is Initialize -> executeAction(action.process())
+        is SendModelRequest -> executeAction(action.process())
+        is ProcessModelResponse -> executeAction(action.process())
+        is ExecuteTools -> executeAction(action.process())
+        is Finished -> action.process()
     }
 
-private suspend fun Initialize.process(state: State): Action {
+private suspend fun Initialize.process(): Action {
     state.addMessages(initializeStartMessages(agent))
     return SendModelRequest(state, agent)
 }
 
-private suspend fun ProcessModelResponse.process(state: State): Action =
+private suspend fun ProcessModelResponse.process(): Action =
     when (responseMessage) {
         is Message.ToolCalls -> ExecuteTools(state, agent, responseMessage.toolCalls)
         else -> {
@@ -56,15 +56,15 @@ private suspend fun ProcessModelResponse.process(state: State): Action =
         }
     }
 
-private suspend fun SendModelRequest.process(state: State): ProcessModelResponse {
+private suspend fun SendModelRequest.process(): ProcessModelResponse {
     val message = agent.sendModelRequest(state).message
     state.addMessage(message)
     return ProcessModelResponse(state, agent, message)
 }
 
-private fun Finished.process(state: State) = state to finishedOrStuck
+private fun Finished.process() = state to finishedOrStuck
 
-private suspend fun ExecuteTools.process(state: State): Action {
+private suspend fun ExecuteTools.process(): Action {
     val toolResults = executeToolCalls(agent, toolCalls)
     val finished = toolResults.filterIsInstance<ToolExecutionResult.FinishedToolResult>().firstOrNull()
 

@@ -14,10 +14,11 @@ import community.flock.aigentic.mapper.toModelResponse
 import community.flock.aigentic.request.createChatCompletionsRequest
 import kotlin.time.Duration.Companion.seconds
 
-@Suppress("ktlint")
+@Suppress("ktlint:standard:class-naming")
 sealed class OpenAIModelIdentifier(
-    val stringValue: String
+    val stringValue: String,
 ) : ModelIdentifier {
+    data object GPT4O : OpenAIModelIdentifier("gpt-4o")
     data object GPT4Turbo : OpenAIModelIdentifier("gpt-4-turbo")
     data object GPT3_5Turbo : OpenAIModelIdentifier("gpt-3.5-turbo")
 }
