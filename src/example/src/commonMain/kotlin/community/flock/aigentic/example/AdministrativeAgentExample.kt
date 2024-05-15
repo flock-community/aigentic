@@ -42,7 +42,9 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
     when (run.result.reason) {
         FinishedAllTasks -> "Hours inspected successfully"
         ImStuck -> "Agent is stuck and could not complete task"
-    }.also(::println)
+    }.also {
+        println("$it took ${run.finishedAt - run.startedAt}")
+    }
 }
 
 val getAllEmployeesOverviewTool =
