@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotest.multiplatform)
+    alias(libs.plugins.kotlinx.serialization)
     id("module.publication")
 }
 
@@ -9,7 +10,6 @@ kotlin {
     js(IR) {
         nodejs()
         generateTypeScriptDefinitions()
-        binaries.executable()
     }
 
     sourceSets {

@@ -3,10 +3,10 @@ plugins {
 }
 
 kotlin {
-    jvm()
     js(IR) {
         nodejs()
         generateTypeScriptDefinitions()
+        binaries.executable()
     }
 
     sourceSets {
@@ -14,15 +14,8 @@ kotlin {
             dependencies {
                 implementation(project(":src:core"))
                 implementation(project(":src:providers:openai"))
-                implementation(project(":src:tools:openapi"))
+                implementation(project(":src:cloud:google:http-cloud-function"))
                 implementation ("ch.qos.logback:logback-classic:1.2.3")
-            }
-        }
-
-        val jvmMain by getting {
-            dependencies {
-                // CIO is for JVM, Android, Native. For other platforms pick the correct engine: https://ktor.io/docs/client-engines.html#platforms
-                implementation(libs.ktor.client.cio)
             }
         }
     }
