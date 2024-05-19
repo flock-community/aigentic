@@ -1,7 +1,7 @@
 package community.flock.aigentic.cloud.google.httpcloudfunction.dsl
 
+import community.flock.aigentic.cloud.google.httpcloudfunction.declarations.GoogleRequest
 import community.flock.aigentic.cloud.google.httpcloudfunction.declarations.functions
-import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.AgentConfig
 import community.flock.aigentic.core.dsl.AgentDSL
@@ -10,6 +10,9 @@ import community.flock.aigentic.core.dsl.builderPropertyMissingErrorMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 fun googleHttpCloudFunction(config: HttpCloudFunctionConfig.() -> Unit) = HttpCloudFunctionConfig().apply(config).build()
 
@@ -20,10 +23,13 @@ sealed interface Authentication {
 @AgentDSL
 class HttpCloudFunctionConfig : Config<Unit> {
     internal var entryPoint: String? = "runAgent"
-    internal var agent: Agent? = null
     internal var authentication: Authentication? = null
 
-    fun agent(agentConfig: AgentConfig.() -> Unit): Agent = AgentConfig().apply(agentConfig).build().also { agent = it }
+    var agentBuilder: (AgentConfig.(request: Request) -> Unit)? = null
+
+    fun agent(agentConfig: AgentConfig.(request: Request) -> Unit): Unit {
+        agentBuilder = agentConfig
+    }
 
     fun entryPoint(entryPoint: String) {
         this.entryPoint = entryPoint
@@ -33,19 +39,21 @@ class HttpCloudFunctionConfig : Config<Unit> {
         val function =
             HttpCloudFunction(
                 entryPoint = checkNotNull(entryPoint, builderPropertyMissingErrorMessage("entryPoint", "entryPoint()")),
-                agent = checkNotNull(agent, builderPropertyMissingErrorMessage("agent", "agent()")),
+                agentBuilder = checkNotNull(agentBuilder, builderPropertyMissingErrorMessage("agent", "agent()")),
                 authentication = authentication,
             )
 
-        registerHttp(function)
+        handleRequest(function)
     }
 
     fun authentication(authentication: Authentication) {
         this.authentication = authentication
     }
 
-    private fun registerHttp(function: HttpCloudFunction) {
-        functions.http(function.entryPoint) { request, response ->
+    private fun handleRequest(function: HttpCloudFunction) {
+        functions.http(function.entryPoint) { googleRequest, response ->
+
+            val request = googleRequest.map()
 
             when (val authentication = function.authentication) {
                 is Authentication.AuthorizationHeader -> {
@@ -54,13 +62,15 @@ class HttpCloudFunctionConfig : Config<Unit> {
                         response.status(401).send("Unauthorized")
                     }
                 }
+
                 else -> {
                     // No authentication
                 }
             }
 
             CoroutineScope(Dispatchers.Default).launch {
-                val run = function.agent.start()
+                val agent = AgentConfig().apply { function.agentBuilder(this, request) }.build()
+                val run = agent.start()
                 println("Agent finished: $run")
                 response.send(run.result.description)
             }
@@ -68,8 +78,27 @@ class HttpCloudFunctionConfig : Config<Unit> {
     }
 }
 
+private fun GoogleRequest.map(): Request = Request(
+    method = method,
+    headers = dynamicObjectToMap(headers),
+    query = dynamicObjectToMap(query),
+    body = JSON.stringify(body)
+)
+
+private fun dynamicObjectToMap(jsObject: dynamic): Map<String, String> =
+    Json.parseToJsonElement(JSON.stringify(jsObject)).jsonObject
+        .mapValues { it.value.jsonPrimitive.content }
+
+
+data class Request(
+    val method: String,
+    val headers: Map<String, String>,
+    val query: Map<String, String>,
+    val body: String,
+)
+
 data class HttpCloudFunction(
     val entryPoint: String,
-    val agent: Agent,
+    val agentBuilder: AgentConfig.(request: Request) -> Unit,
     val authentication: Authentication?,
 )
