@@ -77,7 +77,7 @@ class HttpCloudFunctionConfig : Config<Unit> {
 
                 val responseText = run.result.description
 
-                when(run.result.reason) {
+                when (run.result.reason) {
                     FinishReason.FinishedAllTasks -> response.status(200).send(responseText)
                     FinishReason.ImStuck -> response.status(422).send(responseText)
                 }

@@ -3,7 +3,6 @@
 
 package community.flock.aigentic.cloud.google.httpcloudfunction
 
-import community.flock.aigentic.cloud.google.httpcloudfunction.dsl.Authentication
 import community.flock.aigentic.cloud.google.httpcloudfunction.dsl.Authentication.AuthorizationHeader
 import community.flock.aigentic.cloud.google.httpcloudfunction.dsl.googleHttpCloudFunction
 import community.flock.aigentic.cloud.google.httpcloudfunction.util.getEnvVar
