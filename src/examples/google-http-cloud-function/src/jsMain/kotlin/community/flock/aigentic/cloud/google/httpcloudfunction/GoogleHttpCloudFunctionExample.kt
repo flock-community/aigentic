@@ -3,6 +3,8 @@
 
 package community.flock.aigentic.cloud.google.httpcloudfunction
 
+import community.flock.aigentic.cloud.google.httpcloudfunction.dsl.Authentication
+import community.flock.aigentic.cloud.google.httpcloudfunction.dsl.Authentication.AuthorizationHeader
 import community.flock.aigentic.cloud.google.httpcloudfunction.dsl.googleHttpCloudFunction
 import community.flock.aigentic.cloud.google.httpcloudfunction.util.getEnvVar
 import community.flock.aigentic.core.tool.Parameter
@@ -14,13 +16,10 @@ import community.flock.aigentic.dsl.openAIModel
 import community.flock.aigentic.model.OpenAIModelIdentifier
 import kotlinx.serialization.json.JsonObject
 
-
 @JsExport
 fun main() {
-
-    val getCloudMessageTool =
+    val cloudMessageTool =
         object : Tool {
-
             val nameParameter =
                 Parameter.Primitive(
                     "name",
@@ -41,16 +40,17 @@ fun main() {
         }
 
     googleHttpCloudFunction {
+        authentication(AuthorizationHeader("some-secret-key"))
         agent { request ->
-            openAIModel(getEnvVar("OPENAPI_KEY"), OpenAIModelIdentifier.GPT4O)
+            openAIModel(getEnvVar("OPENAI_KEY"), OpenAIModelIdentifier.GPT4O)
             task("Respond with a welcome message to the person") {
                 addInstruction(
-                    "Call the finishedOrStuck tool when finished and use the message received from getCloudMessage as description, don't put any other text in the description",
+                    "Call the finishedOrStuck tool when finished and use only the message received from getCloudMessage as description, use no other text",
                 )
             }
-            addTool(getCloudMessageTool)
+            addTool(cloudMessageTool)
             context {
-                addText("Person to welcome: '${request.query["name"] ?: "Person to welcome not found"}'")
+                addText("Person to welcome: '${request.body["name"] ?: "Error: Person to welcome not found"}'")
             }
         }
     }

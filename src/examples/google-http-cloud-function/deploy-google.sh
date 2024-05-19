@@ -7,4 +7,4 @@ gcloud functions deploy aigentic-google-cloud-http-function-example \
   --max-instances=1 \
   --source ../../../build/js/packages/aigentic-src-examples-google-http-cloud-function \
   --entry-point runAgent \
-  --set-secrets 'OPENAPI_KEY=OPENAPI_KEY:latest'
+  --set-secrets 'OPENAI_KEY=OPENAI_KEY:latest'

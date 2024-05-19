@@ -16,7 +16,7 @@ internal fun createChatCompletionsRequest(
     openAIModelIdentifier: OpenAIModelIdentifier,
 ): ChatCompletionRequest {
     return chatCompletionRequest {
-//        temperature = 0.0
+        temperature = 0.0
         model = ModelId(openAIModelIdentifier.stringValue)
         this.messages = messages.map { it.toOpenAIMessage() }
         this.tools = tools.map { it.toOpenAITool() }
