@@ -80,7 +80,7 @@ class AgentExecutorTest : DescribeSpec({
             }.start().apply {
 
                 result.reason shouldBe FinishReason.FinishedTask
-                result.description shouldBe "Finished all tasks"
+                result.description shouldBe "Finished the task"
 
                 coVerify(exactly = 1) { mockHandler.invoke(expectedArguments) }
                 coVerify(exactly = 2) { modelMock.sendRequest(any(), any()) }

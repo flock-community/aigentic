@@ -15,8 +15,8 @@ object TestData {
             ToolCallId("1"),
             finishOrStuckTool.name.value,
             buildJsonObject {
-                put("finishReason", "FinishedAllTasks")
-                put("description", "Finished all tasks")
+                put("finishReason", "FinishedTask")
+                put("description", "Finished the task")
             }.encode(),
         )
 
