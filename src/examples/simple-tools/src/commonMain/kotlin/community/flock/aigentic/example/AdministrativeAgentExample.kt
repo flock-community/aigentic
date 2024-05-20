@@ -3,7 +3,7 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.agent.tool.FinishReason.FinishedAllTasks
+import community.flock.aigentic.core.agent.tool.FinishReason.FinishedTask
 import community.flock.aigentic.core.agent.tool.FinishReason.ImStuck
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
@@ -40,7 +40,7 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
         }.start()
 
     when (run.result.reason) {
-        FinishedAllTasks -> "Hours inspected successfully"
+        FinishedTask -> "Hours inspected successfully"
         ImStuck -> "Agent is stuck and could not complete task"
     }.also {
         println("$it took ${run.finishedAt - run.startedAt}")

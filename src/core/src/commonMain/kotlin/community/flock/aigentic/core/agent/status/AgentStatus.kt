@@ -47,7 +47,7 @@ suspend fun Message.toStatus(): List<AgentStatus> =
 suspend fun getFinishEvent(it: ToolCall): AgentStatus {
     val finishedOrStuck = finishOrStuckTool.handler(it.argumentsAsJson())
     return when (finishedOrStuck.reason) {
-        FinishReason.FinishedAllTasks ->
+        FinishReason.FinishedTask ->
             AgentStatus.Finished(finishedOrStuck.description)
 
         FinishReason.ImStuck ->

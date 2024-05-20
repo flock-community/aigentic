@@ -79,7 +79,7 @@ class AgentExecutorTest : DescribeSpec({
                 addTool(newsEventTool)
             }.start().apply {
 
-                result.reason shouldBe FinishReason.FinishedAllTasks
+                result.reason shouldBe FinishReason.FinishedTask
                 result.description shouldBe "Finished all tasks"
 
                 coVerify(exactly = 1) { mockHandler.invoke(expectedArguments) }
