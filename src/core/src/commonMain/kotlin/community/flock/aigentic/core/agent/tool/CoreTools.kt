@@ -49,12 +49,12 @@ internal val finishOrStuckTool =
 data class FinishedOrStuck(val reason: FinishReason, val description: String)
 
 sealed interface FinishReason {
-    data object FinishedAllTasks : FinishReason
+    data object FinishedTask : FinishReason
     data object ImStuck : FinishReason
 
     companion object {
         fun getAllValues(): List<FinishReason> {
-            return listOf(FinishedAllTasks, ImStuck)
+            return listOf(FinishedTask, ImStuck)
         }
     }
 }

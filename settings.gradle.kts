@@ -20,5 +20,8 @@ include(
     "src:tools:http",
     "src:tools:openapi",
     "src:providers:openai",
-    "src:example"
+    "src:cloud:google-cloud-function",
+    "src:examples:simple-tools",
+    "src:examples:openapi-tools",
+    "src:examples:google-http-cloud-function"
 )

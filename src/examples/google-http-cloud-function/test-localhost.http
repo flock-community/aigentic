@@ -1,0 +1,8 @@
+// @no-log
+POST http://localhost:8080
+Content-Type: application/json
+Authorization: Bearer some-secret-key
+
+{
+  "name": "Aigentic"
+}

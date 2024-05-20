@@ -8,9 +8,9 @@ nexus-publish = "2.0.0"
 kotlinOpenapiBindings = "0.0.24"
 kotest = "5.8.1"
 mockk = "1.13.10"
+google-cloud-functions-framework = "^3.4.0"
 
 [libraries]
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 # Coroutines

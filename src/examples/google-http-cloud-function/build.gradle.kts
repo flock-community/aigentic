@@ -1,25 +1,20 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    id("module.publication")
-    alias(libs.plugins.dokka)
 }
 
 kotlin {
-    jvm()
     js(IR) {
         nodejs()
-        generateTypeScriptDefinitions()
+        binaries.executable()
     }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
                 implementation(project(":src:core"))
-                implementation("com.aallam.openai:openai-client:3.7.1")
-            }
-        }
-        val commonTest by getting {
-            dependencies {
+                implementation(project(":src:providers:openai"))
+                implementation(project(":src:cloud:google-cloud-function"))
+                implementation ("ch.qos.logback:logback-classic:1.2.3")
             }
         }
     }
