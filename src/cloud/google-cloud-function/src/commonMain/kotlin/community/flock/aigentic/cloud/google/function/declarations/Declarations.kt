@@ -1,4 +1,4 @@
-package community.flock.aigentic.cloud.google.httpcloudfunction.declarations
+package community.flock.aigentic.cloud.google.function.declarations
 
 external interface GoogleRequest {
     val method: String

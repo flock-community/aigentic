@@ -1,3 +1,5 @@
+../../../gradlew build
+
 gcloud functions deploy aigentic-google-cloud-http-function-example \
   --project flock-signal \
   --region europe-west2 \

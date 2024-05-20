@@ -14,7 +14,7 @@ kotlin {
             dependencies {
                 implementation(project(":src:core"))
                 implementation(project(":src:providers:openai"))
-                implementation(project(":src:cloud:google:http-cloud-function"))
+                implementation(project(":src:cloud:google-cloud-function"))
                 implementation ("ch.qos.logback:logback-classic:1.2.3")
             }
         }

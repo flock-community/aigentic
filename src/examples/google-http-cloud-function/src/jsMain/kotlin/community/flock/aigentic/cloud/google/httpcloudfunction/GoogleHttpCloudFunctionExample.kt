@@ -3,9 +3,9 @@
 
 package community.flock.aigentic.cloud.google.httpcloudfunction
 
-import community.flock.aigentic.cloud.google.httpcloudfunction.dsl.Authentication.AuthorizationHeader
-import community.flock.aigentic.cloud.google.httpcloudfunction.dsl.googleHttpCloudFunction
-import community.flock.aigentic.cloud.google.httpcloudfunction.util.getEnvVar
+import community.flock.aigentic.cloud.google.function.http.dsl.Authentication.AuthorizationHeader
+import community.flock.aigentic.cloud.google.function.http.dsl.googleHttpCloudFunction
+import community.flock.aigentic.cloud.google.function.util.getEnvVar
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.Tool
