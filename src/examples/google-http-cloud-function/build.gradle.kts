@@ -5,7 +5,6 @@ plugins {
 kotlin {
     js(IR) {
         nodejs()
-        generateTypeScriptDefinitions()
         binaries.executable()
     }
 

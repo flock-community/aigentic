@@ -15,7 +15,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(npm("@google-cloud/functions-framework", "^3.4.0")) // TODO move version number to toml
+                implementation(npm("@google-cloud/functions-framework", libs.versions.google.cloud.functions.framework.get()))
                 implementation(project(":src:core"))
             }
         }

@@ -17,24 +17,24 @@ import kotlinx.serialization.json.JsonObject
 
 @JsExport
 fun main() {
-    val cloudMessageTool =
+    val greetTool =
         object : Tool {
-            val nameParameter =
+            val messageParameter =
                 Parameter.Primitive(
-                    "name",
-                    "The name of the person to greet",
+                    "greetingMessage",
+                    "The message to greet the person with",
                     true,
                     Primitive.String,
                 )
 
-            override val name = ToolName("getCloudMessage")
+            override val name = ToolName("greet")
             override val description = null
-            override val parameters = listOf(nameParameter)
+            override val parameters = listOf(messageParameter)
             override val handler: suspend (map: JsonObject) -> String = { arguments ->
 
-                val name = nameParameter.getStringValue(arguments)
-
-                "$name, hello from Google Cloud Function 👋"
+                val message = messageParameter.getStringValue(arguments)
+                println(message)
+                "greeting message sent"
             }
         }
 
@@ -42,14 +42,10 @@ fun main() {
         authentication(AuthorizationHeader("some-secret-key"))
         agent { request ->
             openAIModel(getEnvVar("OPENAI_KEY"), OpenAIModelIdentifier.GPT4O)
-            task("Respond with a welcome message to the person") {
-                addInstruction(
-                    "Call the finishedOrStuck tool when finished and use only the message received from getCloudMessage as description, use no other text",
-                )
-            }
-            addTool(cloudMessageTool)
+            task("Greet the person with a warm and welcome message") {}
+            addTool(greetTool)
             context {
-                addText("Person to welcome: '${request.body["name"] ?: "Error: Person to welcome not found"}'")
+                addText("Person to greet: '${request.body["name"] ?: "Error: Person to greet not found"}'")
             }
         }
     }
