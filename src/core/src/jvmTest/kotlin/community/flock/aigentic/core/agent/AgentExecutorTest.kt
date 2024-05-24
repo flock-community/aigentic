@@ -5,7 +5,7 @@ import community.flock.aigentic.core.agent.test.util.TestData.finishedSuccessful
 import community.flock.aigentic.core.agent.test.util.TestData.modelFinishDirectly
 import community.flock.aigentic.core.agent.test.util.encode
 import community.flock.aigentic.core.agent.test.util.toModelResponse
-import community.flock.aigentic.core.agent.tool.FinishReason
+import community.flock.aigentic.core.agent.tool.Result.Finished
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
@@ -19,6 +19,7 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -79,8 +80,8 @@ class AgentExecutorTest : DescribeSpec({
                 addTool(newsEventTool)
             }.start().apply {
 
-                result.reason shouldBe FinishReason.FinishedTask
-                result.description shouldBe "Finished the task"
+                result.shouldBeInstanceOf<Finished>()
+                (result as Finished).description shouldBe "Finished the task"
 
                 coVerify(exactly = 1) { mockHandler.invoke(expectedArguments) }
                 coVerify(exactly = 2) { modelMock.sendRequest(any(), any()) }

@@ -1,7 +1,7 @@
 package community.flock.aigentic.core.agent.status
 
-import community.flock.aigentic.core.agent.tool.FinishReason
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
+import community.flock.aigentic.core.agent.tool.finishedTaskTool
+import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.argumentsAsJson
@@ -37,20 +37,11 @@ suspend fun Message.toStatus(): List<AgentStatus> =
         is Message.ToolCalls ->
             this.toolCalls.map {
                 when (it.name) {
-                    finishOrStuckTool.name.value -> getFinishEvent(it)
+                    // TODO fix why is tool handler called again?
+                    finishedTaskTool.name.value -> finishedTaskTool.handler(it.argumentsAsJson()).let { AgentStatus.Finished(it.description) }
+                    stuckWithTaskTool.name.value -> stuckWithTaskTool.handler(it.argumentsAsJson()).let { AgentStatus.Stuck(it.description) }
                     else -> AgentStatus.ExecuteTool(it)
                 }
             }
         is Message.ToolResult -> listOf(AgentStatus.ToolResult(this))
     }
-
-suspend fun getFinishEvent(it: ToolCall): AgentStatus {
-    val finishedOrStuck = finishOrStuckTool.handler(it.argumentsAsJson())
-    return when (finishedOrStuck.reason) {
-        FinishReason.FinishedTask ->
-            AgentStatus.Finished(finishedOrStuck.description)
-
-        FinishReason.ImStuck ->
-            AgentStatus.Stuck(finishedOrStuck.description)
-    }
-}

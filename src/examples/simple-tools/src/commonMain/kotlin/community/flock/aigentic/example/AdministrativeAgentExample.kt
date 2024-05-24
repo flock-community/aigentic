@@ -3,8 +3,7 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.agent.tool.FinishReason.FinishedTask
-import community.flock.aigentic.core.agent.tool.FinishReason.ImStuck
+import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
@@ -13,14 +12,15 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getIntValue
 import community.flock.aigentic.core.tool.getStringValue
-import community.flock.aigentic.dsl.openAIModel
-import community.flock.aigentic.model.OpenAIModelIdentifier
+import community.flock.aigentic.gemini.dsl.geminiModel
+import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import kotlinx.serialization.json.JsonObject
 
-suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
+suspend fun runAdministrativeAgentExample(apiKey: String) {
     val run =
         agent {
-            openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4O)
+//            openAIModel(apiKey, OpenAIModelIdentifier.GPT4O)
+            geminiModel(apiKey, GeminiModelIdentifier.Gemini1_5ProLatest)
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(
                     "For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent",
@@ -39,9 +39,9 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
             addTool(updateEmployeeTool)
         }.start()
 
-    when (run.result.reason) {
-        FinishedTask -> "Hours inspected successfully"
-        ImStuck -> "Agent is stuck and could not complete task"
+    when (run.result) {
+        is community.flock.aigentic.core.agent.tool.FinishedOrStuck.Result.Finished -> "Hours inspected successfully"
+        is community.flock.aigentic.core.agent.tool.FinishedOrStuck.Result.Stuck -> "Agent is stuck and could not complete task"
     }.also {
         println("$it took ${run.finishedAt - run.startedAt}")
     }

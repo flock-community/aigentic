@@ -11,8 +11,8 @@ import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getStringValue
-import community.flock.aigentic.dsl.openAIModel
-import community.flock.aigentic.model.OpenAIModelIdentifier
+import community.flock.aigentic.openai.dsl.openAIModel
+import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import kotlinx.serialization.json.JsonObject
 
 @JsExport

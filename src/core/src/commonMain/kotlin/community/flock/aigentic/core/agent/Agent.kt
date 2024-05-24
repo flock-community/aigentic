@@ -1,7 +1,8 @@
 package community.flock.aigentic.core.agent
 
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
+import community.flock.aigentic.core.agent.tool.finishedTaskTool
+import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.InternalTool
 import community.flock.aigentic.core.tool.Tool
@@ -28,5 +29,8 @@ data class Agent(
     val contexts: List<Context>,
     val tools: Map<ToolName, Tool>,
 ) {
-    internal val internalTools: Map<ToolName, InternalTool<*>> = mapOf(finishOrStuckTool.name to finishOrStuckTool)
+    internal val internalTools: Map<ToolName, InternalTool<*>> = mapOf(
+        finishedTaskTool.name to finishedTaskTool,
+        stuckWithTaskTool.name to stuckWithTaskTool
+    )
 }

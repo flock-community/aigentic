@@ -1,7 +1,8 @@
 package community.flock.aigentic.core.agent.message
 
 import community.flock.aigentic.core.agent.Agent
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
+import community.flock.aigentic.core.agent.tool.finishedTaskTool
+import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
 import community.flock.aigentic.core.message.Message
 
 interface SystemPromptBuilder {
@@ -25,8 +26,8 @@ private fun Agent.createSystemPrompt(): Message.SystemPrompt {
     val finishConditionDescription =
         """
         |You are finished when the task is executed successfully: ${task.description}
-        |If you meet this condition, call the ${finishOrStuckTool.name.value} tool to indicate that you are done and have finished all tasks.
-        |When you don't know what to do also call the ${finishOrStuckTool.name.value} tool to indicate that you are stuck and need help.
+        |If you meet this condition, call the ${finishedTaskTool.name.value} tool to indicate that you are done and have finished all tasks.
+        |When you don't know what to do call the ${stuckWithTaskTool.name.value} tool to indicate that you are stuck and need help.
         """.trimMargin()
 
     return Message.SystemPrompt(

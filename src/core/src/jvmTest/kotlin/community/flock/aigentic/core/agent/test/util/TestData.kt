@@ -1,6 +1,6 @@
 package community.flock.aigentic.core.agent.test.util
 
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
+import community.flock.aigentic.core.agent.tool.finishedTaskTool
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.model.Model
@@ -13,7 +13,7 @@ object TestData {
     val finishedSuccessfully =
         ToolCall(
             ToolCallId("1"),
-            finishOrStuckTool.name.value,
+            finishedTaskTool.name.value,
             buildJsonObject {
                 put("finishReason", "FinishedTask")
                 put("description", "Finished the task")

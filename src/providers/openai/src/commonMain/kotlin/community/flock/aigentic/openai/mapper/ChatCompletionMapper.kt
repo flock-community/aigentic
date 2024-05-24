@@ -1,8 +1,8 @@
-package community.flock.aigentic.mapper
+package community.flock.aigentic.openai.mapper
 
 import com.aallam.openai.api.chat.ChatCompletion
 import community.flock.aigentic.core.model.ModelResponse
-import community.flock.aigentic.mapper.DomainMapper.toMessage
+import community.flock.aigentic.openai.mapper.DomainMapper.toMessage
 
 internal fun ChatCompletion.toModelResponse(): ModelResponse {
     return ModelResponse(

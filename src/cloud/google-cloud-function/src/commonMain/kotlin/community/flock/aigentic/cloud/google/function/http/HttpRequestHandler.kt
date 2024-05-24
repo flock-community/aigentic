@@ -4,8 +4,7 @@ import community.flock.aigentic.cloud.google.function.declarations.GoogleRequest
 import community.flock.aigentic.cloud.google.function.http.dsl.Authentication
 import community.flock.aigentic.cloud.google.function.http.dsl.GoogleHttpCloudFunction
 import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.agent.tool.FinishReason.FinishedTask
-import community.flock.aigentic.core.agent.tool.FinishReason.ImStuck
+import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.AgentConfig
 
 internal suspend fun GoogleHttpCloudFunction.handleRequest(
@@ -30,10 +29,9 @@ internal suspend fun GoogleHttpCloudFunction.handleRequest(
 
     val agent = AgentConfig().apply { agentBuilder(this, request) }.build()
     val run = agent.start()
-    val responseText = run.result.description
 
-    when (run.result.reason) {
-        FinishedTask -> response.status(200).send(responseText)
-        ImStuck -> response.status(422).send(responseText)
+    when(val finishedOrStuck = run.result) {
+        is community.flock.aigentic.core.agent.tool.FinishedOrStuck.Result.Finished -> response.status(200).send(finishedOrStuck.description)
+        is community.flock.aigentic.core.agent.tool.FinishedOrStuck.Result.Stuck -> response.status(422).send(finishedOrStuck.description)
     }
 }

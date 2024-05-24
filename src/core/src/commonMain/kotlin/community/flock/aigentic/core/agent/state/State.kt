@@ -2,7 +2,7 @@ package community.flock.aigentic.core.agent.state
 
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.status.toStatus
-import community.flock.aigentic.core.agent.tool.FinishedOrStuck
+import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.message.Message
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asFlow
@@ -25,7 +25,7 @@ internal suspend fun State.addMessages(messages: List<Message>) = messages.forEa
 
 internal suspend fun State.addMessage(message: Message) = this.messages.emit(message)
 
-fun Pair<State, FinishedOrStuck>.toRun(): Run =
+fun Pair<State, Result>.toRun(): Run =
     with(first) {
         Run(
             startedAt = startedAt,

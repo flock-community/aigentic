@@ -1,52 +1,63 @@
 package community.flock.aigentic.core.agent.tool
 
+import community.flock.aigentic.core.agent.tool.Result.Finished
+import community.flock.aigentic.core.agent.tool.Result.Stuck
 import community.flock.aigentic.core.tool.InternalTool
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
-import community.flock.aigentic.core.tool.PrimitiveValue
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getStringValue
 import kotlinx.serialization.json.JsonObject
 
-internal val finishOrStuckTool =
-    object : InternalTool<FinishedOrStuck> {
-        val finishReasonParameter =
-            Parameter.Complex.Enum(
-                name = "finishReason",
-                description = null,
-                isRequired = true,
-                default = null,
-                values = FinishReason.getAllValues().map { PrimitiveValue.String.fromString(it::class.simpleName!!) },
-                valueType = ParameterType.Primitive.String,
-            )
+internal val finishedTaskTool = object : InternalTool<Finished> {
 
-        val descriptionParameter =
-            Parameter.Primitive(
-                name = "description",
-                description = "Depending on the finish reason a description of the executed work or a description of why you're stuck",
-                isRequired = true,
-                type = ParameterType.Primitive.String,
-            )
+    val descriptionParameter =
+        Parameter.Primitive(
+            name = "description",
+            description = "A description of the things you've done to finish the task",
+            isRequired = true,
+            type = ParameterType.Primitive.String,
+        )
 
-        override val name = ToolName("finishedOrStuck")
-        override val description =
-            """
-            |When you've finished all tasks and met the finish condition OR when you are stuck call this tool.
-            |In the case you've finished all tasks please provide a description of the work which has been done.
-            |In case you're stuck please provide a description of the problem.
-            """.trimMargin()
+    override val name: ToolName = ToolName("finishedTask")
+    override val description: String = "When you've successfully finished the task call this function to indicate you're done."
+    override val parameters: List<Parameter> = listOf(descriptionParameter)
 
-        override val parameters = listOf(finishReasonParameter, descriptionParameter)
-        override val handler: suspend (map: JsonObject) -> FinishedOrStuck = { arguments ->
+    override val handler: suspend (map: JsonObject) -> Finished = { arguments ->
 
-            val stringValue = finishReasonParameter.getStringValue(arguments)
-            val finishReason = FinishReason.getAllValues().first { it::class.simpleName == stringValue }
-            val description = descriptionParameter.getStringValue(arguments)
-            FinishedOrStuck(finishReason, description)
-        }
+        val desc = descriptionParameter.getStringValue(arguments)
+        Finished(desc)
     }
+}
 
-data class FinishedOrStuck(val reason: FinishReason, val description: String)
+internal val stuckWithTaskTool = object : InternalTool<Stuck> {
+
+    val descriptionParameter =
+        Parameter.Primitive(
+            name = "description",
+            description = "A description of why the task can't be accomplished",
+            isRequired = true,
+            type = ParameterType.Primitive.String,
+        )
+
+    override val name: ToolName = ToolName("stuckWithTask")
+    override val description: String = "When you can't accomplish the task call this function to indicate you're stuck"
+    override val parameters: List<Parameter> = listOf(descriptionParameter)
+
+    override val handler: suspend (map: JsonObject) -> Stuck = { arguments ->
+
+        val desc = descriptionParameter.getStringValue(arguments)
+        Stuck(desc)
+    }
+}
+
+sealed interface Result {
+    data class Finished(val description: String) : Result
+    data class Stuck(val description: String): Result
+    data class Fatal(val message: String): Result
+}
+
+
 
 sealed interface FinishReason {
     data object FinishedTask : FinishReason

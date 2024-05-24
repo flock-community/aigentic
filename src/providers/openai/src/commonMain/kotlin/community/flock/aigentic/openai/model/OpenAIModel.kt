@@ -1,4 +1,4 @@
-package community.flock.aigentic.model
+package community.flock.aigentic.openai.model
 
 import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.logging.LogLevel
@@ -10,8 +10,8 @@ import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.tool.ToolDescription
-import community.flock.aigentic.mapper.toModelResponse
-import community.flock.aigentic.request.createChatCompletionsRequest
+import community.flock.aigentic.openai.mapper.toModelResponse
+import community.flock.aigentic.openai.request.createChatCompletionsRequest
 import kotlin.time.Duration.Companion.seconds
 
 @Suppress("ktlint:standard:class-naming")
@@ -43,12 +43,9 @@ class OpenAIModel(
             .toModelResponse()
 
     companion object {
-        fun defaultOpenAI(authentication: Authentication) =
+        fun defaultOpenAI(authentication: Authentication.APIKey) =
             OpenAI(
-                token =
-                    (authentication as? Authentication.APIKey).let {
-                        it?.key ?: error("OpenAI requires API Key authentication")
-                    },
+                token = authentication.key,
                 logging = LoggingConfig(LogLevel.None),
                 timeout = Timeout(socket = 60.seconds),
             )

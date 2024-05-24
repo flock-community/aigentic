@@ -1,7 +1,8 @@
 package community.flock.aigentic.core.agent
 
-import community.flock.aigentic.core.agent.tool.FinishedOrStuck
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
+import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.finishedTaskTool
+import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolResultContent
@@ -18,9 +19,15 @@ private suspend fun executeTool(
     toolCall: ToolCall,
 ): ToolExecutionResult =
     when (toolCall.name) {
-        finishOrStuckTool.name.value -> {
-            val finishedOrStuck = finishOrStuckTool.handler(toolCall.argumentsAsJson())
-            ToolExecutionResult.FinishedToolResult(finishedOrStuck)
+
+        finishedTaskTool.name.value -> {
+            val finished = finishedTaskTool.handler(toolCall.argumentsAsJson())
+            ToolExecutionResult.FinishedToolResult(reason = finished)
+        }
+
+        stuckWithTaskTool.name.value -> {
+            val stuck = stuckWithTaskTool.handler(toolCall.argumentsAsJson())
+            ToolExecutionResult.FinishedToolResult(reason = stuck)
         }
 
         else -> {
@@ -31,7 +38,7 @@ private suspend fun executeTool(
     }
 
 sealed interface ToolExecutionResult {
-    data class FinishedToolResult(val reason: FinishedOrStuck) : ToolExecutionResult
+    data class FinishedToolResult(val reason: Result) : ToolExecutionResult
 
     data class ToolResult(val message: Message.ToolResult) : ToolExecutionResult
 }

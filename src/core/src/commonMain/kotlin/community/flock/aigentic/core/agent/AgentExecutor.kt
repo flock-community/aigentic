@@ -11,7 +11,7 @@ import community.flock.aigentic.core.agent.state.addMessage
 import community.flock.aigentic.core.agent.state.addMessages
 import community.flock.aigentic.core.agent.state.getStatus
 import community.flock.aigentic.core.agent.state.toRun
-import community.flock.aigentic.core.agent.tool.FinishedOrStuck
+import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender.Aigentic
 import community.flock.aigentic.core.message.ToolCall
@@ -24,16 +24,25 @@ import kotlinx.coroutines.flow.map
 
 suspend fun Agent.start(): Run =
     coroutineScope {
-        val state = State()
-        val logging = async { state.getStatus().map { it.text }.collect(::println) }
 
-        executeAction(Initialize(state, this@start)).also {
-            delay(10) // Allow some time for the logging to finish
-            logging.cancelAndJoin()
-        }.toRun()
+        val state = State()
+
+        try {
+            val logging = async { state.getStatus().map { it.text }.collect(::println) }
+
+            executeAction(Initialize(state, this@start)).also {
+                delay(10) // Allow some time for the logging to finish
+                logging.cancelAndJoin()
+            }.toRun()
+
+        } catch (e: Exception) {
+            (state to Result.Fatal(e.message ?: "")).toRun()
+        }
+
+
     }
 
-private suspend fun executeAction(action: Action): Pair<State, FinishedOrStuck> =
+private suspend fun executeAction(action: Action): Pair<State, Result> =
     when (action) {
         is Initialize -> executeAction(action.process())
         is SendModelRequest -> executeAction(action.process())
@@ -62,7 +71,7 @@ private suspend fun SendModelRequest.process(): ProcessModelResponse {
     return ProcessModelResponse(state, agent, message)
 }
 
-private fun Finished.process() = state to finishedOrStuck
+private fun Finished.process() = state to result
 
 private suspend fun ExecuteTools.process(): Action {
     val toolResults = executeToolCalls(agent, toolCalls)
@@ -99,5 +108,5 @@ private sealed interface Action {
 
     data class ProcessModelResponse(val state: State, val agent: Agent, val responseMessage: Message) : Action
 
-    data class Finished(val state: State, val agent: Agent, val finishedOrStuck: FinishedOrStuck) : Action
+    data class Finished(val state: State, val agent: Agent, val result: Result) : Action
 }

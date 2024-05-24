@@ -1,4 +1,4 @@
-package community.flock.aigentic.mapper
+package community.flock.aigentic.openai.mapper
 
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
