@@ -37,6 +37,7 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
             addTool(askManagerForResponseTool)
             addTool(sendSignalMessageTool)
             addTool(updateEmployeeTool)
+            finishResponse(expectedResponse)
         }.start()
 
     when (run.result.reason) {
@@ -44,6 +45,7 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
         ImStuck -> "Agent is stuck and could not complete task"
     }.also {
         println("$it took ${run.finishedAt - run.startedAt}")
+        println("response: ${run.result.response}")
     }
 }
 
@@ -191,3 +193,39 @@ val sendSignalMessageTool =
             "✉️ Sending: '$message' to '$phoneNumber'"
         }
     }
+
+val responsePersonItem =
+    Parameter.Primitive(
+        name = "person",
+        description = "the name of a person",
+        isRequired = true,
+        type = Primitive.String,
+    )
+
+val expectedResponse =
+    Parameter.Complex.Object(
+        "response",
+        isRequired = false,
+        description = "When all tasks succeeded put the results in this field, when failed skip this response",
+        parameters =
+            listOf(
+                Parameter.Complex.Array(
+                    name = "messagedPeople",
+                    description = "A list of names of people that where messaged",
+                    isRequired = true,
+                    itemDefinition = responsePersonItem,
+                ),
+                Parameter.Complex.Array(
+                    name = "completedPeople",
+                    description = "A list of names of people that have filled in there hours",
+                    isRequired = true,
+                    itemDefinition = responsePersonItem,
+                ),
+                Parameter.Complex.Array(
+                    name = "notCompletedPeople",
+                    description = "A list of names of people that didn't filled in there hours",
+                    isRequired = true,
+                    itemDefinition = responsePersonItem,
+                ),
+            ),
+    )

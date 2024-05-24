@@ -7,6 +7,7 @@ import community.flock.aigentic.cloud.google.function.http.dsl.Authentication.Au
 import community.flock.aigentic.cloud.google.function.http.dsl.googleHttpCloudFunction
 import community.flock.aigentic.cloud.google.function.util.getEnvVar
 import community.flock.aigentic.core.tool.Parameter
+import community.flock.aigentic.core.tool.Parameter.Complex.Object
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
@@ -38,6 +39,21 @@ fun main() {
             }
         }
 
+    val responseParameter =
+        Object(
+            name = "ResponseObject",
+            description = "This object is the response of the agent when finished",
+            isRequired = true,
+            listOf(
+                Parameter.Primitive(
+                    name = "message",
+                    description = "this parameter should contain the message that was send",
+                    isRequired = true,
+                    Primitive.String,
+                ),
+            ),
+        )
+
     googleHttpCloudFunction {
         authentication(AuthorizationHeader("some-secret-key"))
         agent { request ->
@@ -47,6 +63,7 @@ fun main() {
             context {
                 addText("Person to greet: '${request.body["name"] ?: "Error: Person to greet not found"}'")
             }
+            finishResponse(responseParameter)
         }
     }
 }

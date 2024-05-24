@@ -30,7 +30,7 @@ internal suspend fun GoogleHttpCloudFunction.handleRequest(
 
     val agent = AgentConfig().apply { agentBuilder(this, request) }.build()
     val run = agent.start()
-    val responseText = run.result.description
+    val responseText = run.result.response ?: run.result.description
 
     when (run.result.reason) {
         FinishedTask -> response.status(200).send(responseText)
