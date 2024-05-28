@@ -28,8 +28,11 @@ kotlin {
                 implementation(libs.ktor.client.serialization.json)
             }
         }
-        val commonTest by getting {
+        val jvmTest by getting {
             dependencies {
+                implementation(libs.kotest.runner.junit5)
+                implementation(libs.kotlin.reflect)
+                implementation(libs.mockk)
             }
         }
     }

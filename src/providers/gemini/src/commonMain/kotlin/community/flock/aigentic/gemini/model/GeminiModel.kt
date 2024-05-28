@@ -7,6 +7,7 @@ import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.gemini.client.GeminiClient
+import community.flock.aigentic.gemini.client.GeminiSettings
 import community.flock.aigentic.gemini.client.config.GeminiApiConfig
 import community.flock.aigentic.gemini.mapper.createGenerateContentRequest
 import community.flock.aigentic.gemini.mapper.toModelResponse
@@ -28,8 +29,10 @@ class GeminiModel(
     private val geminiClient: GeminiClient = defaultGeminiClient(authentication)
 ) : Model {
 
-    override suspend fun sendRequest(messages: List<Message>, tools: List<ToolDescription>): ModelResponse {
-        delay(3_000)
+    override suspend fun sendRequest(
+        messages: List<Message>,
+        tools: List<ToolDescription>
+    ): ModelResponse {
         val request = createGenerateContentRequest(messages, tools)
         return geminiClient
             .generateContent(request, modelIdentifier)
@@ -37,8 +40,8 @@ class GeminiModel(
     }
 
     companion object {
-        fun defaultGeminiClient(authentication: Authentication.APIKey): GeminiClient =
-            GeminiClient(GeminiApiConfig(authentication))
+        fun defaultGeminiClient(authentication: Authentication.APIKey, settings: GeminiSettings = GeminiSettings()): GeminiClient =
+            GeminiClient(GeminiApiConfig(authentication), settings)
 
     }
 }
