@@ -2,6 +2,7 @@
 
 package community.flock.aigentic.example
 
+import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.FinishReason.FinishedTask
 import community.flock.aigentic.core.agent.tool.FinishReason.ImStuck
@@ -37,7 +38,7 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
             addTool(askManagerForResponseTool)
             addTool(sendSignalMessageTool)
             addTool(updateEmployeeTool)
-            finishResponse(expectedResponse)
+            finishResponse(agentAdministrativeResponse)
         }.start()
 
     when (run.result.reason) {
@@ -45,8 +46,9 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
         ImStuck -> "Agent is stuck and could not complete task"
     }.also {
         println("$it took ${run.finishedAt - run.startedAt}")
-        println("response: ${run.result.response}")
     }
+    val typedResponse = run.getFinishResponse<AgentAdministrativeResponse>()
+    println("response: $typedResponse")
 }
 
 val getAllEmployeesOverviewTool =
@@ -202,30 +204,36 @@ val responsePersonItem =
         type = Primitive.String,
     )
 
-val expectedResponse =
+data class AgentAdministrativeResponse(
+    val messagedPeople: List<String>,
+    val completedPeople: List<String>,
+    val notCompletedPeople: List<String>
+)
+
+val agentAdministrativeResponse =
     Parameter.Complex.Object(
         "response",
         isRequired = false,
         description = "When all tasks succeeded put the results in this field, when failed skip this response",
         parameters =
-            listOf(
-                Parameter.Complex.Array(
-                    name = "messagedPeople",
-                    description = "A list of names of people that where messaged",
-                    isRequired = true,
-                    itemDefinition = responsePersonItem,
-                ),
-                Parameter.Complex.Array(
-                    name = "completedPeople",
-                    description = "A list of names of people that have filled in there hours",
-                    isRequired = true,
-                    itemDefinition = responsePersonItem,
-                ),
-                Parameter.Complex.Array(
-                    name = "notCompletedPeople",
-                    description = "A list of names of people that didn't filled in there hours",
-                    isRequired = true,
-                    itemDefinition = responsePersonItem,
-                ),
+        listOf(
+            Parameter.Complex.Array(
+                name = "messagedPeople",
+                description = "A list of names of people that where messaged",
+                isRequired = true,
+                itemDefinition = responsePersonItem,
             ),
+            Parameter.Complex.Array(
+                name = "completedPeople",
+                description = "A list of names of people that have filled in there hours",
+                isRequired = true,
+                itemDefinition = responsePersonItem,
+            ),
+            Parameter.Complex.Array(
+                name = "notCompletedPeople",
+                description = "A list of names of people that didn't filled in there hours",
+                isRequired = true,
+                itemDefinition = responsePersonItem,
+            ),
+        ),
     )
