@@ -1,21 +1,40 @@
 package community.flock.aigentic.gemini.client.ratelimit
 
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-data class RateLimitBucket(val requestsPerMinute: Int) {
+interface RateLimiter {
+    suspend fun consume()
+}
+
+internal data class RateLimitBucket(val requestsPerMinute: Int): RateLimiter {
 
     private var requestsLeft: Int = requestsPerMinute
+    private val delayTime = (60_000 / requestsPerMinute).toLong()
 
-    private val delayTime = (60 / requestsPerMinute).toLong()
+    init {
+        @Suppress("OPT_IN_USAGE")
+        GlobalScope.launch {
+            replenish()
+        }
+    }
 
     suspend fun replenish() {
-
-        if(requestsLeft * delayTime <= 60) {
-            // Do nothing
-        } else {
-            requestsLeft += 1
+        while (true) {
+            delay(delayTime)
+            if (requestsLeft < requestsPerMinute) {
+                requestsLeft += 1
+            }
         }
-        delay(delayTime)
-
     }
+
+    override suspend fun consume() {
+        while (requestsLeft == 0) {
+            delay(500)
+        }
+        requestsLeft -= 1
+    }
+
+    fun numberOfRequestsLeft(): Int = requestsLeft
 }

@@ -39,9 +39,10 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
             addTool(updateEmployeeTool)
         }.start()
 
-    when (run.result) {
-        is community.flock.aigentic.core.agent.tool.FinishedOrStuck.Result.Finished -> "Hours inspected successfully"
-        is community.flock.aigentic.core.agent.tool.FinishedOrStuck.Result.Stuck -> "Agent is stuck and could not complete task"
+    when (val result = run.result) {
+        is Result.Finished -> "Hours inspected successfully, it says: ${result.description}"
+        is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.description}"
+        is Result.Fatal -> "Agent crashed: ${result.message}"
     }.also {
         println("$it took ${run.finishedAt - run.startedAt}")
     }

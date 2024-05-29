@@ -17,10 +17,5 @@ fun GenerateContentResponse.toModelResponse(): ModelResponse = ModelResponse(
 internal fun Content.toMessages(): Message  {
 
     val toolCalls = parts.filterIsInstance<Part.FunctionCall>().map { ToolCall(ToolCallId(""), it.functionCall.name, Json.encodeToString(it.functionCall.args)) }
-
-    if(toolCalls.size != parts.size) {
-        error("Help")
-    }
-
     return Message.ToolCalls(toolCalls)
 }

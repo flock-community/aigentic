@@ -22,25 +22,18 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 
-suspend fun Agent.start(): Run =
-    coroutineScope {
-
-        val state = State()
-
-        try {
-            val logging = async { state.getStatus().map { it.text }.collect(::println) }
-
-            executeAction(Initialize(state, this@start)).also {
-                delay(10) // Allow some time for the logging to finish
-                logging.cancelAndJoin()
-            }.toRun()
-
-        } catch (e: Exception) {
-            (state to Result.Fatal(e.message ?: "")).toRun()
-        }
-
-
+suspend fun Agent.start(): Run = coroutineScope {
+    val state = State()
+    val logging = async { state.getStatus().map { it.text }.collect(::println) }
+    try {
+        executeAction(Initialize(state, this@start)).toRun()
+    } catch (e: IllegalStateException) {
+        (state to Result.Fatal(e.message ?: "")).toRun()
+    } finally {
+        delay(10) // Allow some time for the logging to finish
+        logging.cancelAndJoin()
     }
+}
 
 private suspend fun executeAction(action: Action): Pair<State, Result> =
     when (action) {

@@ -7,11 +7,10 @@ import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.gemini.client.GeminiClient
-import community.flock.aigentic.gemini.client.GeminiSettings
 import community.flock.aigentic.gemini.client.config.GeminiApiConfig
+import community.flock.aigentic.gemini.client.ratelimit.RateLimitBucket
 import community.flock.aigentic.gemini.mapper.createGenerateContentRequest
 import community.flock.aigentic.gemini.mapper.toModelResponse
-import kotlinx.coroutines.delay
 
 @Suppress("ktlint:standard:class-naming")
 sealed class GeminiModelIdentifier(
@@ -40,8 +39,13 @@ class GeminiModel(
     }
 
     companion object {
-        fun defaultGeminiClient(authentication: Authentication.APIKey, settings: GeminiSettings = GeminiSettings()): GeminiClient =
-            GeminiClient(GeminiApiConfig(authentication), settings)
+        fun defaultGeminiClient(
+            apiKeyAuthentication: Authentication.APIKey,
+            requestsPerMinute: Int = 5
+        ): GeminiClient = GeminiClient(
+            config = GeminiApiConfig(apiKeyAuthentication),
+            rateLimiter = RateLimitBucket(requestsPerMinute)
+        )
 
     }
 }

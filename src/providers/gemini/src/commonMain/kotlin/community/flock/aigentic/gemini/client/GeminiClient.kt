@@ -4,6 +4,7 @@ import community.flock.aigentic.gemini.client.config.GeminiApiConfig
 import community.flock.aigentic.gemini.client.model.ErrorResponse
 import community.flock.aigentic.gemini.client.model.GenerateContentRequest
 import community.flock.aigentic.gemini.client.model.GenerateContentResponse
+import community.flock.aigentic.gemini.client.ratelimit.RateLimiter
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -20,14 +21,16 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.http.ContentType
+import io.ktor.http.ContentType.*
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.delay
+import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 
 class GeminiClient(
     private val config: GeminiApiConfig,
-    private val settings: GeminiSettings,
+    private val rateLimiter: RateLimiter,
     engine: HttpClientEngine? = null
 ) {
 
@@ -42,7 +45,7 @@ class GeminiClient(
             level = LogLevel.ALL
         }
         install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 5)
+            retryOnServerErrors(maxRetries = config.numberOfRetriesOnServerErrors)
             exponentialDelay()
         }
     }
@@ -51,12 +54,12 @@ class GeminiClient(
 
     suspend fun generateContent(request: GenerateContentRequest, modelIdentifier: GeminiModelIdentifier): GenerateContentResponse {
 
-        delayRequestsPerMinutes()
+        rateLimiter.consume()
 
         val response = ktor.post {
             url(config.generateContentUrl(modelIdentifier))
             setBody(request)
-            contentType(ContentType.Application.Json)
+            contentType(Application.Json)
         }
 
         return if(response.status.isSuccess()) {
@@ -67,15 +70,7 @@ class GeminiClient(
         }
     }
 
-    suspend fun delayRequestsPerMinutes() {
-        delay((60 / settings.requestsPerMinute).toLong())
-    }
-
     private fun GeminiApiConfig.generateContentUrl(modelIdentifier: GeminiModelIdentifier) =
         "$baseUrl/${modelIdentifier.stringValue}:generateContent?key=${apiKey.key}"
 
 }
-
-data class GeminiSettings(
-    val requestsPerMinute: Int = 5
-)

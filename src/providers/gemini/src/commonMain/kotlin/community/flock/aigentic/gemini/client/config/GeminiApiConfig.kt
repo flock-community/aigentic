@@ -6,6 +6,7 @@ import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 data class GeminiApiConfig(
     val apiKey: Authentication.APIKey,
     val baseUrl: String = "https://generativelanguage.googleapis.com/v1beta/models",
+    val numberOfRetriesOnServerErrors: Int = 2
 )
 
 

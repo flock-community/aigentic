@@ -31,7 +31,10 @@ internal suspend fun GoogleHttpCloudFunction.handleRequest(
     val run = agent.start()
 
     when(val finishedOrStuck = run.result) {
-        is community.flock.aigentic.core.agent.tool.FinishedOrStuck.Result.Finished -> response.status(200).send(finishedOrStuck.description)
-        is community.flock.aigentic.core.agent.tool.FinishedOrStuck.Result.Stuck -> response.status(422).send(finishedOrStuck.description)
+        is Result.Finished -> response.status(200).send(finishedOrStuck.description)
+        is Result.Stuck -> response.status(422).send(finishedOrStuck.description)
+        is Result.Fatal -> response.status(500).send("Internal Server Error").also {
+            console.error(finishedOrStuck.message)
+        }
     }
 }
