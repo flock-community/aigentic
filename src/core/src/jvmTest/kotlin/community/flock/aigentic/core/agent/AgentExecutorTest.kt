@@ -5,8 +5,8 @@ import community.flock.aigentic.core.agent.test.util.TestData.finishedSuccessful
 import community.flock.aigentic.core.agent.test.util.TestData.modelFinishDirectly
 import community.flock.aigentic.core.agent.test.util.encode
 import community.flock.aigentic.core.agent.test.util.toModelResponse
+import community.flock.aigentic.core.agent.tool.FINISH_OR_STUCK_TOOL_NAME
 import community.flock.aigentic.core.agent.tool.FinishReason
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
@@ -187,7 +187,7 @@ class AgentExecutorTest : DescribeSpec({
             val toolCall =
                 ToolCall(
                     ToolCallId("1"),
-                    finishOrStuckTool.name.value,
+                    FINISH_OR_STUCK_TOOL_NAME,
                     buildJsonObject {
                         put("finishReason", "FinishedTask")
                         put("description", "Finished the task")

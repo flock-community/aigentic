@@ -1,7 +1,6 @@
 package community.flock.aigentic.core.agent
 
 import community.flock.aigentic.core.agent.tool.FinishedOrStuck
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolResultContent
@@ -18,8 +17,8 @@ private suspend fun executeTool(
     toolCall: ToolCall,
 ): ToolExecutionResult =
     when (toolCall.name) {
-        finishOrStuckTool.name.value -> {
-            val finishedOrStuck = finishOrStuckTool.handler(toolCall.argumentsAsJson())
+        agent.finishOrStuckTool.name.value -> {
+            val finishedOrStuck = agent.finishOrStuckTool.handler(toolCall.argumentsAsJson())
             ToolExecutionResult.FinishedToolResult(finishedOrStuck)
         }
 

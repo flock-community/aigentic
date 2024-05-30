@@ -6,7 +6,6 @@ import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
@@ -63,9 +62,8 @@ class AgentConfig : Config<Agent> {
                     builderPropertyMissingErrorMessage("tools", "addTool()"),
                 ).let { tools.associateBy { it.name } },
             contexts = contexts,
-        ).also {
-            finishOrStuckTool.responseParameter = responseParameter
-        }
+            responseParameter = responseParameter,
+        )
 }
 
 @AgentDSL
