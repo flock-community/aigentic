@@ -19,8 +19,7 @@ class AgentConfig : Config<Agent> {
     internal var task: TaskConfig? = null
     internal var contexts: List<Context> = emptyList()
     internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
-    internal var responseParameter: Parameter.Complex.Object? = null
-
+    internal var responseParameter: Parameter? = null
     internal val tools = mutableListOf<Tool>()
 
     fun AgentConfig.id(id: String) {
@@ -46,7 +45,7 @@ class AgentConfig : Config<Agent> {
         this.model = model
     }
 
-    fun AgentConfig.finishResponse(response: Parameter.Complex.Object) {
+    fun AgentConfig.finishResponse(response: Parameter) {
         this.responseParameter = response
     }
 
