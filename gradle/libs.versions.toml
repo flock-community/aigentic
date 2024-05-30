@@ -8,6 +8,7 @@ nexus-publish = "2.0.0"
 kotlinOpenapiBindings = "0.0.24"
 kotest = "5.8.1"
 mockk = "1.13.10"
+openaiClient = "3.7.2"
 google-cloud-functions-framework = "^3.4.0"
 
 [libraries]
@@ -37,6 +38,7 @@ ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.r
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 # OpenAPI
 kotlinx-openapi-bindings = { group = "community.flock.kotlinx.openapi.bindings", name = "kotlin-openapi-bindings", version.ref = "kotlinOpenapiBindings" }
+openai-client = { group = "com.aallam.openai", name = "openai-client", version.ref = "openaiClient" }
 #Test
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }

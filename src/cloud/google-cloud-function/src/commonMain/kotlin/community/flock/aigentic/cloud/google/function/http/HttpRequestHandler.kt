@@ -33,11 +33,11 @@ internal suspend fun GoogleHttpCloudFunction.handleRequest(
             console.log("Agent finished with result: ${it.result}")
         }
 
-    when (val finishedOrStuck = run.result) {
-        is Result.Finished -> response.status(200).send(finishedOrStuck.description)
-        is Result.Stuck -> response.status(422).send(finishedOrStuck.description)
+    when (val result = run.result) {
+        is Result.Finished -> response.status(200).send(result.response ?: result.description)
+        is Result.Stuck -> response.status(422).send(result.description)
         is Result.Fatal -> {
-            console.error(finishedOrStuck.message)
+            console.error("Fatal: ${result.message}")
             response.status(500).send("Internal Server Error")
         }
     }

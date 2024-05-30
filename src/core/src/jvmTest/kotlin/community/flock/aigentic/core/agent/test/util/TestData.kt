@@ -1,7 +1,7 @@
 package community.flock.aigentic.core.agent.test.util
 
-import community.flock.aigentic.core.agent.tool.finishedTaskTool
-import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
+import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
+import community.flock.aigentic.core.agent.tool.STUCK_WITH_TASK_TOOL_NAME
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.model.Model
@@ -14,7 +14,7 @@ object TestData {
     val finishedTaskToolCall =
         ToolCall(
             ToolCallId("1"),
-            finishedTaskTool.name.value,
+            FINISHED_TASK_TOOL_NAME,
             buildJsonObject {
                 put("description", "Finished the task")
             }.encode(),
@@ -23,7 +23,7 @@ object TestData {
     val stuckWithTaskToolCall =
         ToolCall(
             ToolCallId("1"),
-            stuckWithTaskTool.name.value,
+            STUCK_WITH_TASK_TOOL_NAME,
             buildJsonObject {
                 put("description", "I don't know what to do")
             }.encode(),

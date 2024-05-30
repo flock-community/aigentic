@@ -60,6 +60,16 @@ val finishedTaskToolCall =
         }.let { Json.encodeToString(it) },
     )
 
+val finishedTaskWithResponseToolCall =
+    ToolCall(
+        ToolCallId("1"),
+        "finishedTask",
+        buildJsonObject {
+            put("description", "Finished the task")
+            put("response", buildJsonObject { put("message", "Agent response") })
+        }.let { Json.encodeToString(it) },
+    )
+
 val stuckWithTaskToolCall =
     ToolCall(
         ToolCallId("1"),

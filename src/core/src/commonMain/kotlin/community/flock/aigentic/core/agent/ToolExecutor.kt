@@ -1,6 +1,8 @@
 package community.flock.aigentic.core.agent
 
+import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
 import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.STUCK_WITH_TASK_TOOL_NAME
 import community.flock.aigentic.core.agent.tool.finishedTaskTool
 import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
 import community.flock.aigentic.core.exception.aigenticException
@@ -20,12 +22,12 @@ private suspend fun executeTool(
     toolCall: ToolCall,
 ): ToolExecutionResult =
     when (toolCall.name) {
-        finishedTaskTool.name.value -> {
-            val finished = finishedTaskTool.handler(toolCall.argumentsAsJson())
+        FINISHED_TASK_TOOL_NAME -> {
+            val finished = agent.finishedTaskTool.handler(toolCall.argumentsAsJson())
             ToolExecutionResult.FinishedToolResult(reason = finished)
         }
 
-        stuckWithTaskTool.name.value -> {
+        STUCK_WITH_TASK_TOOL_NAME -> {
             val stuck = stuckWithTaskTool.handler(toolCall.argumentsAsJson())
             ToolExecutionResult.FinishedToolResult(reason = stuck)
         }
