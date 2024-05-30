@@ -20,5 +20,5 @@ interface Model {
 }
 
 data class ModelResponse(
-    val message: Message
+    val message: Message,
 )

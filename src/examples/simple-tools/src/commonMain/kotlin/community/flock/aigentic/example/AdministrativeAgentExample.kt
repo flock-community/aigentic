@@ -53,7 +53,7 @@ val getAllEmployeesOverviewTool =
         override val name = ToolName("getAllEmployeesOverview")
         override val description = "Returns a list of all employees"
         override val parameters = emptyList<Parameter>()
-        override val handler: suspend (map: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
             """
             |Employee: Niels
             |Telephone number: 0612345678
@@ -80,7 +80,7 @@ val getEmployeeDetailByNameTool =
         override val name = ToolName("getEmployeeDetailByName")
         override val description = "Returns the hour status of an employee by name"
         override val parameters = listOf(nameParameter)
-        override val handler: suspend (map: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
 
             val name = nameParameter.getStringValue(it)
 
@@ -127,7 +127,7 @@ val askManagerForResponseTool =
         override val name = ToolName("askManagerForResponse")
         override val description = "Ask to manager how to respond"
         override val parameters = listOf(nameParameter)
-        override val handler: suspend (map: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
 
             val name = nameParameter.getStringValue(it)
             "$name, je moet nu echt je uren invullen anders word je ontslagen!"
@@ -155,7 +155,7 @@ val updateEmployeeTool =
         override val name = ToolName("updateEmployee")
         override val description = "Update the employee status"
         override val parameters = listOf(nameParameter, numberOfRemindersSentParameter)
-        override val handler: suspend (map: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
             val name = nameParameter.getStringValue(it)
             val numberOfRemindersSent = numberOfRemindersSentParameter.getIntValue(it)
             "Updated number of reminders sent for '$name' to '$numberOfRemindersSent'"

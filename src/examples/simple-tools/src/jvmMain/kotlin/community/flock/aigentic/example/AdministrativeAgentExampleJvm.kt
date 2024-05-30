@@ -1,18 +1,14 @@
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getStringValue
-import community.flock.aigentic.gemini.dsl.geminiModel
-import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject
 
-//private val openAIAPIKey =
+// private val openAIAPIKey =
 //    System.getenv("OPENAI_KEY").also {
 //        if (it.isNullOrEmpty()) error("Set 'OPENAI_KEY' environment variable!")
 //    }
@@ -22,11 +18,8 @@ private val geminiKey =
         if (it.isNullOrEmpty()) error("Set 'GEMINI_API_KEY' environment variable!")
     }
 
-
-
 val sendMessageTool =
     object : Tool {
-
         val messageParam =
             Parameter.Primitive(
                 "message",
@@ -57,6 +50,4 @@ fun main(): Unit =
 //            }
 //            addTool(sendMessageTool)
 //        }.start()
-
     }
-

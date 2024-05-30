@@ -1,5 +1,6 @@
 package community.flock.aigentic.tools.openapi
 
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.logging.Logger
 import community.flock.aigentic.core.logging.SimpleLogger
 import community.flock.aigentic.core.tool.Parameter
@@ -72,9 +73,9 @@ class OpenAPIv3Parser(
 
     private fun getEndpointUrl(path: Path): String {
         return if (openApi.servers?.size != 1) {
-            error("Expecting exactly 1 server in OAS, got ${openApi.servers}")
+            aigenticException("Expecting exactly 1 server in OAS, got ${openApi.servers}")
         } else {
-            val firstUrl = openApi.servers?.first()?.url ?: error("OAS server url required")
+            val firstUrl = openApi.servers?.first()?.url ?: aigenticException("OAS server url required")
             firstUrl.trimEnd('/') + "/" + path.value.trimStart('/')
         }
     }
@@ -82,7 +83,7 @@ class OpenAPIv3Parser(
     private fun OperationObject.getParameters(): Parameters =
         parameters?.fold(Parameters()) { parameters, parameterOrReferenceObject ->
             parameterOrReferenceObject.resolve().let { parameterObject: ParameterObject ->
-                val schemaObject = parameterObject.schema?.resolve() ?: error("Schema cannot be null")
+                val schemaObject = parameterObject.schema?.resolve() ?: aigenticException("Schema cannot be null")
 
                 val parameter =
                     schemaObject.toParameter(
@@ -162,12 +163,12 @@ class OpenAPIv3Parser(
 
     private fun SchemaObject.determineEnumValueType(): Primitive =
         when (type) {
-            null -> error("Enum value type cannot be null")
+            null -> aigenticException("Enum value type cannot be null")
             Type.STRING -> Primitive.String
             Type.NUMBER -> Primitive.Number
             Type.INTEGER -> Primitive.Integer
             Type.BOOLEAN -> Primitive.Boolean // Not sure why you want to use a boolean in an enum.... but it's possible
-            Type.OBJECT, Type.ARRAY -> error("Only primitive values are supported for enum, got: $type")
+            Type.OBJECT, Type.ARRAY -> aigenticException("Only primitive values are supported for enum, got: $type")
         }
 
     private fun SchemaObject.createEnumValues(parameterType: Primitive) =
@@ -177,7 +178,7 @@ class OpenAPIv3Parser(
             Primitive.Number -> PrimitiveValue.Number::fromString
             Primitive.String -> PrimitiveValue.String::fromString
         }.let { constructor ->
-            enum?.map { constructor(it.content) } ?: error("Enum values cannot be null")
+            enum?.map { constructor(it.content) } ?: aigenticException("Enum values cannot be null")
         }
 
     private fun SchemaObject.createArrayParameter(
@@ -186,7 +187,7 @@ class OpenAPIv3Parser(
         isRequired: Boolean,
     ): Parameter.Complex.Array? =
         createArrayItemParameterDefinition(
-            arrayItemSchemaObject = items?.resolve() ?: error("Array items cannot be null"),
+            arrayItemSchemaObject = items?.resolve() ?: aigenticException("Array items cannot be null"),
             isRequired = isRequired,
         )?.let {
             Parameter.Complex.Array(
@@ -218,7 +219,7 @@ class OpenAPIv3Parser(
                     parameters =
                         arrayItemSchemaObject.properties?.getParameters(
                             arrayItemSchemaObject.required,
-                        ) ?: error("Object properties cannot be empty for parameter: $name ($description)"),
+                        ) ?: aigenticException("Object properties cannot be empty for parameter: $name ($description)"),
                 )
 
             is Primitive ->
@@ -312,7 +313,8 @@ class OpenAPIv3Parser(
             Type.OBJECT -> ParameterType.Complex.Object
         }
 
-    private fun ReferenceObject.getReference() = this.ref.value.split("/").getOrNull(3) ?: error("Wrong reference: ${this.ref.value}")
+    private fun ReferenceObject.getReference() =
+        this.ref.value.split("/").getOrNull(3) ?: aigenticException("Wrong reference: ${this.ref.value}")
 
     private fun ParameterOrReferenceObject.resolve(): ParameterObject {
         fun ReferenceObject.resolveParameterObject(): ParameterObject =
@@ -321,7 +323,7 @@ class OpenAPIv3Parser(
                     is ParameterObject -> it
                     is ReferenceObject -> it.resolveParameterObject()
                 }
-            } ?: error("Cannot resolve $ref")
+            } ?: aigenticException("Cannot resolve $ref")
 
         return when (this) {
             is ParameterObject -> this
@@ -336,7 +338,7 @@ class OpenAPIv3Parser(
                     is SchemaObject -> it
                     is ReferenceObject -> it.resolveSchemaObject()
                 }
-            } ?: error("Cannot resolve ref: $ref")
+            } ?: aigenticException("Cannot resolve ref: $ref")
 
         return when (this) {
             is ReferenceObject -> this.resolveSchemaObject()
@@ -351,7 +353,7 @@ class OpenAPIv3Parser(
                     is RequestBodyObject -> it
                     is ReferenceObject -> it.resolveRequestBody()
                 }
-            } ?: error("Cannot resolve ref: $ref")
+            } ?: aigenticException("Cannot resolve ref: $ref")
 
         return when (this) {
             is RequestBodyObject -> this

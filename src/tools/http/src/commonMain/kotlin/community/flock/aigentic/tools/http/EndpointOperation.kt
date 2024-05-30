@@ -27,7 +27,7 @@ fun EndpointOperation.toToolDefinition(
         override val name = ToolName(this@toToolDefinition.name)
         override val description = this@toToolDefinition.description
         override val parameters = allParameterDefinitions
-        override val handler: suspend (map: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
             restClientExecutor.execute(operation = this@toToolDefinition, callArguments = it, headers = headers)
         }
     }

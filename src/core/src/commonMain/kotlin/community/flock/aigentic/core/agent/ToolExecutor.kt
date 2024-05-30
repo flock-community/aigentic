@@ -3,6 +3,7 @@ package community.flock.aigentic.core.agent
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.agent.tool.finishedTaskTool
 import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolResultContent
@@ -19,7 +20,6 @@ private suspend fun executeTool(
     toolCall: ToolCall,
 ): ToolExecutionResult =
     when (toolCall.name) {
-
         finishedTaskTool.name.value -> {
             val finished = finishedTaskTool.handler(toolCall.argumentsAsJson())
             ToolExecutionResult.FinishedToolResult(reason = finished)
@@ -31,7 +31,7 @@ private suspend fun executeTool(
         }
 
         else -> {
-            val tool = agent.tools[ToolName(toolCall.name)] ?: error("Tool not registered: $toolCall")
+            val tool = agent.tools[ToolName(toolCall.name)] ?: aigenticException("Tool not registered: $toolCall")
             val result = tool.handler(toolCall.argumentsAsJson())
             ToolExecutionResult.ToolResult(Message.ToolResult(toolCall.id, toolCall.name, ToolResultContent(result)))
         }

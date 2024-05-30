@@ -12,6 +12,7 @@ import community.flock.aigentic.core.agent.state.addMessages
 import community.flock.aigentic.core.agent.state.getStatus
 import community.flock.aigentic.core.agent.state.toRun
 import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender.Aigentic
 import community.flock.aigentic.core.message.ToolCall
@@ -22,18 +23,19 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 
-suspend fun Agent.start(): Run = coroutineScope {
-    val state = State()
-    val logging = async { state.getStatus().map { it.text }.collect(::println) }
-    try {
-        executeAction(Initialize(state, this@start)).toRun()
-    } catch (e: IllegalStateException) {
-        (state to Result.Fatal(e.message ?: "")).toRun()
-    } finally {
-        delay(10) // Allow some time for the logging to finish
-        logging.cancelAndJoin()
+suspend fun Agent.start(): Run =
+    coroutineScope {
+        val state = State()
+        val logging = async { state.getStatus().map { it.text }.collect(::println) }
+        try {
+            executeAction(Initialize(state, this@start)).toRun()
+        } catch (e: AigenticException) {
+            (state to Result.Fatal(e.message)).toRun()
+        } finally {
+            delay(10) // Allow some time for the logging to finish
+            logging.cancelAndJoin()
+        }
     }
-}
 
 private suspend fun executeAction(action: Action): Pair<State, Result> =
     when (action) {

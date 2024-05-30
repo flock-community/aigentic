@@ -7,6 +7,7 @@ import com.aallam.openai.api.chat.ImagePart
 import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.api.chat.ToolId
 import com.aallam.openai.api.core.Role
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -32,7 +33,7 @@ object DomainMapper {
                     text = content!!,
                 )
 
-            else -> error("Cannot map OpenAI ChatMessage, unknown type: $this")
+            else -> aigenticException("Cannot map OpenAI ChatMessage, unknown type: $this")
         }
 
     private fun ChatMessage.isTextMessage() = messageContent?.let { it is TextContent } ?: false
@@ -59,7 +60,7 @@ object DomainMapper {
         when (this) {
             Role.Assistant -> Sender.Model
             Role.User -> Sender.Aigentic
-            else -> error("Unexpected role: $this")
+            else -> aigenticException("Unexpected role: $this")
         }
 }
 

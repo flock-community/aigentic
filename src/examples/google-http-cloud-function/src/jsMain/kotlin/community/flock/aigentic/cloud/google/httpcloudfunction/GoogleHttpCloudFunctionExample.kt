@@ -30,7 +30,7 @@ fun main() {
             override val name = ToolName("greet")
             override val description = null
             override val parameters = listOf(messageParameter)
-            override val handler: suspend (map: JsonObject) -> String = { arguments ->
+            override val handler: suspend (toolArguments: JsonObject) -> String = { arguments ->
 
                 val message = messageParameter.getStringValue(arguments)
                 println(message)

@@ -1,5 +1,6 @@
 package community.flock.aigentic.gemini.client.model
 
+import community.flock.aigentic.core.exception.aigenticException
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
@@ -12,7 +13,6 @@ data class Content(val role: Role, val parts: List<Part>)
 
 @Serializable(PartSerializer::class)
 sealed interface Part {
-
     @Serializable
     data class Text(val text: String) : Part
 
@@ -36,8 +36,7 @@ object PartSerializer : JsonContentPolymorphicSerializer<Part>(Part::class) {
             "text" in jsonObject -> Part.Text.serializer()
             "functionCall" in jsonObject -> Part.FunctionCall.serializer()
             "functionResponse" in jsonObject -> Part.FunctionResponse.serializer()
-            else -> error("Unknown Part type")
+            else -> aigenticException("Unknown Part type")
         }
     }
 }
-

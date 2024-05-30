@@ -9,55 +9,55 @@ import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getStringValue
 import kotlinx.serialization.json.JsonObject
 
-internal val finishedTaskTool = object : InternalTool<Finished> {
+internal val finishedTaskTool =
+    object : InternalTool<Finished> {
+        val descriptionParameter =
+            Parameter.Primitive(
+                name = "description",
+                description = "A description of the things you've done to finish the task",
+                isRequired = true,
+                type = ParameterType.Primitive.String,
+            )
 
-    val descriptionParameter =
-        Parameter.Primitive(
-            name = "description",
-            description = "A description of the things you've done to finish the task",
-            isRequired = true,
-            type = ParameterType.Primitive.String,
-        )
+        override val name: ToolName = ToolName("finishedTask")
+        override val description: String = "When you've successfully finished the task call this function to indicate you're done."
+        override val parameters: List<Parameter> = listOf(descriptionParameter)
 
-    override val name: ToolName = ToolName("finishedTask")
-    override val description: String = "When you've successfully finished the task call this function to indicate you're done."
-    override val parameters: List<Parameter> = listOf(descriptionParameter)
+        override val handler: suspend (toolArguments: JsonObject) -> Finished = { arguments ->
 
-    override val handler: suspend (map: JsonObject) -> Finished = { arguments ->
-
-        val desc = descriptionParameter.getStringValue(arguments)
-        Finished(desc)
+            val desc = descriptionParameter.getStringValue(arguments)
+            Finished(desc)
+        }
     }
-}
 
-internal val stuckWithTaskTool = object : InternalTool<Stuck> {
+internal val stuckWithTaskTool =
+    object : InternalTool<Stuck> {
+        val descriptionParameter =
+            Parameter.Primitive(
+                name = "description",
+                description = "A description of why the task can't be accomplished",
+                isRequired = true,
+                type = ParameterType.Primitive.String,
+            )
 
-    val descriptionParameter =
-        Parameter.Primitive(
-            name = "description",
-            description = "A description of why the task can't be accomplished",
-            isRequired = true,
-            type = ParameterType.Primitive.String,
-        )
+        override val name: ToolName = ToolName("stuckWithTask")
+        override val description: String = "When you can't accomplish the task call this function to indicate you're stuck"
+        override val parameters: List<Parameter> = listOf(descriptionParameter)
 
-    override val name: ToolName = ToolName("stuckWithTask")
-    override val description: String = "When you can't accomplish the task call this function to indicate you're stuck"
-    override val parameters: List<Parameter> = listOf(descriptionParameter)
+        override val handler: suspend (toolArguments: JsonObject) -> Stuck = { arguments ->
 
-    override val handler: suspend (map: JsonObject) -> Stuck = { arguments ->
-
-        val desc = descriptionParameter.getStringValue(arguments)
-        Stuck(desc)
+            val desc = descriptionParameter.getStringValue(arguments)
+            Stuck(desc)
+        }
     }
-}
 
 sealed interface Result {
     data class Finished(val description: String) : Result
-    data class Stuck(val description: String): Result
-    data class Fatal(val message: String): Result
+
+    data class Stuck(val description: String) : Result
+
+    data class Fatal(val message: String) : Result
 }
-
-
 
 sealed interface FinishReason {
     data object FinishedTask : FinishReason

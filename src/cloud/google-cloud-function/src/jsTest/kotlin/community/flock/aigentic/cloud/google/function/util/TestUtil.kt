@@ -1,5 +1,6 @@
 package community.flock.aigentic.cloud.google.function.util
 
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Message.ToolCalls
 import community.flock.aigentic.core.message.ToolCall
@@ -23,12 +24,12 @@ val testTool =
         override val name: ToolName = ToolName("TestTool")
         override val description: String? = null
         override val parameters: List<Parameter> = emptyList()
-        override val handler: suspend (map: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
             "Hello from Google Cloud Function 👋"
         }
     }
 
-fun modelFinishDirectly(finishReason: ToolCall = finishedTask) =
+fun modelFinishDirectly(finishReason: ToolCall = finishedTaskToolCall) =
     object : Model {
         override val authentication = Authentication.APIKey("some-secret")
         override val modelIdentifier = object : ModelIdentifier {}
@@ -39,22 +40,31 @@ fun modelFinishDirectly(finishReason: ToolCall = finishedTask) =
         ): ModelResponse = ModelResponse(ToolCalls(listOf(finishReason)))
     }
 
-val finishedTask =
+fun modelException() =
+    object : Model {
+        override val authentication = Authentication.APIKey("some-secret")
+        override val modelIdentifier = object : ModelIdentifier {}
+
+        override suspend fun sendRequest(
+            messages: List<Message>,
+            tools: List<ToolDescription>,
+        ): ModelResponse = aigenticException("Model API exception")
+    }
+
+val finishedTaskToolCall =
     ToolCall(
         ToolCallId("1"),
-        "finishedOrStuck",
+        "finishedTask",
         buildJsonObject {
-            put("finishReason", "FinishedTask")
             put("description", "Finished the task")
         }.let { Json.encodeToString(it) },
     )
 
-val imStuck =
+val stuckWithTaskToolCall =
     ToolCall(
         ToolCallId("1"),
-        "finishedOrStuck",
+        "stuckWithTask",
         buildJsonObject {
-            put("finishReason", "ImStuck")
             put("description", "I couldn't finish the task")
         }.let { Json.encodeToString(it) },
     )

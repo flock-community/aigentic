@@ -28,17 +28,18 @@ data class GenerationConfig(
 
 @Serializable
 data class ToolConfig(
-    @SerialName("function_calling_config") val functionCallingConfig: FunctionCallingConfig
+    @SerialName("function_calling_config") val functionCallingConfig: FunctionCallingConfig,
 )
 
 @Serializable
 data class FunctionCallingConfig(val mode: Mode) {
     @Serializable
     enum class Mode {
-        @SerialName("MODE_UNSPECIFIED") UNSPECIFIED,
+        @SerialName("MODE_UNSPECIFIED")
+        UNSPECIFIED,
         AUTO,
         ANY,
-        NONE
+        NONE,
     }
 }
 

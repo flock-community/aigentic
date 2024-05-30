@@ -5,13 +5,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GenerateContentResponse(
     val candidates: List<Candidate>,
-    val usageMetadata: UsageMetadata?
+    val usageMetadata: UsageMetadata?,
 )
 
 @Serializable
 class Candidate(
     val content: Content,
-    val finishReason: FinishReason?
+    val finishReason: FinishReason?,
 )
 
 @Serializable
@@ -35,12 +35,12 @@ enum class FinishReason {
     RECITATION,
 
     /** Model stopped for another reason. */
-    OTHER
+    OTHER,
 }
 
 @Serializable
 data class UsageMetadata(
     val promptTokenCount: Int? = null,
     val candidatesTokenCount: Int? = null,
-    val totalTokenCount: Int? = null
+    val totalTokenCount: Int? = null,
 )

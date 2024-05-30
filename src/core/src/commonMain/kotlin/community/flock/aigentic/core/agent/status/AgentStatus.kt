@@ -38,8 +38,14 @@ suspend fun Message.toStatus(): List<AgentStatus> =
             this.toolCalls.map {
                 when (it.name) {
                     // TODO fix why is tool handler called again?
-                    finishedTaskTool.name.value -> finishedTaskTool.handler(it.argumentsAsJson()).let { AgentStatus.Finished(it.description) }
-                    stuckWithTaskTool.name.value -> stuckWithTaskTool.handler(it.argumentsAsJson()).let { AgentStatus.Stuck(it.description) }
+                    finishedTaskTool.name.value ->
+                        finishedTaskTool.handler(
+                            it.argumentsAsJson(),
+                        ).let { AgentStatus.Finished(it.description) }
+                    stuckWithTaskTool.name.value ->
+                        stuckWithTaskTool.handler(
+                            it.argumentsAsJson(),
+                        ).let { AgentStatus.Stuck(it.description) }
                     else -> AgentStatus.ExecuteTool(it)
                 }
             }

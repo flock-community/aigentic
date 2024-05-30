@@ -29,8 +29,9 @@ data class Agent(
     val contexts: List<Context>,
     val tools: Map<ToolName, Tool>,
 ) {
-    internal val internalTools: Map<ToolName, InternalTool<*>> = mapOf(
-        finishedTaskTool.name to finishedTaskTool,
-        stuckWithTaskTool.name to stuckWithTaskTool
-    )
+    internal val internalTools: Map<ToolName, InternalTool<*>> =
+        mapOf(
+            finishedTaskTool.name to finishedTaskTool,
+            stuckWithTaskTool.name to stuckWithTaskTool,
+        )
 }

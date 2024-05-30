@@ -1,12 +1,16 @@
 package community.flock.aigentic.core.agent
 
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
-import community.flock.aigentic.core.agent.test.util.TestData.finishedSuccessfully
-import community.flock.aigentic.core.agent.test.util.TestData.modelFinishDirectly
+import community.flock.aigentic.core.agent.test.util.TestData.finishedTaskToolCall
+import community.flock.aigentic.core.agent.test.util.TestData.modelFinishTaskDirectly
+import community.flock.aigentic.core.agent.test.util.TestData.modelStuckDirectly
 import community.flock.aigentic.core.agent.test.util.encode
 import community.flock.aigentic.core.agent.test.util.toModelResponse
+import community.flock.aigentic.core.agent.tool.Result.Fatal
 import community.flock.aigentic.core.agent.tool.Result.Finished
+import community.flock.aigentic.core.agent.tool.Result.Stuck
 import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -39,7 +43,7 @@ class AgentExecutorTest : DescribeSpec({
         it("should run agent successfully") {
 
             val mockHandler =
-                mockk<suspend (map: JsonObject) -> String>().apply {
+                mockk<suspend (toolArguments: JsonObject) -> String>().apply {
                     coEvery { this@apply.invoke(any<JsonObject>()) } returns
                         Json.encodeToString(
                             listOf(
@@ -57,7 +61,7 @@ class AgentExecutorTest : DescribeSpec({
                         listOf(
                             Primitive("count", "number of events", true, Integer),
                         )
-                    override val handler: suspend (map: JsonObject) -> String = mockHandler
+                    override val handler: suspend (toolArguments: JsonObject) -> String = mockHandler
                 }
 
             val expectedArguments = buildJsonObject { put("count", 10) }
@@ -67,7 +71,7 @@ class AgentExecutorTest : DescribeSpec({
                     coEvery { sendRequest(any(), any()) } returnsMany
                         listOf(
                             ToolCall(ToolCallId("1"), newsEventTool.name.value, expectedArguments.encode()),
-                            finishedSuccessfully,
+                            finishedTaskToolCall,
                         ).toModelResponse()
                 }
 
@@ -88,6 +92,20 @@ class AgentExecutorTest : DescribeSpec({
             }
         }
 
+        it("should finish with Stuck result when model doesn't know what to do") {
+
+            agent {
+                model(modelStuckDirectly)
+                task("Summarize the retrieved news events") {
+                    addInstruction("Fetch top 10 news events")
+                }
+                addTool(mockk<Tool>(relaxed = true))
+            }.start().apply {
+                result.shouldBeInstanceOf<Stuck>()
+                (result as Stuck).description shouldBe "I don't know what to do"
+            }
+        }
+
         it("should add system prompt as first message") {
 
             val expectedSystemPrompt = Message.SystemPrompt("You are a helpful agent")
@@ -98,7 +116,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val agent =
                 agent {
-                    model(modelFinishDirectly)
+                    model(modelFinishTaskDirectly)
                     systemPrompt(systemPromptMock)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
@@ -117,7 +135,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val agent =
                 agent {
-                    model(modelFinishDirectly)
+                    model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     context {
                         addText(expectedTextContext)
@@ -143,7 +161,7 @@ class AgentExecutorTest : DescribeSpec({
                     coEvery { sendRequest(any(), any()) } returnsMany
                         listOf(
                             toolCall,
-                            finishedSuccessfully,
+                            finishedTaskToolCall,
                         ).toModelResponse()
                 }
 
@@ -152,7 +170,7 @@ class AgentExecutorTest : DescribeSpec({
                     override val name = ToolName(toolCall.name)
                     override val description = null
                     override val parameters = emptyList<Primitive>()
-                    override val handler: suspend (map: JsonObject) -> String = { "toolResult" }
+                    override val handler: suspend (toolArguments: JsonObject) -> String = { "toolResult" }
                 }
 
             val agent =
@@ -175,6 +193,25 @@ class AgentExecutorTest : DescribeSpec({
     }
 
     describe("exceptions") {
+
+        it("should finish with Fatal result when model throws AigenticException") {
+
+            val modelMock =
+                mockk<Model>().apply {
+                    coEvery { sendRequest(any(), any()) } throws AigenticException("Model exception")
+                }
+
+            agent {
+                model(modelMock)
+                task("Summarize the retrieved news events") {
+                    addInstruction("Fetch top 10 news events")
+                }
+                addTool(mockk<Tool>(relaxed = true))
+            }.start().apply {
+                result.shouldBeInstanceOf<Fatal>()
+                (result as Fatal).message shouldBe "Model exception"
+            }
+        }
 
         // Implement more in https://aigentic.youtrack.cloud/issue/AIGENTIC-29/Improve-Aigentic-client-Add-error-handling
     }

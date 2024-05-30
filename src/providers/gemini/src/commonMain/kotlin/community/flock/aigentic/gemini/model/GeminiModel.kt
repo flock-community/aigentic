@@ -25,12 +25,11 @@ sealed class GeminiModelIdentifier(
 class GeminiModel(
     override val authentication: Authentication.APIKey,
     override val modelIdentifier: GeminiModelIdentifier,
-    private val geminiClient: GeminiClient = defaultGeminiClient(authentication)
+    private val geminiClient: GeminiClient = defaultGeminiClient(authentication),
 ) : Model {
-
     override suspend fun sendRequest(
         messages: List<Message>,
-        tools: List<ToolDescription>
+        tools: List<ToolDescription>,
     ): ModelResponse {
         val request = createGenerateContentRequest(messages, tools)
         return geminiClient
@@ -41,11 +40,11 @@ class GeminiModel(
     companion object {
         fun defaultGeminiClient(
             apiKeyAuthentication: Authentication.APIKey,
-            requestsPerMinute: Int = 5
-        ): GeminiClient = GeminiClient(
-            config = GeminiApiConfig(apiKeyAuthentication),
-            rateLimiter = RateLimitBucket(requestsPerMinute)
-        )
-
+            requestsPerMinute: Int = 5,
+        ): GeminiClient =
+            GeminiClient(
+                config = GeminiApiConfig(apiKeyAuthentication),
+                rateLimiter = RateLimitBucket(requestsPerMinute),
+            )
     }
 }

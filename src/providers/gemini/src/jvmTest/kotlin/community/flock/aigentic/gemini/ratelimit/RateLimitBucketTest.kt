@@ -4,9 +4,8 @@ import community.flock.aigentic.gemini.client.ratelimit.RateLimitBucket
 import io.kotest.common.runBlocking
 import io.kotest.core.spec.style.DescribeSpec
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 
-class RateLimitBucketTest: DescribeSpec({
+class RateLimitBucketTest : DescribeSpec({
 
     it("should replenish") {
         runBlocking {
@@ -16,12 +15,6 @@ class RateLimitBucketTest: DescribeSpec({
             async {
                 bucket.replenish()
             }
-
-
-
-
-
         }
-
     }
 })
