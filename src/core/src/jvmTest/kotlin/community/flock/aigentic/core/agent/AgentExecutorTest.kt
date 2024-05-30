@@ -5,6 +5,7 @@ import community.flock.aigentic.core.agent.test.util.TestData.finishedSuccessful
 import community.flock.aigentic.core.agent.test.util.TestData.modelFinishDirectly
 import community.flock.aigentic.core.agent.test.util.encode
 import community.flock.aigentic.core.agent.test.util.toModelResponse
+import community.flock.aigentic.core.agent.tool.FINISH_OR_STUCK_TOOL_NAME
 import community.flock.aigentic.core.agent.tool.FinishReason
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.message.Message
@@ -13,6 +14,7 @@ import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.model.Model
+import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Parameter.Primitive
 import community.flock.aigentic.core.tool.ParameterType.Primitive.Integer
 import community.flock.aigentic.core.tool.Tool
@@ -169,6 +171,61 @@ class AgentExecutorTest : DescribeSpec({
                         toolName = testTool.name.value,
                         response = ToolResultContent("toolResult"),
                     )
+            }
+        }
+
+        it("if finishedWith parameter is configured, its result should be in the finished response field") {
+            val parameterName = "response"
+            val response = buildJsonObject { put("message", "Agent response") }
+            val finishParameter =
+                Parameter.Complex.Object(
+                    name = parameterName,
+                    description = "some description",
+                    true,
+                    parameters = emptyList(),
+                )
+            val toolCall =
+                ToolCall(
+                    ToolCallId("1"),
+                    FINISH_OR_STUCK_TOOL_NAME,
+                    buildJsonObject {
+                        put("finishReason", "FinishedTask")
+                        put("description", "Finished the task")
+                        put(parameterName, response)
+                    }.encode(),
+                )
+            val modelMock =
+                mockk<Model>().apply {
+                    coEvery { sendRequest(any(), any()) } returnsMany
+                        listOf(
+                            toolCall,
+                        ).toModelResponse()
+                }
+            val agent =
+                agent {
+                    model(modelMock)
+                    task("Execute some task") {}
+                    addTool(mockk(relaxed = true))
+                    finishResponse(finishParameter)
+                }
+
+            agent.start().apply {
+                result.reason shouldBe FinishReason.FinishedTask
+                this.result.response shouldBe response.encode()
+            }
+        }
+
+        it("if finishedWith parameter is not configured, the finished response field should be null") {
+            val agent =
+                agent {
+                    model(modelFinishDirectly)
+                    task("Execute some task") {}
+                    addTool(mockk(relaxed = true))
+                }
+
+            agent.start().apply {
+                result.reason shouldBe FinishReason.FinishedTask
+                this.result.response shouldBe null
             }
         }
     }

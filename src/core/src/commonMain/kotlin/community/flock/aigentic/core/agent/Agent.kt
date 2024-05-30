@@ -1,9 +1,10 @@
 package community.flock.aigentic.core.agent
 
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
-import community.flock.aigentic.core.agent.tool.finishOrStuckTool
+import community.flock.aigentic.core.agent.tool.getFinishOrStuckTool
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.InternalTool
+import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 
@@ -27,6 +28,11 @@ data class Agent(
     val task: Task,
     val contexts: List<Context>,
     val tools: Map<ToolName, Tool>,
+    val responseParameter: Parameter? = null,
 ) {
-    internal val internalTools: Map<ToolName, InternalTool<*>> = mapOf(finishOrStuckTool.name to finishOrStuckTool)
+    internal val finishOrStuckTool = getFinishOrStuckTool(responseParameter)
+    internal val internalTools: Map<ToolName, InternalTool<*>> =
+        listOf(
+            finishOrStuckTool,
+        ).associateBy { it.name }
 }

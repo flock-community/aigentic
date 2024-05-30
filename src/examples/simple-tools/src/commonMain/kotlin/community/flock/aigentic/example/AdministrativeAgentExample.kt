@@ -2,6 +2,7 @@
 
 package community.flock.aigentic.example
 
+import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.FinishReason.FinishedTask
 import community.flock.aigentic.core.agent.tool.FinishReason.ImStuck
@@ -37,6 +38,7 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
             addTool(askManagerForResponseTool)
             addTool(sendSignalMessageTool)
             addTool(updateEmployeeTool)
+            finishResponse(agentAdministrativeResponse)
         }.start()
 
     when (run.result.reason) {
@@ -45,6 +47,8 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
     }.also {
         println("$it took ${run.finishedAt - run.startedAt}")
     }
+    val typedResponse = run.getFinishResponse<AgentAdministrativeResponse>()
+    println("response: $typedResponse")
 }
 
 val getAllEmployeesOverviewTool =
@@ -191,3 +195,45 @@ val sendSignalMessageTool =
             "✉️ Sending: '$message' to '$phoneNumber'"
         }
     }
+
+val responsePersonItem =
+    Parameter.Primitive(
+        name = "person",
+        description = "the name of a person",
+        isRequired = true,
+        type = Primitive.String,
+    )
+
+data class AgentAdministrativeResponse(
+    val messagedPeople: List<String>,
+    val completedPeople: List<String>,
+    val notCompletedPeople: List<String>,
+)
+
+val agentAdministrativeResponse =
+    Parameter.Complex.Object(
+        "response",
+        isRequired = false,
+        description = "When all tasks succeeded put the results in this field, when failed skip this response",
+        parameters =
+            listOf(
+                Parameter.Complex.Array(
+                    name = "messagedPeople",
+                    description = "A list of names of people that where messaged",
+                    isRequired = true,
+                    itemDefinition = responsePersonItem,
+                ),
+                Parameter.Complex.Array(
+                    name = "completedPeople",
+                    description = "A list of names of people that have filled in there hours",
+                    isRequired = true,
+                    itemDefinition = responsePersonItem,
+                ),
+                Parameter.Complex.Array(
+                    name = "notCompletedPeople",
+                    description = "A list of names of people that didn't filled in there hours",
+                    isRequired = true,
+                    itemDefinition = responsePersonItem,
+                ),
+            ),
+    )
