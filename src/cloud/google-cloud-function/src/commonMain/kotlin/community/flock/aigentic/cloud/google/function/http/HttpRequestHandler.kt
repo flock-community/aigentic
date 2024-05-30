@@ -29,11 +29,15 @@ internal suspend fun GoogleHttpCloudFunction.handleRequest(
     }
 
     val agent = AgentConfig().apply { agentBuilder(this, request) }.build()
-    val run = agent.start()
-    val responseText = run.result.response ?: run.result.description
+    try {
+        val run = agent.start()
+        val responseText = run.result.response ?: run.result.description
 
-    when (run.result.reason) {
-        FinishedTask -> response.status(200).send(responseText)
-        ImStuck -> response.status(422).send(responseText)
+        when (run.result.reason) {
+            FinishedTask -> response.status(200).send(responseText)
+            ImStuck -> response.status(422).send(responseText)
+        }
+    } catch (e: Exception) {
+        response.status(500).send("Internal Server Error: ${e.message}")
     }
 }

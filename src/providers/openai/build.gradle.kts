@@ -15,7 +15,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":src:core"))
-                implementation("com.aallam.openai:openai-client:3.7.1")
+                implementation(libs.openai.client)
             }
         }
         val commonTest by getting {

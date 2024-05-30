@@ -12,5 +12,4 @@ data class Run(
     val result: FinishedOrStuck,
 )
 
-inline fun <reified T> Run.getFinishResponse(): T =
-    Json.decodeFromString(result.response!!)
+inline fun <reified T> Run.getFinishResponse(): T = Json.decodeFromString(result.response!!)

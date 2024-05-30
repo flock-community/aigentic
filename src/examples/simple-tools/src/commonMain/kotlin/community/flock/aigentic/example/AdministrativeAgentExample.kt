@@ -207,7 +207,7 @@ val responsePersonItem =
 data class AgentAdministrativeResponse(
     val messagedPeople: List<String>,
     val completedPeople: List<String>,
-    val notCompletedPeople: List<String>
+    val notCompletedPeople: List<String>,
 )
 
 val agentAdministrativeResponse =
@@ -216,24 +216,24 @@ val agentAdministrativeResponse =
         isRequired = false,
         description = "When all tasks succeeded put the results in this field, when failed skip this response",
         parameters =
-        listOf(
-            Parameter.Complex.Array(
-                name = "messagedPeople",
-                description = "A list of names of people that where messaged",
-                isRequired = true,
-                itemDefinition = responsePersonItem,
+            listOf(
+                Parameter.Complex.Array(
+                    name = "messagedPeople",
+                    description = "A list of names of people that where messaged",
+                    isRequired = true,
+                    itemDefinition = responsePersonItem,
+                ),
+                Parameter.Complex.Array(
+                    name = "completedPeople",
+                    description = "A list of names of people that have filled in there hours",
+                    isRequired = true,
+                    itemDefinition = responsePersonItem,
+                ),
+                Parameter.Complex.Array(
+                    name = "notCompletedPeople",
+                    description = "A list of names of people that didn't filled in there hours",
+                    isRequired = true,
+                    itemDefinition = responsePersonItem,
+                ),
             ),
-            Parameter.Complex.Array(
-                name = "completedPeople",
-                description = "A list of names of people that have filled in there hours",
-                isRequired = true,
-                itemDefinition = responsePersonItem,
-            ),
-            Parameter.Complex.Array(
-                name = "notCompletedPeople",
-                description = "A list of names of people that didn't filled in there hours",
-                isRequired = true,
-                itemDefinition = responsePersonItem,
-            ),
-        ),
     )
