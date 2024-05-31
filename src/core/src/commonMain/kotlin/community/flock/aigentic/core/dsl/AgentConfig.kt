@@ -29,7 +29,9 @@ class AgentConfig : Config<Agent> {
 
     fun AgentConfig.addTool(tool: Tool) = tools.add(tool)
 
-    fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) = ContextConfig().apply(contextConfig).build().also { contexts = it }
+    fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) =
+        ContextConfig().apply(contextConfig).build()
+            .also { contexts = it }
 
     fun AgentConfig.task(
         description: String,
