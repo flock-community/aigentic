@@ -12,12 +12,16 @@ sealed interface AgentStatus {
         override val text: String = "🛫 Agent started!"
     }
 
-    data object Finished : AgentStatus {
-        override val text: String = "🏁 Agent finished!"
+    data class Finished(val result: String) : AgentStatus {
+        override val text: String = "🏁 Agent finished! $result"
     }
 
-    data object Stuck : AgentStatus {
-        override val text: String = "🤯 Agent stuck!"
+    data class Stuck(val result: String) : AgentStatus {
+        override val text: String = "🤯 Agent stuck! $result"
+    }
+
+    data class Fatal(val reason: String) : AgentStatus {
+        override val text: String = "💥 Agent crashed: $reason"
     }
 
     data class ExecuteTool(val tool: ToolCall) : AgentStatus {
@@ -31,16 +35,15 @@ sealed interface AgentStatus {
 
 fun Message.toStatus(): List<AgentStatus> =
     when (this) {
-        is Message.SystemPrompt -> listOf(AgentStatus.Started)
-        is Message.Text, is Message.Image -> emptyList()
+        is Message.SystemPrompt -> emptyList()
+        is Message.Text, is Message.ImageUrl, is Message.ImageBase64 -> emptyList()
         is Message.ToolCalls ->
             this.toolCalls.map {
                 when (it.name) {
-                    FINISHED_TASK_TOOL_NAME -> AgentStatus.Finished
-                    STUCK_WITH_TASK_TOOL_NAME -> AgentStatus.Stuck
+                    FINISHED_TASK_TOOL_NAME -> AgentStatus.Finished(it.arguments)
+                    STUCK_WITH_TASK_TOOL_NAME -> AgentStatus.Stuck(it.arguments)
                     else -> AgentStatus.ExecuteTool(it)
                 }
             }
-
         is Message.ToolResult -> listOf(AgentStatus.ToolResult(this))
     }

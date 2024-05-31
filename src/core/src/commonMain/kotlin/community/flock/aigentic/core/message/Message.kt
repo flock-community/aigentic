@@ -16,9 +16,16 @@ sealed class Message(
         val text: String,
     ) : Message(sender)
 
-    data class Image(
+    data class ImageUrl(
         override val sender: Sender,
-        val image: String,
+        val url: String,
+        val mimeType: String,
+    ) : Message(Sender.Aigentic)
+
+    data class ImageBase64(
+        override val sender: Sender,
+        val base64Content: String,
+        val mimeType: String,
     ) : Message(Sender.Aigentic)
 
     data class ToolCalls(

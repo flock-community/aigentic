@@ -1,6 +1,7 @@
 package community.flock.aigentic.core.agent.state
 
 import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.status.toStatus
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.message.Message
@@ -8,6 +9,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.merge
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
@@ -15,11 +17,12 @@ data class State(
     val startedAt: Instant = Clock.System.now(),
     var finishedAt: Instant? = null,
     val messages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 100),
+    internal val events: MutableSharedFlow<AgentStatus> = MutableSharedFlow(replay = 100),
 )
 
 fun State.getMessages() = messages.asSharedFlow()
 
-fun State.getStatus() = messages.flatMapConcat { it.toStatus().asFlow() }
+fun State.getStatus() = merge(messages.flatMapConcat { it.toStatus().asFlow() }, events)
 
 internal suspend fun State.addMessages(messages: List<Message>) = messages.forEach { addMessage(it) }
 

@@ -28,15 +28,11 @@ class HttpRequestHandlerTest : DescribeSpec({
         }
     }
 
-    val finishedTaskConfigWithResponse: HttpCloudFunctionConfig.() -> Unit = {
+    val finishedTaskWithResponseConfig: HttpCloudFunctionConfig.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
             model(modelFinishDirectly(finishedTaskWithResponseToolCall))
-            task("Respond with a welcome message to the person") {
-                addInstruction(
-                    "Call the finishedOrStuck tool when finished and use only the message received from getCloudMessage as description, use no other text",
-                )
-            }
+            task("Respond with a welcome message to the person") {}
             addTool(testTool)
             finishResponse(
                 Parameter.Complex.Object(
@@ -97,7 +93,7 @@ class HttpRequestHandlerTest : DescribeSpec({
 
     it("should return 200 when agent is successful and have a response if finishedResponse is set") {
 
-        val httpCloudFunction = finishedTaskConfigWithResponse.build()
+        val httpCloudFunction = finishedTaskWithResponseConfig.build()
         val (googleRequest, googleResponseWrapper) = createRequestResponse()
 
         httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)

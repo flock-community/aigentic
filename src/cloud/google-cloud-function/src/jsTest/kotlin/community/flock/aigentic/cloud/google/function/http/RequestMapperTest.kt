@@ -15,7 +15,7 @@ class RequestMapperTest : DescribeSpec({
             override val body: dynamic = js("{ message: 'Hello World' }")
         }
 
-    it("shoud map request") {
+    it("should map request") {
 
         with(googleRequest.map()) {
             method shouldBe "GET"

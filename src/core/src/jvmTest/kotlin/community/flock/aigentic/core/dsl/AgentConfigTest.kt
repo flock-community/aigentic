@@ -64,13 +64,13 @@ class AgentConfigTest : DescribeSpec({
                 task("Task description") {}
                 context {
                     addText("Some text")
-                    addImage("Base64 image")
+                    addImageUrl("https://example.com/image.jpg", "image/jpeg")
                 }
                 addTool(mockk(relaxed = true))
             }.run {
                 contexts.size shouldBe 2
                 contexts.first() shouldBe Context.Text("Some text")
-                contexts.last() shouldBe Context.Image("Base64 image")
+                contexts.last() shouldBe Context.ImageUrl("https://example.com/image.jpg", "image/jpeg")
             }
         }
 

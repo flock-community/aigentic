@@ -17,6 +17,7 @@ dependencyResolutionManagement {
 rootProject.name = "aigentic"
 include(
     "src:core",
+    "src:tools:jsonschema",
     "src:tools:http",
     "src:tools:openapi",
     "src:providers:openai",

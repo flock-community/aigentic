@@ -29,7 +29,7 @@ val testTool =
         }
     }
 
-fun modelFinishDirectly(finishReason: ToolCall = finishedTaskToolCall) =
+fun modelFinishDirectly(finishToolCall: ToolCall = finishedTaskToolCall) =
     object : Model {
         override val authentication = Authentication.APIKey("some-secret")
         override val modelIdentifier = object : ModelIdentifier {}
@@ -37,7 +37,7 @@ fun modelFinishDirectly(finishReason: ToolCall = finishedTaskToolCall) =
         override suspend fun sendRequest(
             messages: List<Message>,
             tools: List<ToolDescription>,
-        ): ModelResponse = ModelResponse(ToolCalls(listOf(finishReason)))
+        ): ModelResponse = ModelResponse(ToolCalls(listOf(finishToolCall)))
     }
 
 fun modelException() =

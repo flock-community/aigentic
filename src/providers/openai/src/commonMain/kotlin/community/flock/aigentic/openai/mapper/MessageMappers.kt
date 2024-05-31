@@ -70,7 +70,8 @@ object OpenAIMapper {
         return when (this) {
             is Message.SystemPrompt -> ChatMessage(role, prompt)
             is Message.Text -> ChatMessage(role, text)
-            is Message.Image -> ChatMessage(role = role, listOf(ImagePart(image)))
+            is Message.ImageUrl -> ChatMessage(role = role, listOf(ImagePart(url)))
+            is Message.ImageBase64 -> ChatMessage(role = role, listOf(ImagePart(base64Content)))
             is Message.ToolCalls ->
                 ChatMessage(
                     role = role,
@@ -91,19 +92,12 @@ object OpenAIMapper {
     private fun Message.mapChatTextRole(): ChatRole =
         when (this) {
             is Message.SystemPrompt -> ChatRole.System
-            is Message.Text -> mapChatTextRole()
             is Message.ToolCalls -> ChatRole.Assistant
             is Message.ToolResult -> ChatRole.Tool
-            is Message.Image -> mapImageTextRole()
+            is Message.ImageUrl, is Message.ImageBase64, is Message.Text -> mapRole()
         }
 
-    private fun Message.Text.mapChatTextRole() =
-        when (this.sender) {
-            Sender.Aigentic -> ChatRole.User
-            Sender.Model -> ChatRole.Assistant
-        }
-
-    private fun Message.Image.mapImageTextRole() =
+    private fun Message.mapRole() =
         when (this.sender) {
             Sender.Aigentic -> ChatRole.User
             Sender.Model -> ChatRole.Assistant

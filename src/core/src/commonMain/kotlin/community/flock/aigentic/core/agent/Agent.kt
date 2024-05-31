@@ -19,7 +19,9 @@ data class Instruction(val text: String)
 sealed interface Context {
     data class Text(val text: String) : Context
 
-    data class Image(val base64: String) : Context
+    data class ImageUrl(val url: String, val mimeType: String) : Context
+
+    data class ImageBase64(val base64: String, val mimeType: String) : Context
 }
 
 data class Agent(

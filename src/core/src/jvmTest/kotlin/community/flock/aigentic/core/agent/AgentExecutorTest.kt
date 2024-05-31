@@ -134,7 +134,8 @@ class AgentExecutorTest : DescribeSpec({
         it("should add provided context as messages after system prompt message") {
 
             val expectedTextContext = "This is some text context"
-            val expectedImageContext = "base-64-encoded-string"
+            val expectedImageContextBase64 = "base-64-encoded-string"
+            val expectedImageContextMimeType = "image/png"
 
             val agent =
                 agent {
@@ -142,7 +143,7 @@ class AgentExecutorTest : DescribeSpec({
                     task("Execute some task") {}
                     context {
                         addText(expectedTextContext)
-                        addImage(expectedImageContext)
+                        addImageBase64(base64 = expectedImageContextBase64, mimeType = expectedImageContextMimeType)
                     }
                     addTool(mockk(relaxed = true))
                 }
@@ -151,7 +152,11 @@ class AgentExecutorTest : DescribeSpec({
                 messages.drop(1).take(2) shouldBe
                     listOf(
                         Message.Text(Sender.Aigentic, expectedTextContext),
-                        Message.Image(Sender.Aigentic, expectedImageContext),
+                        Message.ImageBase64(
+                            sender = Sender.Aigentic,
+                            base64Content = expectedImageContextBase64,
+                            mimeType = expectedImageContextMimeType,
+                        ),
                     )
             }
         }

@@ -13,15 +13,14 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getIntValue
 import community.flock.aigentic.core.tool.getStringValue
-import community.flock.aigentic.gemini.dsl.geminiModel
-import community.flock.aigentic.gemini.model.GeminiModelIdentifier
+import community.flock.aigentic.openai.dsl.openAIModel
+import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import kotlinx.serialization.json.JsonObject
 
 suspend fun runAdministrativeAgentExample(apiKey: String) {
     val run =
         agent {
-//            openAIModel(apiKey, OpenAIModelIdentifier.GPT4O)
-            geminiModel(apiKey, GeminiModelIdentifier.Gemini1_5ProLatest)
+            openAIModel(apiKey, OpenAIModelIdentifier.GPT4O)
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(
                     "For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent",
