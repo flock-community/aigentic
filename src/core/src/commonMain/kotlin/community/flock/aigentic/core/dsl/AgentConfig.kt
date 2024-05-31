@@ -6,6 +6,7 @@ import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
@@ -86,13 +87,13 @@ class ContextConfig : Config<List<Context>> {
 
     fun ContextConfig.addImageUrl(
         url: String,
-        mimeType: String,
+        mimeType: MimeType,
     ) = Context.ImageUrl(url = url, mimeType = mimeType)
         .also { contexts.add(it) }
 
     fun ContextConfig.addImageBase64(
         base64: String,
-        mimeType: String,
+        mimeType: MimeType,
     ) = Context.ImageBase64(base64 = base64, mimeType = mimeType)
         .also { contexts.add(it) }
 

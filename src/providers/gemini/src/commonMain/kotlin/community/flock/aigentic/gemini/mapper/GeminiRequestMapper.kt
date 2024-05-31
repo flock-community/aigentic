@@ -27,8 +27,8 @@ internal fun createGenerateContentRequest(
         contents =
             messages.map { message ->
                 when (message) {
-                    is Message.ImageUrl -> listOf(Part.FileDataPart(FileDataContent(mimeType = message.mimeType, fileUri = message.url)))
-                    is Message.ImageBase64 -> listOf(Part.Blob(BlobContent(mimeType = message.mimeType, data = message.base64Content)))
+                    is Message.ImageUrl -> listOf(Part.FileDataPart(FileDataContent(mimeType = message.mimeType.value, fileUri = message.url)))
+                    is Message.ImageBase64 -> listOf(Part.Blob(BlobContent(mimeType = message.mimeType.value, data = message.base64Content)))
                     is Message.SystemPrompt -> listOf(Part.Text("See system instructions"))
                     is Message.Text -> listOf<Part>(Part.Text(message.text))
                     is Message.ToolCalls ->

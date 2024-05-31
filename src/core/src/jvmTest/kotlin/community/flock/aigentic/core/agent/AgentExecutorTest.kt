@@ -13,6 +13,7 @@ import community.flock.aigentic.core.agent.tool.Result.Stuck
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
@@ -135,7 +136,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val expectedTextContext = "This is some text context"
             val expectedImageContextBase64 = "base-64-encoded-string"
-            val expectedImageContextMimeType = "image/png"
+            val expectedImageContextMimeType = MimeType.PNG
 
             val agent =
                 agent {

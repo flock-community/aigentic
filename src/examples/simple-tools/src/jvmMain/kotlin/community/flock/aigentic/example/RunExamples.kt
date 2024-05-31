@@ -15,5 +15,6 @@ private val geminiKey =
 fun main(): Unit =
     runBlocking {
 //        runAdministrativeAgentExample(openAIAPIKey)
-        runKotlinMessageAgentExample(geminiKey)
+//        runKotlinMessageAgentExample(geminiKey)
+        runItemCategorizeExample(geminiKey, FileReader.readFile("/base64Image.txt"))
     }

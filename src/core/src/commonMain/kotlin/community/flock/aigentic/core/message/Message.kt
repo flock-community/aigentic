@@ -19,13 +19,13 @@ sealed class Message(
     data class ImageUrl(
         override val sender: Sender,
         val url: String,
-        val mimeType: String,
+        val mimeType: MimeType,
     ) : Message(Sender.Aigentic)
 
     data class ImageBase64(
         override val sender: Sender,
         val base64Content: String,
-        val mimeType: String,
+        val mimeType: MimeType,
     ) : Message(Sender.Aigentic)
 
     data class ToolCalls(
@@ -44,6 +44,17 @@ data class ToolCall(
     val name: String,
     val arguments: String,
 )
+
+@JvmInline
+value class MimeType private constructor(val value: String) {
+    companion object {
+        val JPEG = MimeType("image/jpeg")
+        val PNG = MimeType("image/png")
+        val WEBP = MimeType("image/webp")
+        val HEIC = MimeType("image/heic")
+        val HEIF = MimeType("image/heif")
+    }
+}
 
 @JvmInline
 value class ToolCallId(val id: String)
