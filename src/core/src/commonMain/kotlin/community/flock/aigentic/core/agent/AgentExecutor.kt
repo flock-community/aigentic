@@ -11,7 +11,9 @@ import community.flock.aigentic.core.agent.state.addMessage
 import community.flock.aigentic.core.agent.state.addMessages
 import community.flock.aigentic.core.agent.state.getStatus
 import community.flock.aigentic.core.agent.state.toRun
-import community.flock.aigentic.core.agent.tool.FinishedOrStuck
+import community.flock.aigentic.core.agent.status.AgentStatus
+import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender.Aigentic
 import community.flock.aigentic.core.message.ToolCall
@@ -25,15 +27,20 @@ import kotlinx.coroutines.flow.map
 suspend fun Agent.start(): Run =
     coroutineScope {
         val state = State()
+        state.events.emit(AgentStatus.Started)
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
-
-        executeAction(Initialize(state, this@start)).also {
+        try {
+            executeAction(Initialize(state, this@start)).toRun()
+        } catch (e: AigenticException) {
+            state.events.emit(AgentStatus.Fatal(e.message))
+            (state to Result.Fatal(e.message)).toRun()
+        } finally {
             delay(10) // Allow some time for the logging to finish
             logging.cancelAndJoin()
-        }.toRun()
+        }
     }
 
-private suspend fun executeAction(action: Action): Pair<State, FinishedOrStuck> =
+private suspend fun executeAction(action: Action): Pair<State, Result> =
     when (action) {
         is Initialize -> executeAction(action.process())
         is SendModelRequest -> executeAction(action.process())
@@ -62,27 +69,27 @@ private suspend fun SendModelRequest.process(): ProcessModelResponse {
     return ProcessModelResponse(state, agent, message)
 }
 
-private fun Finished.process() = state to finishedOrStuck
+private fun Finished.process() = state to result
 
 private suspend fun ExecuteTools.process(): Action {
-    val toolResults = executeToolCalls(agent, toolCalls)
-    val finished = toolResults.filterIsInstance<ToolExecutionResult.FinishedToolResult>().firstOrNull()
+    val toolExecutionResults = executeToolCalls(agent, toolCalls)
+    val finishedToolResult = toolExecutionResults.filterIsInstance<ToolExecutionResult.FinishedToolResult>().firstOrNull()
+    val toolResults = toolExecutionResults.filterIsInstance<ToolExecutionResult.ToolResult>()
 
-    return if (finished != null) {
-        Finished(state, agent, finished.reason)
+    return if (finishedToolResult != null) {
+        Finished(state, agent, finishedToolResult.result)
     } else {
-        state.addMessages(toolResults.filterIsInstance<ToolExecutionResult.ToolResult>().map { it.message })
+        state.addMessages(toolResults.map { it.message })
         SendModelRequest(state, agent)
     }
 }
 
 private fun initializeStartMessages(agent: Agent): List<Message> =
-    listOf(
-        agent.systemPromptBuilder.buildSystemPrompt(agent),
-    ) +
+    listOf(agent.systemPromptBuilder.buildSystemPrompt(agent)) +
         agent.contexts.map {
             when (it) {
-                is Context.Image -> Message.Image(Aigentic, it.base64)
+                is Context.ImageUrl -> Message.ImageUrl(sender = Aigentic, url = it.url, mimeType = it.mimeType)
+                is Context.ImageBase64 -> Message.ImageBase64(sender = Aigentic, base64Content = it.base64, mimeType = it.mimeType)
                 is Context.Text -> Message.Text(Aigentic, it.text)
             }
         }
@@ -99,5 +106,5 @@ private sealed interface Action {
 
     data class ProcessModelResponse(val state: State, val agent: Agent, val responseMessage: Message) : Action
 
-    data class Finished(val state: State, val agent: Agent, val finishedOrStuck: FinishedOrStuck) : Action
+    data class Finished(val state: State, val agent: Agent, val result: Result) : Action
 }

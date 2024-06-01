@@ -1,11 +1,9 @@
 package community.flock.aigentic.core.agent.status
 
-import community.flock.aigentic.core.agent.tool.FINISH_OR_STUCK_TOOL_NAME
-import community.flock.aigentic.core.agent.tool.FinishReason
-import community.flock.aigentic.core.agent.tool.getFinishOrStuckTool
+import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
+import community.flock.aigentic.core.agent.tool.STUCK_WITH_TASK_TOOL_NAME
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCall
-import community.flock.aigentic.core.message.argumentsAsJson
 
 sealed interface AgentStatus {
     val text: String
@@ -14,12 +12,16 @@ sealed interface AgentStatus {
         override val text: String = "🛫 Agent started!"
     }
 
-    data class Finished(val summary: String) : AgentStatus {
-        override val text: String = "🏁 Agent finished! Summary: $summary"
+    data class Finished(val result: String) : AgentStatus {
+        override val text: String = "🏁 Agent finished! $result"
     }
 
-    data class Stuck(val reason: String) : AgentStatus {
-        override val text: String = "🤯 Agent stuck! Reason: $reason"
+    data class Stuck(val result: String) : AgentStatus {
+        override val text: String = "🤯 Agent stuck! $result"
+    }
+
+    data class Fatal(val reason: String) : AgentStatus {
+        override val text: String = "💥 Agent crashed: $reason"
     }
 
     data class ExecuteTool(val tool: ToolCall) : AgentStatus {
@@ -31,28 +33,17 @@ sealed interface AgentStatus {
     }
 }
 
-suspend fun Message.toStatus(): List<AgentStatus> =
+fun Message.toStatus(): List<AgentStatus> =
     when (this) {
-        is Message.SystemPrompt -> listOf(AgentStatus.Started)
-        is Message.Text, is Message.Image -> emptyList()
+        is Message.SystemPrompt -> emptyList()
+        is Message.Text, is Message.ImageUrl, is Message.ImageBase64 -> emptyList()
         is Message.ToolCalls ->
             this.toolCalls.map {
                 when (it.name) {
-                    FINISH_OR_STUCK_TOOL_NAME -> getFinishEvent(it)
+                    FINISHED_TASK_TOOL_NAME -> AgentStatus.Finished(it.arguments)
+                    STUCK_WITH_TASK_TOOL_NAME -> AgentStatus.Stuck(it.arguments)
                     else -> AgentStatus.ExecuteTool(it)
                 }
             }
-
         is Message.ToolResult -> listOf(AgentStatus.ToolResult(this))
     }
-
-suspend fun getFinishEvent(it: ToolCall): AgentStatus {
-    val finishedOrStuck = getFinishOrStuckTool().handler(it.argumentsAsJson()) // TODO should not use handler, handler is for executor
-    return when (finishedOrStuck.reason) {
-        FinishReason.FinishedTask ->
-            AgentStatus.Finished(finishedOrStuck.description)
-
-        FinishReason.ImStuck ->
-            AgentStatus.Stuck(finishedOrStuck.description)
-    }
-}

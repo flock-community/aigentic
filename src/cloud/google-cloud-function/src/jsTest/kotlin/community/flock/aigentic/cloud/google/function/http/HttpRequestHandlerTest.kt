@@ -6,10 +6,11 @@ import community.flock.aigentic.cloud.google.function.http.dsl.Authentication.Au
 import community.flock.aigentic.cloud.google.function.http.dsl.GoogleHttpCloudFunction
 import community.flock.aigentic.cloud.google.function.http.dsl.HttpCloudFunctionConfig
 import community.flock.aigentic.cloud.google.function.util.createRequestResponse
-import community.flock.aigentic.cloud.google.function.util.finishedTask
-import community.flock.aigentic.cloud.google.function.util.finishedTaskWithResponse
-import community.flock.aigentic.cloud.google.function.util.imStuck
+import community.flock.aigentic.cloud.google.function.util.finishedTaskToolCall
+import community.flock.aigentic.cloud.google.function.util.finishedTaskWithResponseToolCall
+import community.flock.aigentic.cloud.google.function.util.modelException
 import community.flock.aigentic.cloud.google.function.util.modelFinishDirectly
+import community.flock.aigentic.cloud.google.function.util.stuckWithTaskToolCall
 import community.flock.aigentic.cloud.google.function.util.testTool
 import community.flock.aigentic.core.tool.Parameter
 import io.kotest.assertions.throwables.shouldThrow
@@ -21,25 +22,17 @@ class HttpRequestHandlerTest : DescribeSpec({
     val finishedTaskConfig: HttpCloudFunctionConfig.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
-            model(modelFinishDirectly(finishedTask))
-            task("Respond with a welcome message to the person") {
-                addInstruction(
-                    "Call the finishedOrStuck tool when finished and use only the message received from getCloudMessage as description, use no other text",
-                )
-            }
+            model(modelFinishDirectly(finishedTaskToolCall))
+            task("Respond with a welcome message to the person") {}
             addTool(testTool)
         }
     }
 
-    val finishedTaskConfigWithResponse: HttpCloudFunctionConfig.() -> Unit = {
+    val finishedTaskWithResponseConfig: HttpCloudFunctionConfig.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
-            model(modelFinishDirectly(finishedTaskWithResponse))
-            task("Respond with a welcome message to the person") {
-                addInstruction(
-                    "Call the finishedOrStuck tool when finished and use only the message received from getCloudMessage as description, use no other text",
-                )
-            }
+            model(modelFinishDirectly(finishedTaskWithResponseToolCall))
+            task("Respond with a welcome message to the person") {}
             addTool(testTool)
             finishResponse(
                 Parameter.Complex.Object(
@@ -55,12 +48,17 @@ class HttpRequestHandlerTest : DescribeSpec({
     val imStuckConfig: HttpCloudFunctionConfig.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
-            model(modelFinishDirectly(imStuck))
-            task("Respond with a welcome message to the person") {
-                addInstruction(
-                    "Call the finishedOrStuck tool when finished and use only the message received from getCloudMessage as description, use no other text",
-                )
-            }
+            model(modelFinishDirectly(stuckWithTaskToolCall))
+            task("Respond with a welcome message to the person") {}
+            addTool(testTool)
+        }
+    }
+
+    val fatalConfig: HttpCloudFunctionConfig.() -> Unit = {
+        authentication(AuthorizationHeader("some-secret-key"))
+        agent {
+            model(modelException())
+            task("Respond with a welcome message to the person") {}
             addTool(testTool)
         }
     }
@@ -95,7 +93,7 @@ class HttpRequestHandlerTest : DescribeSpec({
 
     it("should return 200 when agent is successful and have a response if finishedResponse is set") {
 
-        val httpCloudFunction = finishedTaskConfigWithResponse.build()
+        val httpCloudFunction = finishedTaskWithResponseConfig.build()
         val (googleRequest, googleResponseWrapper) = createRequestResponse()
 
         httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
@@ -116,6 +114,19 @@ class HttpRequestHandlerTest : DescribeSpec({
         with(googleResponseWrapper) {
             statusCode shouldBe 422
             response shouldBe "I couldn't finish the task"
+        }
+    }
+
+    it("should return 500 when agent encountered an exception") {
+
+        val httpCloudFunction = fatalConfig.build()
+        val (googleRequest, googleResponseWrapper) = createRequestResponse()
+
+        httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
+
+        with(googleResponseWrapper) {
+            statusCode shouldBe 500
+            response shouldBe "Internal Server Error"
         }
     }
 })

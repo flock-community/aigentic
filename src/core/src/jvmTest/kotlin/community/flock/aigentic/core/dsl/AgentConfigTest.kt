@@ -2,6 +2,7 @@ package community.flock.aigentic.core.dsl
 
 import community.flock.aigentic.core.agent.Context
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Tool
 import io.kotest.assertions.throwables.shouldThrow
@@ -64,13 +65,13 @@ class AgentConfigTest : DescribeSpec({
                 task("Task description") {}
                 context {
                     addText("Some text")
-                    addImage("Base64 image")
+                    addImageUrl("https://example.com/image.jpg", MimeType.JPEG)
                 }
                 addTool(mockk(relaxed = true))
             }.run {
                 contexts.size shouldBe 2
                 contexts.first() shouldBe Context.Text("Some text")
-                contexts.last() shouldBe Context.Image("Base64 image")
+                contexts.last() shouldBe Context.ImageUrl("https://example.com/image.jpg", MimeType.JPEG)
             }
         }
 

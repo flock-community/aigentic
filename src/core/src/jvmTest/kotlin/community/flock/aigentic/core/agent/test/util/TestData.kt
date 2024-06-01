@@ -1,6 +1,7 @@
 package community.flock.aigentic.core.agent.test.util
 
-import community.flock.aigentic.core.agent.tool.FINISH_OR_STUCK_TOOL_NAME
+import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
+import community.flock.aigentic.core.agent.tool.STUCK_WITH_TASK_TOOL_NAME
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.model.Model
@@ -10,21 +11,37 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 object TestData {
-    val finishedSuccessfully =
+    val finishedTaskToolCall =
         ToolCall(
             ToolCallId("1"),
-            FINISH_OR_STUCK_TOOL_NAME,
+            FINISHED_TASK_TOOL_NAME,
             buildJsonObject {
-                put("finishReason", "FinishedTask")
                 put("description", "Finished the task")
             }.encode(),
         )
 
-    val modelFinishDirectly =
+    val stuckWithTaskToolCall =
+        ToolCall(
+            ToolCallId("1"),
+            STUCK_WITH_TASK_TOOL_NAME,
+            buildJsonObject {
+                put("description", "I don't know what to do")
+            }.encode(),
+        )
+
+    val modelFinishTaskDirectly =
         mockk<Model>().apply {
             coEvery { sendRequest(any(), any()) } returnsMany
                 listOf(
-                    finishedSuccessfully,
+                    finishedTaskToolCall,
+                ).toModelResponse()
+        }
+
+    val modelStuckDirectly =
+        mockk<Model>().apply {
+            coEvery { sendRequest(any(), any()) } returnsMany
+                listOf(
+                    stuckWithTaskToolCall,
                 ).toModelResponse()
         }
 }

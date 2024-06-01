@@ -1,4 +1,4 @@
-package community.flock.aigentic.mapper
+package community.flock.aigentic.openai.mapper
 
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
@@ -7,6 +7,7 @@ import com.aallam.openai.api.chat.ImagePart
 import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.api.chat.ToolId
 import com.aallam.openai.api.core.Role
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -32,7 +33,7 @@ object DomainMapper {
                     text = content!!,
                 )
 
-            else -> error("Cannot map OpenAI ChatMessage, unknown type: $this")
+            else -> aigenticException("Cannot map OpenAI ChatMessage, unknown type: $this")
         }
 
     private fun ChatMessage.isTextMessage() = messageContent?.let { it is TextContent } ?: false
@@ -59,7 +60,7 @@ object DomainMapper {
         when (this) {
             Role.Assistant -> Sender.Model
             Role.User -> Sender.Aigentic
-            else -> error("Unexpected role: $this")
+            else -> aigenticException("Unexpected role: $this")
         }
 }
 
@@ -69,7 +70,8 @@ object OpenAIMapper {
         return when (this) {
             is Message.SystemPrompt -> ChatMessage(role, prompt)
             is Message.Text -> ChatMessage(role, text)
-            is Message.Image -> ChatMessage(role = role, listOf(ImagePart(image)))
+            is Message.ImageUrl -> ChatMessage(role = role, listOf(ImagePart(url)))
+            is Message.ImageBase64 -> ChatMessage(role = role, listOf(ImagePart(formatDataUrl())))
             is Message.ToolCalls ->
                 ChatMessage(
                     role = role,
@@ -87,22 +89,19 @@ object OpenAIMapper {
         }
     }
 
+    private fun Message.ImageBase64.formatDataUrl(): String =
+        base64Content.takeIf { it.startsWith("data:") }
+            ?: "data:${mimeType.value};base64,$base64Content"
+
     private fun Message.mapChatTextRole(): ChatRole =
         when (this) {
             is Message.SystemPrompt -> ChatRole.System
-            is Message.Text -> mapChatTextRole()
             is Message.ToolCalls -> ChatRole.Assistant
             is Message.ToolResult -> ChatRole.Tool
-            is Message.Image -> mapImageTextRole()
+            is Message.ImageUrl, is Message.ImageBase64, is Message.Text -> mapRole()
         }
 
-    private fun Message.Text.mapChatTextRole() =
-        when (this.sender) {
-            Sender.Aigentic -> ChatRole.User
-            Sender.Model -> ChatRole.Assistant
-        }
-
-    private fun Message.Image.mapImageTextRole() =
+    private fun Message.mapRole() =
         when (this.sender) {
             Sender.Aigentic -> ChatRole.User
             Sender.Model -> ChatRole.Assistant

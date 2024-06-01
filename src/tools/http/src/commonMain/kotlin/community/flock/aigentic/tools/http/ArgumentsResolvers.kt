@@ -1,5 +1,6 @@
 package community.flock.aigentic.tools.http
 
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.tool.Parameter
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -79,13 +80,13 @@ class DefaultUrlArgumentsResolver : UrlArgumentsResolver {
         return pathParameters.fold(placeHolderUrl) { url, pathParam ->
             val paramValue = pathParam.getParameterValue(callArguments)
             if (paramValue == null) {
-                error("Path parameter '${pathParam.name}' required for url '$url' but not found in call arguments.")
+                aigenticException("Path parameter '${pathParam.name}' required for url '$url' but not found in call arguments.")
             } else {
                 url.replace("{${pathParam.name}}", paramValue.jsonPrimitive.content)
             }
         }.let {
             if (it.contains("{") || it.contains("}")) {
-                error("Not all path parameters are resolved: '$it'")
+                aigenticException("Not all path parameters are resolved: '$it'")
             } else {
                 ResolvedUrl(it)
             }
@@ -96,7 +97,7 @@ class DefaultUrlArgumentsResolver : UrlArgumentsResolver {
 fun Parameter.getParameterValue(arguments: JsonObject): JsonElement? {
     val paramValue = arguments[name]
     return when {
-        paramValue == null && isRequired -> error("Param $name is required but is not present in call arguments! $arguments")
+        paramValue == null && isRequired -> aigenticException("Param $name is required but is not present in call arguments! $arguments")
         paramValue != null -> paramValue
         else -> null
     }

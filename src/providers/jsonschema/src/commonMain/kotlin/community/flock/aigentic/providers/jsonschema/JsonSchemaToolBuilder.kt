@@ -1,32 +1,33 @@
-package community.flock.aigentic.mapper
+package community.flock.aigentic.providers.jsonschema
 
-import com.aallam.openai.api.chat.Tool
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.PrimitiveValue
-import community.flock.aigentic.core.tool.ToolDescription
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 
-internal fun ToolDescription.toOpenAITool(): Tool {
-    val toolParameters =
-        if (parameters.isEmpty()) {
-            com.aallam.openai.api.core.Parameters.Empty
-        } else {
-            com.aallam.openai.api.core.Parameters.buildJsonObject {
-                put("type", "object")
-                emitPropertiesAndRequired(parameters)
-            }
+fun JsonObjectBuilder.emitPropertiesAndRequired(parameters: List<Parameter>) {
+    putJsonObject("properties") {
+        emit(parameters)
+    }
+    putJsonArray("required") {
+        parameters.filter { it.isRequired }.forEach { parameter: Parameter ->
+            add(parameter.name)
         }
+    }
+}
 
-    return Tool.function(
-        name = name.value,
-        description = description,
-        parameters = toolParameters,
-    )
+private fun JsonObjectBuilder.emit(definition: Parameter) {
+    putJsonObject(definition.name) {
+        emitType(definition)
+        definition.description?.run {
+            put("description", this)
+        }
+        emitSpecificPropertiesIfNecessary(definition)
+    }
 }
 
 private fun JsonObjectBuilder.emitType(definition: Parameter) =
@@ -46,16 +47,6 @@ private fun mapPrimitiveType(type: ParameterType.Primitive) =
         ParameterType.Primitive.Number -> "number"
         ParameterType.Primitive.String -> "string"
     }
-
-private fun JsonObjectBuilder.emit(definition: Parameter) {
-    putJsonObject(definition.name) {
-        emitType(definition)
-        definition.description?.run {
-            put("description", this)
-        }
-        emitSpecificPropertiesIfNecessary(definition)
-    }
-}
 
 private fun JsonObjectBuilder.emitSpecificPropertiesIfNecessary(definition: Parameter) =
     when (definition) {
@@ -98,14 +89,3 @@ private fun JsonObjectBuilder.emit(definitions: List<Parameter>): Unit =
     definitions.forEach { parameter ->
         emit(parameter)
     }
-
-fun JsonObjectBuilder.emitPropertiesAndRequired(parameters: List<Parameter>) {
-    putJsonObject("properties") {
-        emit(parameters)
-    }
-    putJsonArray("required") {
-        parameters.filter { it.isRequired }.forEach { parameter: Parameter ->
-            add(parameter.name)
-        }
-    }
-}

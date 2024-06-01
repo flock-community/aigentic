@@ -20,6 +20,8 @@ include(
     "src:tools:http",
     "src:tools:openapi",
     "src:providers:openai",
+    "src:providers:gemini",
+    "src:providers:jsonschema",
     "src:cloud:google-cloud-function",
     "src:examples:simple-tools",
     "src:examples:openapi-tools",

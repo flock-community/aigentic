@@ -6,6 +6,7 @@ import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
@@ -28,7 +29,9 @@ class AgentConfig : Config<Agent> {
 
     fun AgentConfig.addTool(tool: Tool) = tools.add(tool)
 
-    fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) = ContextConfig().apply(contextConfig).build().also { contexts = it }
+    fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) =
+        ContextConfig().apply(contextConfig).build()
+            .also { contexts = it }
 
     fun AgentConfig.task(
         description: String,
@@ -84,9 +87,17 @@ class ContextConfig : Config<List<Context>> {
         Context.Text(text)
             .also { contexts.add(it) }
 
-    fun ContextConfig.addImage(base64: String) =
-        Context.Image(base64)
-            .also { contexts.add(it) }
+    fun ContextConfig.addImageUrl(
+        url: String,
+        mimeType: MimeType,
+    ) = Context.ImageUrl(url = url, mimeType = mimeType)
+        .also { contexts.add(it) }
+
+    fun ContextConfig.addImageBase64(
+        base64: String,
+        mimeType: MimeType,
+    ) = Context.ImageBase64(base64 = base64, mimeType = mimeType)
+        .also { contexts.add(it) }
 
     override fun build(): List<Context> = contexts
 }

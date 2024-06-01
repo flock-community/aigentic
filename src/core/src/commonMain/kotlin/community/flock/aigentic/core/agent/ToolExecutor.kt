@@ -1,6 +1,12 @@
 package community.flock.aigentic.core.agent
 
-import community.flock.aigentic.core.agent.tool.FinishedOrStuck
+import community.flock.aigentic.core.agent.ToolExecutionResult.FinishedToolResult
+import community.flock.aigentic.core.agent.ToolExecutionResult.ToolResult
+import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
+import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.STUCK_WITH_TASK_TOOL_NAME
+import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolResultContent
@@ -17,20 +23,25 @@ private suspend fun executeTool(
     toolCall: ToolCall,
 ): ToolExecutionResult =
     when (toolCall.name) {
-        agent.finishOrStuckTool.name.value -> {
-            val finishedOrStuck = agent.finishOrStuckTool.handler(toolCall.argumentsAsJson())
-            ToolExecutionResult.FinishedToolResult(finishedOrStuck)
+        FINISHED_TASK_TOOL_NAME -> {
+            val finishedResult = agent.finishedTaskTool.handler(toolCall.argumentsAsJson())
+            FinishedToolResult(result = finishedResult)
+        }
+
+        STUCK_WITH_TASK_TOOL_NAME -> {
+            val stuckResult = stuckWithTaskTool.handler(toolCall.argumentsAsJson())
+            FinishedToolResult(result = stuckResult)
         }
 
         else -> {
-            val tool = agent.tools[ToolName(toolCall.name)] ?: error("Tool not registered: $toolCall")
+            val tool = agent.tools[ToolName(toolCall.name)] ?: aigenticException("Tool not registered: $toolCall")
             val result = tool.handler(toolCall.argumentsAsJson())
-            ToolExecutionResult.ToolResult(Message.ToolResult(toolCall.id, toolCall.name, ToolResultContent(result)))
+            ToolResult(Message.ToolResult(toolCall.id, toolCall.name, ToolResultContent(result)))
         }
     }
 
 sealed interface ToolExecutionResult {
-    data class FinishedToolResult(val reason: FinishedOrStuck) : ToolExecutionResult
+    data class FinishedToolResult(val result: Result) : ToolExecutionResult
 
     data class ToolResult(val message: Message.ToolResult) : ToolExecutionResult
 }

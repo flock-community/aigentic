@@ -4,8 +4,7 @@ package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.agent.tool.FinishReason.FinishedTask
-import community.flock.aigentic.core.agent.tool.FinishReason.ImStuck
+import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
@@ -14,14 +13,14 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getIntValue
 import community.flock.aigentic.core.tool.getStringValue
-import community.flock.aigentic.dsl.openAIModel
-import community.flock.aigentic.model.OpenAIModelIdentifier
+import community.flock.aigentic.openai.dsl.openAIModel
+import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import kotlinx.serialization.json.JsonObject
 
-suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
+suspend fun runAdministrativeAgentExample(apiKey: String) {
     val run =
         agent {
-            openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4O)
+            openAIModel(apiKey, OpenAIModelIdentifier.GPT4O)
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(
                     "For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent",
@@ -41,14 +40,18 @@ suspend fun runAdministrativeAgentExample(openAIAPIKey: String) {
             finishResponse(agentAdministrativeResponse)
         }.start()
 
-    when (run.result.reason) {
-        FinishedTask -> "Hours inspected successfully"
-        ImStuck -> "Agent is stuck and could not complete task"
+    when (val result = run.result) {
+        is Result.Finished -> "Hours inspected successfully: ${result.getFinishResponse<AgentAdministrativeResponse>()}"
+        is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.description}"
+        is Result.Fatal -> "Agent crashed: ${result.message}"
     }.also {
-        println("$it took ${run.finishedAt - run.startedAt}")
+        println(
+            """
+            | $it
+            | Took ${run.finishedAt - run.startedAt}
+            """.trimIndent(),
+        )
     }
-    val typedResponse = run.getFinishResponse<AgentAdministrativeResponse>()
-    println("response: $typedResponse")
 }
 
 val getAllEmployeesOverviewTool =
@@ -56,7 +59,7 @@ val getAllEmployeesOverviewTool =
         override val name = ToolName("getAllEmployeesOverview")
         override val description = "Returns a list of all employees"
         override val parameters = emptyList<Parameter>()
-        override val handler: suspend (map: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
             """
             |Employee: Niels
             |Telephone number: 0612345678
@@ -83,7 +86,7 @@ val getEmployeeDetailByNameTool =
         override val name = ToolName("getEmployeeDetailByName")
         override val description = "Returns the hour status of an employee by name"
         override val parameters = listOf(nameParameter)
-        override val handler: suspend (map: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
 
             val name = nameParameter.getStringValue(it)
 
@@ -130,7 +133,7 @@ val askManagerForResponseTool =
         override val name = ToolName("askManagerForResponse")
         override val description = "Ask to manager how to respond"
         override val parameters = listOf(nameParameter)
-        override val handler: suspend (map: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
 
             val name = nameParameter.getStringValue(it)
             "$name, je moet nu echt je uren invullen anders word je ontslagen!"
@@ -158,7 +161,7 @@ val updateEmployeeTool =
         override val name = ToolName("updateEmployee")
         override val description = "Update the employee status"
         override val parameters = listOf(nameParameter, numberOfRemindersSentParameter)
-        override val handler: suspend (map: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
             val name = nameParameter.getStringValue(it)
             val numberOfRemindersSent = numberOfRemindersSentParameter.getIntValue(it)
             "Updated number of reminders sent for '$name' to '$numberOfRemindersSent'"

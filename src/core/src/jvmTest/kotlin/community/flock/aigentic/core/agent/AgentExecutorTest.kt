@@ -1,14 +1,19 @@
 package community.flock.aigentic.core.agent
 
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
-import community.flock.aigentic.core.agent.test.util.TestData.finishedSuccessfully
-import community.flock.aigentic.core.agent.test.util.TestData.modelFinishDirectly
+import community.flock.aigentic.core.agent.test.util.TestData.finishedTaskToolCall
+import community.flock.aigentic.core.agent.test.util.TestData.modelFinishTaskDirectly
+import community.flock.aigentic.core.agent.test.util.TestData.modelStuckDirectly
 import community.flock.aigentic.core.agent.test.util.encode
 import community.flock.aigentic.core.agent.test.util.toModelResponse
-import community.flock.aigentic.core.agent.tool.FINISH_OR_STUCK_TOOL_NAME
-import community.flock.aigentic.core.agent.tool.FinishReason
+import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
+import community.flock.aigentic.core.agent.tool.Result.Fatal
+import community.flock.aigentic.core.agent.tool.Result.Finished
+import community.flock.aigentic.core.agent.tool.Result.Stuck
 import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
@@ -21,6 +26,8 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.matchers.types.shouldBeTypeOf
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -40,7 +47,7 @@ class AgentExecutorTest : DescribeSpec({
         it("should run agent successfully") {
 
             val mockHandler =
-                mockk<suspend (map: JsonObject) -> String>().apply {
+                mockk<suspend (toolArguments: JsonObject) -> String>().apply {
                     coEvery { this@apply.invoke(any<JsonObject>()) } returns
                         Json.encodeToString(
                             listOf(
@@ -58,7 +65,7 @@ class AgentExecutorTest : DescribeSpec({
                         listOf(
                             Primitive("count", "number of events", true, Integer),
                         )
-                    override val handler: suspend (map: JsonObject) -> String = mockHandler
+                    override val handler: suspend (toolArguments: JsonObject) -> String = mockHandler
                 }
 
             val expectedArguments = buildJsonObject { put("count", 10) }
@@ -68,7 +75,7 @@ class AgentExecutorTest : DescribeSpec({
                     coEvery { sendRequest(any(), any()) } returnsMany
                         listOf(
                             ToolCall(ToolCallId("1"), newsEventTool.name.value, expectedArguments.encode()),
-                            finishedSuccessfully,
+                            finishedTaskToolCall,
                         ).toModelResponse()
                 }
 
@@ -81,11 +88,25 @@ class AgentExecutorTest : DescribeSpec({
                 addTool(newsEventTool)
             }.start().apply {
 
-                result.reason shouldBe FinishReason.FinishedTask
-                result.description shouldBe "Finished the task"
+                result.shouldBeInstanceOf<Finished>()
+                (result as Finished).description shouldBe "Finished the task"
 
                 coVerify(exactly = 1) { mockHandler.invoke(expectedArguments) }
                 coVerify(exactly = 2) { modelMock.sendRequest(any(), any()) }
+            }
+        }
+
+        it("should finish with Stuck result when model doesn't know what to do") {
+
+            agent {
+                model(modelStuckDirectly)
+                task("Summarize the retrieved news events") {
+                    addInstruction("Fetch top 10 news events")
+                }
+                addTool(mockk<Tool>(relaxed = true))
+            }.start().apply {
+                result.shouldBeInstanceOf<Stuck>()
+                (result as Stuck).description shouldBe "I don't know what to do"
             }
         }
 
@@ -99,7 +120,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val agent =
                 agent {
-                    model(modelFinishDirectly)
+                    model(modelFinishTaskDirectly)
                     systemPrompt(systemPromptMock)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
@@ -114,15 +135,16 @@ class AgentExecutorTest : DescribeSpec({
         it("should add provided context as messages after system prompt message") {
 
             val expectedTextContext = "This is some text context"
-            val expectedImageContext = "base-64-encoded-string"
+            val expectedImageContextBase64 = "base-64-encoded-string"
+            val expectedImageContextMimeType = MimeType.PNG
 
             val agent =
                 agent {
-                    model(modelFinishDirectly)
+                    model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     context {
                         addText(expectedTextContext)
-                        addImage(expectedImageContext)
+                        addImageBase64(base64 = expectedImageContextBase64, mimeType = expectedImageContextMimeType)
                     }
                     addTool(mockk(relaxed = true))
                 }
@@ -131,7 +153,11 @@ class AgentExecutorTest : DescribeSpec({
                 messages.drop(1).take(2) shouldBe
                     listOf(
                         Message.Text(Sender.Aigentic, expectedTextContext),
-                        Message.Image(Sender.Aigentic, expectedImageContext),
+                        Message.ImageBase64(
+                            sender = Sender.Aigentic,
+                            base64Content = expectedImageContextBase64,
+                            mimeType = expectedImageContextMimeType,
+                        ),
                     )
             }
         }
@@ -144,7 +170,7 @@ class AgentExecutorTest : DescribeSpec({
                     coEvery { sendRequest(any(), any()) } returnsMany
                         listOf(
                             toolCall,
-                            finishedSuccessfully,
+                            finishedTaskToolCall,
                         ).toModelResponse()
                 }
 
@@ -153,7 +179,7 @@ class AgentExecutorTest : DescribeSpec({
                     override val name = ToolName(toolCall.name)
                     override val description = null
                     override val parameters = emptyList<Primitive>()
-                    override val handler: suspend (map: JsonObject) -> String = { "toolResult" }
+                    override val handler: suspend (toolArguments: JsonObject) -> String = { "toolResult" }
                 }
 
             val agent =
@@ -187,9 +213,8 @@ class AgentExecutorTest : DescribeSpec({
             val toolCall =
                 ToolCall(
                     ToolCallId("1"),
-                    FINISH_OR_STUCK_TOOL_NAME,
+                    FINISHED_TASK_TOOL_NAME,
                     buildJsonObject {
-                        put("finishReason", "FinishedTask")
                         put("description", "Finished the task")
                         put(parameterName, response)
                     }.encode(),
@@ -210,27 +235,46 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.reason shouldBe FinishReason.FinishedTask
-                this.result.response shouldBe response.encode()
+                result.shouldBeTypeOf<Finished>()
+                (this.result as Finished).response shouldBe response.encode()
             }
         }
 
         it("if finishedWith parameter is not configured, the finished response field should be null") {
             val agent =
                 agent {
-                    model(modelFinishDirectly)
+                    model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
                 }
 
             agent.start().apply {
-                result.reason shouldBe FinishReason.FinishedTask
-                this.result.response shouldBe null
+                result.shouldBeTypeOf<Finished>()
+                (this.result as Finished).response shouldBe null
             }
         }
     }
 
     describe("exceptions") {
+
+        it("should finish with Fatal result when model throws AigenticException") {
+
+            val modelMock =
+                mockk<Model>().apply {
+                    coEvery { sendRequest(any(), any()) } throws AigenticException("Model exception")
+                }
+
+            agent {
+                model(modelMock)
+                task("Summarize the retrieved news events") {
+                    addInstruction("Fetch top 10 news events")
+                }
+                addTool(mockk<Tool>(relaxed = true))
+            }.start().apply {
+                result.shouldBeInstanceOf<Fatal>()
+                (result as Fatal).message shouldBe "Model exception"
+            }
+        }
 
         // Implement more in https://aigentic.youtrack.cloud/issue/AIGENTIC-29/Improve-Aigentic-client-Add-error-handling
     }
