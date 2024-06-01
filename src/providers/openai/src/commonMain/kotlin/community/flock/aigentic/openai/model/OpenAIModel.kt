@@ -33,19 +33,20 @@ class OpenAIModel(
     override suspend fun sendRequest(
         messages: List<Message>,
         tools: List<ToolDescription>,
-    ): ModelResponse = try {
-        openAI
-            .chatCompletion(
-                createChatCompletionsRequest(
-                    messages = messages,
-                    tools = tools,
-                    openAIModelIdentifier = modelIdentifier,
-                ),
-            )
-            .toModelResponse()
-    } catch (e: OpenAIException) {
-        aigenticException(e.message ?: "OpenAI error", e)
-    }
+    ): ModelResponse =
+        try {
+            openAI
+                .chatCompletion(
+                    createChatCompletionsRequest(
+                        messages = messages,
+                        tools = tools,
+                        openAIModelIdentifier = modelIdentifier,
+                    ),
+                )
+                .toModelResponse()
+        } catch (e: OpenAIException) {
+            aigenticException(e.message ?: "OpenAI error", e)
+        }
 
     companion object {
         fun defaultOpenAI(authentication: Authentication.APIKey) =

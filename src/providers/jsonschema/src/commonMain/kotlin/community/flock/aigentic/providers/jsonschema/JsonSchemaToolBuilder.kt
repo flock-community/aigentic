@@ -1,4 +1,4 @@
-package community.flock.aigentic.tools.jsonschema
+package community.flock.aigentic.providers.jsonschema
 
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType

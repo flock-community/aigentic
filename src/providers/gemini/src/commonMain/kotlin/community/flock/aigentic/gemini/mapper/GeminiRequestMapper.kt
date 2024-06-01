@@ -13,7 +13,7 @@ import community.flock.aigentic.gemini.client.model.GenerateContentRequest
 import community.flock.aigentic.gemini.client.model.Part
 import community.flock.aigentic.gemini.client.model.Role
 import community.flock.aigentic.gemini.client.model.Tool
-import community.flock.aigentic.tools.jsonschema.emitPropertiesAndRequired
+import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -27,9 +27,18 @@ internal fun createGenerateContentRequest(
         contents =
             messages.map { message ->
                 when (message) {
-                    is Message.ImageUrl -> listOf(Part.FileDataPart(FileDataContent(mimeType = message.mimeType.value, fileUri = message.url)))
-                    is Message.ImageBase64 -> listOf(Part.Blob(BlobContent(mimeType = message.mimeType.value, data = formatBase64Content(message))))
-                    is Message.SystemPrompt -> listOf(Part.Text("See system instruction")) // The API returns a 400 when the initial request contains no messages
+                    is Message.ImageUrl ->
+                        listOf(
+                            Part.FileDataPart(FileDataContent(mimeType = message.mimeType.value, fileUri = message.url)),
+                        )
+                    is Message.ImageBase64 ->
+                        listOf(
+                            Part.Blob(BlobContent(mimeType = message.mimeType.value, data = formatBase64Content(message))),
+                        )
+                    is Message.SystemPrompt ->
+                        listOf(
+                            Part.Text("See system instruction"),
+                        ) // The API returns a 400 when the initial request contains no messages
                     is Message.Text -> listOf<Part>(Part.Text(message.text))
                     is Message.ToolCalls ->
                         message.toolCalls.map {
@@ -73,8 +82,7 @@ internal fun createGenerateContentRequest(
             ),
     )
 
-private fun formatBase64Content(message: Message.ImageBase64) =
-    message.base64Content.substringAfter("base64,")
+private fun formatBase64Content(message: Message.ImageBase64) = message.base64Content.substringAfter("base64,")
 
 private fun getSystemInstruction(messages: List<Message>): Content =
     messages.filterIsInstance<Message.SystemPrompt>().map {

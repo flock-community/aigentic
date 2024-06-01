@@ -16,7 +16,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":src:core"))
-                implementation(project(":src:tools:jsonschema"))
+                implementation(project(":src:providers:jsonschema"))
 
                 api(libs.coroutines.core)
                 implementation(libs.serialization.json)

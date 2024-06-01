@@ -15,7 +15,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":src:core"))
-                implementation(project(":src:tools:jsonschema"))
+                implementation(project(":src:providers:jsonschema"))
                 implementation(libs.openai.client)
             }
         }

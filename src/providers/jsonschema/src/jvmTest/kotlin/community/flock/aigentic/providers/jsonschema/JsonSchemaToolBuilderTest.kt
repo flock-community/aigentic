@@ -1,4 +1,4 @@
-package community.flock.aigentic.tools.jsonschema
+package community.flock.aigentic.providers.jsonschema
 
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
@@ -11,9 +11,9 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 
-class ToolMapperKtTest : DescribeSpec({
+class JsonSchemaToolBuilderTest : DescribeSpec({
 
-    it("should emit properties and required") {
+    it("should build properties and required") {
         val parameters =
             listOf(
                 Parameter.Complex.Object(

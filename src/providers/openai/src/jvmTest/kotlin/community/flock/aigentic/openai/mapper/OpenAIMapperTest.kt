@@ -14,7 +14,6 @@ import io.kotest.matchers.should
 import io.kotest.matchers.types.beInstanceOf
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-
 class OpenAIMapperTest : DescribeSpec({
 
     describe("OpenAI Mapper") {
@@ -50,9 +49,6 @@ class OpenAIMapperTest : DescribeSpec({
                     this.imageUrl.url should be(base64Content)
                 }
             }
-
         }
     }
 })
-
-

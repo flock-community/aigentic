@@ -72,21 +72,20 @@ private suspend fun SendModelRequest.process(): ProcessModelResponse {
 private fun Finished.process() = state to result
 
 private suspend fun ExecuteTools.process(): Action {
-    val toolResults = executeToolCalls(agent, toolCalls)
-    val finished = toolResults.filterIsInstance<ToolExecutionResult.FinishedToolResult>().firstOrNull()
+    val toolExecutionResults = executeToolCalls(agent, toolCalls)
+    val finishedToolResult = toolExecutionResults.filterIsInstance<ToolExecutionResult.FinishedToolResult>().firstOrNull()
+    val toolResults = toolExecutionResults.filterIsInstance<ToolExecutionResult.ToolResult>()
 
-    return if (finished != null) {
-        Finished(state, agent, finished.result)
+    return if (finishedToolResult != null) {
+        Finished(state, agent, finishedToolResult.result)
     } else {
-        state.addMessages(toolResults.filterIsInstance<ToolExecutionResult.ToolResult>().map { it.message })
+        state.addMessages(toolResults.map { it.message })
         SendModelRequest(state, agent)
     }
 }
 
 private fun initializeStartMessages(agent: Agent): List<Message> =
-    listOf(
-        agent.systemPromptBuilder.buildSystemPrompt(agent),
-    ) +
+    listOf(agent.systemPromptBuilder.buildSystemPrompt(agent)) +
         agent.contexts.map {
             when (it) {
                 is Context.ImageUrl -> Message.ImageUrl(sender = Aigentic, url = it.url, mimeType = it.mimeType)

@@ -2,7 +2,7 @@ package community.flock.aigentic.openai.mapper
 
 import com.aallam.openai.api.chat.Tool
 import community.flock.aigentic.core.tool.ToolDescription
-import community.flock.aigentic.tools.jsonschema.emitPropertiesAndRequired
+import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.json.put
 
 internal fun ToolDescription.toOpenAITool(): Tool {
