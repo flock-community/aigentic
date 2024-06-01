@@ -28,8 +28,8 @@ internal fun createGenerateContentRequest(
             messages.map { message ->
                 when (message) {
                     is Message.ImageUrl -> listOf(Part.FileDataPart(FileDataContent(mimeType = message.mimeType.value, fileUri = message.url)))
-                    is Message.ImageBase64 -> listOf(Part.Blob(BlobContent(mimeType = message.mimeType.value, data = message.base64Content)))
-                    is Message.SystemPrompt -> listOf(Part.Text("See system instructions"))
+                    is Message.ImageBase64 -> listOf(Part.Blob(BlobContent(mimeType = message.mimeType.value, data = formatBase64Content(message))))
+                    is Message.SystemPrompt -> listOf(Part.Text("See system instruction")) // The API returns a 400 when the initial request contains no messages
                     is Message.Text -> listOf<Part>(Part.Text(message.text))
                     is Message.ToolCalls ->
                         message.toolCalls.map {
@@ -72,6 +72,9 @@ internal fun createGenerateContentRequest(
                 ),
             ),
     )
+
+private fun formatBase64Content(message: Message.ImageBase64) =
+    message.base64Content.substringAfter("base64,")
 
 private fun getSystemInstruction(messages: List<Message>): Content =
     messages.filterIsInstance<Message.SystemPrompt>().map {

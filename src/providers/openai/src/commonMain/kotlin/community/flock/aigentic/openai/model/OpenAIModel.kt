@@ -1,9 +1,11 @@
 package community.flock.aigentic.openai.model
 
+import com.aallam.openai.api.exception.OpenAIException
 import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.logging.LogLevel
 import com.aallam.openai.client.LoggingConfig
 import com.aallam.openai.client.OpenAI
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.Model
@@ -31,7 +33,7 @@ class OpenAIModel(
     override suspend fun sendRequest(
         messages: List<Message>,
         tools: List<ToolDescription>,
-    ): ModelResponse =
+    ): ModelResponse = try {
         openAI
             .chatCompletion(
                 createChatCompletionsRequest(
@@ -41,6 +43,9 @@ class OpenAIModel(
                 ),
             )
             .toModelResponse()
+    } catch (e: OpenAIException) {
+        aigenticException(e.message ?: "OpenAI error", e)
+    }
 
     companion object {
         fun defaultOpenAI(authentication: Authentication.APIKey) =
