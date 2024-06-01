@@ -37,16 +37,13 @@ suspend fun runItemCategorizeExample(
     apiKey: String,
     base64Image: String,
 ) {
-    val run =
-        agent {
-            geminiModel(apiKey, GeminiModelIdentifier.Gemini1_5FlashLatest)
-//        openAIModel(apiKey, OpenAIModelIdentifier.GPT4O)
-            task("Identify all items in the image and save each individual item") {}
-            addTool(saveItemTool)
-            context {
-                addImageBase64(base64Image, MimeType.JPEG)
-            }
-        }.start()
-
-    run.messages.size
+    agent {
+        geminiModel(apiKey, GeminiModelIdentifier.Gemini1_5FlashLatest)
+        task("Identify all items in the image and save each individual item") {}
+        addTool(saveItemTool)
+        context {
+            addImageBase64(base64Image, MimeType.JPEG)
+        }
+    }.start()
+        .also(::println)
 }
