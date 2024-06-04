@@ -10,7 +10,7 @@ internal fun GoogleRequest.map(): Request =
         method = method,
         headers = dynamicObjectToMap(headers),
         query = dynamicObjectToMap(query),
-        body = Json.parseToJsonElement(JSON.stringify(body)).jsonObject,
+        body = Json.parseToJsonElement(JSON.stringify(body)),
     )
 
 private fun dynamicObjectToMap(jsObject: dynamic): Map<String, String> =
