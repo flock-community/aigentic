@@ -44,7 +44,7 @@ publishing {
     }
 }
 
-//signing {
-//    useGpgCmd()
-//    sign(publishing.publications)
-//}
+signing {
+    useGpgCmd()
+    sign(publishing.publications)
+}
