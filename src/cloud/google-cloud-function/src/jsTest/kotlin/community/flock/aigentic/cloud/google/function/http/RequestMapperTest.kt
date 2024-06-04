@@ -3,6 +3,7 @@ package community.flock.aigentic.cloud.google.function.http
 import community.flock.aigentic.cloud.google.function.declarations.GoogleRequest
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 class RequestMapperTest : DescribeSpec({
@@ -22,7 +23,7 @@ class RequestMapperTest : DescribeSpec({
             headers["authorization"] shouldBe "Bearer some-secret"
             headers["content-type"] shouldBe "application/json"
             query["name"] shouldBe "John"
-            body["message"]?.jsonPrimitive?.content shouldBe "Hello World"
+            body.jsonObject["message"]?.jsonPrimitive?.content shouldBe "Hello World"
         }
     }
 })
