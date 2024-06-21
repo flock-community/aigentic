@@ -15,6 +15,7 @@ data class Run(
 )
 
 fun Run.inputTokens(): Int = modelRequests.sumOf { it.inputTokenCount }
+
 fun Run.outputTokens(): Int = modelRequests.sumOf { it.outputTokenCount }
 
 inline fun <reified T> Result.Finished.getFinishResponse(): T? = response?.let { Json.decodeFromString(it) }
