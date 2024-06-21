@@ -23,7 +23,7 @@ private val geminiKey =
 
 // Set the active example and provider here
 val activeRunExample = RunExamples.ITEM_CATEGORIZE_AGENT
-val activeProvider = OPENAI
+val activeProvider = GEMINI
 
 fun main(): Unit =
     runBlocking {

@@ -18,14 +18,14 @@ class AgentConfigTest : DescribeSpec({
         it("should build basic agent") {
             val model = mockk<Model>(relaxed = true)
             agent {
-                name("AgentId")
+                name("agent-name")
                 model(model)
                 task("Task description") {
                     addInstruction("Instruction description")
                 }
                 addTool(mockk(relaxed = true))
             }.run {
-                name shouldBe "AgentId"
+                name shouldBe "agent-name"
                 model shouldBe model
                 task.description shouldBe "Task description"
                 task.instructions.size shouldBe 1
@@ -38,7 +38,7 @@ class AgentConfigTest : DescribeSpec({
             val tool2 = mockk<Tool>(relaxed = true)
 
             agent {
-                name("AgentName")
+                name("agent-name")
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 addTool(tool1)
@@ -51,7 +51,7 @@ class AgentConfigTest : DescribeSpec({
         it("should build agent with system prompt builder") {
             val systemPromptBuilder = mockk<SystemPromptBuilder>(relaxed = true)
             agent {
-                name("AgentName")
+                name("agent-name")
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 systemPrompt(systemPromptBuilder)
@@ -63,7 +63,7 @@ class AgentConfigTest : DescribeSpec({
 
         it("should build agent with multiple contexts") {
             agent {
-                name("AgentName")
+                name("agent-name")
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 context {
@@ -79,6 +79,39 @@ class AgentConfigTest : DescribeSpec({
         }
 
         withData(
+            nameFn = { "Should succeed with valid name $it" },
+            "test-agent",
+            "0299agent",
+            "agent0292",
+        ) {
+
+            agent {
+                name(it)
+                model(mockk(relaxed = true))
+                task("Task description") {}
+                addTool(mockk(relaxed = true))
+            }
+        }
+
+        withData(
+            nameFn = { "Should fail with invalid name $it" },
+            "Test-agent",
+            "0299_agent",
+            "agent0!!292",
+        ) {
+            shouldThrow<IllegalArgumentException> {
+                agent {
+                    name(it)
+                    model(mockk(relaxed = true))
+                    task("Task description") {}
+                    addTool(mockk(relaxed = true))
+                }
+            }.run {
+                message shouldBe "Agent name can only contain lowercase letters, numbers and dashes"
+            }
+        }
+
+        withData(
             nameFn = { "Should fail with: '${it.expectedMessage}'" },
             MissingPropertyTestCase(
                 agentConfig = {
@@ -87,21 +120,21 @@ class AgentConfigTest : DescribeSpec({
             ),
             MissingPropertyTestCase(
                 agentConfig = {
-                    name("AgentName")
+                    name("agent-name")
                     task("Task description") {}
                 },
                 expectedMessage = "Cannot build Agent, property 'model' is missing, please use 'model()' to provide it",
             ),
             MissingPropertyTestCase(
                 agentConfig = {
-                    name("AgentName")
+                    name("agent-name")
                     model(mockk(relaxed = true))
                 },
                 expectedMessage = "Cannot build Agent, property 'task' is missing, please use 'task()' to provide it",
             ),
             MissingPropertyTestCase(
                 agentConfig = {
-                    name("AgentName")
+                    name("agent-name")
                     model(mockk(relaxed = true))
                     task("Task description") {}
                 },

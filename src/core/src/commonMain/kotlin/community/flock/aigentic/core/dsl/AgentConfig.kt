@@ -26,8 +26,8 @@ class AgentConfig : Config<Agent> {
     internal val tools = mutableListOf<Tool>()
 
     fun AgentConfig.name(name: String) {
-        require(name.matches(Regex("^[a-zA-Z0-9_]*\$"))) {
-            "Agent name can only contain letters, numbers and underscores"
+        require(name.matches(Regex("^[a-z0-9-]*\$"))) {
+            "Agent name can only contain lowercase letters, numbers and dashes"
         }
         this.name = name
     }
