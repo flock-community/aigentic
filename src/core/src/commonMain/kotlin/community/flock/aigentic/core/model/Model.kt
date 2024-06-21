@@ -21,4 +21,14 @@ interface Model {
 
 data class ModelResponse(
     val message: Message,
+    val usage: Usage,
 )
+
+data class Usage(
+    val inputTokenCount: Int,
+    val outputTokenCount: Int,
+) {
+    companion object {
+        val EMPTY = Usage(inputTokenCount = 0, outputTokenCount = 0)
+    }
+}

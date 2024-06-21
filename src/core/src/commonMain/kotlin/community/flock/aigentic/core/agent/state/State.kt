@@ -13,27 +13,38 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
-data class State(
+internal data class State(
     val startedAt: Instant = Clock.System.now(),
     var finishedAt: Instant? = null,
-    val messages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 100),
-    internal val events: MutableSharedFlow<AgentStatus> = MutableSharedFlow(replay = 100),
+    val messages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
+    val events: MutableSharedFlow<AgentStatus> = MutableSharedFlow(replay = 1000),
+    val modelRequestInfos: MutableSharedFlow<ModelRequestInfo> = MutableSharedFlow(replay = 1000),
 )
 
-fun State.getMessages() = messages.asSharedFlow()
+internal fun State.getMessages() = messages.asSharedFlow()
 
-fun State.getStatus() = merge(messages.flatMapConcat { it.toStatus().asFlow() }, events)
+internal fun State.getStatus() = merge(messages.flatMapConcat { it.toStatus().asFlow() }, events)
 
 internal suspend fun State.addMessages(messages: List<Message>) = messages.forEach { addMessage(it) }
 
 internal suspend fun State.addMessage(message: Message) = this.messages.emit(message)
 
-fun Pair<State, Result>.toRun(): Run =
+internal suspend fun State.addModelRequestInfo(modelRequestInfo: ModelRequestInfo) = this.modelRequestInfos.emit(modelRequestInfo)
+
+internal fun Pair<State, Result>.toRun(): Run =
     with(first) {
         Run(
             startedAt = startedAt,
             finishedAt = finishedAt ?: Clock.System.now(),
             messages = messages.replayCache,
             result = second,
+            modelRequests = modelRequestInfos.replayCache,
         )
     }
+
+data class ModelRequestInfo(
+    val startedAt: Instant,
+    val finishedAt: Instant?,
+    val inputTokenCount: Int,
+    val outputTokenCount: Int,
+)

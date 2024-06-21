@@ -22,6 +22,7 @@ class HttpRequestHandlerTest : DescribeSpec({
     val finishedTaskConfig: HttpCloudFunctionConfig.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
+            name("AgentName")
             model(modelFinishDirectly(finishedTaskToolCall))
             task("Respond with a welcome message to the person") {}
             addTool(testTool)
@@ -31,6 +32,7 @@ class HttpRequestHandlerTest : DescribeSpec({
     val finishedTaskWithResponseConfig: HttpCloudFunctionConfig.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
+            name("AgentName")
             model(modelFinishDirectly(finishedTaskWithResponseToolCall))
             task("Respond with a welcome message to the person") {}
             addTool(testTool)
@@ -48,6 +50,7 @@ class HttpRequestHandlerTest : DescribeSpec({
     val imStuckConfig: HttpCloudFunctionConfig.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
+            name("AgentName")
             model(modelFinishDirectly(stuckWithTaskToolCall))
             task("Respond with a welcome message to the person") {}
             addTool(testTool)
@@ -57,6 +60,7 @@ class HttpRequestHandlerTest : DescribeSpec({
     val fatalConfig: HttpCloudFunctionConfig.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
+            name("AgentName")
             model(modelException())
             task("Respond with a welcome message to the person") {}
             addTool(testTool)

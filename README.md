@@ -11,19 +11,20 @@ Framework to configure and run AI agents
 
 ## How to use
 
-To build an agent which uses OpenAI as model provider with local (non-http) tools use the following dependencies:
+To build an agent with local (non-http) tools use the following dependencies:
 
 ```
-implementation("community.flock.aigentic:core:0.0.4-SNAPSHOT")
-implementation("community.flock.aigentic:openai:0.0.4-SNAPSHOT")
+implementation("community.flock.aigentic:core:<version>")
+implementation("community.flock.aigentic:openai:<version>") // Also available: community.flock.aigentic:gemini:<version> 
 // CIO is for JVM, Android, Native. For other platforms pick the correct engine: https://ktor.io/docs/client-engines.html#platforms
 implementation(libs.ktor.client.cio)
 ```
 
-## Example agents
+## Examples
 
-- Agent with local tools: [AdministrativeAgentExample](src/example/src/commonMain/kotlin/community/flock/aigentic/example/AdministrativeAgentExample.kt)
-- Agent with OpenAPI tools: [OpenAPIAgentExample](src/example/src/commonMain/kotlin/community/flock/aigentic/example/OpenAPIAgentExample.kt)
+- [Local tool agent examples](src/examples/simple-tools/src/jvmMain/kotlin/community/flock/aigentic/example/RunExamples.kt)
+- [OpenAPI tools agent example](src/examples/openapi-tools/src/commonMain/kotlin/community/flock/aigentic/example/OpenAPIAgentExample.kt)
+- [GCP Cloud Function agent example](src/examples/google-http-cloud-function/src/jsMain/kotlin/community/flock/aigentic/cloud/google/httpcloudfunction/GoogleHttpCloudFunctionExample.kt)
 
 ### How to use snapshots
 

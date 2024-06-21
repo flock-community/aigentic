@@ -6,9 +6,11 @@ import community.flock.aigentic.core.agent.Action.Initialize
 import community.flock.aigentic.core.agent.Action.ProcessModelResponse
 import community.flock.aigentic.core.agent.Action.SendModelRequest
 import community.flock.aigentic.core.agent.message.correctionMessage
+import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.state.State
 import community.flock.aigentic.core.agent.state.addMessage
 import community.flock.aigentic.core.agent.state.addMessages
+import community.flock.aigentic.core.agent.state.addModelRequestInfo
 import community.flock.aigentic.core.agent.state.getStatus
 import community.flock.aigentic.core.agent.state.toRun
 import community.flock.aigentic.core.agent.status.AgentStatus
@@ -18,6 +20,7 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender.Aigentic
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.util.withStartFinishTiming
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
@@ -64,7 +67,21 @@ private suspend fun ProcessModelResponse.process(): Action =
     }
 
 private suspend fun SendModelRequest.process(): ProcessModelResponse {
-    val message = agent.sendModelRequest(state).message
+    val (startedAt, finishedAt, response) =
+        withStartFinishTiming {
+            agent.sendModelRequest(state)
+        }
+
+    state.addModelRequestInfo(
+        ModelRequestInfo(
+            startedAt = startedAt,
+            finishedAt = finishedAt,
+            inputTokenCount = response.usage.inputTokenCount,
+            outputTokenCount = response.usage.outputTokenCount,
+        ),
+    )
+
+    val message = response.message
     state.addMessage(message)
     return ProcessModelResponse(state, agent, message)
 }

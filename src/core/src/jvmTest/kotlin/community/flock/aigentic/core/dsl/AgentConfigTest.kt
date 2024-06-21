@@ -18,14 +18,14 @@ class AgentConfigTest : DescribeSpec({
         it("should build basic agent") {
             val model = mockk<Model>(relaxed = true)
             agent {
-                id("AgentId")
+                name("AgentId")
                 model(model)
                 task("Task description") {
                     addInstruction("Instruction description")
                 }
                 addTool(mockk(relaxed = true))
             }.run {
-                id shouldBe "AgentId"
+                name shouldBe "AgentId"
                 model shouldBe model
                 task.description shouldBe "Task description"
                 task.instructions.size shouldBe 1
@@ -38,6 +38,7 @@ class AgentConfigTest : DescribeSpec({
             val tool2 = mockk<Tool>(relaxed = true)
 
             agent {
+                name("AgentName")
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 addTool(tool1)
@@ -50,6 +51,7 @@ class AgentConfigTest : DescribeSpec({
         it("should build agent with system prompt builder") {
             val systemPromptBuilder = mockk<SystemPromptBuilder>(relaxed = true)
             agent {
+                name("AgentName")
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 systemPrompt(systemPromptBuilder)
@@ -61,6 +63,7 @@ class AgentConfigTest : DescribeSpec({
 
         it("should build agent with multiple contexts") {
             agent {
+                name("AgentName")
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 context {
@@ -79,18 +82,26 @@ class AgentConfigTest : DescribeSpec({
             nameFn = { "Should fail with: '${it.expectedMessage}'" },
             MissingPropertyTestCase(
                 agentConfig = {
+                },
+                expectedMessage = "Cannot build Agent, property 'name' is missing, please use 'name()' to provide it",
+            ),
+            MissingPropertyTestCase(
+                agentConfig = {
+                    name("AgentName")
                     task("Task description") {}
                 },
                 expectedMessage = "Cannot build Agent, property 'model' is missing, please use 'model()' to provide it",
             ),
             MissingPropertyTestCase(
                 agentConfig = {
+                    name("AgentName")
                     model(mockk(relaxed = true))
                 },
                 expectedMessage = "Cannot build Agent, property 'task' is missing, please use 'task()' to provide it",
             ),
             MissingPropertyTestCase(
                 agentConfig = {
+                    name("AgentName")
                     model(mockk(relaxed = true))
                     task("Task description") {}
                 },

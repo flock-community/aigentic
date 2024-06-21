@@ -9,6 +9,7 @@ import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.model.Usage
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolDescription
@@ -37,7 +38,7 @@ fun modelFinishDirectly(finishToolCall: ToolCall = finishedTaskToolCall) =
         override suspend fun sendRequest(
             messages: List<Message>,
             tools: List<ToolDescription>,
-        ): ModelResponse = ModelResponse(ToolCalls(listOf(finishToolCall)))
+        ): ModelResponse = ModelResponse(ToolCalls(listOf(finishToolCall)), Usage.EMPTY)
     }
 
 fun modelException() =
