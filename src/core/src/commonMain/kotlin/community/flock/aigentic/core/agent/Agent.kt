@@ -10,6 +10,10 @@ import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 
+data class Platform(
+    val secret: String,
+)
+
 data class Task(
     val description: String,
     val instructions: List<Instruction>,
@@ -26,7 +30,8 @@ sealed interface Context {
 }
 
 data class Agent(
-    val id: String,
+    val name: String,
+    val platform: Platform?,
     val systemPromptBuilder: SystemPromptBuilder,
     val model: Model,
     val task: Task,

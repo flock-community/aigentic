@@ -4,7 +4,7 @@ plugins {
 
 allprojects {
     group = "community.flock.aigentic"
-    version = "0.0.6"
+    version = "0.0.7-SNAPSHOT"
 }
 
 nexusPublishing {

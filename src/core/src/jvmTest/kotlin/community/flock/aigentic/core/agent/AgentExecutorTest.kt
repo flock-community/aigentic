@@ -46,7 +46,7 @@ class AgentExecutorTest : DescribeSpec({
 
         it("should run agent successfully") {
 
-            val mockHandler =
+            val toolHandlerMock =
                 mockk<suspend (toolArguments: JsonObject) -> String>().apply {
                     coEvery { this@apply.invoke(any<JsonObject>()) } returns
                         Json.encodeToString(
@@ -65,7 +65,7 @@ class AgentExecutorTest : DescribeSpec({
                         listOf(
                             Primitive("count", "number of events", true, Integer),
                         )
-                    override val handler: suspend (toolArguments: JsonObject) -> String = mockHandler
+                    override val handler: suspend (toolArguments: JsonObject) -> String = toolHandlerMock
                 }
 
             val expectedArguments = buildJsonObject { put("count", 10) }
@@ -80,6 +80,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent {
+                name("news-agent-name")
                 model(modelMock)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")
@@ -90,8 +91,9 @@ class AgentExecutorTest : DescribeSpec({
 
                 result.shouldBeInstanceOf<Finished>()
                 (result as Finished).description shouldBe "Finished the task"
+                modelRequests.size shouldBe 2
 
-                coVerify(exactly = 1) { mockHandler.invoke(expectedArguments) }
+                coVerify(exactly = 1) { toolHandlerMock.invoke(expectedArguments) }
                 coVerify(exactly = 2) { modelMock.sendRequest(any(), any()) }
             }
         }
@@ -99,6 +101,7 @@ class AgentExecutorTest : DescribeSpec({
         it("should finish with Stuck result when model doesn't know what to do") {
 
             agent {
+                name("news-agent-name")
                 model(modelStuckDirectly)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")
@@ -120,6 +123,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val agent =
                 agent {
+                    name("some-agent-name")
                     model(modelFinishTaskDirectly)
                     systemPrompt(systemPromptMock)
                     task("Execute some task") {}
@@ -140,6 +144,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val agent =
                 agent {
+                    name("some-agent-name")
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     context {
@@ -184,6 +189,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val agent =
                 agent {
+                    name("some-agent-name")
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(testTool)
@@ -228,6 +234,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
             val agent =
                 agent {
+                    name("some-agent-name")
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
@@ -243,6 +250,7 @@ class AgentExecutorTest : DescribeSpec({
         it("if finishedWith parameter is not configured, the finished response field should be null") {
             val agent =
                 agent {
+                    name("some-agent-name")
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
@@ -265,6 +273,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent {
+                name("some-agent-name")
                 model(modelMock)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")

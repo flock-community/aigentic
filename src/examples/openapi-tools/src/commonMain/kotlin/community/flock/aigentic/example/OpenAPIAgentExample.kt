@@ -17,6 +17,7 @@ suspend fun runOpenAPIAgent(
     hackerNewsOpenAPISpec: String,
 ) {
     agent {
+        name("open-api-agent")
         openAIModel(openAIAPIKey, OpenAIModelIdentifier.GPT4O)
         task("Send Hacker News stories about AI") {
             addInstruction("Retrieve the top 10 Hacker News stories")

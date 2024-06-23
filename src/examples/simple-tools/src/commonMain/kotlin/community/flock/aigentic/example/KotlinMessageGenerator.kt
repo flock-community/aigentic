@@ -1,14 +1,14 @@
 package community.flock.aigentic.example
 
+import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getStringValue
-import community.flock.aigentic.gemini.dsl.geminiModel
-import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import kotlinx.serialization.json.JsonObject
 
 val sendMessageTool =
@@ -32,12 +32,16 @@ val sendMessageTool =
         }
     }
 
-suspend fun runKotlinMessageAgentExample(apiKey: String) {
-    agent {
-        geminiModel(apiKey, GeminiModelIdentifier.Gemini1_5ProLatest)
-        task("Send 5 different nice messages about Kotlin") {
-            addInstruction("use the sendMessage tool 5 times")
-        }
-        addTool(sendMessageTool)
-    }.start()
+suspend fun runKotlinMessageAgentExample(model: Model): Run {
+    val run =
+        agent {
+            name("kotlin-message-agent")
+            model(model)
+            task("Send 5 different nice messages about Kotlin") {
+                addInstruction("use the sendMessage tool 5 times")
+            }
+            addTool(sendMessageTool)
+        }.start()
+
+    return run
 }

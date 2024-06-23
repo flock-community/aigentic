@@ -28,8 +28,9 @@ sealed class OpenAIModelIdentifier(
 class OpenAIModel(
     override val authentication: Authentication.APIKey,
     override val modelIdentifier: OpenAIModelIdentifier,
-    private val openAI: OpenAI = defaultOpenAI(authentication),
 ) : Model {
+    private val openAI: OpenAI = defaultOpenAI(authentication)
+
     override suspend fun sendRequest(
         messages: List<Message>,
         tools: List<ToolDescription>,

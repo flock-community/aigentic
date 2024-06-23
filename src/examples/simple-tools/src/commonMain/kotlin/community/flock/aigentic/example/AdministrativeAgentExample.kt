@@ -2,10 +2,12 @@
 
 package community.flock.aigentic.example
 
+import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
@@ -13,14 +15,14 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getIntValue
 import community.flock.aigentic.core.tool.getStringValue
-import community.flock.aigentic.openai.dsl.openAIModel
-import community.flock.aigentic.openai.model.OpenAIModelIdentifier
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
-suspend fun runAdministrativeAgentExample(apiKey: String) {
+suspend fun runAdministrativeAgentExample(model: Model): Run {
     val run =
         agent {
-            openAIModel(apiKey, OpenAIModelIdentifier.GPT4O)
+            name("administrative-agent")
+            model(model)
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(
                     "For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent",
@@ -44,14 +46,9 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
         is Result.Finished -> "Hours inspected successfully: ${result.getFinishResponse<AgentAdministrativeResponse>()}"
         is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.description}"
         is Result.Fatal -> "Agent crashed: ${result.message}"
-    }.also {
-        println(
-            """
-            | $it
-            | Took ${run.finishedAt - run.startedAt}
-            """.trimIndent(),
-        )
-    }
+    }.also(::println)
+
+    return run
 }
 
 val getAllEmployeesOverviewTool =
@@ -207,6 +204,7 @@ val responsePersonItem =
         type = Primitive.String,
     )
 
+@Serializable
 data class AgentAdministrativeResponse(
     val messagedPeople: List<String>,
     val completedPeople: List<String>,
