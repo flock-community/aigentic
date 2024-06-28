@@ -44,7 +44,7 @@ suspend fun runAdministrativeAgentExample(model: Model): Run {
 
     when (val result = run.result) {
         is Result.Finished -> "Hours inspected successfully: ${result.getFinishResponse<AgentAdministrativeResponse>()}"
-        is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.description}"
+        is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
         is Result.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)
 

@@ -10,6 +10,7 @@ kotest = "5.8.1"
 mockk = "1.13.10"
 openaiClient = "3.7.2"
 google-cloud-functions-framework = "^3.4.0"
+wirespec = "0.9.21"
 
 [libraries]
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
@@ -46,6 +47,8 @@ kotest-framework-datatest = { module = "io.kotest:kotest-framework-datatest", ve
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+#Wirespec
+wirespec-core = { group = "community.flock.wirespec.compiler", name = "core-jvm", version.ref = "wirespec" }
 
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
@@ -53,3 +56,4 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 spotless = { id = "com.diffplug.gradle.spotless", version = "6.20.0" }
 dokka = { id = "org.jetbrains.dokka", version = "1.8.20" }
 kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotest" }
+wirespec = { id = "community.flock.wirespec.plugin.gradle", version.ref = "wirespec" }
