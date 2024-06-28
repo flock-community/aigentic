@@ -109,7 +109,7 @@ class AgentExecutorTest : DescribeSpec({
                 addTool(mockk<Tool>(relaxed = true))
             }.start().apply {
                 result.shouldBeInstanceOf<Stuck>()
-                (result as Stuck).description shouldBe "I don't know what to do"
+                (result as Stuck).reason shouldBe "I don't know what to do"
             }
         }
 

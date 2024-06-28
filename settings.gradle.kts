@@ -19,6 +19,7 @@ include(
     "src:core",
     "src:tools:http",
     "src:tools:openapi",
+    "src:platform",
     "src:providers:openai",
     "src:providers:gemini",
     "src:providers:jsonschema",
