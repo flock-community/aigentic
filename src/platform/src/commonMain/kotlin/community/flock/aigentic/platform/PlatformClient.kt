@@ -39,12 +39,12 @@ import kotlinx.serialization.serializer
 import kotlin.reflect.KType
 
 class PlatformGatewayClient(engine: HttpClientEngine) : GatewayEndpoint {
-
-    private val httpClient = HttpClient(engine) {
-        install(ContentNegotiation) {
-            json()
+    private val httpClient =
+        HttpClient(engine) {
+            install(ContentNegotiation) {
+                json()
+            }
         }
-    }
 
     override suspend fun gateway(request: GatewayEndpoint.Request<*>): GatewayEndpoint.Response<*> {
         val responseMapper = GatewayEndpoint.RESPONSE_MAPPER(contentMapper)
@@ -58,19 +58,21 @@ class PlatformGatewayClient(engine: HttpClientEngine) : GatewayEndpoint {
             }
         }.let { r ->
             val arr = r.bodyAsChannel().toByteArray()
-            val res = object : Wirespec.Response<ByteArray> {
-                override val status: Int
-                    get() = r.status.value
-                override val headers: Map<String, List<Any?>>
-                    get() = r.headers.toMap()
-                override val content: Wirespec.Content<ByteArray>?
-                    get() = r.contentType()?.let {
-                        Wirespec.Content(
-                            it.toString(),
-                            arr
-                        )
-                    }
-            }
+            val res =
+                object : Wirespec.Response<ByteArray> {
+                    override val status: Int
+                        get() = r.status.value
+                    override val headers: Map<String, List<Any?>>
+                        get() = r.headers.toMap()
+                    override val content: Wirespec.Content<ByteArray>?
+                        get() =
+                            r.contentType()?.let {
+                                Wirespec.Content(
+                                    it.toString(),
+                                    arr,
+                                )
+                            }
+                }
             responseMapper(res)
         }
     }
@@ -82,95 +84,101 @@ class PlatformGatewayClient(engine: HttpClientEngine) : GatewayEndpoint {
                     prettyPrint = true
                 }
 
-            override fun <T> read(content: Wirespec.Content<ByteArray>, valueType: KType): Wirespec.Content<T> {
+            override fun <T> read(
+                content: Wirespec.Content<ByteArray>,
+                valueType: KType,
+            ): Wirespec.Content<T> {
                 return Wirespec.Content(
                     content.type,
-                    json.decodeFromString(Json.serializersModule.serializer(valueType), content.body.decodeToString()) as T
+                    json.decodeFromString(Json.serializersModule.serializer(valueType), content.body.decodeToString()) as T,
                 )
             }
 
-            override fun <T> write(content: Wirespec.Content<T>, valueType: KType): Wirespec.Content<ByteArray> =
+            override fun <T> write(
+                content: Wirespec.Content<T>,
+                valueType: KType,
+            ): Wirespec.Content<ByteArray> =
                 Wirespec.Content(
                     content.type,
-                    json.encodeToString(Json.serializersModule.serializer(valueType), content.body).toByteArray()
+                    json.encodeToString(Json.serializersModule.serializer(valueType), content.body).toByteArray(),
                 )
         }
 }
-
 
 private fun String.toContentType() = ContentType.parse(this)
 
 private fun String.toMethod() = HttpMethod.parse(this)
 
-
 fun Run.toDto() =
     RunDto(
         startedAt = startedAt.toString(),
         finishedAt = finishedAt.toString(),
-        config = ConfigtoDto(),
+        config =
+            ConfigDto(
+                name = "name",
+                description = "description",
+            ),
         messages = messages.map { it.toDto() },
-        result = result.toDto()
-    )
-
-
-private fun ConfigtoDto() =
-    ConfigDto(
-        name = "name",
-        description = "description",
+        result = result.toDto(),
     )
 
 private fun Message.toDto(): MessageDto =
     when (this) {
-        is Message.ImageBase64 -> ImageBase64MessageDto(
-            base64Content = base64Content,
-            mimeType = mimeType.toDto()
-        )
+        is Message.ImageBase64 ->
+            ImageBase64MessageDto(
+                base64Content = base64Content,
+                mimeType = mimeType.toDto(),
+            )
 
-        is Message.ImageUrl -> ImageUrlMessageDto(
-            url = url,
-            mimeType = mimeType.toDto()
-        )
+        is Message.ImageUrl ->
+            ImageUrlMessageDto(
+                url = url,
+                mimeType = mimeType.toDto(),
+            )
 
-        is Message.SystemPrompt -> SystemPromptMessageDto(
-            prompt = prompt
-        )
+        is Message.SystemPrompt ->
+            SystemPromptMessageDto(
+                prompt = prompt,
+            )
 
-        is Message.Text -> TextMessageDto(
-            text = text
-        )
+        is Message.Text ->
+            TextMessageDto(
+                text = text,
+            )
 
         is Message.ToolCalls -> ToolCallsMessageDto(toolCalls.map { it.toDto() })
-        is Message.ToolResult -> ToolResultMessageDto(
-            toolCallId = toolCallId.id,
-            response = response.result,
-            toolName = toolName
-        )
+        is Message.ToolResult ->
+            ToolResultMessageDto(
+                toolCallId = toolCallId.id,
+                response = response.result,
+                toolName = toolName,
+            )
     }
-
 
 private fun ToolCall.toDto(): ToolCallDto =
     ToolCallDto(
         id = id.id,
         name = name,
-        arguments = arguments
+        arguments = arguments,
     )
 
-
-private fun MimeType.toDto(): MimeTypeDto =
-    MimeTypeDto.valueOf(this.value)
+private fun MimeType.toDto(): MimeTypeDto = MimeTypeDto.valueOf(this.value)
 
 private fun Result.toDto() =
     when (this) {
-        is Result.Fatal -> FatalResultDto(
-            message = message
-        )
+        is Result.Fatal ->
+            FatalResultDto(
+                message = message,
+            )
 
-        is Result.Finished -> FinishedResultDto(
-            description = description,
-            response = response
-        )
+        is Result.Finished ->
+            FinishedResultDto(
+                description = description,
+                response = response,
+            )
 
-        is Result.Stuck -> StuckResultDto(
-            reason = reason
-        )
+        is Result.Stuck ->
+            StuckResultDto(
+                reason = reason,
+            )
     }

@@ -1,5 +1,13 @@
+import community.flock.wirespec.compiler.core.emit.KotlinEmitter
+import community.flock.wirespec.compiler.core.emit.shared.KotlinShared
+import community.flock.wirespec.compiler.core.emit.transformer.ClassModelTransformer.transform
+import community.flock.wirespec.compiler.core.parse.AST
+import community.flock.wirespec.compiler.core.parse.Refined
+import community.flock.wirespec.compiler.core.parse.Type
+import community.flock.wirespec.compiler.core.parse.Union
 import community.flock.wirespec.plugin.Language
 import community.flock.wirespec.plugin.gradle.CompileWirespecTask
+import community.flock.wirespec.plugin.gradle.CustomWirespecTask
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -22,10 +30,6 @@ kotlin {
     }
 
     sourceSets {
-
-        all {
-            languageSettings.optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
-        }
 
         val commonMain by getting {
             kotlin {
@@ -67,25 +71,30 @@ kotlin {
     }
 }
 
-tasks.register<CompileWirespecTask>("wirespec-kotlin") {
-    input = layout.projectDirectory.dir("wirespec")
+tasks.register<CustomWirespecTask>("wirespec-kotlin") {
+    input = layout.projectDirectory.dir("./wirespec")
     output = layout.buildDirectory.dir("generated")
     packageName = "community.flock.aigentic.wirespec"
-    languages = listOf(Language.Kotlin)
+    emitter = KotlinSerializableEmitter::class.java
+    shared = KotlinShared.source
+    extension = "kt"
 }
 
-tasks.named<Test>("jvmTest") {
-    useJUnitPlatform()
-    filter {
-        isFailOnNoMatchingTests = false
-    }
-    testLogging {
-        showExceptions = true
-        showStandardStreams = true
-        events = setOf(
-            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
-            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
-        )
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-    }
+class KotlinSerializableEmitter : KotlinEmitter("community.flock.aigentic.wirespec") {
+
+    override fun Type.emit(ast: AST) = """
+    |@kotlinx.serialization.Serializable
+    |${transform(ast).emit()}
+    """.trimMargin()
+
+    override fun Refined.emit() = """
+    |@kotlinx.serialization.Serializable
+    |${transform().emit()}
+    """.trimMargin()
+
+    override fun Union.emit() = """
+    |@kotlinx.serialization.Serializable
+    |${transform().emit()}
+    """.trimMargin()
+
 }
