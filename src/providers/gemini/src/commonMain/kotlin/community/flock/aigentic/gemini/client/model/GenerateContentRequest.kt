@@ -52,7 +52,7 @@ class Tool(
 data class FunctionDeclaration(
     val name: String,
     val description: String,
-    val parameters: JsonObject,
+    val parameters: JsonObject?,
 )
 
 @Serializable

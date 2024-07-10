@@ -44,7 +44,7 @@ internal fun Pair<State, Result>.toRun(): Run =
 
 data class ModelRequestInfo(
     val startedAt: Instant,
-    val finishedAt: Instant?,
+    val finishedAt: Instant,
     val inputTokenCount: Int,
     val outputTokenCount: Int,
 )

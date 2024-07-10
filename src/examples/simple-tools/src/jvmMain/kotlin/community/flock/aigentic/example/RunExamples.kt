@@ -11,15 +11,17 @@ import community.flock.aigentic.openai.model.OpenAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import kotlinx.coroutines.runBlocking
 
-private val openAIAPIKey =
+private val openAIAPIKey by lazy {
     System.getenv("OPENAI_KEY").also {
         if (it.isNullOrEmpty()) error("Set 'OPENAI_KEY' environment variable!")
     }
+}
 
-private val geminiKey =
+private val geminiKey by lazy {
     System.getenv("GEMINI_API_KEY").also {
         if (it.isNullOrEmpty()) error("Set 'GEMINI_API_KEY' environment variable!")
     }
+}
 
 // Set the active example and provider here
 val activeRunExample = RunExamples.ITEM_CATEGORIZE_AGENT
