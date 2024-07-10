@@ -31,7 +31,7 @@ suspend fun runAdministrativeAgentExample(model: Model): Run {
                     "If the employee is reminded 5 times and still has still not completed the hours don't send the employee a message but ask the manager on how to respond and send the manager's response to the employee",
                 )
                 addInstruction(
-                    "When you for sure know that the signal message is successfully sent (which means the tool call returns a success response), make sure that you update the numberOfRemindersSent for each and every the specific employee.",
+                    "When you for sure know that the signal message is successfully sent, make sure that you update the numberOfRemindersSent for each and every the specific employee.",
                 )
             }
             addTool(getAllEmployeesOverviewTool)

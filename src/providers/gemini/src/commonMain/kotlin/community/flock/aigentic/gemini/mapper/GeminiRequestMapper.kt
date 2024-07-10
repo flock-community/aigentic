@@ -14,6 +14,7 @@ import community.flock.aigentic.gemini.client.model.Part
 import community.flock.aigentic.gemini.client.model.Role
 import community.flock.aigentic.gemini.client.model.Tool
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
+import io.ktor.http.parameters
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -72,9 +73,13 @@ internal fun createGenerateContentRequest(
                             name = it.name.value,
                             description = it.description ?: "",
                             parameters =
-                                buildJsonObject {
-                                    put("type", "object")
-                                    emitPropertiesAndRequired(it.parameters)
+                                if (it.parameters.isEmpty()) {
+                                    null
+                                } else {
+                                    buildJsonObject {
+                                        put("type", "object")
+                                        emitPropertiesAndRequired(it.parameters)
+                                    }
                                 },
                         )
                     },

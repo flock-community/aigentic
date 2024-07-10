@@ -68,7 +68,12 @@ class GeminiClient(
             response.body()
         } else {
             val errorDetails = response.body<ErrorResponse>().error
-            aigenticException("Received error code: ${errorDetails.status} message: ${errorDetails.message} status: ${errorDetails.status}")
+            aigenticException(
+                "Received error response from Gemini, " +
+                    "http status: ${response.status}, " +
+                    "error code: ${errorDetails.status}, " +
+                    "message: ${errorDetails.message}",
+            )
         }
     }
 
