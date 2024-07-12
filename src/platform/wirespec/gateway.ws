@@ -1,14 +1,35 @@
 type RunDto {
     startedAt: String,
     finishedAt: String,
-    messages: MessageDto[],
     config: ConfigDto,
-    result: ResultDto
+    result: ResultDto,
+    messages: MessageDto[],
+    modelRequests: ModelRequestInfoDto[]
+}
+
+type ModelRequestInfoDto {
+    startedAt: String,
+    finishedAt: String,
+    inputTokenCount: Integer,
+    outputTokenCount: Integer
 }
 
 type ConfigDto {
+    task: TaskDto,
+    modelIdentifier: String,
+    systemPrompt: String,
+    tools: ToolDto[]
+}
+
+type TaskDto {
+  description: String,
+  instructions: String[]
+}
+
+type ToolDto {
     name: String,
-    description: String
+    description: String,
+    parameters: String
 }
 
 enum SenderDto {
@@ -46,24 +67,32 @@ enum MimeTypeDto {
 }
 
 type SystemPromptMessageDto {
+    sender: SenderDto,
     prompt: String
 }
 
 type TextMessageDto {
+    sender: SenderDto,
     text: String
 }
 
 type ImageUrlMessageDto {
+    sender: SenderDto,
     url: String,
     mimeType: MimeTypeDto
 }
 
+/*
+ * TODO: rename to ImageBase64Message
+ */
 type ImageBase64MessageDto {
+    sender: SenderDto,
     base64Content: String,
     mimeType: MimeTypeDto
 }
 
 type ToolCallsMessageDto {
+    sender: SenderDto,
     toolCalls: ToolCallDto[]
 }
 
@@ -73,13 +102,13 @@ type ToolCallDto {
     arguments: String
 }
 
-type MessageDto = SystemPromptMessageDto | TextMessageDto | ImageUrlMessageDto | ImageBase64MessageDto | ToolCallsMessageDto | ToolResultMessageDto
+type GatewayClientErrorDto {
+    message: String
+}
+
+type MessageDto = SystemPromptMessageDto | TextMessageDto | ImageUrlMessageDto | ImageBase64MessageDto | ToolCallsMessageDto
 
 endpoint Gateway POST RunDto /gateway -> {
     201 -> Unit
+    400 -> GatewayClientErrorDto
 }
-
-
-
-
-

@@ -34,6 +34,11 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.toByteArray
 import io.ktor.util.toMap
 import io.ktor.utils.io.core.toByteArray
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.reflect.KType
@@ -111,8 +116,8 @@ private fun String.toMethod() = HttpMethod.parse(this)
 
 fun Run.toDto() =
     RunDto(
-        startedAt = startedAt.toString(),
-        finishedAt = finishedAt.toString(),
+        startedAt = startedAt.formatDateTime(),
+        finishedAt = finishedAt.formatDateTime(),
         config =
             ConfigDto(
                 name = "name",
@@ -182,3 +187,5 @@ private fun Result.toDto() =
                 reason = reason,
             )
     }
+
+private fun Instant.formatDateTime() = LocalDateTime.Formats.ISO.format(toLocalDateTime(TimeZone.UTC))
