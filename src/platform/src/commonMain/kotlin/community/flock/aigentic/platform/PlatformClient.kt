@@ -141,7 +141,7 @@ fun Run.toDto() =
 private fun ModelRequestInfo.toDto(): ModelRequestInfoDto =
     ModelRequestInfoDto(
         startedAt = startedAt.formatDateTime(),
-        finishedAt = finishedAt?.formatDateTime(),
+        finishedAt = finishedAt.formatDateTime(),
         inputTokenCount = inputTokenCount.toLong(),
         outputTokenCount = outputTokenCount.toLong(),
     )
