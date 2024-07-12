@@ -106,7 +106,7 @@ type GatewayClientErrorDto {
     message: String
 }
 
-type MessageDto = SystemPromptMessageDto | TextMessageDto | ImageUrlMessageDto | ImageBase64MessageDto | ToolCallsMessageDto
+type MessageDto = SystemPromptMessageDto | TextMessageDto | ImageUrlMessageDto | ImageBase64MessageDto | ToolCallsMessageDto | ToolResultMessageDto
 
 endpoint Gateway POST RunDto /gateway -> {
     201 -> Unit

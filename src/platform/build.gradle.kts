@@ -5,9 +5,8 @@ import community.flock.wirespec.compiler.core.parse.AST
 import community.flock.wirespec.compiler.core.parse.Refined
 import community.flock.wirespec.compiler.core.parse.Type
 import community.flock.wirespec.compiler.core.parse.Union
-import community.flock.wirespec.plugin.Language
-import community.flock.wirespec.plugin.gradle.CompileWirespecTask
 import community.flock.wirespec.plugin.gradle.CustomWirespecTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -18,8 +17,14 @@ plugins {
     id("module.publication")
 }
 
-tasks.compileKotlinMetadata {
-    dependsOn("wirespec-kotlin")
+
+val wirespecKotlin = tasks.register<CustomWirespecTask>("wirespec-kotlin") {
+    input = layout.projectDirectory.dir("./wirespec")
+    output = layout.buildDirectory.dir("generated")
+    packageName = "community.flock.aigentic.wirespec"
+    emitter = KotlinSerializableEmitter::class.java
+    shared = KotlinShared.source
+    extension = "kt"
 }
 
 kotlin {
@@ -30,10 +35,9 @@ kotlin {
     }
 
     sourceSets {
-
         val commonMain by getting {
             kotlin {
-                srcDir("${layout.buildDirectory.get()}/generated")
+                srcDir(wirespecKotlin.get().output)
             }
             dependencies {
                 implementation(project(":src:core"))
@@ -71,14 +75,7 @@ kotlin {
     }
 }
 
-tasks.register<CustomWirespecTask>("wirespec-kotlin") {
-    input = layout.projectDirectory.dir("./wirespec")
-    output = layout.buildDirectory.dir("generated")
-    packageName = "community.flock.aigentic.wirespec"
-    emitter = KotlinSerializableEmitter::class.java
-    shared = KotlinShared.source
-    extension = "kt"
-}
+
 
 class KotlinSerializableEmitter : KotlinEmitter("community.flock.aigentic.wirespec") {
 

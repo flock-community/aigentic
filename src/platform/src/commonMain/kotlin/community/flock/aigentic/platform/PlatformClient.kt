@@ -4,6 +4,7 @@ import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
+import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.wirespec.ConfigDto
 import community.flock.aigentic.wirespec.FatalResultDto
@@ -14,8 +15,10 @@ import community.flock.aigentic.wirespec.ImageUrlMessageDto
 import community.flock.aigentic.wirespec.MessageDto
 import community.flock.aigentic.wirespec.MimeTypeDto
 import community.flock.aigentic.wirespec.RunDto
+import community.flock.aigentic.wirespec.SenderDto
 import community.flock.aigentic.wirespec.StuckResultDto
 import community.flock.aigentic.wirespec.SystemPromptMessageDto
+import community.flock.aigentic.wirespec.TaskDto
 import community.flock.aigentic.wirespec.TextMessageDto
 import community.flock.aigentic.wirespec.ToolCallDto
 import community.flock.aigentic.wirespec.ToolCallsMessageDto
@@ -37,7 +40,6 @@ import io.ktor.utils.io.core.toByteArray
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
@@ -120,38 +122,60 @@ fun Run.toDto() =
         finishedAt = finishedAt.formatDateTime(),
         config =
             ConfigDto(
-                name = "name",
-                description = "description",
+                task =
+                    TaskDto(
+                        description = "",
+                        instructions = emptyList(),
+                    ),
+                modelIdentifier = "",
+                systemPrompt = "",
+                tools = emptyList(),
             ),
         messages = messages.map { it.toDto() },
+        modelRequests = emptyList(),
         result = result.toDto(),
     )
+
+private fun Sender.toDto(): SenderDto =
+    when (this) {
+        is Sender.Aigentic -> SenderDto.Aigentic
+        is Sender.Model -> SenderDto.Model
+    }
 
 private fun Message.toDto(): MessageDto =
     when (this) {
         is Message.ImageBase64 ->
             ImageBase64MessageDto(
+                sender = sender.toDto(),
                 base64Content = base64Content,
                 mimeType = mimeType.toDto(),
             )
 
         is Message.ImageUrl ->
             ImageUrlMessageDto(
+                sender = sender.toDto(),
                 url = url,
                 mimeType = mimeType.toDto(),
             )
 
         is Message.SystemPrompt ->
             SystemPromptMessageDto(
+                sender = sender.toDto(),
                 prompt = prompt,
             )
 
         is Message.Text ->
             TextMessageDto(
+                sender = sender.toDto(),
                 text = text,
             )
 
-        is Message.ToolCalls -> ToolCallsMessageDto(toolCalls.map { it.toDto() })
+        is Message.ToolCalls ->
+            ToolCallsMessageDto(
+                sender = sender.toDto(),
+                toolCalls = toolCalls.map { it.toDto() },
+            )
+
         is Message.ToolResult ->
             ToolResultMessageDto(
                 toolCallId = toolCallId.id,
