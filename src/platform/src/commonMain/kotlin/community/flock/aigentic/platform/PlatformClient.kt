@@ -1,6 +1,7 @@
 package community.flock.aigentic.platform
 
 import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
@@ -14,6 +15,7 @@ import community.flock.aigentic.wirespec.ImageBase64MessageDto
 import community.flock.aigentic.wirespec.ImageUrlMessageDto
 import community.flock.aigentic.wirespec.MessageDto
 import community.flock.aigentic.wirespec.MimeTypeDto
+import community.flock.aigentic.wirespec.ModelRequestInfoDto
 import community.flock.aigentic.wirespec.RunDto
 import community.flock.aigentic.wirespec.SenderDto
 import community.flock.aigentic.wirespec.StuckResultDto
@@ -132,8 +134,16 @@ fun Run.toDto() =
                 tools = emptyList(),
             ),
         messages = messages.map { it.toDto() },
-        modelRequests = emptyList(),
+        modelRequests = modelRequests.map { it.toDto() },
         result = result.toDto(),
+    )
+
+private fun ModelRequestInfo.toDto(): ModelRequestInfoDto =
+    ModelRequestInfoDto(
+        startedAt = startedAt.formatDateTime(),
+        finishedAt = finishedAt?.formatDateTime(),
+        inputTokenCount = inputTokenCount.toLong(),
+        outputTokenCount = outputTokenCount.toLong(),
     )
 
 private fun Sender.toDto(): SenderDto =

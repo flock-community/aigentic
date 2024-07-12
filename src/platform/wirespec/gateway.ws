@@ -9,7 +9,7 @@ type RunDto {
 
 type ModelRequestInfoDto {
     startedAt: String,
-    finishedAt: String,
+    finishedAt: String?,
     inputTokenCount: Integer,
     outputTokenCount: Integer
 }
