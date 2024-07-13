@@ -60,7 +60,7 @@ internal val stuckWithTaskTool =
 sealed interface Result {
     data class Finished(val description: String, val response: String?) : Result
 
-    data class Stuck(val description: String) : Result
+    data class Stuck(val reason: String) : Result
 
     data class Fatal(val message: String) : Result
 }
