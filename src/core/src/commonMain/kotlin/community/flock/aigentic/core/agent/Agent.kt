@@ -5,14 +5,11 @@ import community.flock.aigentic.core.agent.tool.finishedTaskTool
 import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
+import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.InternalTool
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
-
-data class Platform(
-    val secret: String,
-)
 
 data class Task(
     val description: String,

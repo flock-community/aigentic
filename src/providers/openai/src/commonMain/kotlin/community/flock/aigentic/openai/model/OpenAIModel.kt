@@ -18,7 +18,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @Suppress("ktlint:standard:class-naming")
 sealed class OpenAIModelIdentifier(
-    val stringValue: String,
+    override val stringValue: String,
 ) : ModelIdentifier {
     data object GPT4O : OpenAIModelIdentifier("gpt-4o")
     data object GPT4Turbo : OpenAIModelIdentifier("gpt-4-turbo")

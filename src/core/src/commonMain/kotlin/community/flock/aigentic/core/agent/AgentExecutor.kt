@@ -33,10 +33,14 @@ suspend fun Agent.start(): Run =
         state.events.emit(AgentStatus.Started)
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
         try {
-            executeAction(Initialize(state, this@start)).toRun()
+            val run = executeAction(Initialize(state, this@start)).toRun()
+            platform?.sendRun(run, this@start)
+            run
         } catch (e: AigenticException) {
             state.events.emit(AgentStatus.Fatal(e.message))
-            (state to Result.Fatal(e.message)).toRun()
+            val run = (state to Result.Fatal(e.message)).toRun()
+            platform?.sendRun(run, this@start)
+            run
         } finally {
             delay(10) // Allow some time for the logging to finish
             logging.cancelAndJoin()

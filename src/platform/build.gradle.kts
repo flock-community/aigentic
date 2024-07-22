@@ -6,7 +6,6 @@ import community.flock.wirespec.compiler.core.parse.Refined
 import community.flock.wirespec.compiler.core.parse.Type
 import community.flock.wirespec.compiler.core.parse.Union
 import community.flock.wirespec.plugin.gradle.CustomWirespecTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -21,7 +20,7 @@ plugins {
 val wirespecKotlin = tasks.register<CustomWirespecTask>("wirespec-kotlin") {
     input = layout.projectDirectory.dir("./wirespec")
     output = layout.buildDirectory.dir("generated")
-    packageName = "community.flock.aigentic.wirespec"
+    packageName = "community.flock.aigentic.gateway.wirespec"
     emitter = KotlinSerializableEmitter::class.java
     shared = KotlinShared.source
     extension = "kt"
@@ -41,6 +40,7 @@ kotlin {
             }
             dependencies {
                 implementation(project(":src:core"))
+                implementation(project(":src:providers:jsonschema"))
                 implementation(libs.coroutines.core)
                 implementation(libs.serialization.json)
                 implementation(libs.ktor.client.logging)
@@ -75,9 +75,7 @@ kotlin {
     }
 }
 
-
-
-class KotlinSerializableEmitter : KotlinEmitter("community.flock.aigentic.wirespec") {
+class KotlinSerializableEmitter : KotlinEmitter("community.flock.aigentic.gateway.wirespec") {
 
     override fun Type.emit(ast: AST) = """
     |@kotlinx.serialization.Serializable
