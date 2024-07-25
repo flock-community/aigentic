@@ -17,20 +17,12 @@ fun agent(agentConfig: AgentConfig.() -> Unit): Agent = AgentConfig().apply(agen
 @AgentDSL
 class AgentConfig : Config<Agent> {
     internal var model: Model? = null
-    internal var name: String? = null
     internal var platform: Platform? = null
     internal var task: TaskConfig? = null
     internal var contexts: List<Context> = emptyList()
     internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
     internal var responseParameter: Parameter? = null
     internal val tools = mutableListOf<Tool>()
-
-    fun AgentConfig.name(name: String) {
-        require(name.matches(Regex("^[a-z0-9-]*\$"))) {
-            "Agent name can only contain lowercase letters, numbers and dashes"
-        }
-        this.name = name
-    }
 
     fun AgentConfig.platform(platform: Platform) {
         this.platform = platform
@@ -63,16 +55,15 @@ class AgentConfig : Config<Agent> {
 
     override fun build(): Agent =
         Agent(
-            name = checkNotNull(name, builderPropertyMissingErrorMessage("name", "name()")),
             platform = platform,
             systemPromptBuilder = systemPromptBuilder,
             model = checkNotNull(model, builderPropertyMissingErrorMessage("model", "model()")),
             task = checkNotNull(task?.build(), builderPropertyMissingErrorMessage("task", "task()")),
             tools =
-            check(
-                tools.isNotEmpty(),
-                builderPropertyMissingErrorMessage("tools", "addTool()"),
-            ).let { tools.associateBy { it.name } },
+                check(
+                    tools.isNotEmpty(),
+                    builderPropertyMissingErrorMessage("tools", "addTool()"),
+                ).let { tools.associateBy { it.name } },
             contexts = contexts,
             responseParameter = responseParameter,
         )

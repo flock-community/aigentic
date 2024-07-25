@@ -37,25 +37,29 @@ fun Run.toDto(agent: Agent) =
         startedAt = startedAt.toString(),
         finishedAt = finishedAt.toString(),
         config =
-        ConfigDto(
-            task =
-            TaskDto(
-                description = agent.task.description,
-                instructions = agent.task.instructions.map { it.text },
+            ConfigDto(
+                task =
+                    TaskDto(
+                        description = agent.task.description,
+                        instructions = agent.task.instructions.map { it.text },
+                    ),
+                modelIdentifier = agent.model.modelIdentifier.stringValue,
+                systemPrompt = messages.filterIsInstance<Message.SystemPrompt>().first().prompt,
+                tools =
+                    agent.tools.map { (name, tool) ->
+                        ToolDto(
+                            name = name.value,
+                            description = tool.description,
+                            parameters =
+                                Json.encodeToString(
+                                    buildJsonObject {
+                                        put("type", "object")
+                                        emitPropertiesAndRequired(tool.parameters)
+                                    },
+                                ),
+                        )
+                    },
             ),
-            modelIdentifier = agent.model.modelIdentifier.stringValue,
-            systemPrompt = messages.filterIsInstance<Message.SystemPrompt>().first().prompt,
-            tools = agent.tools.map {(name, tool) ->
-                ToolDto(
-                    name = name.value,
-                    description = tool.description,
-                    parameters = Json.encodeToString(buildJsonObject {
-                        put("type", "object")
-                        emitPropertiesAndRequired(tool.parameters)
-                    })
-                )
-            }
-        ),
         messages = messages.map { it.toDto() },
         modelRequests = modelRequests.map { it.toDto() },
         result = result.toDto(),

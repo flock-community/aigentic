@@ -1,32 +1,8 @@
 package community.flock.aigentic.platform.client
 
-import community.flock.aigentic.core.agent.Run
-import community.flock.aigentic.core.agent.state.ModelRequestInfo
-import community.flock.aigentic.core.agent.tool.Result
-import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.message.MimeType
-import community.flock.aigentic.core.message.Sender
-import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.PlatformApiUrl
-import community.flock.aigentic.gateway.wirespec.ConfigDto
-import community.flock.aigentic.gateway.wirespec.FatalResultDto
-import community.flock.aigentic.gateway.wirespec.FinishedResultDto
 import community.flock.aigentic.gateway.wirespec.GatewayEndpoint
-import community.flock.aigentic.gateway.wirespec.ImageBase64MessageDto
-import community.flock.aigentic.gateway.wirespec.ImageUrlMessageDto
-import community.flock.aigentic.gateway.wirespec.MessageDto
-import community.flock.aigentic.gateway.wirespec.MimeTypeDto
-import community.flock.aigentic.gateway.wirespec.ModelRequestInfoDto
-import community.flock.aigentic.gateway.wirespec.RunDto
-import community.flock.aigentic.gateway.wirespec.SenderDto
-import community.flock.aigentic.gateway.wirespec.StuckResultDto
-import community.flock.aigentic.gateway.wirespec.SystemPromptMessageDto
-import community.flock.aigentic.gateway.wirespec.TaskDto
-import community.flock.aigentic.gateway.wirespec.TextMessageDto
-import community.flock.aigentic.gateway.wirespec.ToolCallDto
-import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
-import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.wirespec.Wirespec
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -56,8 +32,8 @@ import kotlin.reflect.KType
 class PlatformGatewayClient(
     basicAuth: Authentication.BasicAuth,
     apiUrl: PlatformApiUrl,
-    engine: HttpClientEngine? = null) : GatewayEndpoint {
-
+    engine: HttpClientEngine? = null,
+) : GatewayEndpoint {
     private val configuration: HttpClientConfig<*>.() -> Unit = {
         defaultRequest {
             url(apiUrl.value)
@@ -70,7 +46,7 @@ class PlatformGatewayClient(
 
         install(Logging) {
             logger = Logger.SIMPLE
-            level = LogLevel.ALL
+            level = LogLevel.NONE
         }
 
         install(HttpRequestRetry) {
@@ -101,11 +77,13 @@ class PlatformGatewayClient(
                         get() = r.headers.toMap()
                     override val content: Wirespec.Content<ByteArray>?
                         get() =
-                            r.contentType()?.let {
+                            if (r.contentType() != null && arr.isNotEmpty()) {
                                 Wirespec.Content(
-                                    it.toString(),
+                                    r.contentType().toString(),
                                     arr,
                                 )
+                            } else {
+                                null
                             }
                 }
             responseMapper(res)

@@ -19,6 +19,7 @@ import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.model.Model
+import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Parameter.Primitive
 import community.flock.aigentic.core.tool.ParameterType.Primitive.Integer
@@ -80,7 +81,6 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent {
-                name("news-agent-name")
                 model(modelMock)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")
@@ -101,7 +101,6 @@ class AgentExecutorTest : DescribeSpec({
         it("should finish with Stuck result when model doesn't know what to do") {
 
             agent {
-                name("news-agent-name")
                 model(modelStuckDirectly)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")
@@ -123,7 +122,6 @@ class AgentExecutorTest : DescribeSpec({
 
             val agent =
                 agent {
-                    name("some-agent-name")
                     model(modelFinishTaskDirectly)
                     systemPrompt(systemPromptMock)
                     task("Execute some task") {}
@@ -144,7 +142,6 @@ class AgentExecutorTest : DescribeSpec({
 
             val agent =
                 agent {
-                    name("some-agent-name")
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     context {
@@ -189,7 +186,6 @@ class AgentExecutorTest : DescribeSpec({
 
             val agent =
                 agent {
-                    name("some-agent-name")
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(testTool)
@@ -234,7 +230,6 @@ class AgentExecutorTest : DescribeSpec({
                 }
             val agent =
                 agent {
-                    name("some-agent-name")
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
@@ -250,7 +245,6 @@ class AgentExecutorTest : DescribeSpec({
         it("if finishedWith parameter is not configured, the finished response field should be null") {
             val agent =
                 agent {
-                    name("some-agent-name")
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
@@ -260,6 +254,22 @@ class AgentExecutorTest : DescribeSpec({
                 result.shouldBeTypeOf<Finished>()
                 (this.result as Finished).response shouldBe null
             }
+        }
+
+        it("should push run to platform if platform configured") {
+
+            val platform = mockk<Platform>(relaxed = true)
+
+            val agent =
+                agent {
+                    platform(platform)
+                    model(modelFinishTaskDirectly)
+                    task("Execute some task") {}
+                    addTool(mockk(relaxed = true))
+                }
+
+            val run = agent.start()
+            coVerify { platform.sendRun(run, agent) }
         }
     }
 
@@ -273,7 +283,6 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent {
-                name("some-agent-name")
                 model(modelMock)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")

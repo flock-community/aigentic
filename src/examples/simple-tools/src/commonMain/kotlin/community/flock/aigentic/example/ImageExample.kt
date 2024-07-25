@@ -39,7 +39,6 @@ suspend fun runItemCategorizeExample(
 ): Run {
     val run =
         agent {
-            name("item-categorize-agent")
             model(model)
             task("Identify all items in the image and save each individual item") {}
             addTool(saveItemTool)

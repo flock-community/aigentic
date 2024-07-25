@@ -27,7 +27,6 @@ sealed interface Context {
 }
 
 data class Agent(
-    val name: String,
     val platform: Platform?,
     val systemPromptBuilder: SystemPromptBuilder,
     val model: Model,

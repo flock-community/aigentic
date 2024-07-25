@@ -3,7 +3,6 @@ package community.flock.aigentic.core.agent
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.model.ModelIdentifier
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 

@@ -6,6 +6,7 @@ import kotlin.jvm.JvmInline
 
 sealed interface Authentication {
     data class Secret(val secret: String) : Authentication
+
     data class BasicAuth(val username: String, val password: String) : Authentication
 }
 
@@ -16,5 +17,8 @@ interface Platform {
     val authentication: Authentication
     val apiUrl: PlatformApiUrl
 
-    suspend fun sendRun(run: Run, agent: Agent): Unit
+    suspend fun sendRun(
+        run: Run,
+        agent: Agent,
+    ): Unit
 }

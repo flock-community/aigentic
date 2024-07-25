@@ -66,6 +66,7 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
+                implementation(libs.logback.classic)
                 implementation(libs.kotest.runner.junit5)
                 implementation(libs.kotlin.reflect)
                 implementation(libs.ktor.client.mock)

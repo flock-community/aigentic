@@ -36,14 +36,12 @@ val sendMessageTool =
 suspend fun runKotlinMessageAgentExample(model: Model): Run {
     val run =
         agent {
-            name("kotlin-message-agent")
             platform {
                 name("kotlin-message-agent")
-                secret("e643793b-8557-4ed4-8634-b6d00a72ade0")
-                apiUrl("http://localhost:8080")
+                secret("f80f8d0c-4498-45dc-905f-34802db78e91")
             }
             model(model)
-            task("Send 3 nice message about Kotlin") {
+            task("Send 1 nice message about Kotlin") {
                 addInstruction("use the sendMessage tool to send")
             }
             addTool(sendMessageTool)

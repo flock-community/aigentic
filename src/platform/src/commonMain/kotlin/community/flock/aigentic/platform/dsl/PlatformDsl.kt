@@ -16,10 +16,9 @@ fun AgentConfig.platform(platformConfig: PlatformConfig.() -> Unit) =
 
 @AgentDSL
 class PlatformConfig() : Config<Platform> {
-
     private var name: String? = null
     private var secret: String? = null
-    private var apiUrl: String? = null
+    private var apiUrl: String? = "https://aigentic-backend-kib53ypjwq-ez.a.run.app/"
 
     fun PlatformConfig.name(name: String) {
         this.name = name
@@ -35,16 +34,19 @@ class PlatformConfig() : Config<Platform> {
 
     override fun build(): Platform =
         AigenticPlatform(
-            authentication = Authentication.BasicAuth(
-                username = checkNotNull(
-                    name,
-                    builderPropertyMissingErrorMessage("name", "platform { name() }")
+            authentication =
+                Authentication.BasicAuth(
+                    username =
+                        checkNotNull(
+                            name,
+                            builderPropertyMissingErrorMessage("name", "platform { name() }"),
+                        ),
+                    password =
+                        checkNotNull(
+                            secret,
+                            builderPropertyMissingErrorMessage("secret", "platform { secret() }"),
+                        ),
                 ),
-                password = checkNotNull(
-                    secret,
-                    builderPropertyMissingErrorMessage("secret", "platform { secret() }")
-                )
-            ),
             apiUrl = PlatformApiUrl(checkNotNull(apiUrl, builderPropertyMissingErrorMessage("apiUrl", "platform { apiUrl() }"))),
         )
 }
