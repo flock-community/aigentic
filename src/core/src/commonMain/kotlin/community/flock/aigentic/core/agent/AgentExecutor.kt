@@ -17,7 +17,7 @@ import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.message.Sender.Aigentic
+import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.util.withStartFinishTiming
@@ -109,9 +109,9 @@ private fun initializeStartMessages(agent: Agent): List<Message> =
     listOf(agent.systemPromptBuilder.buildSystemPrompt(agent)) +
         agent.contexts.map {
             when (it) {
-                is Context.ImageUrl -> Message.ImageUrl(sender = Aigentic, url = it.url, mimeType = it.mimeType)
-                is Context.ImageBase64 -> Message.ImageBase64(sender = Aigentic, base64Content = it.base64, mimeType = it.mimeType)
-                is Context.Text -> Message.Text(Aigentic, it.text)
+                is Context.ImageUrl -> Message.ImageUrl(sender = Sender.Agent, url = it.url, mimeType = it.mimeType)
+                is Context.ImageBase64 -> Message.ImageBase64(sender = Sender.Agent, base64Content = it.base64, mimeType = it.mimeType)
+                is Context.Text -> Message.Text(Sender.Agent, it.text)
             }
         }
 

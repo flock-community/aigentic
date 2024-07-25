@@ -59,7 +59,7 @@ object DomainMapper {
     private fun ChatRole.mapToSender(): Sender =
         when (this) {
             Role.Assistant -> Sender.Model
-            Role.User -> Sender.Aigentic
+            Role.User -> Sender.Agent
             else -> aigenticException("Unexpected role: $this")
         }
 }
@@ -103,7 +103,7 @@ object OpenAIMapper {
 
     private fun Message.mapRole() =
         when (this.sender) {
-            Sender.Aigentic -> ChatRole.User
+            Sender.Agent -> ChatRole.User
             Sender.Model -> ChatRole.Assistant
         }
 

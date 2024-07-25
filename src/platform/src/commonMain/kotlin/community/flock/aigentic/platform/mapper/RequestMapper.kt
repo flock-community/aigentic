@@ -75,7 +75,7 @@ private fun ModelRequestInfo.toDto(): ModelRequestInfoDto =
 
 private fun Sender.toDto(): SenderDto =
     when (this) {
-        is Sender.Aigentic -> SenderDto.Aigentic
+        is Sender.Agent -> SenderDto.Agent
         is Sender.Model -> SenderDto.Model
     }
 

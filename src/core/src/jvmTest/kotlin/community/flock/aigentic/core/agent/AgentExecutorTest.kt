@@ -154,9 +154,9 @@ class AgentExecutorTest : DescribeSpec({
             agent.start().apply {
                 messages.drop(1).take(2) shouldBe
                     listOf(
-                        Message.Text(Sender.Aigentic, expectedTextContext),
+                        Message.Text(Sender.Agent, expectedTextContext),
                         Message.ImageBase64(
-                            sender = Sender.Aigentic,
+                            sender = Sender.Agent,
                             base64Content = expectedImageContextBase64,
                             mimeType = expectedImageContextMimeType,
                         ),

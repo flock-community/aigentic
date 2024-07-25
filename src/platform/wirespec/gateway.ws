@@ -33,7 +33,7 @@ type ToolDto {
 }
 
 enum SenderDto {
-    Aigentic,
+    Agent,
     Model
 }
 
@@ -114,10 +114,7 @@ type ServerErrorDto {
     description: String
 }
 
-/*
-* TODO: Rename to /gateway/run ?
-*/
-endpoint Gateway POST RunDto /gateway -> {
+endpoint Gateway POST RunDto /gateway/runs -> {
     201 -> Unit
     400 -> GatewayClientErrorDto
     500 -> ServerErrorDto
