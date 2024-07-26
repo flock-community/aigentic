@@ -116,6 +116,7 @@ type ServerErrorDto {
 
 endpoint Gateway POST RunDto /gateway/runs -> {
     201 -> Unit
+    401 -> Unit
     400 -> GatewayClientErrorDto
     500 -> ServerErrorDto
 }

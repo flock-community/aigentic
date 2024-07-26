@@ -40,6 +40,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import org.junit.jupiter.api.assertThrows
+import java.io.IOException
 
 class AgentExecutorTest : DescribeSpec({
 
@@ -270,6 +272,26 @@ class AgentExecutorTest : DescribeSpec({
 
             val run = agent.start()
             coVerify { platform.sendRun(run, agent) }
+        }
+
+        it("should crash when platform throws exception") {
+
+            val platform =
+                mockk<Platform>().apply {
+                    coEvery { sendRun(any(), any()) } throws IOException("Something went wrong")
+                }
+
+            val agent =
+                agent {
+                    platform(platform)
+                    model(modelFinishTaskDirectly)
+                    task("Execute some task") {}
+                    addTool(mockk(relaxed = true))
+                }
+
+            assertThrows<IOException> {
+                agent.start()
+            }
         }
     }
 

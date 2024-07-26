@@ -20,6 +20,7 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.core.util.withStartFinishTiming
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
@@ -34,18 +35,32 @@ suspend fun Agent.start(): Run =
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
         try {
             val run = executeAction(Initialize(state, this@start)).toRun()
-            platform?.sendRun(run, this@start)
+            publishRun(this@start, run, state)
             run
         } catch (e: AigenticException) {
             state.events.emit(AgentStatus.Fatal(e.message))
             val run = (state to Result.Fatal(e.message)).toRun()
-            platform?.sendRun(run, this@start)
+            publishRun(this@start, run, state)
             run
         } finally {
             delay(10) // Allow some time for the logging to finish
             logging.cancelAndJoin()
         }
     }
+
+private suspend fun publishRun(
+    agent: Agent,
+    run: Run,
+    state: State,
+) {
+    if (agent.platform != null) {
+        when (val result = agent.platform.sendRun(run, agent)) {
+            RunSentResult.Success -> state.events.emit(AgentStatus.PublishedRunSuccess)
+            RunSentResult.Unauthorized -> state.events.emit(AgentStatus.PublishedRunUnauthorized)
+            is RunSentResult.Error -> state.events.emit(AgentStatus.PublishedRunError(result.message))
+        }
+    }
+}
 
 private suspend fun executeAction(action: Action): Pair<State, Result> =
     when (action) {

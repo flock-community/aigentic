@@ -24,7 +24,7 @@ private val geminiKey by lazy {
 }
 
 // Set the active example and provider here
-val activeRunExample = RunExamples.KOTLIN_MESSAGE_AGENT
+val activeRunExample = RunExamples.ADMINISTRATIVE_AGENT
 val activeProvider = GEMINI
 
 fun main(): Unit =

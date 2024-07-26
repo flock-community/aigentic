@@ -20,5 +20,12 @@ interface Platform {
     suspend fun sendRun(
         run: Run,
         agent: Agent,
-    ): Unit
+    ): RunSentResult
+}
+
+sealed interface RunSentResult {
+    data object Success : RunSentResult
+    data object Unauthorized : RunSentResult
+
+    data class Error(val message: String) : RunSentResult
 }
