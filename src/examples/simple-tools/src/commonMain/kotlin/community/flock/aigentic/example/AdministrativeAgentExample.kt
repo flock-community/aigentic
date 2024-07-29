@@ -23,11 +23,6 @@ suspend fun runAdministrativeAgentExample(model: Model): Run {
     val run =
         agent {
             model(model)
-            platform {
-                name("administrative-agent")
-                secret("8a823f50-7964-4b37-a573-e7ebe50a5423")
-                apiUrl("http://localhost:8080")
-            }
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(
                     "For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent",
