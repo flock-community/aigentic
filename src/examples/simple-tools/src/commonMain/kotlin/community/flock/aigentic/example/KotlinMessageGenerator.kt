@@ -37,7 +37,7 @@ suspend fun runKotlinMessageAgentExample(model: Model): Run {
     val run =
         agent {
             model(model)
-            task("Send 1 nice message about Kotlin") {
+            task("Send 5 different nice messages about Kotlin") {
                 addInstruction("use the sendMessage tool to send")
             }
             addTool(sendMessageTool)

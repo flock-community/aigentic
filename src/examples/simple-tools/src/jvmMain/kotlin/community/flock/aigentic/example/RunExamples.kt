@@ -24,7 +24,7 @@ private val geminiKey by lazy {
 }
 
 // Set the active example and provider here
-val activeRunExample = RunExamples.ADMINISTRATIVE_AGENT
+val activeRunExample = RunExamples.ITEM_CATEGORIZE_AGENT
 val activeProvider = GEMINI
 
 fun main(): Unit =
