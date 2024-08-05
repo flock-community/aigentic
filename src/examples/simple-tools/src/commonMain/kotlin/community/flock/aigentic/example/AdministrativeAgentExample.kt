@@ -6,8 +6,8 @@ import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.dsl.AgentConfig
 import community.flock.aigentic.core.dsl.agent
-import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
@@ -18,10 +18,10 @@ import community.flock.aigentic.core.tool.getStringValue
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
-suspend fun runAdministrativeAgentExample(model: Model): Run {
+suspend fun runAdministrativeAgentExample(configureModel: AgentConfig.() -> Unit): Run {
     val run =
         agent {
-            model(model)
+            configureModel()
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(
                     "For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent",
@@ -132,7 +132,7 @@ val askManagerForResponseTool =
         override val handler: suspend (toolArguments: JsonObject) -> String = {
 
             val name = nameParameter.getStringValue(it)
-            "$name, je moet nu echt je uren invullen anders word je ontslagen!"
+            "$name, please submit your hours, you have been reminded 5 times already. Kind regards, the management"
         }
     }
 

@@ -22,6 +22,7 @@ include(
     "src:platform",
     "src:providers:openai",
     "src:providers:gemini",
+    "src:providers:ollama",
     "src:providers:jsonschema",
     "src:cloud:google-cloud-function",
     "src:examples:simple-tools",

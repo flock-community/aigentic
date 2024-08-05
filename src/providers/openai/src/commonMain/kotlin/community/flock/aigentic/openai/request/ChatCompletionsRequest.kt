@@ -5,15 +5,15 @@ import com.aallam.openai.api.chat.ToolChoice
 import com.aallam.openai.api.chat.chatCompletionRequest
 import com.aallam.openai.api.model.ModelId
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessage
 import community.flock.aigentic.openai.mapper.toOpenAITool
-import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 
 internal fun createChatCompletionsRequest(
     messages: List<Message>,
     tools: List<ToolDescription>,
-    openAIModelIdentifier: OpenAIModelIdentifier,
+    openAIModelIdentifier: ModelIdentifier,
 ): ChatCompletionRequest {
     return chatCompletionRequest {
         temperature = 0.0
