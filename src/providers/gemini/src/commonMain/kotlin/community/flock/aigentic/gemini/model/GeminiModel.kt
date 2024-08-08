@@ -14,7 +14,7 @@ import community.flock.aigentic.gemini.mapper.toModelResponse
 
 @Suppress("ktlint:standard:class-naming")
 sealed class GeminiModelIdentifier(
-    val stringValue: String,
+    override val stringValue: String,
 ) : ModelIdentifier {
     data object GeminiPro : GeminiModelIdentifier("gemini-pro")
     data object GeminiProVision : GeminiModelIdentifier("gemini-pro-vision")

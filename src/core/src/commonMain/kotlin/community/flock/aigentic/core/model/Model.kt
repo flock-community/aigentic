@@ -7,7 +7,9 @@ sealed interface Authentication {
     data class APIKey(val key: String) : Authentication
 }
 
-interface ModelIdentifier
+interface ModelIdentifier {
+    val stringValue: String
+}
 
 interface Model {
     val authentication: Authentication

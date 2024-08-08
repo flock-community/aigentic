@@ -9,7 +9,7 @@ type RunDto {
 
 type ModelRequestInfoDto {
     startedAt: String,
-    finishedAt: String?,
+    finishedAt: String,
     inputTokenCount: Integer,
     outputTokenCount: Integer
 }
@@ -28,19 +28,13 @@ type TaskDto {
 
 type ToolDto {
     name: String,
-    description: String,
+    description: String?,
     parameters: String
 }
 
 enum SenderDto {
-    Aigentic,
+    Agent,
     Model
-}
-
-type ToolResultMessageDto {
-    toolCallId: String,
-    toolName: String,
-    response: String
 }
 
 type FinishedResultDto {
@@ -102,13 +96,32 @@ type ToolCallDto {
     arguments: String
 }
 
-type GatewayClientErrorDto {
-    message: String
+type ToolResultMessageDto {
+    sender: SenderDto,
+    toolCallId: String,
+    toolName: String,
+    response: String
 }
 
 type MessageDto = SystemPromptMessageDto | TextMessageDto | ImageUrlMessageDto | ImageBase64MessageDto | ToolCallsMessageDto | ToolResultMessageDto
 
-endpoint Gateway POST RunDto /gateway -> {
-    201 -> Unit
-    400 -> GatewayClientErrorDto
+type GatewayClientErrorDto {
+    message: String
 }
+
+type ServerErrorDto {
+    name: String,
+    description: String
+}
+
+endpoint Gateway POST RunDto /gateway/runs -> {
+    201 -> Unit
+    401 -> Unit
+    400 -> GatewayClientErrorDto
+    500 -> ServerErrorDto
+}
+
+
+
+
+

@@ -14,7 +14,6 @@ import community.flock.aigentic.gemini.client.model.Part
 import community.flock.aigentic.gemini.client.model.Role
 import community.flock.aigentic.gemini.client.model.Tool
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
-import io.ktor.http.parameters
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -96,6 +95,6 @@ private fun getSystemInstruction(messages: List<Message>): Content =
 
 private fun Sender.toRole(): Role =
     when (this) {
-        Sender.Aigentic -> Role.User
+        Sender.Agent -> Role.User
         Sender.Model -> Role.Model
     }

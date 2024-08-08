@@ -14,10 +14,11 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":src:core"))
+                implementation(project(":src:platform"))
                 implementation(project(":src:providers:openai"))
                 implementation(project(":src:providers:gemini"))
                 implementation(project(":src:tools:openapi"))
-                implementation ("ch.qos.logback:logback-classic:1.2.3")
+                implementation(libs.logback.classic)
             }
         }
 

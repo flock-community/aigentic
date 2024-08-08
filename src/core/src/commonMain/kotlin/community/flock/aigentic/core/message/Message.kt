@@ -9,7 +9,7 @@ sealed class Message(
 ) {
     data class SystemPrompt(
         val prompt: String,
-    ) : Message(Sender.Aigentic)
+    ) : Message(Sender.Agent)
 
     data class Text(
         override val sender: Sender,
@@ -20,13 +20,13 @@ sealed class Message(
         override val sender: Sender,
         val url: String,
         val mimeType: MimeType,
-    ) : Message(Sender.Aigentic)
+    ) : Message(Sender.Agent)
 
     data class ImageBase64(
         override val sender: Sender,
         val base64Content: String,
         val mimeType: MimeType,
-    ) : Message(Sender.Aigentic)
+    ) : Message(Sender.Agent)
 
     data class ToolCalls(
         val toolCalls: List<ToolCall>,
@@ -36,7 +36,7 @@ sealed class Message(
         val toolCallId: ToolCallId,
         val toolName: String,
         val response: ToolResultContent,
-    ) : Message(Sender.Aigentic)
+    ) : Message(Sender.Agent)
 }
 
 data class ToolCall(
@@ -63,7 +63,7 @@ value class ToolCallId(val id: String)
 value class ToolResultContent(val result: String)
 
 sealed interface Sender {
-    data object Aigentic : Sender
+    data object Agent : Sender
     data object Model : Sender
 }
 

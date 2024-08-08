@@ -17,9 +17,10 @@ import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.message.Sender.Aigentic
+import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.core.util.withStartFinishTiming
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
@@ -33,15 +34,33 @@ suspend fun Agent.start(): Run =
         state.events.emit(AgentStatus.Started)
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
         try {
-            executeAction(Initialize(state, this@start)).toRun()
+            val run = executeAction(Initialize(state, this@start)).toRun()
+            publishRun(this@start, run, state)
+            run
         } catch (e: AigenticException) {
             state.events.emit(AgentStatus.Fatal(e.message))
-            (state to Result.Fatal(e.message)).toRun()
+            val run = (state to Result.Fatal(e.message)).toRun()
+            publishRun(this@start, run, state)
+            run
         } finally {
             delay(10) // Allow some time for the logging to finish
             logging.cancelAndJoin()
         }
     }
+
+private suspend fun publishRun(
+    agent: Agent,
+    run: Run,
+    state: State,
+) {
+    if (agent.platform != null) {
+        when (val result = agent.platform.sendRun(run, agent)) {
+            RunSentResult.Success -> state.events.emit(AgentStatus.PublishedRunSuccess)
+            RunSentResult.Unauthorized -> state.events.emit(AgentStatus.PublishedRunUnauthorized)
+            is RunSentResult.Error -> state.events.emit(AgentStatus.PublishedRunError(result.message))
+        }
+    }
+}
 
 private suspend fun executeAction(action: Action): Pair<State, Result> =
     when (action) {
@@ -105,9 +124,9 @@ private fun initializeStartMessages(agent: Agent): List<Message> =
     listOf(agent.systemPromptBuilder.buildSystemPrompt(agent)) +
         agent.contexts.map {
             when (it) {
-                is Context.ImageUrl -> Message.ImageUrl(sender = Aigentic, url = it.url, mimeType = it.mimeType)
-                is Context.ImageBase64 -> Message.ImageBase64(sender = Aigentic, base64Content = it.base64, mimeType = it.mimeType)
-                is Context.Text -> Message.Text(Aigentic, it.text)
+                is Context.ImageUrl -> Message.ImageUrl(sender = Sender.Agent, url = it.url, mimeType = it.mimeType)
+                is Context.ImageBase64 -> Message.ImageBase64(sender = Sender.Agent, base64Content = it.base64, mimeType = it.mimeType)
+                is Context.Text -> Message.Text(Sender.Agent, it.text)
             }
         }
 

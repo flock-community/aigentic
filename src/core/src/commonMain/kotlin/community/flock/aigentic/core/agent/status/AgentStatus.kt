@@ -5,11 +5,12 @@ import community.flock.aigentic.core.agent.tool.STUCK_WITH_TASK_TOOL_NAME
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCall
 
+@Suppress("ktlint:standard:max-line-length")
 sealed interface AgentStatus {
     val text: String
 
     data object Started : AgentStatus {
-        override val text: String = "🛫 Agent started!"
+        override val text: String = "🚀 Agent started!"
     }
 
     data class Finished(val result: String) : AgentStatus {
@@ -30,6 +31,18 @@ sealed interface AgentStatus {
 
     data class ToolResult(val result: Message.ToolResult) : AgentStatus {
         override val text = "🦾 Tool result ${result.toolName}: ${result.response.result}"
+    }
+
+    data object PublishedRunSuccess : AgentStatus {
+        override val text: String = "🖨️ Published run to Aigentic platform!"
+    }
+
+    data object PublishedRunUnauthorized : AgentStatus {
+        override val text: String = "🔐 Could not publish run to Aigentic platform, agent unauthorized! Make sure you've configured the correct agent name and secret!"
+    }
+
+    data class PublishedRunError(val reason: String) : AgentStatus {
+        override val text: String = "💥 Could not publish run to Aigentic platform: $reason"
     }
 }
 

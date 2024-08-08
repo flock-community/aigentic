@@ -21,7 +21,6 @@ import kotlinx.serialization.json.JsonObject
 suspend fun runAdministrativeAgentExample(model: Model): Run {
     val run =
         agent {
-            name("administrative-agent")
             model(model)
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(
