@@ -9,6 +9,7 @@ import community.flock.aigentic.gemini.client.model.Content
 import community.flock.aigentic.gemini.client.model.GenerateContentResponse
 import community.flock.aigentic.gemini.client.model.Part
 import community.flock.aigentic.gemini.client.model.UsageMetadata
+import generateRandomString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -21,7 +22,7 @@ fun GenerateContentResponse.toModelResponse(): ModelResponse =
 internal fun Content.toMessages(): Message {
     val toolCalls =
         parts.filterIsInstance<Part.FunctionCall>().map {
-            ToolCall(ToolCallId(""), it.functionCall.name, Json.encodeToString(it.functionCall.args))
+            ToolCall(ToolCallId(generateRandomString(20)), it.functionCall.name, Json.encodeToString(it.functionCall.args))
         }
     return Message.ToolCalls(toolCalls)
 }

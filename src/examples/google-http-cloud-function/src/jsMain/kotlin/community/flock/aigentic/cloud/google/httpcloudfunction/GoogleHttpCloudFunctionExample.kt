@@ -59,13 +59,13 @@ fun main() {
         authentication(AuthorizationHeader("some-secret-key"))
         agent { request ->
             openAIModel {
-                apiKey(getEnvVar("OPENAI_API_KEY"))
+                apiKey(getEnvVar("OPENAI_KEY"))
                 modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
             }
             task("Greet the person with a warm and welcome message") {}
             addTool(greetTool)
             context {
-                addText("Person to greet: '${ request.body.jsonObject["name"] ?: "Error: Person to greet not found"}'")
+                addText("Person to greet: '${request.body.jsonObject["name"] ?: "Error: Person to greet not found"}'")
             }
             finishResponse(responseParameter)
         }

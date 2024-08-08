@@ -109,13 +109,16 @@ private fun Finished.process() = state to result
 
 private suspend fun ExecuteTools.process(): Action {
     val toolExecutionResults = executeToolCalls(agent, toolCalls)
+
+    toolExecutionResults.filterIsInstance<ToolExecutionResult.ToolResult>().forEach {
+        state.addMessage(it.message)
+    }
+
     val finishedToolResult = toolExecutionResults.filterIsInstance<ToolExecutionResult.FinishedToolResult>().firstOrNull()
-    val toolResults = toolExecutionResults.filterIsInstance<ToolExecutionResult.ToolResult>()
 
     return if (finishedToolResult != null) {
         Finished(state, agent, finishedToolResult.result)
     } else {
-        state.addMessages(toolResults.map { it.message })
         SendModelRequest(state, agent)
     }
 }

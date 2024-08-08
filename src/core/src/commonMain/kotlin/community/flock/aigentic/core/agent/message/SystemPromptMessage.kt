@@ -16,28 +16,46 @@ data object DefaultSystemPromptBuilder : SystemPromptBuilder {
 private fun Agent.createSystemPrompt(): Message.SystemPrompt {
     val baseInstruction =
         """
-        |You are an agent which helps the user to accomplish different tasks. These tasks are outlined by the user below.
-        |The user also gives you information which gives you context, these are the first messages.
-        |Please execute one of these tools and the given context to fulfil these tasks. Don't send any text messages only use tool calls
+        |You are an AI agent designed to accomplish a specified task.
+        |Your primary mode of operation is through tool calls. Do not generate text responses.
+        |Always use the provided tools to complete your assigned task.
         """.trimMargin()
 
-    val instructions = task.instructions.joinToString(separator = "\n\n") { it.text }
+    val contextInstruction =
+        if (contexts.isNotEmpty()) {
+            """
+        |Essential context for this task is provided in the initial messages.
+        |Carefully analyze and utilize this context to inform your actions and decision-making.
+            """.trimMargin()
+        } else {
+            ""
+        }
+
+    val instructions = task.instructions.joinToString(separator = "\n") { "- ${it.text}" }
 
     val finishConditionDescription =
         """
-        |You are finished when the task is executed successfully: ${task.description}
-        |If you meet this condition, call the $FINISHED_TASK_TOOL_NAME tool to indicate that you are done and have finished the task.
-        |When you don't know what to do call the $STUCK_WITH_TASK_TOOL_NAME tool to indicate that you are stuck and need help.
+        |Task Completion Protocol:
+        |1. Execute the task using the provided tools until it is successfully completed.
+        |2. Once the task is finished, call the $FINISHED_TASK_TOOL_NAME tool to signal completion.
+        |3. If you encounter difficulties or uncertainties, immediately call the $STUCK_WITH_TASK_TOOL_NAME tool to request assistance.
+        |4. Do not attempt to continue or guess if you're unsure; always use the appropriate tool to signal your status.
         """.trimMargin()
 
     return Message.SystemPrompt(
         """
         |$baseInstruction
+        |$contextInstruction
 
-        |Instructions:
+        |Assigned Task:
+        |${task.description}
+
+        |Specific Instructions:
         |$instructions
 
         |$finishConditionDescription
+
+        |Remember: Your responses should consist solely of tool calls. Do not generate any other form of text output.
         """.trimMargin(),
     )
 }

@@ -14,7 +14,6 @@ kotlin {
                 implementation(project(":src:core"))
                 implementation(project(":src:providers:openai"))
                 implementation(project(":src:cloud:google-cloud-function"))
-                implementation(libs.logback.classic)
             }
         }
     }

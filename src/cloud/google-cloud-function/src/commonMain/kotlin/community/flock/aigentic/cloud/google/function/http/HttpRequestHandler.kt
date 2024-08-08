@@ -17,6 +17,7 @@ internal suspend fun GoogleHttpCloudFunction.handleRequest(
         is Authentication.AuthorizationHeader -> {
             val authorization = request.headers["authorization"]
             if (authorization != "Bearer ${authentication.key}") {
+                console.error("Invalid authorization header")
                 response.status(401).send("Unauthorized")
                 throw Exception("Unauthorized")
             }
@@ -27,7 +28,16 @@ internal suspend fun GoogleHttpCloudFunction.handleRequest(
         }
     }
 
-    val agent = AgentConfig().apply { agentBuilder(this, request) }.build()
+    val interceptedRequest =
+        try {
+            requestInterceptor(request)
+        } catch (e: Exception) {
+            console.error("Error in request interceptor: ${e.message}")
+            response.status(500).send("Internal server error")
+            throw Exception("Internal server error")
+        }
+
+    val agent = AgentConfig().apply { agentBuilder(this, interceptedRequest) }.build()
     val run =
         agent.start().also {
             console.log("Agent finished with result: ${it.result}")

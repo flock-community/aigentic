@@ -44,7 +44,11 @@ publishing {
     }
 }
 
-signing {
-    useGpgCmd()
-    sign(publishing.publications)
+val isSigningEnabled: Boolean = System.getenv("ENABLE_GRADLE_SIGNING")?.toBoolean() ?: true
+
+if(isSigningEnabled) {
+    signing {
+        useGpgCmd()
+        sign(publishing.publications)
+    }
 }

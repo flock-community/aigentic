@@ -129,6 +129,60 @@ class HttpRequestHandlerTest : DescribeSpec({
             response shouldBe "Internal Server Error"
         }
     }
+
+    it("should intercept request and pass intercepted request to agent") {
+
+        val interceptedRequestConfig: HttpCloudFunctionConfig.() -> Unit = {
+            authentication(AuthorizationHeader("some-secret-key"))
+            requestInterceptor { request ->
+                request.copy(
+                    headers = mapOf("intercepted" to "true"),
+                )
+            }
+            agent {
+                it.headers shouldBe mapOf("intercepted" to "true")
+                model(modelFinishDirectly(finishedTaskToolCall))
+                task("Respond with a welcome message to the person") {}
+                addTool(testTool)
+            }
+        }
+
+        val httpCloudFunction = interceptedRequestConfig.build()
+        val (googleRequest, googleResponseWrapper) = createRequestResponse()
+
+        httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
+
+        with(googleResponseWrapper) {
+            statusCode shouldBe 200
+        }
+    }
+
+    it("should return 500 when exception is thrown in requestInterceptor") {
+
+        val interceptedRequestConfig: HttpCloudFunctionConfig.() -> Unit = {
+            authentication(AuthorizationHeader("some-secret-key"))
+            requestInterceptor { request ->
+                error("Request interceptor error")
+            }
+            agent {
+                it.headers shouldBe mapOf("intercepted" to "true")
+                model(modelFinishDirectly(finishedTaskToolCall))
+                task("Respond with a welcome message to the person") {}
+                addTool(testTool)
+            }
+        }
+
+        val httpCloudFunction = interceptedRequestConfig.build()
+        val (googleRequest, googleResponseWrapper) = createRequestResponse()
+
+        shouldThrow<Exception> {
+            httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
+        }
+
+        with(googleResponseWrapper) {
+            statusCode shouldBe 500
+        }
+    }
 })
 
 fun (HttpCloudFunctionConfig.() -> Unit).build(): GoogleHttpCloudFunction {
