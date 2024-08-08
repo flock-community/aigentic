@@ -17,6 +17,7 @@ kotlin {
                 implementation(project(":src:platform"))
                 implementation(project(":src:providers:openai"))
                 implementation(project(":src:providers:gemini"))
+                implementation(project(":src:providers:ollama"))
                 implementation(project(":src:tools:openapi"))
                 implementation(libs.logback.classic)
             }

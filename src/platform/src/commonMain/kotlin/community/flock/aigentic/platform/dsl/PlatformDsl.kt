@@ -18,7 +18,7 @@ fun AgentConfig.platform(platformConfig: PlatformConfig.() -> Unit) =
 class PlatformConfig() : Config<Platform> {
     private var name: String? = null
     private var secret: String? = null
-    private var apiUrl: String? = "https://aigentic-backend-kib53ypjwq-ez.a.run.app/"
+    private var apiUrl: String = "https://aigentic-backend-kib53ypjwq-ez.a.run.app/"
 
     fun PlatformConfig.name(name: String) {
         this.name = name
@@ -47,6 +47,16 @@ class PlatformConfig() : Config<Platform> {
                             builderPropertyMissingErrorMessage("secret", "platform { secret() }"),
                         ),
                 ),
-            apiUrl = PlatformApiUrl(checkNotNull(apiUrl, builderPropertyMissingErrorMessage("apiUrl", "platform { apiUrl() }"))),
+            apiUrl =
+                PlatformApiUrl(
+                    apiUrl.also {
+                        check(it.isNotEmpty()) {
+                            builderPropertyMissingErrorMessage(
+                                "apiUrl",
+                                "platform { apiUrl() }",
+                            )
+                        }
+                    },
+                ),
         )
 }

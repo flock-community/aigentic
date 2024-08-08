@@ -58,7 +58,10 @@ fun main() {
     googleHttpCloudFunction {
         authentication(AuthorizationHeader("some-secret-key"))
         agent { request ->
-            openAIModel(getEnvVar("OPENAI_KEY"), OpenAIModelIdentifier.GPT4O)
+            openAIModel {
+                apiKey(getEnvVar("OPENAI_API_KEY"))
+                modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
+            }
             task("Greet the person with a warm and welcome message") {}
             addTool(greetTool)
             context {
