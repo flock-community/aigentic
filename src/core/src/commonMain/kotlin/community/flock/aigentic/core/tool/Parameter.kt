@@ -4,6 +4,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmInline
@@ -16,6 +17,11 @@ inline fun <reified T : Any> Parameter.Complex.Object.getObject(arguments: JsonO
     val arg = arguments.getValue(name)
     return Json.decodeFromJsonElement(arg.jsonObject)
 }
+
+inline fun <reified T : Any> Parameter.Complex.Array.getItems(arguments: JsonObject): List<T> =
+    arguments.getValue(name).jsonArray.map {
+        Json.decodeFromJsonElement<T>(it)
+    }
 
 sealed class Parameter(
     open val name: String,

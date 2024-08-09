@@ -9,58 +9,71 @@ import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
-import community.flock.aigentic.core.tool.getStringValue
+import community.flock.aigentic.core.tool.getItems
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
-val savePdfSummary =
+val saveInvoiceComponents =
     object : Tool {
-        val title =
-            Parameter.Primitive(
-                name = "title",
-                description = null,
-                isRequired = true,
-                type = Primitive.String,
-            )
-
-        val mainPointsParameter =
+        val invoiceComponents =
             Parameter.Complex.Array(
-                name = "mainPoints",
-                description = "List of main points mentioned in the article",
+                name = "components",
+                description = "A list of the invoice components like number, date, customer_number, etc",
                 isRequired = true,
                 itemDefinition =
-                    Parameter.Primitive(
-                        name = "mainPoint",
+                    Parameter.Complex.Object(
+                        name = "component",
                         description = null,
                         isRequired = true,
-                        type = Primitive.String,
+                        parameters =
+                            listOf(
+                                Parameter.Primitive(
+                                    name = "name",
+                                    description = "The name of the invoice component e.g. number or date",
+                                    isRequired = true,
+                                    type = Primitive.String,
+                                ),
+                                Parameter.Primitive(
+                                    name = "value",
+                                    description = "The value of the component",
+                                    isRequired = true,
+                                    type = Primitive.String,
+                                ),
+                            ),
                     ),
             )
 
-        override val name = ToolName("savePdfSummary")
-        override val description = "Saves the summary of the PDF"
-        override val parameters = listOf(title, mainPointsParameter)
+        override val name = ToolName("saveInvoiceComponents")
+        override val description = "Saves the individual invoice components"
+        override val parameters = listOf(invoiceComponents)
 
         override val handler: suspend (JsonObject) -> String = { arguments ->
-
-            val message = title.getStringValue(arguments)
-            "Successfully saved: '$message' "
+            val components = invoiceComponents.getItems<InvoiceComponent>(arguments)
+            Json.encodeToString("Saved ${components.size} invoice components successfully")
         }
     }
 
-suspend fun pdfSummaryAgent(
-    pdfBase64: String,
+@Serializable
+data class InvoiceComponent(
+    val name: String,
+    val value: String,
+)
+
+suspend fun invoiceExtractorAgent(
+    invoicePdfBase64: String,
     configureModel: AgentConfig.() -> Unit,
 ): Run {
     val run =
         agent {
             configureModel()
-            task("Summarize the content of a PDF") {
-                addInstruction("Give the summary a comprehensive title")
-                addInstruction("Please provide list of main points")
+            task("Extract the different invoice components") {
+                addInstruction("Please provide list of the invoice components")
             }
-            addTool(savePdfSummary)
+            addTool(saveInvoiceComponents)
             context {
-                addBase64(pdfBase64, MimeType.PDF)
+                addBase64(invoicePdfBase64, MimeType.PDF)
             }
         }.start()
 

@@ -24,7 +24,7 @@ private val geminiKey by lazy {
 }
 
 // Set the active example and provider here
-val activeRunExample = RunExamples.KOTLIN_MESSAGE_AGENT
+val activeRunExample = RunExamples.INVOICE_EXTRACTOR_AGENT
 val activeProvider = Provider.GEMINI
 
 fun main() {
@@ -40,9 +40,9 @@ fun main() {
             /**
              * PDF is currently on supported by Gemini
              */
-            RunExamples.PDF_SUMMARY_AGENT ->
-                pdfSummaryAgent(
-                    FileReader.readFileBase64("/aigentic.pdf"),
+            RunExamples.INVOICE_EXTRACTOR_AGENT ->
+                invoiceExtractorAgent(
+                    FileReader.readFileBase64("/test-invoice.pdf"),
                     AgentConfig::configureModel,
                 )
         }.also {
@@ -84,7 +84,7 @@ enum class RunExamples {
     ADMINISTRATIVE_AGENT,
     KOTLIN_MESSAGE_AGENT,
     ITEM_CATEGORIZE_AGENT,
-    PDF_SUMMARY_AGENT,
+    INVOICE_EXTRACTOR_AGENT,
 }
 
 enum class Provider {
