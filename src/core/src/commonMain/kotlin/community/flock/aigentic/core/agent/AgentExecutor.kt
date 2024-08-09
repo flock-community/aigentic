@@ -127,8 +127,8 @@ private fun initializeStartMessages(agent: Agent): List<Message> =
     listOf(agent.systemPromptBuilder.buildSystemPrompt(agent)) +
         agent.contexts.map {
             when (it) {
-                is Context.ImageUrl -> Message.ImageUrl(sender = Sender.Agent, url = it.url, mimeType = it.mimeType)
-                is Context.ImageBase64 -> Message.ImageBase64(sender = Sender.Agent, base64Content = it.base64, mimeType = it.mimeType)
+                is Context.Url -> Message.Url(sender = Sender.Agent, url = it.url, mimeType = it.mimeType)
+                is Context.Base64 -> Message.Base64(sender = Sender.Agent, base64Content = it.base64, mimeType = it.mimeType)
                 is Context.Text -> Message.Text(Sender.Agent, it.text)
             }
         }

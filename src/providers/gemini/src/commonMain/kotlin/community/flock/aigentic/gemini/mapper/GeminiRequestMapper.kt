@@ -27,11 +27,11 @@ internal fun createGenerateContentRequest(
         contents =
             messages.map { message ->
                 when (message) {
-                    is Message.ImageUrl ->
+                    is Message.Url ->
                         listOf(
                             Part.FileDataPart(FileDataContent(mimeType = message.mimeType.value, fileUri = message.url)),
                         )
-                    is Message.ImageBase64 ->
+                    is Message.Base64 ->
                         listOf(
                             Part.Blob(BlobContent(mimeType = message.mimeType.value, data = formatBase64Content(message))),
                         )
@@ -86,7 +86,7 @@ internal fun createGenerateContentRequest(
             ),
     )
 
-private fun formatBase64Content(message: Message.ImageBase64) = message.base64Content.substringAfter("base64,")
+private fun formatBase64Content(message: Message.Base64) = message.base64Content.substringAfter("base64,")
 
 private fun getSystemInstruction(messages: List<Message>): Content =
     messages.filterIsInstance<Message.SystemPrompt>().map {

@@ -199,4 +199,4 @@ Aigentic is released under the MIT License.
 
 ## Support
 
-For questions, issues, or feature requests, please open an issue on our GitHub repository. Or contact us as [info@flock.community](mailto:info@flock.community?subject=Aigentic)
+For questions, issues, or feature requests, please open an issue on our GitHub repository. Or contact us as [info@aigentic.io](mailto:info@aigentic.io?subject=Aigentic)

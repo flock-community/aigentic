@@ -34,7 +34,15 @@ fun main() {
             RunExamples.KOTLIN_MESSAGE_AGENT -> runKotlinMessageAgentExample(AgentConfig::configureModel)
             RunExamples.ITEM_CATEGORIZE_AGENT ->
                 runItemCategorizeExample(
-                    FileReader.readFile("/base64Image.txt"),
+                    FileReader.readFileBase64("/table-items.png"),
+                    AgentConfig::configureModel,
+                )
+            /**
+             * PDF is currently on supported by Gemini
+             */
+            RunExamples.PDF_SUMMARY_AGENT ->
+                pdfSummaryAgent(
+                    FileReader.readFileBase64("/aigentic.pdf"),
                     AgentConfig::configureModel,
                 )
         }.also {
@@ -76,6 +84,7 @@ enum class RunExamples {
     ADMINISTRATIVE_AGENT,
     KOTLIN_MESSAGE_AGENT,
     ITEM_CATEGORIZE_AGENT,
+    PDF_SUMMARY_AGENT,
 }
 
 enum class Provider {

@@ -150,7 +150,7 @@ class AgentExecutorTest : DescribeSpec({
                     task("Execute some task") {}
                     context {
                         addText(expectedTextContext)
-                        addImageBase64(base64 = expectedImageContextBase64, mimeType = expectedImageContextMimeType)
+                        addBase64(base64 = expectedImageContextBase64, mimeType = expectedImageContextMimeType)
                     }
                     addTool(mockk(relaxed = true))
                 }
@@ -159,7 +159,7 @@ class AgentExecutorTest : DescribeSpec({
                 messages.drop(1).take(2) shouldBe
                     listOf(
                         Message.Text(Sender.Agent, expectedTextContext),
-                        Message.ImageBase64(
+                        Message.Base64(
                             sender = Sender.Agent,
                             base64Content = expectedImageContextBase64,
                             mimeType = expectedImageContextMimeType,

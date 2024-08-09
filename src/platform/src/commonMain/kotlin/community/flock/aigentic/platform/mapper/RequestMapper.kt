@@ -8,11 +8,10 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
+import community.flock.aigentic.gateway.wirespec.Base64MessageDto
 import community.flock.aigentic.gateway.wirespec.ConfigDto
 import community.flock.aigentic.gateway.wirespec.FatalResultDto
 import community.flock.aigentic.gateway.wirespec.FinishedResultDto
-import community.flock.aigentic.gateway.wirespec.ImageBase64MessageDto
-import community.flock.aigentic.gateway.wirespec.ImageUrlMessageDto
 import community.flock.aigentic.gateway.wirespec.MessageDto
 import community.flock.aigentic.gateway.wirespec.MimeTypeDto
 import community.flock.aigentic.gateway.wirespec.ModelRequestInfoDto
@@ -26,6 +25,7 @@ import community.flock.aigentic.gateway.wirespec.ToolCallDto
 import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
 import community.flock.aigentic.gateway.wirespec.ToolDto
 import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
+import community.flock.aigentic.gateway.wirespec.UrlMessageDto
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -81,16 +81,16 @@ private fun Sender.toDto(): SenderDto =
 
 private fun Message.toDto(): MessageDto =
     when (this) {
-        is Message.ImageBase64 ->
-            ImageBase64MessageDto(
+        is Message.Base64 ->
+            Base64MessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 base64Content = base64Content,
                 mimeType = mimeType.toDto(),
             )
 
-        is Message.ImageUrl ->
-            ImageUrlMessageDto(
+        is Message.Url ->
+            UrlMessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 url = url,
@@ -142,6 +142,7 @@ private fun MimeType.toDto(): MimeTypeDto =
         MimeType.WEBP -> MimeTypeDto.IMAGE_WEBP
         MimeType.HEIC -> MimeTypeDto.IMAGE_HEIC
         MimeType.HEIF -> MimeTypeDto.IMAGE_HEIF
+        MimeType.PDF -> MimeTypeDto.APPLICATION_PDF
     }
 
 private fun Result.toDto() =
