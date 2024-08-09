@@ -18,6 +18,7 @@ fun googleHttpCloudFunction(config: HttpCloudFunctionConfig.() -> Unit) =
 class HttpCloudFunctionConfig : Config<GoogleHttpCloudFunction> {
     internal var entryPoint: String? = "runAgent"
     internal var authentication: Authentication? = null
+    internal var beforeRequestAction: (request: Request) -> Request = { it }
     internal var agentBuilder: (AgentConfig.(request: Request) -> Unit)? = null
 
     fun agent(agentConfig: AgentConfig.(request: Request) -> Unit) {
@@ -28,11 +29,16 @@ class HttpCloudFunctionConfig : Config<GoogleHttpCloudFunction> {
         this.entryPoint = entryPoint
     }
 
+    fun requestInterceptor(requestInterceptor: (request: Request) -> Request) {
+        this.beforeRequestAction = requestInterceptor
+    }
+
     override fun build(): GoogleHttpCloudFunction =
         GoogleHttpCloudFunction(
             entryPoint = checkNotNull(entryPoint, builderPropertyMissingErrorMessage("entryPoint", "entryPoint()")),
             agentBuilder = checkNotNull(agentBuilder, builderPropertyMissingErrorMessage("agent", "agent()")),
             authentication = authentication,
+            requestInterceptor = beforeRequestAction,
         )
 
     fun authentication(authentication: Authentication) {
@@ -54,6 +60,7 @@ sealed interface Authentication {
 
 data class GoogleHttpCloudFunction(
     val entryPoint: String,
+    val requestInterceptor: (request: Request) -> Request,
     val agentBuilder: AgentConfig.(request: Request) -> Unit,
     val authentication: Authentication?,
 )

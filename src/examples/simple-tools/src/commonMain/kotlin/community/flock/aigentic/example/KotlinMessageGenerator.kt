@@ -36,8 +36,8 @@ suspend fun runKotlinMessageAgentExample(configureModel: AgentConfig.() -> Unit)
     val run =
         agent {
             configureModel()
-            task("Send a nice messages about Kotlin") {
-                addInstruction("use the sendMessage tool to send")
+            task("Send 2 nice messages about Kotlin") {
+                addInstruction("use the sendMessage tool to send an individual message")
                 addInstruction("After the message has been send you're finished")
             }
             addTool(sendMessageTool)

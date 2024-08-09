@@ -83,6 +83,7 @@ private fun Message.toDto(): MessageDto =
     when (this) {
         is Message.ImageBase64 ->
             ImageBase64MessageDto(
+                createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 base64Content = base64Content,
                 mimeType = mimeType.toDto(),
@@ -90,6 +91,7 @@ private fun Message.toDto(): MessageDto =
 
         is Message.ImageUrl ->
             ImageUrlMessageDto(
+                createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 url = url,
                 mimeType = mimeType.toDto(),
@@ -97,24 +99,28 @@ private fun Message.toDto(): MessageDto =
 
         is Message.SystemPrompt ->
             SystemPromptMessageDto(
+                createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 prompt = prompt,
             )
 
         is Message.Text ->
             TextMessageDto(
+                createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 text = text,
             )
 
         is Message.ToolCalls ->
             ToolCallsMessageDto(
+                createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 toolCalls = toolCalls.map { it.toDto() },
             )
 
         is Message.ToolResult ->
             ToolResultMessageDto(
+                createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 toolCallId = toolCallId.id,
                 response = response.result,
@@ -129,7 +135,14 @@ private fun ToolCall.toDto(): ToolCallDto =
         arguments = arguments,
     )
 
-private fun MimeType.toDto(): MimeTypeDto = MimeTypeDto.valueOf(this.value)
+private fun MimeType.toDto(): MimeTypeDto =
+    when (this) {
+        MimeType.JPEG -> MimeTypeDto.IMAGE_JPEG
+        MimeType.PNG -> MimeTypeDto.IMAGE_PNG
+        MimeType.WEBP -> MimeTypeDto.IMAGE_WEBP
+        MimeType.HEIC -> MimeTypeDto.IMAGE_HEIC
+        MimeType.HEIF -> MimeTypeDto.IMAGE_HEIF
+    }
 
 private fun Result.toDto() =
     when (this) {

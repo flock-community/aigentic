@@ -19,6 +19,8 @@ import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.model.Model
+import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.model.Usage
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Parameter.Primitive
@@ -195,6 +197,46 @@ class AgentExecutorTest : DescribeSpec({
 
             agent.start().apply {
                 messages[1] shouldBe Message.ToolCalls(listOf(toolCall))
+                messages[2] shouldBe
+                    Message.ToolResult(
+                        toolCallId = toolCall.id,
+                        toolName = testTool.name.value,
+                        response = ToolResultContent("toolResult"),
+                    )
+                messages[3] shouldBe Message.ToolCalls(listOf(finishedTaskToolCall))
+            }
+        }
+
+        it("should execute first finish any ToolCalls before FinishTask when both are received in the same message") {
+
+            val toolCall = ToolCall(ToolCallId("1"), "toolName", "{}")
+
+            val modelMock =
+                mockk<Model>().apply {
+                    coEvery { sendRequest(any(), any()) } returns
+                        ModelResponse(
+                            Message.ToolCalls(listOf(toolCall, finishedTaskToolCall)),
+                            Usage.EMPTY,
+                        )
+                }
+
+            val testTool =
+                object : Tool {
+                    override val name = ToolName(toolCall.name)
+                    override val description = null
+                    override val parameters = emptyList<Primitive>()
+                    override val handler: suspend (toolArguments: JsonObject) -> String = { "toolResult" }
+                }
+
+            val agent =
+                agent {
+                    model(modelMock)
+                    task("Execute some task") {}
+                    addTool(testTool)
+                }
+
+            agent.start().apply {
+                messages[1] shouldBe Message.ToolCalls(listOf(toolCall, finishedTaskToolCall))
                 messages[2] shouldBe
                     Message.ToolResult(
                         toolCallId = toolCall.id,

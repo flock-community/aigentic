@@ -1,11 +1,14 @@
 package community.flock.aigentic.core.message
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmInline
 
 sealed class Message(
     open val sender: Sender,
+    open val createdAt: Instant = Clock.System.now(),
 ) {
     data class SystemPrompt(
         val prompt: String,
@@ -45,15 +48,12 @@ data class ToolCall(
     val arguments: String,
 )
 
-@JvmInline
-value class MimeType private constructor(val value: String) {
-    companion object {
-        val JPEG = MimeType("image/jpeg")
-        val PNG = MimeType("image/png")
-        val WEBP = MimeType("image/webp")
-        val HEIC = MimeType("image/heic")
-        val HEIF = MimeType("image/heif")
-    }
+enum class MimeType(val value: String) {
+    JPEG("image/jpeg"),
+    PNG("image/png"),
+    WEBP("image/webp"),
+    HEIC("image/heic"),
+    HEIF("image/heif"),
 }
 
 @JvmInline

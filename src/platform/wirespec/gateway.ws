@@ -61,31 +61,33 @@ enum MimeTypeDto {
 }
 
 type SystemPromptMessageDto {
+    createdAt: String,
     sender: SenderDto,
     prompt: String
 }
 
 type TextMessageDto {
+    createdAt: String,
     sender: SenderDto,
     text: String
 }
 
 type ImageUrlMessageDto {
+    createdAt: String,
     sender: SenderDto,
     url: String,
     mimeType: MimeTypeDto
 }
 
-/*
- * TODO: rename to ImageBase64Message
- */
 type ImageBase64MessageDto {
+    createdAt: String,
     sender: SenderDto,
     base64Content: String,
     mimeType: MimeTypeDto
 }
 
 type ToolCallsMessageDto {
+    createdAt: String,
     sender: SenderDto,
     toolCalls: ToolCallDto[]
 }
@@ -97,6 +99,7 @@ type ToolCallDto {
 }
 
 type ToolResultMessageDto {
+    createdAt: String,
     sender: SenderDto,
     toolCallId: String,
     toolName: String,
@@ -120,8 +123,3 @@ endpoint Gateway POST RunDto /gateway/runs -> {
     400 -> GatewayClientErrorDto
     500 -> ServerErrorDto
 }
-
-
-
-
-
