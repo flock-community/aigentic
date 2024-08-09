@@ -43,7 +43,7 @@ suspend fun runItemCategorizeExample(
             task("Identify all items in the image and save each individual item") {}
             addTool(saveItemTool)
             context {
-                addImageBase64(base64Image, MimeType.JPEG)
+                addBase64(base64Image, MimeType.JPEG)
             }
         }.start()
 

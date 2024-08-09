@@ -16,9 +16,9 @@ class GeminiRequestMapperKtTest : DescribeSpec({
         it("Should not format when raw base64 content is provided") {
             val base64Content = "iVBORw0KGgoAAA=="
             val mimeType = MimeType.PNG
-            val imageBase64Message = Message.ImageBase64(Sender.Model, base64Content, mimeType)
+            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType)
 
-            createGenerateContentRequest(listOf(imageBase64Message), emptyList()).contents[0].parts[0]
+            createGenerateContentRequest(listOf(base64Message), emptyList()).contents[0].parts[0]
                 .shouldBeInstanceOf<Part.Blob>().run {
                     this.inlineData shouldBe BlobContent(mimeType = mimeType.value, data = base64Content)
                 }
@@ -27,9 +27,9 @@ class GeminiRequestMapperKtTest : DescribeSpec({
         it("should format when base64 data url is provided") {
             val base64Content = "data:image/png;base64,iVBORw0KGgoAAA=="
             val mimeType = MimeType.PNG
-            val imageBase64Message = Message.ImageBase64(Sender.Model, base64Content, mimeType)
+            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType)
 
-            createGenerateContentRequest(listOf(imageBase64Message), emptyList()).contents[0].parts[0]
+            createGenerateContentRequest(listOf(base64Message), emptyList()).contents[0].parts[0]
                 .shouldBeInstanceOf<Part.Blob>().run {
                     this.inlineData shouldBe BlobContent(mimeType = mimeType.value, data = "iVBORw0KGgoAAA==")
                 }

@@ -24,7 +24,7 @@ private val geminiKey by lazy {
 }
 
 // Set the active example and provider here
-val activeRunExample = RunExamples.KOTLIN_MESSAGE_AGENT
+val activeRunExample = RunExamples.INVOICE_EXTRACTOR_AGENT
 val activeProvider = Provider.GEMINI
 
 fun main() {
@@ -34,7 +34,15 @@ fun main() {
             RunExamples.KOTLIN_MESSAGE_AGENT -> runKotlinMessageAgentExample(AgentConfig::configureModel)
             RunExamples.ITEM_CATEGORIZE_AGENT ->
                 runItemCategorizeExample(
-                    FileReader.readFile("/base64Image.txt"),
+                    FileReader.readFileBase64("/table-items.png"),
+                    AgentConfig::configureModel,
+                )
+            /**
+             * PDF is currently on supported by Gemini
+             */
+            RunExamples.INVOICE_EXTRACTOR_AGENT ->
+                invoiceExtractorAgent(
+                    FileReader.readFileBase64("/test-invoice.pdf"),
                     AgentConfig::configureModel,
                 )
         }.also {
@@ -76,6 +84,7 @@ enum class RunExamples {
     ADMINISTRATIVE_AGENT,
     KOTLIN_MESSAGE_AGENT,
     ITEM_CATEGORIZE_AGENT,
+    INVOICE_EXTRACTOR_AGENT,
 }
 
 enum class Provider {

@@ -88,16 +88,16 @@ class ContextConfig : Config<List<Context>> {
         Context.Text(text)
             .also { contexts.add(it) }
 
-    fun ContextConfig.addImageUrl(
+    fun ContextConfig.addUrl(
         url: String,
         mimeType: MimeType,
-    ) = Context.ImageUrl(url = url, mimeType = mimeType)
+    ) = Context.Url(url = url, mimeType = mimeType)
         .also { contexts.add(it) }
 
-    fun ContextConfig.addImageBase64(
+    fun ContextConfig.addBase64(
         base64: String,
         mimeType: MimeType,
-    ) = Context.ImageBase64(base64 = base64, mimeType = mimeType)
+    ) = Context.Base64(base64 = base64, mimeType = mimeType)
         .also { contexts.add(it) }
 
     override fun build(): List<Context> = contexts
