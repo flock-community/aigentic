@@ -3,7 +3,6 @@ package community.flock.aigentic.example
 import java.util.Base64
 
 object FileReader {
-
     fun readFileBase64(path: String): String {
         val inputStream =
             this::class.java.getResource(path)?.openStream()
