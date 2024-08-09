@@ -1,7 +1,14 @@
 package community.flock.aigentic.example
 
+import java.util.Base64
+
 object FileReader {
-    fun readFile(path: String): String {
-        return this::class.java.getResource(path)!!.readText(Charsets.UTF_8).trim()
+
+    fun readFileBase64(path: String): String {
+        val inputStream =
+            this::class.java.getResource(path)?.openStream()
+                ?: throw IllegalArgumentException("Resource not found: $path")
+        val bytes = inputStream.use { it.readBytes() }
+        return Base64.getEncoder().encodeToString(bytes)
     }
 }

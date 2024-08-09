@@ -21,9 +21,9 @@ class OpenAIMapperTest : DescribeSpec({
         it("Should format data url when raw base64 content is provided") {
             val base64Content = "iVBORw0KGgoAAA=="
             val mimeType = MimeType.PNG
-            val imageBase64Message = Message.ImageBase64(Sender.Model, base64Content, mimeType)
+            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType)
 
-            val chatMessage = imageBase64Message.toOpenAIMessage()
+            val chatMessage = base64Message.toOpenAIMessage()
 
             chatMessage should beInstanceOf<ChatMessage>()
             chatMessage.role should be(ChatRole.Assistant)
@@ -38,9 +38,9 @@ class OpenAIMapperTest : DescribeSpec({
 
             val base64Content = "data:image/png;base64,iVBORw0KGgoAAA=="
             val mimeType = MimeType.PNG
-            val imageBase64Message = Message.ImageBase64(Sender.Model, base64Content, mimeType)
+            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType)
 
-            val chatMessage = imageBase64Message.toOpenAIMessage()
+            val chatMessage = base64Message.toOpenAIMessage()
 
             chatMessage should beInstanceOf<ChatMessage>()
             chatMessage.role should be(ChatRole.Assistant)

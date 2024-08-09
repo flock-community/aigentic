@@ -57,7 +57,8 @@ enum MimeTypeDto {
     IMAGE_PNG,
     IMAGE_WEBP,
     IMAGE_HEIC,
-    IMAGE_HEIF
+    IMAGE_HEIF,
+    APPLICATION_PDF
 }
 
 type SystemPromptMessageDto {
@@ -72,14 +73,14 @@ type TextMessageDto {
     text: String
 }
 
-type ImageUrlMessageDto {
+type UrlMessageDto {
     createdAt: String,
     sender: SenderDto,
     url: String,
     mimeType: MimeTypeDto
 }
 
-type ImageBase64MessageDto {
+type Base64MessageDto {
     createdAt: String,
     sender: SenderDto,
     base64Content: String,
@@ -106,7 +107,7 @@ type ToolResultMessageDto {
     response: String
 }
 
-type MessageDto = SystemPromptMessageDto | TextMessageDto | ImageUrlMessageDto | ImageBase64MessageDto | ToolCallsMessageDto | ToolResultMessageDto
+type MessageDto = SystemPromptMessageDto | TextMessageDto | UrlMessageDto | Base64MessageDto | ToolCallsMessageDto | ToolResultMessageDto
 
 type GatewayClientErrorDto {
     message: String

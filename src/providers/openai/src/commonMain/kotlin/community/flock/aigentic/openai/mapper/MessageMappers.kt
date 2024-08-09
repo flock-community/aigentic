@@ -70,8 +70,8 @@ object OpenAIMapper {
         return when (this) {
             is Message.SystemPrompt -> ChatMessage(role, prompt)
             is Message.Text -> ChatMessage(role, text)
-            is Message.ImageUrl -> ChatMessage(role = role, listOf(ImagePart(url)))
-            is Message.ImageBase64 -> ChatMessage(role = role, listOf(ImagePart(formatDataUrl())))
+            is Message.Url -> ChatMessage(role = role, listOf(ImagePart(url)))
+            is Message.Base64 -> ChatMessage(role = role, listOf(ImagePart(formatDataUrl())))
             is Message.ToolCalls ->
                 ChatMessage(
                     role = role,
@@ -89,7 +89,7 @@ object OpenAIMapper {
         }
     }
 
-    private fun Message.ImageBase64.formatDataUrl(): String =
+    private fun Message.Base64.formatDataUrl(): String =
         base64Content.takeIf { it.startsWith("data:") }
             ?: "data:${mimeType.value};base64,$base64Content"
 
@@ -98,7 +98,7 @@ object OpenAIMapper {
             is Message.SystemPrompt -> ChatRole.System
             is Message.ToolCalls -> ChatRole.Assistant
             is Message.ToolResult -> ChatRole.Tool
-            is Message.ImageUrl, is Message.ImageBase64, is Message.Text -> mapRole()
+            is Message.Url, is Message.Base64, is Message.Text -> mapRole()
         }
 
     private fun Message.mapRole() =

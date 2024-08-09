@@ -19,13 +19,13 @@ sealed class Message(
         val text: String,
     ) : Message(sender)
 
-    data class ImageUrl(
+    data class Url(
         override val sender: Sender,
         val url: String,
         val mimeType: MimeType,
     ) : Message(Sender.Agent)
 
-    data class ImageBase64(
+    data class Base64(
         override val sender: Sender,
         val base64Content: String,
         val mimeType: MimeType,
@@ -54,6 +54,7 @@ enum class MimeType(val value: String) {
     WEBP("image/webp"),
     HEIC("image/heic"),
     HEIF("image/heif"),
+    PDF("application/pdf"),
 }
 
 @JvmInline
