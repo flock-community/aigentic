@@ -2,6 +2,8 @@ package community.flock.aigentic.platform.client
 
 import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.agent.RunId
+import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.PlatformApiUrl
@@ -10,7 +12,6 @@ import community.flock.aigentic.gateway.wirespec.GatewayEndpoint
 import community.flock.aigentic.gateway.wirespec.GetRunsEndpoint
 import community.flock.aigentic.platform.mapper.toDto
 import community.flock.aigentic.platform.mapper.toRun
-import community.flock.aigentic.platform.testing.RunTag
 import community.flock.wirespec.Wirespec
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -68,13 +69,13 @@ class AigenticPlatformClient(
         }
     }
 
-    suspend fun getRuns(tags: List<RunTag>) =
+    suspend fun getRuns(tags: List<RunTag>): List<Pair<RunId, Run>> =
         when (val response = endpoints.getRuns(GetRunsEndpoint.RequestUnit(tags.joinToString(",") { it.value }))) {
             is GetRunsEndpoint.Response200ApplicationJson -> response.content.body
             is GetRunsEndpoint.Response401Unit -> aigenticException("Unauthorized to get runs")
             is GetRunsEndpoint.Response404Unit -> aigenticException("Runs not found")
             is GetRunsEndpoint.Response500ApplicationJson -> aigenticException("Internal server error")
-        }.map { it.runId to it.toRun() }
+        }.map { RunId(it.runId) to it.toRun() }
 }
 
 class AigenticPlatformEndpoints(

@@ -1,12 +1,12 @@
 package community.flock.aigentic.platform.dsl
 
 import community.flock.aigentic.core.agent.Agent
+import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.dsl.Config
 import community.flock.aigentic.core.dsl.builderPropertyMissingErrorMessage
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.platform.testing.RegressionTest
-import community.flock.aigentic.platform.testing.RunTag
 import community.flock.aigentic.platform.testing.ToolCallOverride
 
 fun regressionTest(regressionTestConfig: RegressionTestConfig.() -> Unit): RegressionTest = RegressionTestConfig().apply(regressionTestConfig).build()

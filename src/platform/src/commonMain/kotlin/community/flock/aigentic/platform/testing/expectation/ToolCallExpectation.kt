@@ -35,7 +35,7 @@ fun createToolCallExpectation(
             )
         } ?: originalToolCall
 
-    // TODO currently only 1 override per toolcall name
+    // TODO currently only 1 override per toolcall id
     val toolResult =
         run.messages.filterIsInstance<Message.ToolResult>().find { it.toolCallId == originalToolCall.id } ?: aigenticException(
             "No tool result found for $originalToolCall",
