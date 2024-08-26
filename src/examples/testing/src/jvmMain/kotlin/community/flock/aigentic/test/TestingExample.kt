@@ -159,8 +159,8 @@ val licencePlateExtractor =
 fun main(): Unit =
     runBlocking {
         regressionTest {
-            numberOfIterations(2)
-            addTag("validated")
             agent(licencePlateExtractor)
+            tags("validated")
+            numberOfIterations(2)
         }.start()
     }

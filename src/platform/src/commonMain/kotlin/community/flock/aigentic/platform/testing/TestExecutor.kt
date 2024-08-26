@@ -8,16 +8,13 @@ import community.flock.aigentic.core.agent.state.State
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.ContextMessage
-import community.flock.aigentic.core.platform.Authentication
-import community.flock.aigentic.core.platform.Platform
-import community.flock.aigentic.platform.client.AigenticPlatformClient
 import community.flock.aigentic.platform.testing.exception.ExpectationFailedException
 import community.flock.aigentic.platform.testing.mock.createToolMocks
 import community.flock.aigentic.platform.testing.model.FailureReason
 import community.flock.aigentic.platform.testing.model.TestReport
 import community.flock.aigentic.platform.testing.model.TestResult
 import community.flock.aigentic.platform.testing.model.message
-import community.flock.aigentic.platform.testing.model.printPretty
+import community.flock.aigentic.platform.testing.model.prettyPrint
 import createToolCallExpectations
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
@@ -41,7 +38,7 @@ suspend fun RegressionTest.start(): TestReport {
                     }
                 }
 
-            TestReport.from(testResults).also(TestReport::printPretty)
+            TestReport.from(testResults).also(TestReport::prettyPrint)
         }
     }
 }
@@ -102,13 +99,3 @@ private suspend fun RegressionTest.initializeTestState(run: Run): State {
     val state = State().apply { messages.emitAll(initialMessages.asFlow()) }
     return state
 }
-
-private fun aigenticPlatformClient(configuredPlatform: Platform) =
-    AigenticPlatformClient(
-        basicAuth =
-            Authentication.BasicAuth(
-                username = configuredPlatform.authentication.username,
-                password = configuredPlatform.authentication.password,
-            ),
-        apiUrl = configuredPlatform.apiUrl,
-    )

@@ -182,7 +182,34 @@ For more detailed examples, please refer to:
 
 In addition to the client library, Aigentic provides a platform for managing and deploying agents. The platform is currently in development and will be available soon.
 
-## How to use snapshots
+## Validate your agents task
+
+In order to validate your agent's task and to quantify its performance you can use the `regressionTest` DSL. This DSL allows you to run historical runs against your agent and compare the results.
+This enables you to test the following aspects of your agent:
+
+- Stability: Does the agent produce consistent results over time?
+- Regression: Does the agent's performance degrade after I make changes?
+- Improvement: Does the agent's performance improve after I make changes?
+
+
+```kotlin
+
+val testReport = regressionTest {
+    // The agent which will be tested, you can make changes to this agent and test the performance
+    agent(licencePlateExtractor)
+    // Historical tagged runs from Aigentic platform which will be used to test the agent
+    addTag("validated")
+    // The number each run should be repeated
+    numberOfIterations(5)
+}.start()
+
+testReport.prettyPrint()
+
+```
+
+
+
+# How to use snapshots
 
 In order to use SNAPSHOT versions of Aigentic please make sure both maven central and the Sonatype snapshot repository are configured:
 

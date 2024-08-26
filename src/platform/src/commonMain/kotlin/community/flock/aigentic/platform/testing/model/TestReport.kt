@@ -13,7 +13,7 @@ data class TestReport(
     }
 }
 
-fun TestReport.printPretty() =
+fun TestReport.prettyPrint() =
     println(
         """
         🏁 Test finished:

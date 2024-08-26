@@ -22,11 +22,7 @@ class RegressionTestConfig : Config<RegressionTest> {
         this.numberOfIterations = numberOfIterations
     }
 
-    fun RegressionTestConfig.addTag(tag: String) {
-        tags.add(tag)
-    }
-
-    fun RegressionTestConfig.tags(tags: Set<String>) {
+    fun RegressionTestConfig.tags(vararg tags: String) {
         this.tags.addAll(tags)
     }
 
