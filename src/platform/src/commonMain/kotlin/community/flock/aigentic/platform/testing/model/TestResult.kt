@@ -10,18 +10,17 @@ import community.flock.aigentic.platform.testing.util.redString
 import kotlinx.serialization.json.JsonElement
 
 sealed interface TestResult {
-
     data class Success(
         val runId: RunId,
         val iteration: Int,
         val toolsExecutions: Map<ToolName, List<JsonElement>>,
-        val state: State
+        val state: State,
     ) : TestResult
 
     data class Failed(
         val runId: RunId,
         val iteration: Int,
-        val reason: FailureReason
+        val reason: FailureReason,
     ) : TestResult
 
     data class AgentError(
@@ -32,7 +31,6 @@ sealed interface TestResult {
 }
 
 sealed interface FailureReason {
-
     data class WrongArguments(
         val toolName: ToolName,
         val expectations: List<ToolCallExpectation>,
@@ -40,15 +38,16 @@ sealed interface FailureReason {
     ) : FailureReason
 
     data class NotCalled(
-        val tools: Map<ToolName, List<ToolCallExpectation>>
+        val tools: Map<ToolName, List<ToolCallExpectation>>,
     ) : FailureReason
 }
 
-fun TestResult.message() = when (this) {
-    is TestResult.Success -> message()
-    is TestResult.Failed -> message()
-    is TestResult.AgentError -> message()
-}
+fun TestResult.message() =
+    when (this) {
+        is TestResult.Success -> message()
+        is TestResult.Failed -> message()
+        is TestResult.AgentError -> message()
+    }
 
 fun TestResult.Success.message() =
     "✅ Test of ${runId.value} success!, ${toolsExecutions.map {
@@ -56,19 +55,19 @@ fun TestResult.Success.message() =
         "Tool: ${toolName.value.blueString()} arguments: ${arguments.joinToString { it.greenString() }}"
     }}"
 
-fun TestResult.Failed.message() = when(reason) {
-    is FailureReason.WrongArguments -> {
-        "🔴 Run: ${runId.value} tool: ${reason.toolName.value.blueString()}, expected: ${
-            reason.expectations.joinToString { it.toolCall.arguments }.greenString()
-        }, got: ${reason.actual.redString()}"
+fun TestResult.Failed.message() =
+    when (reason) {
+        is FailureReason.WrongArguments -> {
+            "🔴 Run: ${runId.value} tool: ${reason.toolName.value.blueString()}, expected: ${
+                reason.expectations.joinToString { it.toolCall.arguments }.greenString()
+            }, got: ${reason.actual.redString()}"
+        }
+        is FailureReason.NotCalled -> {
+            "🔴 Run: ${runId.value}, tools not called: ${reason.tools.map {
+                    (toolName, expectations) ->
+                "Tool: ${toolName.value.blueString()}, expectations: ${expectations.joinToString { it.toolCall.arguments }.blueString()}"
+            }}"
+        }
     }
-    is FailureReason.NotCalled -> {
-        "🔴 Run: ${runId.value}, tools not called: ${reason.tools.map {
-                (toolName, expectations) ->
-            "Tool: ${toolName.value.blueString()}, expectations: ${expectations.joinToString { it.toolCall.arguments }.blueString()}"
-        }}"
-    }
-}
-
 
 fun TestResult.AgentError.message() = "Run: ${runId.value}, message: $message}"

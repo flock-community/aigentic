@@ -16,14 +16,12 @@ fun List<ToolCall>.toModelResponse() = map { it.toModelResponse() }
 fun ToolCall.toModelResponse() = ModelResponse(Message.ToolCalls(listOf(this)), Usage(inputTokenCount = 100, outputTokenCount = 100))
 
 object TestData {
-
     val finishedTaskToolCall =
         ToolCall(
             ToolCallId("1"),
             FINISHED_TASK_TOOL_NAME,
             buildJsonObject {
                 put("description", "Finished the task")
-            }.run { Json.encodeToString(this) }
+            }.run { Json.encodeToString(this) },
         )
-
 }

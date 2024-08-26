@@ -26,7 +26,6 @@ suspend fun RegressionTest.start(): TestReport {
     return when (val configuredPlatform = agent.platform) {
         null -> aigenticException("Make sure to configure a platform in your agent")
         else -> {
-
             val runs = configuredPlatform.getRuns(tags)
 
             println("🏃 ${runs.size} runs found with tags: ${tags.joinToString(",") { it.value }}")
@@ -52,7 +51,6 @@ private suspend fun RegressionTest.executeTest(
     runId: RunId,
     iteration: Int,
 ): TestResult {
-
     val toolCallExpectations = createToolCallExpectations(toolCallOverrides, run)
     val toolMocks = createToolMocks(agent, toolCallExpectations)
     val mockedAgent = agent.copy(tools = toolMocks)
@@ -62,12 +60,12 @@ private suspend fun RegressionTest.executeTest(
         val (resultState, result) = executeAction(SendModelRequest(initializedState, mockedAgent))
         when (result) {
             is Result.Finished -> {
-
-                val unInvokedMocks = toolMocks.filter { (name, mock) ->
-                    mock.invocations.size != mock.expectations.size
-                }.mapValues {
-                    it.value.expectations
-                }
+                val unInvokedMocks =
+                    toolMocks.filter { (name, mock) ->
+                        mock.invocations.size != mock.expectations.size
+                    }.mapValues {
+                        it.value.expectations
+                    }
 
                 if (unInvokedMocks.isNotEmpty()) {
                     TestResult.Failed(runId, iteration, FailureReason.NotCalled(unInvokedMocks))
@@ -75,7 +73,6 @@ private suspend fun RegressionTest.executeTest(
                     val toolInvocations = toolMocks.mapValues { it.value.invocations }
                     TestResult.Success(runId, iteration, toolInvocations, resultState)
                 }
-
             }
 
             is Result.Fatal -> TestResult.AgentError(runId, iteration, result.message)
@@ -88,11 +85,12 @@ private suspend fun RegressionTest.executeTest(
         TestResult.Failed(
             runId = runId,
             iteration = iteration,
-            reason = FailureReason.WrongArguments(
-                toolName = e.toolName,
-                expectations = e.expectations,
-                actual = e.actual,
-            )
+            reason =
+                FailureReason.WrongArguments(
+                    toolName = e.toolName,
+                    expectations = e.expectations,
+                    actual = e.actual,
+                ),
         ).also { println(it.message()) }
     }
 }
@@ -107,9 +105,10 @@ private suspend fun RegressionTest.initializeTestState(run: Run): State {
 
 private fun aigenticPlatformClient(configuredPlatform: Platform) =
     AigenticPlatformClient(
-        basicAuth = Authentication.BasicAuth(
-            username = configuredPlatform.authentication.username,
-            password = configuredPlatform.authentication.password,
-        ),
+        basicAuth =
+            Authentication.BasicAuth(
+                username = configuredPlatform.authentication.username,
+                password = configuredPlatform.authentication.password,
+            ),
         apiUrl = configuredPlatform.apiUrl,
     )

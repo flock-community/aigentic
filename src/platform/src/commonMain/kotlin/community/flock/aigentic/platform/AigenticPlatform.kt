@@ -15,7 +15,6 @@ data class AigenticPlatform(
     override val apiUrl: PlatformApiUrl,
     private val platformClient: AigenticPlatformClient = defaultAigenticPlatformClient(authentication, apiUrl),
 ) : Platform {
-
     override suspend fun sendRun(
         run: Run,
         agent: Agent,
