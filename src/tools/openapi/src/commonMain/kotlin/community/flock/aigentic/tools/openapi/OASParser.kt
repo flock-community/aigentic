@@ -313,8 +313,7 @@ class OpenAPIv3Parser(
             Type.OBJECT -> ParameterType.Complex.Object
         }
 
-    private fun ReferenceObject.getReference() =
-        this.ref.value.split("/").getOrNull(3) ?: aigenticException("Wrong reference: ${this.ref.value}")
+    private fun ReferenceObject.getReference() = this.ref.value.split("/").getOrNull(3) ?: aigenticException("Wrong reference: ${this.ref.value}")
 
     private fun ParameterOrReferenceObject.resolve(): ParameterObject {
         fun ReferenceObject.resolveParameterObject(): ParameterObject =

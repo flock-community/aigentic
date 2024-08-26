@@ -12,6 +12,7 @@ import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
@@ -46,6 +47,10 @@ class GeminiClient(
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = config.numberOfRetriesOnServerErrors)
             exponentialDelay()
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 60_000
+            socketTimeoutMillis = 60_000
         }
     }
 

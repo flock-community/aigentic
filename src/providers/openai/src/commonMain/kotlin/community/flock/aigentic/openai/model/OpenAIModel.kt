@@ -9,6 +9,7 @@ import com.aallam.openai.client.OpenAIHost
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.Authentication
+import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
@@ -31,6 +32,7 @@ sealed class OpenAIModelIdentifier(
 class OpenAIModel(
     override val authentication: Authentication.APIKey,
     override val modelIdentifier: ModelIdentifier,
+    override val generationSettings: GenerationSettings,
     apiUrl: OpenAIApiUrl,
 ) : Model {
     private val openAI: OpenAI = defaultOpenAI(authentication, apiUrl)
@@ -46,6 +48,7 @@ class OpenAIModel(
                         messages = messages,
                         tools = tools,
                         openAIModelIdentifier = modelIdentifier,
+                        generationSettings = generationSettings,
                     ),
                 )
                 .toModelResponse()

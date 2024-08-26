@@ -1,8 +1,16 @@
 package community.flock.aigentic.platform.client
 
+import community.flock.aigentic.core.agent.Agent
+import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.PlatformApiUrl
+import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.gateway.wirespec.GatewayEndpoint
+import community.flock.aigentic.gateway.wirespec.GetRunsEndpoint
+import community.flock.aigentic.platform.mapper.toDto
+import community.flock.aigentic.platform.mapper.toRun
+import community.flock.aigentic.platform.testing.RunTag
 import community.flock.wirespec.Wirespec
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -14,11 +22,16 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
+import io.ktor.client.request.accept
 import io.ktor.client.request.basicAuth
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
@@ -29,14 +42,52 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.reflect.KType
 
-class PlatformGatewayClient(
+interface PlatformEndpoints : GatewayEndpoint, GetRunsEndpoint
+
+const val defaultPlatformApiUrl = "https://aigentic-backend-kib53ypjwq-ez.a.run.app/"
+
+class AigenticPlatformClient(
+    basicAuth: Authentication.BasicAuth,
+    apiUrl: PlatformApiUrl,
+    private val endpoints: PlatformEndpoints = AigenticPlatformEndpoints(basicAuth, apiUrl, null),
+) {
+    suspend fun sendRun(
+        run: Run,
+        agent: Agent,
+    ): RunSentResult {
+        val runDto = run.toDto(agent)
+        val request = GatewayEndpoint.RequestApplicationJson(runDto)
+        return when (val response = endpoints.gateway(request)) {
+            is GatewayEndpoint.Response201Unit -> RunSentResult.Success
+            is GatewayEndpoint.Response401Unit -> RunSentResult.Unauthorized
+            is GatewayEndpoint.Response400ApplicationJson -> RunSentResult.Error(response.content.body.message)
+            is GatewayEndpoint.Response500ApplicationJson ->
+                RunSentResult.Error(
+                    "${response.content.body.name} - ${response.content.body.description}",
+                )
+        }
+    }
+
+    suspend fun getRuns(tags: List<RunTag>) =
+        when (val response = endpoints.getRuns(GetRunsEndpoint.RequestUnit(tags.joinToString(",") { it.value }))) {
+            is GetRunsEndpoint.Response200ApplicationJson -> response.content.body
+            is GetRunsEndpoint.Response401Unit -> aigenticException("Unauthorized to get runs")
+            is GetRunsEndpoint.Response404Unit -> aigenticException("Runs not found")
+            is GetRunsEndpoint.Response500ApplicationJson -> aigenticException("Internal server error")
+        }.map { it.runId to it.toRun() }
+}
+
+class AigenticPlatformEndpoints(
     basicAuth: Authentication.BasicAuth,
     apiUrl: PlatformApiUrl,
     engine: HttpClientEngine? = null,
-) : GatewayEndpoint {
+) : PlatformEndpoints {
     private val configuration: HttpClientConfig<*>.() -> Unit = {
         defaultRequest {
             url(apiUrl.value)
+            accept(ContentType.Application.Json)
+            // TODO wirespec improvement: https://github.com/flock-community/wirespec/issues/254
+            header(HttpHeaders.AcceptCharset, "")
             basicAuth(basicAuth.username, basicAuth.password)
         }
 
@@ -59,34 +110,53 @@ class PlatformGatewayClient(
 
     override suspend fun gateway(request: GatewayEndpoint.Request<*>): GatewayEndpoint.Response<*> {
         val responseMapper = GatewayEndpoint.RESPONSE_MAPPER(contentMapper)
-        return when (request) {
-            is GatewayEndpoint.RequestApplicationJson -> {
-                httpClient.request(GatewayEndpoint.PATH) {
-                    method = GatewayEndpoint.METHOD.toMethod()
-                    contentType(request.content.type.toContentType())
-                    setBody(request.content.body)
-                }
-            }
-        }.let { r ->
-            val arr = r.bodyAsChannel().toByteArray()
-            val res =
-                object : Wirespec.Response<ByteArray> {
-                    override val status: Int
-                        get() = r.status.value
-                    override val headers: Map<String, List<Any?>>
-                        get() = r.headers.toMap()
-                    override val content: Wirespec.Content<ByteArray>?
-                        get() =
-                            if (r.contentType() != null && arr.isNotEmpty()) {
-                                Wirespec.Content(
-                                    r.contentType().toString(),
-                                    arr,
-                                )
-                            } else {
-                                null
+        return responseMapper(
+            when (request) {
+                is GatewayEndpoint.RequestApplicationJson ->
+                    httpClient.request(GatewayEndpoint.PATH) {
+                        method = GatewayEndpoint.METHOD.toMethod()
+                        contentType(request.content.type.toContentType())
+                        setBody(request.content.body)
+                    }
+            }.toWireSpecResponse(),
+        )
+    }
+
+    override suspend fun getRuns(request: GetRunsEndpoint.Request<*>): GetRunsEndpoint.Response<*> {
+        val responseMapper = GetRunsEndpoint.RESPONSE_MAPPER(contentMapper)
+        return responseMapper(
+            when (request) {
+                is GetRunsEndpoint.RequestUnit ->
+                    httpClient.request(GetRunsEndpoint.PATH) {
+                        method = GetRunsEndpoint.METHOD.toMethod()
+                        url {
+                            request.query.forEach { (key, values) ->
+                                values.forEach { value ->
+                                    // TODO does this work for multiple values or does it override?
+                                    parameter(key, value)
+                                }
                             }
+                        }
+                    }
+            }.toWireSpecResponse(),
+        )
+    }
+
+    private suspend fun HttpResponse.toWireSpecResponse(): Wirespec.Response<ByteArray> {
+        val arr = bodyAsChannel().toByteArray()
+        val ktorResponse = this
+        return object : Wirespec.Response<ByteArray> {
+            override val status: Int = ktorResponse.status.value
+            override val headers: Map<String, List<Any?>> = ktorResponse.headers.toMap()
+            override val content: Wirespec.Content<ByteArray>? =
+                if (ktorResponse.contentType() != null && arr.isNotEmpty()) {
+                    Wirespec.Content(
+                        ktorResponse.contentType().toString(),
+                        arr,
+                    )
+                } else {
+                    null
                 }
-            responseMapper(res)
         }
     }
 

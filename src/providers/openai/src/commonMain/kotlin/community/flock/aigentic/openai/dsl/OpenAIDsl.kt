@@ -3,6 +3,7 @@ package community.flock.aigentic.openai.dsl
 import community.flock.aigentic.core.dsl.AgentConfig
 import community.flock.aigentic.core.dsl.AgentDSL
 import community.flock.aigentic.core.dsl.Config
+import community.flock.aigentic.core.dsl.GenerationConfig
 import community.flock.aigentic.core.dsl.builderPropertyMissingErrorMessage
 import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.openai.model.OpenAIApiUrl
@@ -17,6 +18,7 @@ fun AgentConfig.openAIModel(openAIModelConfig: OpenAIModelConfig.() -> Unit) =
 class OpenAIModelConfig : Config<OpenAIModel> {
     private var apiKey: String? = null
     private var modelIdentifier: OpenAIModelIdentifier? = null
+    private var generationConfig: GenerationConfig = GenerationConfig()
 
     fun OpenAIModelConfig.apiKey(apiKey: String) {
         this.apiKey = apiKey
@@ -24,6 +26,10 @@ class OpenAIModelConfig : Config<OpenAIModel> {
 
     fun OpenAIModelConfig.modelIdentifier(identifier: OpenAIModelIdentifier) {
         this.modelIdentifier = identifier
+    }
+
+    fun OpenAIModelConfig.generationConfig(generationConfig: GenerationConfig.() -> Unit) {
+        this.generationConfig = GenerationConfig().apply(generationConfig)
     }
 
     override fun build(): OpenAIModel =
@@ -40,6 +46,7 @@ class OpenAIModelConfig : Config<OpenAIModel> {
                     modelIdentifier,
                     builderPropertyMissingErrorMessage("modelIdentifier", "openAIModel { modelIdentifier() }"),
                 ),
+            generationSettings = generationConfig.build(),
             apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
         )
 }

@@ -14,7 +14,7 @@ sealed interface Authentication {
 value class PlatformApiUrl(val value: String)
 
 interface Platform {
-    val authentication: Authentication
+    val authentication: Authentication.BasicAuth
     val apiUrl: PlatformApiUrl
 
     suspend fun sendRun(

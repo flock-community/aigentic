@@ -19,7 +19,11 @@ subprojects {
             target("**/*.kt")
             trimTrailingWhitespace()
             endWithNewline()
-            ktlint()
+            ktlint().editorConfigOverride(
+                mapOf(
+                    "max_line_length" to "160"
+                )
+            )
         }
     }
 }

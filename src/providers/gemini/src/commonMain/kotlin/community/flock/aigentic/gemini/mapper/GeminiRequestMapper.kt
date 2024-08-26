@@ -2,6 +2,7 @@ package community.flock.aigentic.gemini.mapper
 
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
+import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.gemini.client.model.BlobContent
 import community.flock.aigentic.gemini.client.model.Content
@@ -10,8 +11,12 @@ import community.flock.aigentic.gemini.client.model.FunctionCallContent
 import community.flock.aigentic.gemini.client.model.FunctionDeclaration
 import community.flock.aigentic.gemini.client.model.FunctionResponseContent
 import community.flock.aigentic.gemini.client.model.GenerateContentRequest
+import community.flock.aigentic.gemini.client.model.GenerationConfig
+import community.flock.aigentic.gemini.client.model.HarmBlockThreshold
+import community.flock.aigentic.gemini.client.model.HarmCategory
 import community.flock.aigentic.gemini.client.model.Part
 import community.flock.aigentic.gemini.client.model.Role
+import community.flock.aigentic.gemini.client.model.SafetySettings
 import community.flock.aigentic.gemini.client.model.Tool
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.json.Json
@@ -21,9 +26,17 @@ import kotlinx.serialization.json.put
 internal fun createGenerateContentRequest(
     messages: List<Message>,
     tools: List<ToolDescription>,
+    generationSettings: GenerationSettings,
 ): GenerateContentRequest =
     GenerateContentRequest(
         systemInstruction = getSystemInstruction(messages),
+        generationConfig =
+            GenerationConfig(
+                temperature = generationSettings.temperature,
+                topP = generationSettings.topP,
+                topK = generationSettings.topK,
+                candidateCount = 1,
+            ),
         contents =
             messages.map { message ->
                 when (message) {
@@ -37,7 +50,7 @@ internal fun createGenerateContentRequest(
                         )
                     is Message.SystemPrompt ->
                         listOf(
-                            Part.Text("See system instruction"),
+                            Part.Text("See system instruction for your task"),
                         ) // The API returns a 400 when the initial request contains no messages
                     is Message.Text -> listOf<Part>(Part.Text(message.text))
                     is Message.ToolCalls ->
@@ -84,7 +97,16 @@ internal fun createGenerateContentRequest(
                     },
                 ),
             ),
+        safetySettings = defaultSafetySettings(),
     )
+
+private fun defaultSafetySettings(): List<SafetySettings> =
+    HarmCategory.entries.map {
+        SafetySettings(
+            category = it,
+            threshold = HarmBlockThreshold.BLOCK_NONE,
+        )
+    }
 
 private fun formatBase64Content(message: Message.Base64) = message.base64Content.substringAfter("base64,")
 

@@ -2,6 +2,7 @@ package community.flock.aigentic.gemini.dsl
 
 import community.flock.aigentic.core.dsl.AgentConfig
 import community.flock.aigentic.core.dsl.Config
+import community.flock.aigentic.core.dsl.GenerationConfig
 import community.flock.aigentic.core.dsl.builderPropertyMissingErrorMessage
 import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.gemini.model.GeminiModel
@@ -14,6 +15,7 @@ fun AgentConfig.geminiModel(geminiModelConfig: GeminiModelConfig.() -> Unit) =
 class GeminiModelConfig : Config<GeminiModel> {
     private var apiKey: String? = null
     private var modelIdentifier: GeminiModelIdentifier? = null
+    private var generationConfig: GenerationConfig = GenerationConfig()
 
     fun GeminiModelConfig.apiKey(apiKey: String) {
         this.apiKey = apiKey
@@ -21,6 +23,10 @@ class GeminiModelConfig : Config<GeminiModel> {
 
     fun GeminiModelConfig.modelIdentifier(identifier: GeminiModelIdentifier) {
         this.modelIdentifier = identifier
+    }
+
+    fun GeminiModelConfig.generationConfig(generationConfig: GenerationConfig.() -> Unit) {
+        this.generationConfig = GenerationConfig().apply(generationConfig)
     }
 
     override fun build(): GeminiModel =
@@ -37,5 +43,6 @@ class GeminiModelConfig : Config<GeminiModel> {
                     modelIdentifier,
                     builderPropertyMissingErrorMessage("modelIdentifier", "geminiModel { modelIdentifier() }"),
                 ),
+            generationSettings = generationConfig.build(),
         )
 }
