@@ -7,6 +7,8 @@ import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.platform.testing.util.blueString
 import community.flock.aigentic.platform.testing.util.greenString
 import community.flock.aigentic.platform.testing.util.redString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 
 sealed interface TestResult {
@@ -50,23 +52,39 @@ fun TestResult.message() =
     }
 
 fun TestResult.Success.message() =
-    "✅ Test of ${runId.value} success!, ${toolsExecutions.map {
-            (toolName, arguments) ->
-        "Tool: ${toolName.value.blueString()} arguments: ${arguments.joinToString { it.greenString() }}"
-    }}"
+    "✅ Test of ${runId.value} success!,\n${
+        toolsExecutions
+            .filter { it.value.isNotEmpty() }
+            .map { (toolName, arguments) ->
+            "Tool: ${toolName.value.blueString()} arguments:\n${
+                arguments.joinToString {
+                    prettyPrintJson.encodeToString(it).greenString()
+                }
+            }"
+        }.joinToString("\n")
+    }"
+
+val prettyPrintJson = Json { prettyPrint = true }
 
 fun TestResult.Failed.message() =
     when (reason) {
         is FailureReason.WrongArguments -> {
-            "🔴 Run: ${runId.value} tool: ${reason.toolName.value.blueString()}, expected: ${
-                reason.expectations.joinToString { it.toolCall.arguments }.greenString()
-            }, got: ${reason.actual.redString()}"
+            "🔴 Run: ${runId.value} tool: ${reason.toolName.value.blueString()},\nExpected:\n${
+                reason.expectations.joinToString {
+                    val jsonElement = prettyPrintJson.parseToJsonElement(it.toolCall.arguments)
+                    prettyPrintJson.encodeToString(jsonElement)
+                }.greenString()
+            }\nGot: \n${prettyPrintJson.encodeToString(reason.actual).redString()}"
         }
+
         is FailureReason.NotCalled -> {
-            "🔴 Run: ${runId.value}, tools not called: ${reason.tools.map {
-                    (toolName, expectations) ->
-                "Tool: ${toolName.value.blueString()}, expectations: ${expectations.joinToString { it.toolCall.arguments }.blueString()}"
-            }}"
+            "🔴 Run: ${runId.value}, tools not called: ${
+                reason.tools.map { (toolName, expectations) ->
+                    "Tool: ${toolName.value.blueString()}, expectations: ${
+                        expectations.joinToString { it.toolCall.arguments }.blueString()
+                    }"
+                }
+            }"
         }
     }
 

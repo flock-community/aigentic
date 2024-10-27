@@ -9,6 +9,7 @@ import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.platform.testing.exception.expectationMismatch
 import community.flock.aigentic.platform.testing.util.jsonEquals
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 
 data class ToolMock(
@@ -21,16 +22,18 @@ data class ToolMock(
 
     override val handler: suspend (toolArguments: JsonObject) -> String = { arguments ->
 
-        invocations.add(arguments)
+        val sanitizedArguments = JsonObject(arguments.filterValues { it !is JsonNull })
+
+        invocations.add(sanitizedArguments)
 
         val result =
             expectations
-                .find { it.toolCall.argumentsAsJson().jsonEquals(arguments) }
+                .find { it.toolCall.argumentsAsJson().jsonEquals(sanitizedArguments) }
                 ?.toolResult
                 ?: expectationMismatch(
                     toolName = name,
                     expectations = expectations,
-                    actual = arguments,
+                    actual = sanitizedArguments,
                 )
 
         result.response.result
@@ -45,11 +48,6 @@ fun createToolMocks(
     val toolExpectations =
         toolCallExpectations
             .filter { it.toolCall.name == name.value }
-            .also {
-                if (it.isEmpty()) {
-                    println("⚠️ No expectations found for tool $name, did you maybe rename the tool in your agent configuration?")
-                }
-            }
 
     ToolMock(
         expectations = toolExpectations,

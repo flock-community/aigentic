@@ -1,9 +1,9 @@
 package community.flock.aigentic.platform.testing
 
 import community.flock.aigentic.core.agent.Action.SendModelRequest
+import community.flock.aigentic.core.agent.executeAction
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.RunId
-import community.flock.aigentic.core.agent.executeAction
 import community.flock.aigentic.core.agent.state.State
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.exception.aigenticException
@@ -33,7 +33,7 @@ suspend fun RegressionTest.start(): TestReport {
             val testResults =
                 (1..numberOfIterations).flatMap { iteration ->
                     runs.map { (runId, run) ->
-                        println("🚀 [$testCounter/$totalNumberOfTests]: Starting test iteration: $iteration for run $runId")
+                        println("🚀 [$testCounter/$totalNumberOfTests]: Starting test iteration: $iteration for run ${runId.value}")
                         executeTest(run, runId, iteration).also { testCounter++ }
                     }
                 }
