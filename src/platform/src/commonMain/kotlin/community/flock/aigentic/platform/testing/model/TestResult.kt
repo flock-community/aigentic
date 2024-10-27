@@ -56,12 +56,12 @@ fun TestResult.Success.message() =
         toolsExecutions
             .filter { it.value.isNotEmpty() }
             .map { (toolName, arguments) ->
-            "Tool: ${toolName.value.blueString()} arguments:\n${
-                arguments.joinToString {
-                    prettyPrintJson.encodeToString(it).greenString()
-                }
-            }"
-        }.joinToString("\n")
+                "Tool: ${toolName.value.blueString()} arguments:\n${
+                    arguments.joinToString {
+                        prettyPrintJson.encodeToString(it).greenString()
+                    }
+                }"
+            }.joinToString("\n")
     }"
 
 val prettyPrintJson = Json { prettyPrint = true }

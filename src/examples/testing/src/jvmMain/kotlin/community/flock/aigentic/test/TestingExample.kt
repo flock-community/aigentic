@@ -2,9 +2,7 @@ package community.flock.aigentic.test
 
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
-import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
-import community.flock.aigentic.core.tool.PrimitiveValue
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.gemini.dsl.geminiModel
@@ -13,7 +11,6 @@ import community.flock.aigentic.platform.dsl.platform
 import community.flock.aigentic.platform.dsl.regressionTest
 import community.flock.aigentic.platform.testing.start
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 val invoiceExtractTool =
