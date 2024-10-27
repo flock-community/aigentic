@@ -62,76 +62,15 @@ val invoiceExtractTool =
 
         override val handler: suspend (JsonObject) -> String = { arguments ->
 
-//            //val name = licencePlates.getStringValue(arguments)
-//            Json.encodeToString(SavedItemResponse(UUID.randomUUID().toString(), "Saved $arguments successfully"))
             error("I shouldn't be called")
         }
     }
-
-@Serializable
-data class SavedItemResponse(
-    val id: String,
-    val status: String = "saved successfully",
-)
 
 private val geminiKey by lazy {
     System.getenv("GEMINI_API_KEY").also {
         if (it.isNullOrEmpty()) error("Set 'GEMINI_API_KEY' environment variable!")
     }
 }
-
-val saveNewsEventSentimentTool =
-    object : Tool {
-        override val name = ToolName("saveNewsEventSentiment")
-        override val description = "Saves the news event components"
-
-        val titleParameter =
-            Parameter.Primitive(
-                name = "title",
-                description = "The title of the news event",
-                isRequired = true,
-                type = ParameterType.Primitive.String,
-            )
-
-        val sentimentParameter =
-            Parameter.Complex.Enum(
-                "sentiment",
-                "The sentiment of the news event",
-                true,
-                default = null,
-                values =
-                    listOf(
-                        PrimitiveValue.String("positive"),
-                        PrimitiveValue.String("negative"),
-                        PrimitiveValue.String("neutral"),
-                    ),
-                valueType = ParameterType.Primitive.String,
-            )
-
-        override val parameters = listOf(titleParameter, sentimentParameter)
-
-        override val handler: suspend (JsonObject) -> String = { arguments ->
-            error("I shouldn't be called")
-        }
-    }
-
-val newsfeedAgent =
-    agent {
-        geminiModel {
-            apiKey(geminiKey)
-            modelIdentifier(GeminiModelIdentifier.Gemini1_5FlashLatest)
-        }
-        task("Summarize the newsfeed of the day and determine the sentiment") {
-            addInstruction("Analyze the sentiment for each news event")
-            addInstruction("Save the sentiment for each news event")
-        }
-        addTool(saveNewsEventSentimentTool)
-        platform {
-            name("newsfeed-agent")
-            secret("36b2f9db-27c1-4dda-956b-163e572f22c6")
-            apiUrl("http://localhost:8080")
-        }
-    }
 
 val licencePlateExtractor =
     agent {
