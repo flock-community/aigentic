@@ -27,5 +27,6 @@ include(
     "src:cloud:google-cloud-function",
     "src:examples:simple-tools",
     "src:examples:openapi-tools",
-    "src:examples:google-http-cloud-function"
+    "src:examples:google-http-cloud-function",
+    "src:examples:testing"
 )

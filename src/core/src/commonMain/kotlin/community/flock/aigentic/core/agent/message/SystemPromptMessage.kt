@@ -31,7 +31,7 @@ private fun Agent.createSystemPrompt(): Message.SystemPrompt {
             ""
         }
 
-    val instructions = task.instructions.joinToString(separator = "\n") { "- ${it.text}" }
+    val instructions = task.instructions.joinToString(separator = "\n") { it.text }
 
     val finishConditionDescription =
         """

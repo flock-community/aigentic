@@ -124,3 +124,20 @@ endpoint Gateway POST RunDto /gateway/runs -> {
     400 -> GatewayClientErrorDto
     500 -> ServerErrorDto
 }
+
+type RunDetailsDto {
+    runId: String,
+    startedAt: String,
+    finishedAt: String,
+    result: ResultDto,
+    duration: String,
+    messages: MessageDto[],
+    tags: String[]
+}
+
+endpoint GetRuns GET /gateway/runs ? { tags: String } -> {
+    200 -> RunDetailsDto[]
+    404 -> Unit
+    401 -> Unit
+    500 -> ServerErrorDto
+}

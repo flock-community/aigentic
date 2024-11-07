@@ -9,18 +9,49 @@ import kotlin.jvm.JvmInline
 data class GenerateContentRequest(
     val contents: List<Content>,
     val tools: List<Tool>? = null,
+    val generationConfig: GenerationConfig,
     @SerialName("tool_config") var toolConfig: ToolConfig? = null,
     @SerialName("system_instruction") val systemInstruction: Content? = null,
+    val safetySettings: List<SafetySettings> = emptyList(),
 )
+
+@Serializable
+data class SafetySettings(
+    val category: HarmCategory,
+    val threshold: HarmBlockThreshold,
+)
+
+enum class HarmCategory {
+    HARM_CATEGORY_HARASSMENT,
+    HARM_CATEGORY_HATE_SPEECH,
+    HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    HARM_CATEGORY_DANGEROUS_CONTENT,
+    // TODO the following are available in the API docs but trigger a 400 error
+//    HARM_CATEGORY_UNSPECIFIED,
+//    HARM_CATEGORY_DEROGATORY,
+//    HARM_CATEGORY_TOXICITY,
+//    HARM_CATEGORY_VIOLENCE,
+//    HARM_CATEGORY_SEXUAL,
+//    HARM_CATEGORY_MEDICAL,
+//    HARM_CATEGORY_DANGEROUS,
+}
+
+enum class HarmBlockThreshold {
+    HARM_BLOCK_THRESHOLD_UNSPECIFIED,
+    BLOCK_LOW_AND_ABOVE,
+    BLOCK_MEDIUM_AND_ABOVE,
+    BLOCK_ONLY_HIGH,
+    BLOCK_NONE,
+}
 
 @Serializable
 data class GenerationConfig(
     val temperature: Float?,
     @SerialName("top_p") val topP: Float?,
     @SerialName("top_k") val topK: Int?,
-    @SerialName("candidate_count") val candidateCount: Int?,
-    @SerialName("max_output_tokens") val maxOutputTokens: Int?,
-    @SerialName("stop_sequences") val stopSequences: List<String>?,
+    @SerialName("candidate_count") val candidateCount: Int? = null,
+    @SerialName("max_output_tokens") val maxOutputTokens: Int? = null,
+    @SerialName("stop_sequences") val stopSequences: List<String>? = null,
     @SerialName("response_mime_type") val responseMimeType: String? = null,
     @SerialName("presence_penalty") val presencePenalty: Float? = null,
     @SerialName("frequency_penalty") val frequencyPenalty: Float? = null,

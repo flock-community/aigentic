@@ -1,4 +1,4 @@
-package community.flock.aigentic.platform
+package community.flock.aigentic.platform.client
 
 import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.PlatformApiUrl
@@ -12,10 +12,9 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 
-class AigenticPlatformTest : DescribeSpec({
+class AigenticPlatformClientTest : DescribeSpec({
 
     withData(
         nameFn = { "Should map ${it.wirespecResponse} to ${it.runSentResult}" },
@@ -34,22 +33,24 @@ class AigenticPlatformTest : DescribeSpec({
         val agent = createAgent()
         val run = createRun()
 
-        val platformClient =
-            mockk<GatewayEndpoint>().apply {
+        val platformEndpoints =
+            mockk<PlatformEndpoints>().apply {
                 coEvery { gateway(any()) } returns it.wirespecResponse
             }
 
-        val aigenticPlatform =
-            AigenticPlatform(
-                authentication = Authentication.BasicAuth("username", "password"),
-                apiUrl = PlatformApiUrl("http://localhost:8080"),
-                platformClient = platformClient,
+        val basicAuth = Authentication.BasicAuth("username", "password")
+        val apiUrl = PlatformApiUrl("http://localhost:8080")
+
+        val client =
+            AigenticPlatformClient(
+                basicAuth = basicAuth,
+                apiUrl = apiUrl,
+                platformEndpoints,
             )
 
-        val result = aigenticPlatform.sendRun(run, agent)
+        val result = client.sendRun(run, agent)
 
         result shouldBe it.runSentResult
-        coVerify(exactly = 1) { platformClient.gateway(any()) }
     }
 })
 

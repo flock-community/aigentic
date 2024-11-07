@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
-internal data class State(
+data class State(
     val startedAt: Instant = Clock.System.now(),
     var finishedAt: Instant? = null,
     val messages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),

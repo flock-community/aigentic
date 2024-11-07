@@ -11,8 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-fun googleHttpCloudFunction(config: HttpCloudFunctionConfig.() -> Unit) =
-    HttpCloudFunctionConfig().apply(config).build().run { registerHttpFunction(this) }
+fun googleHttpCloudFunction(config: HttpCloudFunctionConfig.() -> Unit) = HttpCloudFunctionConfig().apply(config).build().run { registerHttpFunction(this) }
 
 @AgentDSL
 class HttpCloudFunctionConfig : Config<GoogleHttpCloudFunction> {

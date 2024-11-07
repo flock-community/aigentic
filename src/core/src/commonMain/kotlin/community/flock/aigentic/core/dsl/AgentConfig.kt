@@ -7,6 +7,7 @@ import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.message.MimeType
+import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.Parameter
@@ -101,4 +102,30 @@ class ContextConfig : Config<List<Context>> {
         .also { contexts.add(it) }
 
     override fun build(): List<Context> = contexts
+}
+
+@AgentDSL
+class GenerationConfig : Config<GenerationSettings> {
+    internal var temperature: Float = GenerationSettings.DEFAULT_TEMPERATURE
+    internal var topK: Int = GenerationSettings.DEFAULT_TOP_K
+    internal var topP: Float = GenerationSettings.DEFAULT_TOP_P
+
+    fun GenerationConfig.temperature(temperature: Float) {
+        this.temperature = temperature
+    }
+
+    fun GenerationConfig.topK(topK: Int) {
+        this.topK = topK
+    }
+
+    fun GenerationConfig.topP(topP: Float) {
+        this.topP = topP
+    }
+
+    override fun build(): GenerationSettings =
+        GenerationSettings(
+            temperature = temperature,
+            topK = topK,
+            topP = topP,
+        )
 }

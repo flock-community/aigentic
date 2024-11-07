@@ -14,7 +14,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.ByteReadChannel
 
-class PlatformClientTest : DescribeSpec({
+class AigenticPlatformEndpointsTest : DescribeSpec({
 
     it("should send http POST /gateway") {
 
@@ -31,7 +31,7 @@ class PlatformClientTest : DescribeSpec({
                 }
             }
 
-        val apiClient = PlatformGatewayClient(Authentication.BasicAuth("", ""), PlatformApiUrl(""), mockEngine)
+        val apiClient = AigenticPlatformEndpoints(Authentication.BasicAuth("", ""), PlatformApiUrl(""), mockEngine)
 
         val req = GatewayEndpoint.RequestApplicationJson(run.toDto(agent))
         val res = apiClient.gateway(req)

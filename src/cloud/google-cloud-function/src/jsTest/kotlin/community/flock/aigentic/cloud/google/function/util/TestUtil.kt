@@ -6,6 +6,7 @@ import community.flock.aigentic.core.message.Message.ToolCalls
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.model.Authentication
+import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
@@ -37,6 +38,7 @@ fun modelFinishDirectly(finishToolCall: ToolCall = finishedTaskToolCall) =
             object : ModelIdentifier {
                 override val stringValue: String = "TestModelIdentifier"
             }
+        override val generationSettings = GenerationSettings.DEFAULT
 
         override suspend fun sendRequest(
             messages: List<Message>,
@@ -51,6 +53,7 @@ fun modelException() =
             object : ModelIdentifier {
                 override val stringValue: String = "TestModelIdentifier"
             }
+        override val generationSettings = GenerationSettings.DEFAULT
 
         override suspend fun sendRequest(
             messages: List<Message>,

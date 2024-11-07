@@ -7,6 +7,7 @@ import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
@@ -25,6 +26,7 @@ fun createAgent() =
                     object : ModelIdentifier {
                         override val stringValue: String = "test-model-identifier"
                     }
+                override val generationSettings = GenerationSettings.DEFAULT
 
                 override suspend fun sendRequest(
                     messages: List<Message>,

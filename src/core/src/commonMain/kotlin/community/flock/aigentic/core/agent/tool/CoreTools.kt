@@ -11,8 +11,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
-internal const val FINISHED_TASK_TOOL_NAME = "finishedTask"
-internal const val STUCK_WITH_TASK_TOOL_NAME = "stuckWithTask"
+const val FINISHED_TASK_TOOL_NAME = "finishedTask"
+const val STUCK_WITH_TASK_TOOL_NAME = "stuckWithTask"
 
 internal fun finishedTaskTool(responseParameter: Parameter? = null) =
     object : InternalTool<Finished> {

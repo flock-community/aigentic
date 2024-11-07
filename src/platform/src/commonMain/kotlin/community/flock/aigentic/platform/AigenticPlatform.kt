@@ -2,42 +2,32 @@ package community.flock.aigentic.platform
 
 import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.agent.RunId
+import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.platform.PlatformApiUrl
 import community.flock.aigentic.core.platform.RunSentResult
-import community.flock.aigentic.gateway.wirespec.GatewayEndpoint
-import community.flock.aigentic.platform.client.PlatformGatewayClient
-import community.flock.aigentic.platform.mapper.toDto
+import community.flock.aigentic.platform.client.AigenticPlatformClient
 
 data class AigenticPlatform(
     override val authentication: Authentication.BasicAuth,
     override val apiUrl: PlatformApiUrl,
-    private val platformClient: GatewayEndpoint = defaultAigenticPlatformClient(authentication, apiUrl),
+    private val platformClient: AigenticPlatformClient = defaultAigenticPlatformClient(authentication, apiUrl),
 ) : Platform {
     override suspend fun sendRun(
         run: Run,
         agent: Agent,
-    ): RunSentResult {
-        val runDto = run.toDto(agent)
-        val request = GatewayEndpoint.RequestApplicationJson(runDto)
-        return when (val response = platformClient.gateway(request)) {
-            is GatewayEndpoint.Response201Unit -> RunSentResult.Success
-            is GatewayEndpoint.Response401Unit -> RunSentResult.Unauthorized
-            is GatewayEndpoint.Response400ApplicationJson -> RunSentResult.Error(response.content.body.message)
-            is GatewayEndpoint.Response500ApplicationJson ->
-                RunSentResult.Error(
-                    "${response.content.body.name} - ${response.content.body.description}",
-                )
-        }
-    }
+    ): RunSentResult = platformClient.sendRun(run, agent)
+
+    override suspend fun getRuns(tags: List<RunTag>): List<Pair<RunId, Run>> = platformClient.getRuns(tags)
 
     companion object {
         fun defaultAigenticPlatformClient(
             authentication: Authentication.BasicAuth,
             apiUrl: PlatformApiUrl,
-        ): PlatformGatewayClient {
-            return PlatformGatewayClient(authentication, apiUrl)
+        ): AigenticPlatformClient {
+            return AigenticPlatformClient(authentication, apiUrl)
         }
     }
 }

@@ -14,6 +14,7 @@ interface ModelIdentifier {
 interface Model {
     val authentication: Authentication
     val modelIdentifier: ModelIdentifier
+    val generationSettings: GenerationSettings
 
     suspend fun sendRequest(
         messages: List<Message>,
@@ -25,6 +26,25 @@ data class ModelResponse(
     val message: Message,
     val usage: Usage,
 )
+
+data class GenerationSettings(
+    val temperature: Float,
+    val topK: Int,
+    val topP: Float,
+) {
+    companion object {
+        const val DEFAULT_TEMPERATURE = 0.0f
+        const val DEFAULT_TOP_K = 1
+        const val DEFAULT_TOP_P = 0.1f
+
+        val DEFAULT =
+            GenerationSettings(
+                temperature = DEFAULT_TEMPERATURE,
+                topK = DEFAULT_TOP_K,
+                topP = DEFAULT_TOP_P,
+            )
+    }
+}
 
 data class Usage(
     val inputTokenCount: Int,

@@ -8,6 +8,7 @@ import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.platform.PlatformApiUrl
 import community.flock.aigentic.platform.AigenticPlatform
+import community.flock.aigentic.platform.client.defaultPlatformApiUrl
 
 fun AgentConfig.platform(platformConfig: PlatformConfig.() -> Unit) =
     PlatformConfig().apply(platformConfig).build().also {
@@ -18,7 +19,7 @@ fun AgentConfig.platform(platformConfig: PlatformConfig.() -> Unit) =
 class PlatformConfig() : Config<Platform> {
     private var name: String? = null
     private var secret: String? = null
-    private var apiUrl: String = "https://aigentic-backend-kib53ypjwq-ez.a.run.app/"
+    private var apiUrl: String = defaultPlatformApiUrl
 
     fun PlatformConfig.name(name: String) {
         this.name = name

@@ -6,6 +6,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmInline
 
+sealed interface ContextMessage
+
 sealed class Message(
     open val sender: Sender,
     open val createdAt: Instant = Clock.System.now(),
@@ -17,19 +19,19 @@ sealed class Message(
     data class Text(
         override val sender: Sender,
         val text: String,
-    ) : Message(sender)
+    ) : Message(sender), ContextMessage
 
     data class Url(
         override val sender: Sender,
         val url: String,
         val mimeType: MimeType,
-    ) : Message(Sender.Agent)
+    ) : Message(Sender.Agent), ContextMessage
 
     data class Base64(
         override val sender: Sender,
         val base64Content: String,
         val mimeType: MimeType,
-    ) : Message(Sender.Agent)
+    ) : Message(Sender.Agent), ContextMessage
 
     data class ToolCalls(
         val toolCalls: List<ToolCall>,

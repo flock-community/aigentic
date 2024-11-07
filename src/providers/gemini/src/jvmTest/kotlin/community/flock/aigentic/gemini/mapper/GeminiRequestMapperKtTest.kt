@@ -3,6 +3,7 @@ package community.flock.aigentic.gemini.mapper
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
+import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.gemini.client.model.BlobContent
 import community.flock.aigentic.gemini.client.model.Part
 import io.kotest.core.spec.style.DescribeSpec
@@ -18,7 +19,7 @@ class GeminiRequestMapperKtTest : DescribeSpec({
             val mimeType = MimeType.PNG
             val base64Message = Message.Base64(Sender.Model, base64Content, mimeType)
 
-            createGenerateContentRequest(listOf(base64Message), emptyList()).contents[0].parts[0]
+            createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT).contents[0].parts[0]
                 .shouldBeInstanceOf<Part.Blob>().run {
                     this.inlineData shouldBe BlobContent(mimeType = mimeType.value, data = base64Content)
                 }
@@ -29,7 +30,7 @@ class GeminiRequestMapperKtTest : DescribeSpec({
             val mimeType = MimeType.PNG
             val base64Message = Message.Base64(Sender.Model, base64Content, mimeType)
 
-            createGenerateContentRequest(listOf(base64Message), emptyList()).contents[0].parts[0]
+            createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT).contents[0].parts[0]
                 .shouldBeInstanceOf<Part.Blob>().run {
                     this.inlineData shouldBe BlobContent(mimeType = mimeType.value, data = "iVBORw0KGgoAAA==")
                 }

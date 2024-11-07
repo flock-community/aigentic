@@ -62,7 +62,7 @@ private suspend fun publishRun(
     }
 }
 
-private suspend fun executeAction(action: Action): Pair<State, Result> =
+suspend fun executeAction(action: Action): Pair<State, Result> =
     when (action) {
         is Initialize -> executeAction(action.process())
         is SendModelRequest -> executeAction(action.process())
@@ -136,7 +136,7 @@ private fun initializeStartMessages(agent: Agent): List<Message> =
 private suspend fun Agent.sendModelRequest(state: State): ModelResponse =
     model.sendRequest(state.messages.replayCache, tools.values.toList() + internalTools.values.toList())
 
-private sealed interface Action {
+sealed interface Action {
     data class Initialize(val state: State, val agent: Agent) : Action
 
     data class ExecuteTools(val state: State, val agent: Agent, val toolCalls: List<ToolCall>) : Action

@@ -38,7 +38,7 @@ fun main() {
                     AgentConfig::configureModel,
                 )
             /**
-             * PDF is currently on supported by Gemini
+             * PDF is currently only supported by Gemini
              */
             RunExamples.INVOICE_EXTRACTOR_AGENT ->
                 invoiceExtractorAgent(
