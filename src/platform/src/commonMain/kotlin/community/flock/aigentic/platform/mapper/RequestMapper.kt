@@ -8,6 +8,10 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
+import community.flock.aigentic.core.tool.Parameter
+import community.flock.aigentic.core.tool.ParameterType
+import community.flock.aigentic.core.tool.ParameterType.Primitive
+import community.flock.aigentic.core.tool.PrimitiveValue
 import community.flock.aigentic.gateway.wirespec.Base64MessageDto
 import community.flock.aigentic.gateway.wirespec.ConfigDto
 import community.flock.aigentic.gateway.wirespec.FatalResultDto
@@ -15,6 +19,18 @@ import community.flock.aigentic.gateway.wirespec.FinishedResultDto
 import community.flock.aigentic.gateway.wirespec.MessageDto
 import community.flock.aigentic.gateway.wirespec.MimeTypeDto
 import community.flock.aigentic.gateway.wirespec.ModelRequestInfoDto
+import community.flock.aigentic.gateway.wirespec.ParameterArrayDto
+import community.flock.aigentic.gateway.wirespec.ParameterDto
+import community.flock.aigentic.gateway.wirespec.ParameterEnumDto
+import community.flock.aigentic.gateway.wirespec.ParameterObjectDto
+import community.flock.aigentic.gateway.wirespec.ParameterPrimitiveDto
+import community.flock.aigentic.gateway.wirespec.ParameterTypeDto
+import community.flock.aigentic.gateway.wirespec.PrimitiveValueBooleanDto
+import community.flock.aigentic.gateway.wirespec.PrimitiveValueDto
+import community.flock.aigentic.gateway.wirespec.PrimitiveValueIntegerDto
+import community.flock.aigentic.gateway.wirespec.PrimitiveValueNumberDto
+import community.flock.aigentic.gateway.wirespec.PrimitiveValueStringDto
+import community.flock.aigentic.gateway.wirespec.PrimitiveValueTypeDto
 import community.flock.aigentic.gateway.wirespec.RunDto
 import community.flock.aigentic.gateway.wirespec.SenderDto
 import community.flock.aigentic.gateway.wirespec.StuckResultDto
@@ -26,11 +42,6 @@ import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
 import community.flock.aigentic.gateway.wirespec.ToolDto
 import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
-import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 
 fun Run.toDto(agent: Agent) =
     RunDto(
@@ -50,13 +61,7 @@ fun Run.toDto(agent: Agent) =
                         ToolDto(
                             name = name.value,
                             description = tool.description,
-                            parameters =
-                                Json.encodeToString(
-                                    buildJsonObject {
-                                        put("type", "object")
-                                        emitPropertiesAndRequired(tool.parameters)
-                                    },
-                                ),
+                            parameters = tool.parameters.map { it.toDto() },
                         )
                     },
             ),
@@ -64,6 +69,80 @@ fun Run.toDto(agent: Agent) =
         modelRequests = modelRequests.map { it.toDto() },
         result = result.toDto(),
     )
+
+private fun Parameter.toDto(): ParameterDto =
+    when (this) {
+        is Parameter.Primitive ->
+            ParameterPrimitiveDto(
+                name = name,
+                description = description,
+                isRequired = isRequired,
+                paramType = type.toDto(),
+            )
+
+        is Parameter.Complex.Object ->
+            ParameterObjectDto(
+                name = name,
+                description = description,
+                isRequired = isRequired,
+                paramType = type.toDto(),
+                parameters = parameters.map { it.toDto() },
+            )
+
+        is Parameter.Complex.Array ->
+            ParameterArrayDto(
+                name = name,
+                description = description,
+                isRequired = isRequired,
+                paramType = type.toDto(),
+                itemDefinition = itemDefinition.toDto(),
+            )
+
+        is Parameter.Complex.Enum ->
+
+            ParameterEnumDto(
+                name = name,
+                description = description,
+                isRequired = isRequired,
+                paramType = type.toDto(),
+                values =
+                    values.map { value ->
+                        val parameterType = determineType(value)
+                        this.createEnumValues(parameterType, value)
+                    },
+                valueType = valueType.toDto(),
+            )
+    }
+
+private fun determineType(value: PrimitiveValue<*>): PrimitiveValueTypeDto =
+    when (value) {
+        is PrimitiveValue.String -> PrimitiveValueTypeDto.STRING
+        is PrimitiveValue.Number -> PrimitiveValueTypeDto.NUMBER
+        is PrimitiveValue.Boolean -> PrimitiveValueTypeDto.BOOLEAN
+        is PrimitiveValue.Integer -> PrimitiveValueTypeDto.INTEGER
+    }
+
+private fun Parameter.Complex.Enum.createEnumValues(
+    parameterType: PrimitiveValueTypeDto,
+    value: PrimitiveValue<*>,
+): PrimitiveValueDto =
+    when (parameterType) {
+        PrimitiveValueTypeDto.STRING -> PrimitiveValueStringDto(value.toString())
+        PrimitiveValueTypeDto.INTEGER -> PrimitiveValueIntegerDto(value.toString().toLong())
+        PrimitiveValueTypeDto.BOOLEAN -> PrimitiveValueBooleanDto(value.toString().toBoolean())
+        PrimitiveValueTypeDto.NUMBER -> PrimitiveValueNumberDto(value.toString().toDouble())
+    }
+
+private fun ParameterType.toDto() =
+    when (this) {
+        is Primitive.String -> ParameterTypeDto.STRING
+        is Primitive.Boolean -> ParameterTypeDto.BOOLEAN
+        is Primitive.Number -> ParameterTypeDto.NUMBER
+        is Primitive.Integer -> ParameterTypeDto.INTEGER
+        is ParameterType.Complex.Object -> ParameterTypeDto.OBJECT
+        is ParameterType.Complex.Array -> ParameterTypeDto.ARRAY
+        is ParameterType.Complex.Enum -> ParameterTypeDto.ENUM
+    }
 
 private fun ModelRequestInfo.toDto(): ModelRequestInfoDto =
     ModelRequestInfoDto(
