@@ -14,6 +14,7 @@ import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.PrimitiveValue
 import community.flock.aigentic.gateway.wirespec.Base64MessageDto
 import community.flock.aigentic.gateway.wirespec.ConfigDto
+import community.flock.aigentic.gateway.wirespec.ExampleMessageDto
 import community.flock.aigentic.gateway.wirespec.FatalResultDto
 import community.flock.aigentic.gateway.wirespec.FinishedResultDto
 import community.flock.aigentic.gateway.wirespec.MessageDto
@@ -204,6 +205,13 @@ private fun Message.toDto(): MessageDto =
                 toolCallId = toolCallId.id,
                 response = response.result,
                 toolName = toolName,
+            )
+
+        is Message.ExampleMessage ->
+            ExampleMessageDto(
+                createdAt = createdAt.toString(),
+                sender = sender.toDto(),
+                text = text
             )
     }
 

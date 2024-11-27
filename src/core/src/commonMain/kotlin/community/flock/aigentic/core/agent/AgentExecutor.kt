@@ -19,6 +19,7 @@ import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
+import community.flock.aigentic.core.message.mapToTextMessages
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.core.util.withStartFinishTiming
@@ -62,34 +63,63 @@ private suspend fun publishRun(
     }
 }
 
-suspend fun executeAction(action: Action): Pair<State, Result> =
-    when (action) {
-        is Initialize -> executeAction(action.process())
-        is SendModelRequest -> executeAction(action.process())
-        is ProcessModelResponse -> executeAction(action.process())
-        is ExecuteTools -> executeAction(action.process())
-        is Finished -> action.process()
-    }
+suspend fun executeAction(action: Action): Pair<State, Result> = when (action) {
+    is Initialize -> executeAction(action.process())
+    is SendModelRequest -> executeAction(action.process())
+    is ProcessModelResponse -> executeAction(action.process())
+    is ExecuteTools -> executeAction(action.process())
+    is Finished -> action.process()
+}
 
 private suspend fun Initialize.process(): Action {
+    if (agent.tags.isNotEmpty()) {
+        prependWithExampleMessages()
+    }
     state.addMessages(initializeStartMessages(agent))
     return SendModelRequest(state, agent)
 }
 
-private suspend fun ProcessModelResponse.process(): Action =
-    when (responseMessage) {
-        is Message.ToolCalls -> ExecuteTools(state, agent, responseMessage.toolCalls)
-        else -> {
-            state.messages.emit(correctionMessage)
-            SendModelRequest(state, agent)
-        }
+private suspend fun Initialize.prependWithExampleMessages() {
+    val messages: List<Message> =
+        agent
+            .platform
+            ?.getRuns(agent.tags)
+            ?.flatMap {
+                it.second.messages
+             }
+            ?: emptyList()
+    val systemPrompt = messages.filterIsInstance<Message.SystemPrompt>().first()
+    val systemPromptExample = Message.ExampleMessage(text = systemPrompt.prompt, sender = Sender.Agent)
+    val textMessages = messages.mapToTextMessages()
+    state.addMessage(systemPromptExample)
+    state.addMessage(messages.first())
+    state.addMessages(textMessages)
+    state.addMessage(
+        Message.ExampleMessage(
+            sender = Sender.Agent,
+            text = """
+                |All of the previous messages are to be considered as the results of a desired run. The first message was the task context.
+                |Carefully analyze the relationship between the input (instructions, tool calls and arguments) and the output (responses).
+                |Use these relations in the current task and make sure to apply the instructions below to come to the same relationships.
+                """.trimMargin()
+
+        )
+    )
+}
+
+
+private suspend fun ProcessModelResponse.process(): Action = when (responseMessage) {
+    is Message.ToolCalls -> ExecuteTools(state, agent, responseMessage.toolCalls)
+    else -> {
+        state.messages.emit(correctionMessage)
+        SendModelRequest(state, agent)
     }
+}
 
 private suspend fun SendModelRequest.process(): ProcessModelResponse {
-    val (startedAt, finishedAt, response) =
-        withStartFinishTiming {
-            agent.sendModelRequest(state)
-        }
+    val (startedAt, finishedAt, response) = withStartFinishTiming {
+        agent.sendModelRequest(state)
+    }
 
     state.addModelRequestInfo(
         ModelRequestInfo(

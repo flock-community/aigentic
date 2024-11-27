@@ -1,5 +1,6 @@
 package community.flock.aigentic.core.message
 
+import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
@@ -42,6 +43,12 @@ sealed class Message(
         val toolName: String,
         val response: ToolResultContent,
     ) : Message(Sender.Agent)
+
+    data class ExampleMessage(
+        override val sender: Sender,
+        val text: String,
+        val id: ToolCallId? = null,
+    ) : Message(sender), ContextMessage
 }
 
 data class ToolCall(
@@ -71,3 +78,18 @@ sealed interface Sender {
 }
 
 fun ToolCall.argumentsAsJson(json: Json = Json): JsonObject = json.decodeFromString(arguments)
+
+fun List<Message>.mapToTextMessages(): List<Message.ExampleMessage> {
+    val messageArguments: List<Message.ExampleMessage> =
+        this.filterIsInstance<Message.ToolCalls>().filterNot { it.toolCalls.first().name == FINISHED_TASK_TOOL_NAME }.flatMap {
+                it.toolCalls.map { tool ->
+                    Message.ExampleMessage(id = tool.id, text = tool.arguments, sender = Sender.Agent)
+                }
+            }
+
+    val messageResults: List<Message.ExampleMessage> = this.filterIsInstance<Message.ToolResult>()
+        .map { Message.ExampleMessage(id = it.toolCallId, text = it.response.result, sender = Sender.Agent) }
+
+    val joinedMessages = messageArguments.zip(messageResults).flatMap { listOf(it.first, it.second) }
+    return joinedMessages
+}

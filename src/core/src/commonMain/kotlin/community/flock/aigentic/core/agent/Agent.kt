@@ -34,6 +34,7 @@ data class Agent(
     val contexts: List<Context>,
     val tools: Map<ToolName, Tool>,
     val responseParameter: Parameter? = null,
+    val tags : List<RunTag>,
 ) {
     internal val finishedTaskTool = finishedTaskTool(responseParameter)
     internal val internalTools: Map<ToolName, InternalTool<*>> =

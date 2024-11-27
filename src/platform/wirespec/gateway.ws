@@ -141,6 +141,12 @@ type TextMessageDto {
     text: String
 }
 
+type ExampleMessageDto {
+  createdAt: String,
+  sender: SenderDto,
+  text: String
+}
+
 type UrlMessageDto {
     createdAt: String,
     sender: SenderDto,
@@ -175,7 +181,7 @@ type ToolResultMessageDto {
     response: String
 }
 
-type MessageDto = SystemPromptMessageDto | TextMessageDto | UrlMessageDto | Base64MessageDto | ToolCallsMessageDto | ToolResultMessageDto
+type MessageDto = SystemPromptMessageDto | TextMessageDto | UrlMessageDto | Base64MessageDto | ToolCallsMessageDto | ToolResultMessageDto | ExampleMessageDto
 
 type GatewayClientErrorDto {
     message: String

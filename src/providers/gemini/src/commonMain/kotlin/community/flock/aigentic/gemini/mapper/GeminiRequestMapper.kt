@@ -53,6 +53,7 @@ internal fun createGenerateContentRequest(
                             Part.Text("See system instruction for your task"),
                         ) // The API returns a 400 when the initial request contains no messages
                     is Message.Text -> listOf<Part>(Part.Text(message.text))
+                    is Message.ExampleMessage -> listOf<Part>(Part.Text(message.text))
                     is Message.ToolCalls ->
                         message.toolCalls.map {
                             Part.FunctionCall(
