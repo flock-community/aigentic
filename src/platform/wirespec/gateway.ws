@@ -29,12 +29,79 @@ type TaskDto {
 type ToolDto {
     name: String,
     description: String?,
-    parameters: String
+    parameters: ParameterDto[]
 }
 
 enum SenderDto {
     Agent,
     Model
+}
+
+
+enum ParameterTypeDto {
+    STRING,
+    NUMBER,
+    INTEGER,
+    BOOLEAN,
+    ARRAY,
+    ENUM,
+    OBJECT
+}
+type ParameterDto = ParameterPrimitiveDto | ParameterObjectDto | ParameterArrayDto |ParameterEnumDto
+
+type ParameterPrimitiveDto {
+    name: String,
+    description: String?,
+    isRequired: Boolean,
+    paramType: ParameterTypeDto
+}
+
+type ParameterObjectDto {
+    name: String,
+    description: String?,
+    isRequired: Boolean,
+    paramType: ParameterTypeDto,
+    parameters: ParameterDto[]
+
+}
+
+type ParameterArrayDto {
+    name: String,
+    description: String?,
+    isRequired: Boolean,
+    paramType: ParameterTypeDto,
+    itemDefinition: ParameterDto
+}
+
+type ParameterEnumDto {
+    name: String,
+    description: String?,
+    isRequired: Boolean,
+    paramType: ParameterTypeDto,
+    default: PrimitiveValueDto?,
+    values: PrimitiveValueDto[],
+    valueType: ParameterTypeDto
+}
+type PrimitiveValueDto = PrimitiveValueStringDto | PrimitiveValueNumberDto | PrimitiveValueIntegerDto | PrimitiveValueBooleanDto
+type PrimitiveValueStringDto {
+    value: String
+}
+
+type PrimitiveValueNumberDto {
+  value: Number
+}
+
+type PrimitiveValueIntegerDto {
+  value: Integer
+}
+type PrimitiveValueBooleanDto {
+  value: Boolean
+}
+enum PrimitiveValueTypeDto {
+  STRING,
+  NUMBER,
+  INTEGER,
+  BOOLEAN
 }
 
 type FinishedResultDto {
@@ -51,6 +118,7 @@ type FatalResultDto {
 }
 
 type ResultDto = FinishedResultDto | StuckResultDto | FatalResultDto
+
 
 enum MimeTypeDto {
     IMAGE_JPEG,
