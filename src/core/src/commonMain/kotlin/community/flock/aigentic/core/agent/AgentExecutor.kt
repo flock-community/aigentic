@@ -88,11 +88,17 @@ private suspend fun Initialize.prependWithExampleMessages() {
                 it.second.messages
              }
             ?: emptyList()
-    val systemPrompt = messages.filterIsInstance<Message.SystemPrompt>().first()
-    val systemPromptExample = Message.ExampleMessage(text = systemPrompt.prompt, sender = Sender.Agent)
     val textMessages = messages.mapToTextMessages()
-    state.addMessage(systemPromptExample)
-    state.addMessage(messages.first())
+    val contextMessage = messages.filter { when(it) {
+        is Message.Base64 -> true
+        is Message.Text -> true
+        is Message.Url -> true
+        is Message.ExampleMessage -> false
+        is Message.SystemPrompt -> false
+        is Message.ToolCalls -> false
+        is Message.ToolResult -> false
+    } }
+    state.addMessage(contextMessage.first())
     state.addMessages(textMessages)
     state.addMessage(
         Message.ExampleMessage(
