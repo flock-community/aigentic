@@ -211,7 +211,7 @@ private fun Message.toDto(): MessageDto =
             ExampleMessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
-                text = text
+                text = text,
             )
     }
 

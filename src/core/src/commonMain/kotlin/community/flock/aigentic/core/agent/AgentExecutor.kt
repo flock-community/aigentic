@@ -64,13 +64,14 @@ private suspend fun publishRun(
     }
 }
 
-suspend fun executeAction(action: Action): Pair<State, Result> = when (action) {
-    is Initialize -> executeAction(action.process())
-    is SendModelRequest -> executeAction(action.process())
-    is ProcessModelResponse -> executeAction(action.process())
-    is ExecuteTools -> executeAction(action.process())
-    is Finished -> action.process()
-}
+suspend fun executeAction(action: Action): Pair<State, Result> =
+    when (action) {
+        is Initialize -> executeAction(action.process())
+        is SendModelRequest -> executeAction(action.process())
+        is ProcessModelResponse -> executeAction(action.process())
+        is ExecuteTools -> executeAction(action.process())
+        is Finished -> action.process()
+    }
 
 private suspend fun Initialize.process(): Action {
     if (agent.tags.isNotEmpty()) {
@@ -83,16 +84,18 @@ private suspend fun Initialize.process(): Action {
 private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
     val messages = fetchAgentMessages() ?: return emptyList()
     val textMessages = messages.mapToTextMessages()
-    val exampleMessageDescription = listOf(
-        Message.ExampleMessage(
-            sender = Sender.Agent,
-            text = """
+    val exampleMessageDescription =
+        listOf(
+            Message.ExampleMessage(
+                sender = Sender.Agent,
+                text =
+                    """
         |All of the previous messages are to be considered as the results of a desired run. The first message was the task context.
         |Carefully analyze the relationship between the input (instructions, tool calls and arguments) and the output (responses).
         |Use these relations in the current task and make sure to apply the instructions below to come to the same relationships.
-    """.trimMargin()
+                    """.trimMargin(),
+            ),
         )
-    )
     return listOf(messages.firstOrNull { it.getContextMessages() })
         .plus(textMessages)
         .plus(exampleMessageDescription)
@@ -110,7 +113,6 @@ private fun Message.getContextMessages(): Boolean =
         is Message.ToolResult -> false
     }
 
-
 private suspend fun Initialize.fetchAgentMessages(): List<Message>? =
     runCatching {
         agent.platform
@@ -121,19 +123,20 @@ private suspend fun Initialize.fetchAgentMessages(): List<Message>? =
         aigenticException(it.message.toString())
     }.getOrNull()
 
-
-private suspend fun ProcessModelResponse.process(): Action = when (responseMessage) {
-    is Message.ToolCalls -> ExecuteTools(state, agent, responseMessage.toolCalls)
-    else -> {
-        state.messages.emit(correctionMessage)
-        SendModelRequest(state, agent)
+private suspend fun ProcessModelResponse.process(): Action =
+    when (responseMessage) {
+        is Message.ToolCalls -> ExecuteTools(state, agent, responseMessage.toolCalls)
+        else -> {
+            state.messages.emit(correctionMessage)
+            SendModelRequest(state, agent)
+        }
     }
-}
 
 private suspend fun SendModelRequest.process(): ProcessModelResponse {
-    val (startedAt, finishedAt, response) = withStartFinishTiming {
-        agent.sendModelRequest(state)
-    }
+    val (startedAt, finishedAt, response) =
+        withStartFinishTiming {
+            agent.sendModelRequest(state)
+        }
 
     state.addModelRequestInfo(
         ModelRequestInfo(

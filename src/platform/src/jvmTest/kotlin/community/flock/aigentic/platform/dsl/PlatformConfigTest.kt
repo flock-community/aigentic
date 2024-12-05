@@ -1,7 +1,6 @@
 package community.flock.aigentic.platform.dsl
 
 import community.flock.aigentic.core.dsl.agent
-import community.flock.aigentic.core.platform.Authentication
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.datatest.withData

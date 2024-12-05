@@ -25,7 +25,7 @@ class AgentConfig : Config<Agent> {
     internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
     internal var responseParameter: Parameter? = null
     internal val tools = mutableListOf<Tool>()
-    internal val tags= mutableListOf<RunTag>()
+    internal val tags = mutableListOf<RunTag>()
 
     fun AgentConfig.platform(platform: Platform) {
         this.platform = platform
@@ -71,7 +71,7 @@ class AgentConfig : Config<Agent> {
                 ).let { tools.associateBy { it.name } },
             contexts = contexts,
             responseParameter = responseParameter,
-            tags = tags
+            tags = tags,
         )
 }
 
@@ -85,8 +85,6 @@ class TaskConfig(
 
     override fun build(): Task = Task(description, instructions)
 }
-
-
 
 @AgentDSL
 class ContextConfig : Config<List<Context>> {
