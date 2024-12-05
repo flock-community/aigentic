@@ -16,6 +16,7 @@ import community.flock.aigentic.core.agent.state.toRun
 import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.exception.AigenticException
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -73,23 +74,33 @@ suspend fun executeAction(action: Action): Pair<State, Result> = when (action) {
 
 private suspend fun Initialize.process(): Action {
     if (agent.tags.isNotEmpty()) {
-        prependWithExampleMessages()
+        state.addMessages(prependWithExampleMessages())
     }
     state.addMessages(initializeStartMessages(agent))
     return SendModelRequest(state, agent)
 }
 
-private suspend fun Initialize.prependWithExampleMessages() {
-    val messages: List<Message> =
-        agent
-            .platform
-            ?.getRuns(agent.tags)
-            ?.flatMap {
-                it.second.messages
-             }
-            ?: emptyList()
+private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
+    val messages = fetchAgentMessages() ?: return emptyList()
     val textMessages = messages.mapToTextMessages()
-    val contextMessage = messages.filter { when(it) {
+    val exampleMessageDescription = listOf(
+        Message.ExampleMessage(
+            sender = Sender.Agent,
+            text = """
+        |All of the previous messages are to be considered as the results of a desired run. The first message was the task context.
+        |Carefully analyze the relationship between the input (instructions, tool calls and arguments) and the output (responses).
+        |Use these relations in the current task and make sure to apply the instructions below to come to the same relationships.
+    """.trimMargin()
+        )
+    )
+    return listOf(messages.firstOrNull { it.getContextMessages() })
+        .plus(textMessages)
+        .plus(exampleMessageDescription)
+        .mapNotNull { it }
+}
+
+private fun Message.getContextMessages(): Boolean =
+    when (this) {
         is Message.Base64 -> true
         is Message.Text -> true
         is Message.Url -> true
@@ -97,21 +108,18 @@ private suspend fun Initialize.prependWithExampleMessages() {
         is Message.SystemPrompt -> false
         is Message.ToolCalls -> false
         is Message.ToolResult -> false
-    } }
-    state.addMessage(contextMessage.first())
-    state.addMessages(textMessages)
-    state.addMessage(
-        Message.ExampleMessage(
-            sender = Sender.Agent,
-            text = """
-                |All of the previous messages are to be considered as the results of a desired run. The first message was the task context.
-                |Carefully analyze the relationship between the input (instructions, tool calls and arguments) and the output (responses).
-                |Use these relations in the current task and make sure to apply the instructions below to come to the same relationships.
-                """.trimMargin()
+    }
 
-        )
-    )
-}
+
+private suspend fun Initialize.fetchAgentMessages(): List<Message>? =
+    runCatching {
+        agent.platform
+            ?.getRuns(agent.tags)
+            ?.flatMap { it.second.messages }
+    }.onFailure {
+        state.addMessages(initializeStartMessages(agent))
+        aigenticException(it.message.toString())
+    }.getOrNull()
 
 
 private suspend fun ProcessModelResponse.process(): Action = when (responseMessage) {
