@@ -1,6 +1,7 @@
 package community.flock.aigentic.core.agent.state
 
 import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.status.toStatus
 import community.flock.aigentic.core.agent.tool.Result
@@ -19,6 +20,7 @@ data class State(
     val messages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
     val events: MutableSharedFlow<AgentStatus> = MutableSharedFlow(replay = 1000),
     val modelRequestInfos: MutableSharedFlow<ModelRequestInfo> = MutableSharedFlow(replay = 1000),
+    val linkedRuns: MutableSharedFlow<RunId> = MutableSharedFlow(replay = 1000),
 )
 
 internal fun State.getMessages() = messages.asSharedFlow()
@@ -31,6 +33,8 @@ internal suspend fun State.addMessage(message: Message) = this.messages.emit(mes
 
 internal suspend fun State.addModelRequestInfo(modelRequestInfo: ModelRequestInfo) = this.modelRequestInfos.emit(modelRequestInfo)
 
+internal suspend fun State.addLinkedRun(run: RunId) = this.linkedRuns.emit(run)
+
 internal fun Pair<State, Result>.toRun(): Run =
     with(first) {
         Run(
@@ -39,6 +43,7 @@ internal fun Pair<State, Result>.toRun(): Run =
             messages = messages.replayCache,
             result = second,
             modelRequests = modelRequestInfos.replayCache,
+            linkedRuns = linkedRuns.replayCache,
         )
     }
 

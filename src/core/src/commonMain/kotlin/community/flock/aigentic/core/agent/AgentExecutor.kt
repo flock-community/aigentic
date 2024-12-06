@@ -8,6 +8,7 @@ import community.flock.aigentic.core.agent.Action.SendModelRequest
 import community.flock.aigentic.core.agent.message.correctionMessage
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.state.State
+import community.flock.aigentic.core.agent.state.addLinkedRun
 import community.flock.aigentic.core.agent.state.addMessage
 import community.flock.aigentic.core.agent.state.addMessages
 import community.flock.aigentic.core.agent.state.addModelRequestInfo
@@ -82,7 +83,10 @@ private suspend fun Initialize.process(): Action {
 }
 
 private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
-    val messages = fetchAgentMessages() ?: return emptyList()
+    val runs = fetchRuns() ?: return emptyList()
+    val messages = runs.flatMap { it.second.messages }
+    runs.map { it.first }.forEach { state.addLinkedRun(it) }
+
     val textMessages = messages.mapToTextMessages()
     val exampleMessageDescription =
         listOf(
@@ -113,11 +117,10 @@ private fun Message.getContextMessages(): Boolean =
         is Message.ToolResult -> false
     }
 
-private suspend fun Initialize.fetchAgentMessages(): List<Message>? =
+private suspend fun Initialize.fetchRuns(): List<Pair<RunId, Run>>? =
     runCatching {
         agent.platform
             ?.getRuns(agent.tags)
-            ?.flatMap { it.second.messages }
     }.onFailure {
         state.addMessages(initializeStartMessages(agent))
         aigenticException(it.message.toString())
