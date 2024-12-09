@@ -9,7 +9,6 @@ import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.gateway.wirespec.Base64MessageDto
-import community.flock.aigentic.gateway.wirespec.ExampleMessageDto
 import community.flock.aigentic.gateway.wirespec.FatalResultDto
 import community.flock.aigentic.gateway.wirespec.FinishedResultDto
 import community.flock.aigentic.gateway.wirespec.MimeTypeDto
@@ -33,7 +32,6 @@ fun RunDetailsDto.toRun() =
                     is Base64MessageDto -> Message.Base64(it.sender.map(), it.base64Content, it.mimeType.map())
                     is SystemPromptMessageDto -> Message.SystemPrompt(it.prompt)
                     is TextMessageDto -> Message.Text(it.sender.map(), it.text)
-                    is ExampleMessageDto -> Message.ExampleMessage(it.sender.map(), it.text)
                     is ToolCallsMessageDto ->
                         Message.ToolCalls(
                             it.toolCalls.map { toolCallDto ->

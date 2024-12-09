@@ -19,7 +19,7 @@ type ConfigDto {
     modelIdentifier: String,
     systemPrompt: String,
     tools: ToolDto[],
-    linkedRuns: String[]?
+    exampleRuns: String[]?
 }
 
 type TaskDto {
@@ -142,12 +142,6 @@ type TextMessageDto {
     text: String
 }
 
-type ExampleMessageDto {
-  createdAt: String,
-  sender: SenderDto,
-  text: String
-}
-
 type UrlMessageDto {
     createdAt: String,
     sender: SenderDto,
@@ -182,7 +176,7 @@ type ToolResultMessageDto {
     response: String
 }
 
-type MessageDto = SystemPromptMessageDto | TextMessageDto | UrlMessageDto | Base64MessageDto | ToolCallsMessageDto | ToolResultMessageDto | ExampleMessageDto
+type MessageDto = SystemPromptMessageDto | TextMessageDto | UrlMessageDto | Base64MessageDto | ToolCallsMessageDto | ToolResultMessageDto
 
 type GatewayClientErrorDto {
     message: String

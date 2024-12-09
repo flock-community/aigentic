@@ -8,7 +8,7 @@ import community.flock.aigentic.core.agent.Action.SendModelRequest
 import community.flock.aigentic.core.agent.message.correctionMessage
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.state.State
-import community.flock.aigentic.core.agent.state.addLinkedRun
+import community.flock.aigentic.core.agent.state.addExampleRun
 import community.flock.aigentic.core.agent.state.addMessage
 import community.flock.aigentic.core.agent.state.addMessages
 import community.flock.aigentic.core.agent.state.addModelRequestInfo
@@ -85,7 +85,7 @@ private suspend fun Initialize.process(): Action {
 private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
     val runs = fetchRuns() ?: return emptyList()
     val messages = runs.flatMap { it.second.messages }
-    runs.map { it.first }.forEach { state.addLinkedRun(it) }
+    runs.map { it.first }.forEach { state.addExampleRun(it) }
 
     val textMessages = messages.mapToTextMessages()
     val exampleMessageDescription =
