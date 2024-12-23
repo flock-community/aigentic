@@ -19,7 +19,7 @@ type ConfigDto {
     modelIdentifier: String,
     systemPrompt: String,
     tools: ToolDto[],
-    exampleRuns: String[]?
+    exampleRuns: String[]
 }
 
 type TaskDto {
