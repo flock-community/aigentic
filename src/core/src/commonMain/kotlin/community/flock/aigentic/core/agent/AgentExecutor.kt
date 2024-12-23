@@ -83,7 +83,7 @@ private suspend fun Initialize.process(): Action {
 }
 
 private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
-    val runs = fetchRuns() ?: return emptyList()
+    val runs = fetchRuns()
     val messages = runs.flatMap { it.second.messages }
     runs.map { it.first }.forEach { state.addExampleRun(it) }
 
@@ -117,14 +117,14 @@ private fun Message.getContextMessages(): Boolean =
         is Message.ToolResult -> false
     }
 
-private suspend fun Initialize.fetchRuns(): List<Pair<RunId, Run>>? =
+private suspend fun Initialize.fetchRuns(): List<Pair<RunId, Run>> =
     runCatching {
         agent.platform
             ?.getRuns(agent.tags)
     }.onFailure {
         state.addMessages(initializeStartMessages(agent))
         aigenticException(it.message.toString())
-    }.getOrNull()
+    }.getOrNull() ?: emptyList()
 
 private suspend fun ProcessModelResponse.process(): Action =
     when (responseMessage) {

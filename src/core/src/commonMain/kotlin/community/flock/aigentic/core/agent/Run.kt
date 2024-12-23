@@ -13,7 +13,7 @@ data class Run(
     val messages: List<Message>,
     val result: Result,
     val modelRequests: List<ModelRequestInfo>,
-    val exampleRuns: List<RunId>? = listOf(),
+    val exampleRuns: List<RunId> = emptyList(),
 )
 
 @JvmInline
