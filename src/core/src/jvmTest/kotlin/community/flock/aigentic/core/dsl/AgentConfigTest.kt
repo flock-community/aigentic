@@ -87,13 +87,6 @@ class AgentConfigTest : DescribeSpec({
                 },
                 expectedMessage = "Cannot build Agent, property 'task' is missing, please use 'task()' to provide it",
             ),
-            MissingPropertyTestCase(
-                agentConfig = {
-                    model(mockk(relaxed = true))
-                    task("Task description") {}
-                },
-                expectedMessage = "Cannot build Agent, property 'tools' is missing, please use 'addTool()' to provide it",
-            ),
         ) { testCase ->
             shouldThrow<IllegalStateException> {
                 agent(testCase.agentConfig)

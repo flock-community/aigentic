@@ -8,7 +8,7 @@ plugins {
 
 kotlin {
     js(IR) {
-        nodejs()
+        nodejs ()
         generateTypeScriptDefinitions()
     }
 

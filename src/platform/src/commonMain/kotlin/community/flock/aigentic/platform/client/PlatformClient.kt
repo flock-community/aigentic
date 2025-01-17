@@ -36,9 +36,9 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.toByteArray
 import io.ktor.util.toMap
 import io.ktor.utils.io.core.toByteArray
+import io.ktor.utils.io.toByteArray
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.reflect.KType

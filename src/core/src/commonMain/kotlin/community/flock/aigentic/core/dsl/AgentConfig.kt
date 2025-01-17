@@ -60,11 +60,7 @@ class AgentConfig : Config<Agent> {
             systemPromptBuilder = systemPromptBuilder,
             model = checkNotNull(model, builderPropertyMissingErrorMessage("model", "model()")),
             task = checkNotNull(task?.build(), builderPropertyMissingErrorMessage("task", "task()")),
-            tools =
-                check(
-                    tools.isNotEmpty(),
-                    builderPropertyMissingErrorMessage("tools", "addTool()"),
-                ).let { tools.associateBy { it.name } },
+            tools = tools.let { tools.associateBy { it.name } }.also { if (it.isEmpty()) println("Warning: No tools provided") },
             contexts = contexts,
             responseParameter = responseParameter,
         )
