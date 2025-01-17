@@ -1,17 +1,18 @@
 [versions]
-kotlin = "1.9.23"
-kotlinx-datetime = "0.6.0-RC.2"
-coroutines = "1.7.2"
+kotlin = "2.1.0"
+kotlinx-datetime = "0.6.1"
+coroutines = "1.10.1"
 serialization = "1.6.3"
-ktor = "2.3.10"
+ktor = "3.0.3"
 nexus-publish = "2.0.0"
 kotlinOpenapiBindings = "0.0.24"
 kotest = "5.8.1"
 mockk = "1.13.10"
-openaiClient = "3.8.2"
-google-cloud-functions-framework = "^3.4.0"
+openaiClient = "4.0.0-beta01"
+google-cloud-functions-framework = "^3.4.4"
 wirespec = "0.9.23"
 logback = "1.5.6"
+nodejs = "20.13.1"
 
 [libraries]
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }

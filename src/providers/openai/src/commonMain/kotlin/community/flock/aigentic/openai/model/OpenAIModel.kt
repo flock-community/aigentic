@@ -23,10 +23,16 @@ import kotlin.time.Duration.Companion.seconds
 sealed class OpenAIModelIdentifier(
     override val stringValue: String,
 ) : ModelIdentifier {
+    data object GPTO1 : OpenAIModelIdentifier("o1")
+    data object GPTO1Mini : OpenAIModelIdentifier("o1-mini")
+    data object GPTO1Preview : OpenAIModelIdentifier("o1-preview")
     data object GPT4O : OpenAIModelIdentifier("gpt-4o")
+    data object GPT4OLatest : OpenAIModelIdentifier("chatgpt-4o-latest")
     data object GPT4OMini : OpenAIModelIdentifier("gpt-4o-mini")
     data object GPT4Turbo : OpenAIModelIdentifier("gpt-4-turbo")
     data object GPT3_5Turbo : OpenAIModelIdentifier("gpt-3.5-turbo")
+
+    data class GPT_Custom_Identifier(val modelIdentifier: String) : OpenAIModelIdentifier(modelIdentifier)
 }
 
 class OpenAIModel(
