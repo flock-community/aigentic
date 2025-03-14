@@ -207,7 +207,7 @@ private fun Message.toDto(): MessageDto? =
                 toolName = toolName,
             )
 
-        is Message.ExampleMessage -> null
+        is Message.ExampleToolMessage -> null
     }
 
 private fun ToolCall.toDto(): ToolCallDto =

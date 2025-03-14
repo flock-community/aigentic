@@ -18,7 +18,9 @@ import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.exception.aigenticException
+import community.flock.aigentic.core.message.ContextMessage
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.mapToTextMessages
@@ -86,7 +88,7 @@ private suspend fun Initialize.process(): Action {
 private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
     val runs = fetchRuns()
     state.addMessage(
-        Message.ExampleMessage(
+        Message.ExampleToolMessage(
             sender = Sender.Agent,
             text =
                 """
@@ -102,7 +104,7 @@ private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
             val textMessages = messages.mapToTextMessages()
             val exampleMessageDescription =
                 listOf(
-                    Message.ExampleMessage(
+                    Message.ExampleToolMessage(
                         sender = Sender.Agent,
                         text =
                             """
@@ -112,7 +114,7 @@ private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
                 )
             val exampleEndMessageDescription =
                 listOf(
-                    Message.ExampleMessage(
+                    Message.ExampleToolMessage(
                         sender = Sender.Agent,
                         text =
                             """
@@ -122,7 +124,7 @@ private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
                 )
             try {
                 exampleMessageDescription
-                    .plus(listOf(messages.firstOrNull { it.getContextMessages() }))
+                    .plus(listOf(messages.filterIsInstance<ContextMessage>().first().toExampleMessage()))
                     .plus(textMessages)
                     .plus(exampleEndMessageDescription)
                     .mapNotNull { it }
@@ -133,7 +135,7 @@ private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
         }
     val finalExampleMessageDescription =
         listOf(
-            Message.ExampleMessage(
+            Message.ExampleToolMessage(
                 sender = Sender.Agent,
                 text =
                     """
@@ -150,15 +152,35 @@ private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
         .plus(finalExampleMessageDescription)
 }
 
-private fun Message.getContextMessages(): Boolean =
+private fun ContextMessage.toExampleMessage(): Message =
     when (this) {
-        is Message.Base64 -> true
-        is Message.Text -> true
-        is Message.Url -> true
-        is Message.ExampleMessage -> false
-        is Message.SystemPrompt -> false
-        is Message.ToolCalls -> false
-        is Message.ToolResult -> false
+        is Message.Base64 ->
+            Message.Base64(
+                sender = sender,
+                messageType = MessageType.Example,
+                base64Content = base64Content,
+                mimeType = mimeType,
+            )
+        is Message.Text ->
+            Message.Text(
+                sender = sender,
+                messageType = MessageType.Example,
+                text = text,
+            )
+        is Message.Url ->
+            Message.Url(
+                sender = sender,
+                messageType = MessageType.Example,
+                url = url,
+                mimeType = mimeType,
+            )
+
+        is Message.ExampleToolMessage ->
+            Message.ExampleToolMessage(
+                sender = sender,
+                text = text,
+                id = id,
+            )
     }
 
 private suspend fun Initialize.fetchRuns(): List<Pair<RunId, Run>> =
@@ -221,9 +243,16 @@ private fun initializeStartMessages(agent: Agent): List<Message> =
     listOf(agent.systemPromptBuilder.buildSystemPrompt(agent)) +
         agent.contexts.map {
             when (it) {
-                is Context.Url -> Message.Url(sender = Sender.Agent, url = it.url, mimeType = it.mimeType)
-                is Context.Base64 -> Message.Base64(sender = Sender.Agent, base64Content = it.base64, mimeType = it.mimeType)
-                is Context.Text -> Message.Text(Sender.Agent, it.text)
+                is Context.Url -> Message.Url(sender = Sender.Agent, url = it.url, mimeType = it.mimeType, messageType = MessageType.New)
+                is Context.Base64 ->
+                    Message.Base64(
+                        sender = Sender.Agent,
+                        base64Content = it.base64,
+                        mimeType = it.mimeType,
+                        messageType = MessageType.New,
+                    )
+
+                is Context.Text -> Message.Text(Sender.Agent, messageType = MessageType.New, it.text)
             }
         }
 

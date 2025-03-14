@@ -6,6 +6,7 @@ import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.status.toStatus
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageType
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -40,7 +41,7 @@ internal fun Pair<State, Result>.toRun(): Run =
         Run(
             startedAt = startedAt,
             finishedAt = finishedAt ?: Clock.System.now(),
-            messages = messages.replayCache,
+            messages = messages.replayCache.filter { message -> message.messageType is MessageType.New },
             result = second,
             modelRequests = modelRequestInfos.replayCache,
             exampleRunIds = exampleRunIds.replayCache,

@@ -9,6 +9,7 @@ import com.aallam.openai.api.chat.ToolId
 import com.aallam.openai.api.core.Role
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
@@ -30,6 +31,7 @@ object DomainMapper {
             isTextMessage() ->
                 Message.Text(
                     sender = role.mapToSender(),
+                    messageType = MessageType.New,
                     text = content!!,
                 )
 
@@ -70,7 +72,7 @@ object OpenAIMapper {
         return when (this) {
             is Message.SystemPrompt -> ChatMessage(role, prompt)
             is Message.Text -> ChatMessage(role, text)
-            is Message.ExampleMessage -> ChatMessage(role = role, content = text, toolCallId = ToolId(id.toString()))
+            is Message.ExampleToolMessage -> ChatMessage(role = role, content = text, toolCallId = ToolId(id.toString()))
             is Message.Url -> ChatMessage(role = role, listOf(ImagePart(url)))
             is Message.Base64 -> ChatMessage(role = role, listOf(ImagePart(formatDataUrl())))
             is Message.ToolCalls ->
@@ -99,7 +101,7 @@ object OpenAIMapper {
             is Message.SystemPrompt -> ChatRole.System
             is Message.ToolCalls -> ChatRole.Assistant
             is Message.ToolResult -> ChatRole.Tool
-            is Message.Url, is Message.Base64, is Message.Text, is Message.ExampleMessage -> mapRole()
+            is Message.Url, is Message.Base64, is Message.Text, is Message.ExampleToolMessage -> mapRole()
         }
 
     private fun Message.mapRole() =
