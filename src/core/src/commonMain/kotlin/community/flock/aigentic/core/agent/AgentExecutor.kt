@@ -77,7 +77,6 @@ suspend fun executeAction(action: Action): Pair<State, Result> =
     }
 
 private suspend fun Initialize.process(): Action {
-    // 1 : systemprompt
     state.addMessages(initializeStartMessages(agent))
     if (agent.tags.isNotEmpty()) {
         state.addMessages(prependWithExampleMessages())
@@ -161,12 +160,14 @@ private fun ContextMessage.toExampleMessage(): Message =
                 base64Content = base64Content,
                 mimeType = mimeType,
             )
+
         is Message.Text ->
             Message.Text(
                 sender = sender,
                 messageType = MessageType.Example,
                 text = text,
             )
+
         is Message.Url ->
             Message.Url(
                 sender = sender,
