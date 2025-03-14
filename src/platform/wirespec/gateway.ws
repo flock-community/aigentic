@@ -19,7 +19,7 @@ type ConfigDto {
     modelIdentifier: String,
     systemPrompt: String,
     tools: ToolDto[],
-    exampleRuns: String[]
+    exampleRunIds: String[]
 }
 
 type TaskDto {
@@ -204,7 +204,7 @@ type RunDetailsDto {
     tags: String[]
 }
 
-endpoint GetRuns GET /gateway/runs ? { tags: String } -> {
+endpoint GetRuns GET /gateway/runs ? { tags: String? } -> {
     200 -> RunDetailsDto[]
     404 -> Unit
     401 -> Unit

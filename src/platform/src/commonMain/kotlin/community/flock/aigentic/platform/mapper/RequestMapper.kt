@@ -56,7 +56,7 @@ fun Run.toDto(agent: Agent) =
                     ),
                 modelIdentifier = agent.model.modelIdentifier.stringValue,
                 systemPrompt = messages.filterIsInstance<Message.SystemPrompt>().first().prompt,
-                exampleRuns = exampleRuns.map { it.value },
+                exampleRunIds = exampleRunIds.map { it.value },
                 tools =
                     agent.tools.map { (name, tool) ->
                         ToolDto(

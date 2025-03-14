@@ -20,7 +20,7 @@ data class State(
     val messages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
     val events: MutableSharedFlow<AgentStatus> = MutableSharedFlow(replay = 1000),
     val modelRequestInfos: MutableSharedFlow<ModelRequestInfo> = MutableSharedFlow(replay = 1000),
-    val exampleRuns: MutableSharedFlow<RunId> = MutableSharedFlow(replay = 1000),
+    val exampleRunIds: MutableSharedFlow<RunId> = MutableSharedFlow(replay = 1000),
 )
 
 internal fun State.getMessages() = messages.asSharedFlow()
@@ -33,7 +33,7 @@ internal suspend fun State.addMessage(message: Message) = this.messages.emit(mes
 
 internal suspend fun State.addModelRequestInfo(modelRequestInfo: ModelRequestInfo) = this.modelRequestInfos.emit(modelRequestInfo)
 
-internal suspend fun State.addExampleRun(run: RunId) = this.exampleRuns.emit(run)
+internal suspend fun State.addExampleRun(run: RunId) = this.exampleRunIds.emit(run)
 
 internal fun Pair<State, Result>.toRun(): Run =
     with(first) {
@@ -43,7 +43,7 @@ internal fun Pair<State, Result>.toRun(): Run =
             messages = messages.replayCache,
             result = second,
             modelRequests = modelRequestInfos.replayCache,
-            exampleRuns = exampleRuns.replayCache,
+            exampleRunIds = exampleRunIds.replayCache,
         )
     }
 

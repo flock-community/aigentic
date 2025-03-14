@@ -75,35 +75,79 @@ suspend fun executeAction(action: Action): Pair<State, Result> =
     }
 
 private suspend fun Initialize.process(): Action {
+    // 1 : systemprompt
+    state.addMessages(initializeStartMessages(agent))
     if (agent.tags.isNotEmpty()) {
         state.addMessages(prependWithExampleMessages())
     }
-    state.addMessages(initializeStartMessages(agent))
     return SendModelRequest(state, agent)
 }
 
 private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
     val runs = fetchRuns()
-    val messages = runs.flatMap { it.second.messages }
-    runs.map { it.first }.forEach { state.addExampleRun(it) }
-
-    val textMessages = messages.mapToTextMessages()
-    val exampleMessageDescription =
+    state.addMessage(
+        Message.ExampleMessage(
+            sender = Sender.Agent,
+            text =
+                """
+        |The messages below are example run messages. Each example run has a clearly marked start and end.
+        |The example messages continue until you encounter: <END_OF_ALL_EXAMPLES>
+                """.trimMargin(),
+        ),
+    )
+    val runMessages: List<List<Message>> =
+        runs.mapIndexed { index, run ->
+            val messages = run.second.messages
+            state.addExampleRun(run.first)
+            val textMessages = messages.mapToTextMessages()
+            val exampleMessageDescription =
+                listOf(
+                    Message.ExampleMessage(
+                        sender = Sender.Agent,
+                        text =
+                            """
+        |The messages below are part of example $index. The example ends when you encounter: <END_EXAMPLE_$index>
+                            """.trimMargin(),
+                    ),
+                )
+            val exampleEndMessageDescription =
+                listOf(
+                    Message.ExampleMessage(
+                        sender = Sender.Agent,
+                        text =
+                            """
+        |<END_EXAMPLE_$index>.
+                            """.trimMargin(),
+                    ),
+                )
+            try {
+                exampleMessageDescription
+                    .plus(listOf(messages.firstOrNull { it.getContextMessages() }))
+                    .plus(textMessages)
+                    .plus(exampleEndMessageDescription)
+                    .mapNotNull { it }
+            } catch (e: Exception) {
+                println("test" + e.message)
+                return emptyList()
+            }
+        }
+    val finalExampleMessageDescription =
         listOf(
             Message.ExampleMessage(
                 sender = Sender.Agent,
                 text =
                     """
-        |All of the previous messages are to be considered as the results of a desired run. The first message was the task context.
+        |<END_OF_ALL_EXAMPLES>
+        |All of the previous example messages are to be considered as the results of a desired run.
         |Carefully analyze the relationship between the input (instructions, tool calls and arguments) and the output (responses).
         |Use these relations in the current task and make sure to apply the instructions below to come to the same relationships.
+        |All messages following are the input for the current task.
                     """.trimMargin(),
             ),
         )
-    return listOf(messages.firstOrNull { it.getContextMessages() })
-        .plus(textMessages)
-        .plus(exampleMessageDescription)
-        .mapNotNull { it }
+    val allMessages = runMessages.flatMap { it }
+    return allMessages
+        .plus(finalExampleMessageDescription)
 }
 
 private fun Message.getContextMessages(): Boolean =
