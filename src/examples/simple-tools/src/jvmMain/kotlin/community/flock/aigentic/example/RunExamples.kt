@@ -62,7 +62,7 @@ fun AgentConfig.configureModel() {
         Provider.GEMINI ->
             geminiModel {
                 apiKey(geminiKey)
-                modelIdentifier(GeminiModelIdentifier.Gemini1_5FlashLatest)
+                modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
             }
         Provider.OPENAI ->
             openAIModel {
