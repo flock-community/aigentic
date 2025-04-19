@@ -39,6 +39,7 @@ sealed class OpenAIModelIdentifier(
     data object O1Mini : OpenAIModelIdentifier("o1-mini")
     data object GPT4OMiniSearchPreview : OpenAIModelIdentifier("gpt-4o-mini-search-preview")
     data object GPT4OSearchPreview : OpenAIModelIdentifier("gpt-4o-search-preview")
+
     data class Custom(val identifier: String) : OpenAIModelIdentifier(identifier)
 }
 

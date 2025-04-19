@@ -24,6 +24,7 @@ sealed class GeminiModelIdentifier(
     data object Gemini1_5Flash : GeminiModelIdentifier("gemini-1.5-flash")
     data object Gemini1_5Flash8b : GeminiModelIdentifier("gemini-1.5-flash-8b")
     data object Gemini1_5Pro : GeminiModelIdentifier("gemini-1.5-pro")
+
     data class Custom(val identifier: String) : GeminiModelIdentifier(identifier)
 }
 
