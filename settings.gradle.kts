@@ -17,6 +17,7 @@ dependencyResolutionManagement {
 rootProject.name = "aigentic"
 include(
     "src:core",
+    "src:ksp-processor",
     "src:tools:http",
     "src:tools:openapi",
     "src:platform",
