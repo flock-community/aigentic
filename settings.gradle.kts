@@ -1,5 +1,6 @@
 pluginManagement {
     includeBuild("convention-plugins")
+    includeBuild("src/code-generation/ksp-gradle-plugin")
     repositories {
         google()
         mavenCentral()
@@ -17,7 +18,10 @@ dependencyResolutionManagement {
 rootProject.name = "aigentic"
 include(
     "src:core",
-    "src:ksp-processor",
+    "src:code-generation:annotations",
+    "src:code-generation:ksp-processor",
+    "src:code-generation:ksp-test",
+    "src:code-generation:ksp-gradle-plugin",
     "src:tools:http",
     "src:tools:openapi",
     "src:platform",
