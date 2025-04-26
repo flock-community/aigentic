@@ -7,8 +7,10 @@ import community.flock.aigentic.core.tool.PrimitiveValue
 import community.flock.aigentic.core.tool.getParameter
 import community.flock.aigentic.generated.parameter.initialize
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.beInstanceOf
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 class ArrayParameterTest : DescribeSpec({
@@ -203,7 +205,7 @@ class ArrayParameterTest : DescribeSpec({
                 val statusesParam = enumArrayListParam.parameters.find { it.name == "statuses" }
 
                 statusesParam shouldNotBe null
-                statusesParam.shouldBeInstanceOf<Parameter.Complex.Array>()
+                statusesParam should beInstanceOf<Parameter.Complex.Array>()
             }
 
             it("Statuses item definition should be a Complex.Enum") {

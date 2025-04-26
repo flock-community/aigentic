@@ -18,6 +18,27 @@ class ObjectParameterTest : DescribeSpec({
         ParameterRegistry.initialize()
     }
 
+    fun getPrimitiveParameter(
+        objectParam: Parameter.Complex.Object,
+        name: String,
+    ): Parameter.Primitive {
+        val param = objectParam.parameters.find { it.name == name }
+        param shouldNotBe null
+        param.shouldBeInstanceOf<Parameter.Primitive>()
+        return param
+    }
+
+    fun getObjectParameter(
+        objectParam: Parameter.Complex.Object,
+        name: String,
+    ): Parameter.Complex.Object {
+        val param = objectParam.parameters.find { it.name == name }
+        param shouldNotBe null
+        param.shouldBeInstanceOf<Parameter.Complex.Object>()
+        return param
+    }
+
+
     describe("Object Parameter Tests") {
 
         describe("Description Tests") {

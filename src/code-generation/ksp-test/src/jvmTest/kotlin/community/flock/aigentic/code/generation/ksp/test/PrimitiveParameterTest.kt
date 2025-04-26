@@ -9,12 +9,24 @@ import community.flock.aigentic.generated.parameter.initialize
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 class PrimitiveParameterTest : DescribeSpec({
 
     beforeTest {
         ParameterRegistry.initialize()
     }
+
+    fun getPrimitiveParameter(
+        objectParam: Parameter.Complex.Object,
+        name: String,
+    ): Parameter.Primitive {
+        val param = objectParam.parameters.find { it.name == name }
+        param shouldNotBe null
+        param.shouldBeInstanceOf<Parameter.Primitive>()
+        return param
+    }
+
 
     describe("Primitive Parameter Tests") {
 

@@ -29,6 +29,17 @@ class EnumParameterTest : DescribeSpec({
         }
     }
 
+    fun getEnumParameter(
+        objectParam: Parameter.Complex.Object,
+        name: String,
+    ): Parameter.Complex.Enum {
+        val param = objectParam.parameters.find { it.name == name }
+        param shouldNotBe null
+        param.shouldBeInstanceOf<Parameter.Complex.Enum>()
+        return param
+    }
+
+
     describe("Enum Parameter Tests") {
 
         describe("Description Tests") {
