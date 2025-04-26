@@ -6,14 +6,14 @@ import community.flock.aigentic.code.generation.annotations.AigenticParameter
 @AigenticParameter
 data class NullableEnumProperty(
     val id: String,
-    val status: TodoStatus?
+    val status: TodoStatus?,
 )
 
 // Test class for enum property with default value
 @AigenticParameter
 data class DefaultEnumProperty(
     val id: String,
-    val status: TodoStatus = TodoStatus.COMPLETED
+    val status: TodoStatus = TodoStatus.COMPLETED,
 )
 
 // Test class with multiple enum properties
@@ -21,17 +21,17 @@ data class DefaultEnumProperty(
 data class MultipleEnumProperties(
     val id: String,
     val primaryStatus: TodoStatus,
-    val secondaryStatus: TodoStatus
+    val secondaryStatus: TodoStatus,
 )
 
 // Test class with nested object containing enum property
 @AigenticParameter
 data class NestedEnumProperty(
     val id: String,
-    val task: TaskWithEnum
+    val task: TaskWithEnum,
 )
 
 data class TaskWithEnum(
     val name: String,
-    val status: TodoStatus
+    val status: TodoStatus,
 )

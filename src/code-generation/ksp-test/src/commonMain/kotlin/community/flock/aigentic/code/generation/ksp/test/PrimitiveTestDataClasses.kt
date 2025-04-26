@@ -10,13 +10,13 @@ import community.flock.aigentic.code.generation.annotations.AigenticParameter
 data class NumberTypes(
     val floatValue: Float,
     val doubleValue: Double,
-    val nullableFloat: Float?
+    val nullableFloat: Float?,
 )
 
 @AigenticParameter
 data class BooleanTypes(
     val booleanValue: Boolean,
-    val nullableBoolean: Boolean?
+    val nullableBoolean: Boolean?,
 )
 
 @AigenticParameter
@@ -26,5 +26,5 @@ data class AllPrimitiveTypes(
     val longValue: Long,
     val floatValue: Float,
     val doubleValue: Double,
-    val booleanValue: Boolean
+    val booleanValue: Boolean,
 )

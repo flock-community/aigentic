@@ -43,7 +43,6 @@ ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.r
 kotlinx-openapi-bindings = { group = "community.flock.kotlinx.openapi.bindings", name = "kotlin-openapi-bindings", version.ref = "kotlinOpenapiBindings" }
 openai-client = { group = "com.aallam.openai", name = "openai-client", version.ref = "openaiClient" }
 #Test
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 kotest-framework-datatest = { module = "io.kotest:kotest-framework-datatest", version.ref = "kotest" }

@@ -9,7 +9,7 @@ data class User(
     val id: String,
     @Description("The username for login purposes.")
     val userName: String,
-    val person: Person
+    val person: Person,
 )
 
 @AigenticParameter
@@ -19,18 +19,18 @@ data class Person(
     @Description("Full name of the person")
     val name: String?,
     @Description("Age of the person in years")
-    val age: Int
+    val age: Int,
 )
 
 @AigenticParameter
 data class Company(
     val name: String,
-    val employees: List<Employee>
+    val employees: List<Employee>,
 )
 
 data class Employee(
     val name: String,
-    val position: String
+    val position: String,
 )
 
 @AigenticParameter
@@ -40,5 +40,5 @@ data class TaggedItem(
     @Description("Display name of the item")
     val name: String,
     @Description("List of tags associated with this item")
-    val tags: List<String>
+    val tags: List<String>,
 )
