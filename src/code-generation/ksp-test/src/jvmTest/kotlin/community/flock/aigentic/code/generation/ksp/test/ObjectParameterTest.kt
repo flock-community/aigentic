@@ -38,37 +38,36 @@ class ObjectParameterTest : DescribeSpec({
         return param
     }
 
-
     describe("Object Parameter Tests") {
 
         describe("Description Tests") {
-            it("User id parameter should have correct description") {
+            it("should have correct description for user id parameter") {
                 val userParam = UserParameter.parameter
                 val idParam = getPrimitiveParameter(userParam, "id")
                 idParam.description shouldBe "The id of the user. Must be unique."
             }
 
-            it("User name parameter should have correct description") {
+            it("should have correct description for user name parameter") {
                 val userParam = UserParameter.parameter
                 val userNameParam = getPrimitiveParameter(userParam, "userName")
                 userNameParam.description shouldBe "The username for login purposes."
             }
 
-            it("Person id parameter should have correct description") {
+            it("should have correct description for person id parameter") {
                 val userParam = UserParameter.parameter
                 val personParam = getObjectParameter(userParam, "person")
                 val personIdParam = getPrimitiveParameter(personParam, "id")
                 personIdParam.description shouldBe "Unique identifier for the person"
             }
 
-            it("Person name parameter should have correct description") {
+            it("should have correct description for person name parameter") {
                 val userParam = UserParameter.parameter
                 val personParam = getObjectParameter(userParam, "person")
                 val personNameParam = getPrimitiveParameter(personParam, "name")
                 personNameParam.description shouldBe "Full name of the person"
             }
 
-            it("Person age parameter should have correct description") {
+            it("should have correct description for person age parameter") {
                 val userParam = UserParameter.parameter
                 val personParam = getObjectParameter(userParam, "person")
                 val personAgeParam = getPrimitiveParameter(personParam, "age")
@@ -77,56 +76,56 @@ class ObjectParameterTest : DescribeSpec({
         }
 
         describe("Basic Parameter Tests") {
-            it("User parameter should have correct name") {
+            it("should have correct name for user parameter") {
                 val userParam = UserParameter.parameter
                 userParam.name shouldBe "user"
             }
 
-            it("Person parameter should have correct name") {
+            it("should have correct name for person parameter") {
                 val personParam = PersonParameter.parameter
                 personParam.name shouldBe "person"
             }
 
-            it("User parameter should be accessible from registry") {
+            it("should be accessible from registry for user parameter") {
                 val userFromRegistry = getParameter<User>()
                 userFromRegistry shouldNotBe null
             }
 
-            it("Person parameter should be accessible from registry") {
+            it("should be accessible from registry for person parameter") {
                 val personFromRegistry = getParameter<Person>()
                 personFromRegistry shouldNotBe null
             }
         }
 
         describe("Nested Object Tests") {
-            it("User should contain person parameter") {
+            it("should contain person parameter in user") {
                 val userParam = UserParameter.parameter as Parameter.Complex.Object
                 val personParam = userParam.parameters.find { it.name == "person" }
                 personParam shouldNotBe null
                 personParam.shouldBeInstanceOf<Parameter.Complex.Object>()
             }
 
-            it("Person should have correct number of properties") {
+            it("should have correct number of properties for person") {
                 val userParam = UserParameter.parameter as Parameter.Complex.Object
                 val personParam = getObjectParameter(userParam, "person")
                 personParam.parameters.size shouldBe 3
             }
 
-            it("Person id should be required") {
+            it("should have person id as required") {
                 val userParam = UserParameter.parameter as Parameter.Complex.Object
                 val personParam = getObjectParameter(userParam, "person")
                 val idParam = getPrimitiveParameter(personParam, "id")
                 idParam.isRequired shouldBe true
             }
 
-            it("Person name should not be required") {
+            it("should have person name as not required") {
                 val userParam = UserParameter.parameter as Parameter.Complex.Object
                 val personParam = getObjectParameter(userParam, "person")
                 val nameParam = getPrimitiveParameter(personParam, "name")
                 nameParam.isRequired shouldBe false
             }
 
-            it("Person age should be required") {
+            it("should have person age as required") {
                 val userParam = UserParameter.parameter as Parameter.Complex.Object
                 val personParam = getObjectParameter(userParam, "person")
                 val ageParam = getPrimitiveParameter(personParam, "age")
@@ -135,14 +134,14 @@ class ObjectParameterTest : DescribeSpec({
         }
 
         describe("Deep Nesting Tests") {
-            it("Level1 should contain level2 parameter") {
+            it("should contain level2 parameter in level1") {
                 val level1Param = getParameter<Level1>() as Parameter.Complex.Object
                 val level2Param = level1Param.parameters.find { it.name == "level2" }
                 level2Param shouldNotBe null
                 level2Param.shouldBeInstanceOf<Parameter.Complex.Object>()
             }
 
-            it("Level2 should contain level3 parameter") {
+            it("should contain level3 parameter in level2") {
                 val level1Param = getParameter<Level1>() as Parameter.Complex.Object
                 val level2Param = getObjectParameter(level1Param, "level2")
                 val level3Param = level2Param.parameters.find { it.name == "level3" }
@@ -150,7 +149,7 @@ class ObjectParameterTest : DescribeSpec({
                 level3Param.shouldBeInstanceOf<Parameter.Complex.Object>()
             }
 
-            it("Level3 name parameter should have string type") {
+            it("should have string type for level3 name parameter") {
                 val level1Param = getParameter<Level1>() as Parameter.Complex.Object
                 val level2Param = getObjectParameter(level1Param, "level2")
                 val level3Param = getObjectParameter(level2Param, "level3")
@@ -158,7 +157,7 @@ class ObjectParameterTest : DescribeSpec({
                 nameParam.type shouldBe ParameterType.Primitive.String
             }
 
-            it("Level3 value parameter should have integer type") {
+            it("should have integer type for level3 value parameter") {
                 val level1Param = getParameter<Level1>() as Parameter.Complex.Object
                 val level2Param = getObjectParameter(level1Param, "level2")
                 val level3Param = getObjectParameter(level2Param, "level3")

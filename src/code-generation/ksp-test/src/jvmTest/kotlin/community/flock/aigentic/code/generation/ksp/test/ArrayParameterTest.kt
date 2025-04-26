@@ -22,7 +22,7 @@ class ArrayParameterTest : DescribeSpec({
     describe("Array Parameter Tests") {
 
         describe("Description Tests") {
-            it("Id parameter should have correct description") {
+            it("should have correct description for id parameter") {
                 val taggedItemParam = getParameter<TaggedItem>() as Parameter.Complex.Object
                 val idParam = taggedItemParam.parameters.find { it.name == "id" } as? Parameter.Primitive
 
@@ -30,7 +30,7 @@ class ArrayParameterTest : DescribeSpec({
                 idParam!!.description shouldBe "Unique identifier for the tagged item"
             }
 
-            it("Name parameter should have correct description") {
+            it("should have correct description for name parameter") {
                 val taggedItemParam = getParameter<TaggedItem>() as Parameter.Complex.Object
                 val nameParam = taggedItemParam.parameters.find { it.name == "name" } as? Parameter.Primitive
 
@@ -38,7 +38,7 @@ class ArrayParameterTest : DescribeSpec({
                 nameParam!!.description shouldBe "Display name of the item"
             }
 
-            it("Tags parameter should have correct description") {
+            it("should have correct description for tags parameter") {
                 val taggedItemParam = getParameter<TaggedItem>() as Parameter.Complex.Object
                 val tagsParam = taggedItemParam.parameters.find { it.name == "tags" } as? Parameter.Complex.Array
 
@@ -48,7 +48,7 @@ class ArrayParameterTest : DescribeSpec({
         }
 
         describe("Complex Array Tests") {
-            it("Employees parameter should be a Complex.Array") {
+            it("should have employees parameter as a Complex.Array") {
                 val companyParam = getParameter<Company>() as Parameter.Complex.Object
                 val employeesParam = companyParam.parameters.find { it.name == "employees" }
 
@@ -56,14 +56,14 @@ class ArrayParameterTest : DescribeSpec({
                 employeesParam.shouldBeInstanceOf<Parameter.Complex.Array>()
             }
 
-            it("Employees item definition should be a Complex.Object") {
+            it("should have employees item definition as a Complex.Object") {
                 val companyParam = getParameter<Company>() as Parameter.Complex.Object
                 val employeesParam = companyParam.parameters.find { it.name == "employees" } as Parameter.Complex.Array
 
                 employeesParam.itemDefinition.shouldBeInstanceOf<Parameter.Complex.Object>()
             }
 
-            it("Employee object should have correct properties") {
+            it("should have correct properties for employee object") {
                 val companyParam = getParameter<Company>() as Parameter.Complex.Object
                 val employeesParam = companyParam.parameters.find { it.name == "employees" } as Parameter.Complex.Array
                 val employeeDefinition = employeesParam.itemDefinition as Parameter.Complex.Object
@@ -82,7 +82,7 @@ class ArrayParameterTest : DescribeSpec({
         }
 
         describe("Primitive Array Tests") {
-            it("Tags parameter should be a Complex.Array") {
+            it("should have tags parameter as a Complex.Array") {
                 val taggedItemParam = getParameter<TaggedItem>() as Parameter.Complex.Object
                 val tagsParam = taggedItemParam.parameters.find { it.name == "tags" }
 
@@ -90,14 +90,14 @@ class ArrayParameterTest : DescribeSpec({
                 tagsParam.shouldBeInstanceOf<Parameter.Complex.Array>()
             }
 
-            it("Tags item definition should be a Primitive") {
+            it("should have tags item definition as a Primitive") {
                 val taggedItemParam = getParameter<TaggedItem>() as Parameter.Complex.Object
                 val tagsParam = taggedItemParam.parameters.find { it.name == "tags" } as Parameter.Complex.Array
 
                 tagsParam.itemDefinition.shouldBeInstanceOf<Parameter.Primitive>()
             }
 
-            it("Tags item should have String type") {
+            it("should have String type for tags item") {
                 val taggedItemParam = getParameter<TaggedItem>() as Parameter.Complex.Object
                 val tagsParam = taggedItemParam.parameters.find { it.name == "tags" } as Parameter.Complex.Array
                 val tagDefinition = tagsParam.itemDefinition as Parameter.Primitive
@@ -107,7 +107,7 @@ class ArrayParameterTest : DescribeSpec({
         }
 
         describe("Nullable Item Array Tests") {
-            it("Items parameter should be a Complex.Array") {
+            it("should have items parameter as a Complex.Array") {
                 val nullableItemListParam = getParameter<NullableItemList>() as Parameter.Complex.Object
                 val itemsParam = nullableItemListParam.parameters.find { it.name == "items" }
 
@@ -115,14 +115,14 @@ class ArrayParameterTest : DescribeSpec({
                 itemsParam.shouldBeInstanceOf<Parameter.Complex.Array>()
             }
 
-            it("Items item definition should be a Primitive") {
+            it("should have items item definition as a Primitive") {
                 val nullableItemListParam = getParameter<NullableItemList>() as Parameter.Complex.Object
                 val itemsParam = nullableItemListParam.parameters.find { it.name == "items" } as Parameter.Complex.Array
 
                 itemsParam.itemDefinition.shouldBeInstanceOf<Parameter.Primitive>()
             }
 
-            it("Items should be treated as required by processor") {
+            it("should treat items as required by processor") {
                 val nullableItemListParam = getParameter<NullableItemList>() as Parameter.Complex.Object
                 val itemsParam = nullableItemListParam.parameters.find { it.name == "items" } as Parameter.Complex.Array
                 val itemDefinition = itemsParam.itemDefinition as Parameter.Primitive
@@ -133,7 +133,7 @@ class ArrayParameterTest : DescribeSpec({
         }
 
         describe("Nullable Array Tests") {
-            it("Nullable array items parameter should be a Complex.Array") {
+            it("should have nullable array items parameter as a Complex.Array") {
                 val nullableArrayListParam = getParameter<NullableArrayList>() as Parameter.Complex.Object
                 val itemsParam = nullableArrayListParam.parameters.find { it.name == "items" }
 
@@ -141,21 +141,21 @@ class ArrayParameterTest : DescribeSpec({
                 itemsParam.shouldBeInstanceOf<Parameter.Complex.Array>()
             }
 
-            it("Items parameter should be nullable") {
+            it("should have items parameter as nullable") {
                 val nullableArrayListParam = getParameter<NullableArrayList>() as Parameter.Complex.Object
                 val itemsParam = nullableArrayListParam.parameters.find { it.name == "items" } as Parameter.Complex.Array
 
                 itemsParam.isRequired shouldBe false
             }
 
-            it("Nullable array items item definition should be a Primitive") {
+            it("should have nullable array items item definition as a Primitive") {
                 val nullableArrayListParam = getParameter<NullableArrayList>() as Parameter.Complex.Object
                 val itemsParam = nullableArrayListParam.parameters.find { it.name == "items" } as Parameter.Complex.Array
 
                 itemsParam.itemDefinition.shouldBeInstanceOf<Parameter.Primitive>()
             }
 
-            it("Items item should be non-nullable") {
+            it("should have items item as non-nullable") {
                 val nullableArrayListParam = getParameter<NullableArrayList>() as Parameter.Complex.Object
                 val itemsParam = nullableArrayListParam.parameters.find { it.name == "items" } as Parameter.Complex.Array
                 val itemDefinition = itemsParam.itemDefinition as Parameter.Primitive
@@ -166,7 +166,7 @@ class ArrayParameterTest : DescribeSpec({
         }
 
         describe("Nested Array Tests") {
-            it("Nested array items parameter should be a Complex.Array") {
+            it("should have nested array items parameter as a Complex.Array") {
                 val nestedArrayListParam = getParameter<NestedArrayList>() as Parameter.Complex.Object
                 val itemsParam = nestedArrayListParam.parameters.find { it.name == "items" }
 
@@ -174,14 +174,14 @@ class ArrayParameterTest : DescribeSpec({
                 itemsParam.shouldBeInstanceOf<Parameter.Complex.Array>()
             }
 
-            it("Items item definition should be a Complex.Array") {
+            it("should have items item definition as a Complex.Array") {
                 val nestedArrayListParam = getParameter<NestedArrayList>() as Parameter.Complex.Object
                 val outerArray = nestedArrayListParam.parameters.find { it.name == "items" } as Parameter.Complex.Array
 
                 outerArray.itemDefinition.shouldBeInstanceOf<Parameter.Complex.Array>()
             }
 
-            it("Inner array item definition should be a Primitive") {
+            it("should have inner array item definition as a Primitive") {
                 val nestedArrayListParam = getParameter<NestedArrayList>() as Parameter.Complex.Object
                 val outerArray = nestedArrayListParam.parameters.find { it.name == "items" } as Parameter.Complex.Array
                 val innerArray = outerArray.itemDefinition as Parameter.Complex.Array
@@ -189,7 +189,7 @@ class ArrayParameterTest : DescribeSpec({
                 innerArray.itemDefinition.shouldBeInstanceOf<Parameter.Primitive>()
             }
 
-            it("Inner array item should have String type") {
+            it("should have String type for inner array item") {
                 val nestedArrayListParam = getParameter<NestedArrayList>() as Parameter.Complex.Object
                 val outerArray = nestedArrayListParam.parameters.find { it.name == "items" } as Parameter.Complex.Array
                 val innerArray = outerArray.itemDefinition as Parameter.Complex.Array
@@ -200,7 +200,7 @@ class ArrayParameterTest : DescribeSpec({
         }
 
         describe("Enum Array Tests") {
-            it("Statuses parameter should be a Complex.Array") {
+            it("should have statuses parameter as a Complex.Array") {
                 val enumArrayListParam = getParameter<EnumArrayList>() as Parameter.Complex.Object
                 val statusesParam = enumArrayListParam.parameters.find { it.name == "statuses" }
 
@@ -208,14 +208,14 @@ class ArrayParameterTest : DescribeSpec({
                 statusesParam should beInstanceOf<Parameter.Complex.Array>()
             }
 
-            it("Statuses item definition should be a Complex.Enum") {
+            it("should have statuses item definition as a Complex.Enum") {
                 val enumArrayListParam = getParameter<EnumArrayList>() as Parameter.Complex.Object
                 val statusesArray = enumArrayListParam.parameters.find { it.name == "statuses" } as Parameter.Complex.Array
 
                 statusesArray.itemDefinition.shouldBeInstanceOf<Parameter.Complex.Enum>()
             }
 
-            it("Enum definition should have correct value type") {
+            it("should have correct value type for enum definition") {
                 val enumArrayListParam = getParameter<EnumArrayList>() as Parameter.Complex.Object
                 val statusesArray = enumArrayListParam.parameters.find { it.name == "statuses" } as Parameter.Complex.Array
                 val enumDefinition = statusesArray.itemDefinition as Parameter.Complex.Enum
@@ -223,7 +223,7 @@ class ArrayParameterTest : DescribeSpec({
                 enumDefinition.valueType shouldBe ParameterType.Primitive.String
             }
 
-            it("Enum definition should have correct values") {
+            it("should have correct values for enum definition") {
                 val enumArrayListParam = getParameter<EnumArrayList>() as Parameter.Complex.Object
                 val statusesArray = enumArrayListParam.parameters.find { it.name == "statuses" } as Parameter.Complex.Array
                 val enumDefinition = statusesArray.itemDefinition as Parameter.Complex.Enum

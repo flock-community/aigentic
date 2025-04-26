@@ -27,23 +27,22 @@ class PrimitiveParameterTest : DescribeSpec({
         return param
     }
 
-
     describe("Primitive Parameter Tests") {
 
         describe("Description Tests") {
-            it("Person id parameter should have correct description") {
+            it("should have correct description for person id parameter") {
                 val personParam = PersonParameter.parameter
                 val idParam = getPrimitiveParameter(personParam, "id")
                 idParam.description shouldBe "Unique identifier for the person"
             }
 
-            it("Person name parameter should have correct description") {
+            it("should have correct description for person name parameter") {
                 val personParam = PersonParameter.parameter
                 val nameParam = getPrimitiveParameter(personParam, "name")
                 nameParam.description shouldBe "Full name of the person"
             }
 
-            it("Person age parameter should have correct description") {
+            it("should have correct description for person age parameter") {
                 val personParam = PersonParameter.parameter
                 val ageParam = getPrimitiveParameter(personParam, "age")
                 ageParam.description shouldBe "Age of the person in years"
@@ -51,13 +50,13 @@ class PrimitiveParameterTest : DescribeSpec({
         }
 
         describe("Type Mapping Tests") {
-            it("String properties should be mapped to String type") {
+            it("should map string properties to String type") {
                 val personParam = PersonParameter.parameter
                 val idParam = getPrimitiveParameter(personParam, "id")
                 idParam.type shouldBe ParameterType.Primitive.String
             }
 
-            it("Integer properties should be mapped to Integer type") {
+            it("should map integer properties to Integer type") {
                 val personParam = PersonParameter.parameter
                 val ageParam = getPrimitiveParameter(personParam, "age")
                 ageParam.type shouldBe ParameterType.Primitive.Integer
@@ -65,19 +64,19 @@ class PrimitiveParameterTest : DescribeSpec({
         }
 
         describe("Nullability Tests") {
-            it("Non-nullable properties should be marked as required") {
+            it("should mark non-nullable properties as required") {
                 val personParam = PersonParameter.parameter
                 val idParam = getPrimitiveParameter(personParam, "id")
                 idParam.isRequired shouldBe true
             }
 
-            it("Nullable properties should be marked as not required") {
+            it("should mark nullable properties as not required") {
                 val personParam = PersonParameter.parameter
                 val nameParam = getPrimitiveParameter(personParam, "name")
                 nameParam.isRequired shouldBe false
             }
 
-            it("All properties in AllNullable should be marked as not required") {
+            it("should mark all properties in AllNullable as not required") {
                 val allNullableParam = getParameter<AllNullable>() as Parameter.Complex.Object
                 allNullableParam shouldNotBe null
 
@@ -88,7 +87,7 @@ class PrimitiveParameterTest : DescribeSpec({
         }
 
         describe("Special Cases Tests") {
-            it("Data class with single property should be processed correctly") {
+            it("should process data class with single property correctly") {
                 val emptyLikeParam = getParameter<EmptyLike>() as Parameter.Complex.Object
                 emptyLikeParam.parameters.size shouldBe 1
 
@@ -99,19 +98,19 @@ class PrimitiveParameterTest : DescribeSpec({
         }
 
         describe("Number Type Tests") {
-            it("Float properties should be mapped to Number type") {
+            it("should map float properties to Number type") {
                 val numberTypesParam = getParameter<NumberTypes>() as Parameter.Complex.Object
                 val floatParam = getPrimitiveParameter(numberTypesParam, "floatValue")
                 floatParam.type shouldBe ParameterType.Primitive.Number
             }
 
-            it("Double properties should be mapped to Number type") {
+            it("should map double properties to Number type") {
                 val numberTypesParam = getParameter<NumberTypes>() as Parameter.Complex.Object
                 val doubleParam = getPrimitiveParameter(numberTypesParam, "doubleValue")
                 doubleParam.type shouldBe ParameterType.Primitive.Number
             }
 
-            it("Nullable float properties should be mapped to Number type and marked as not required") {
+            it("should map nullable float properties to Number type and mark as not required") {
                 val numberTypesParam = getParameter<NumberTypes>() as Parameter.Complex.Object
                 val nullableFloatParam = getPrimitiveParameter(numberTypesParam, "nullableFloat")
                 nullableFloatParam.type shouldBe ParameterType.Primitive.Number
@@ -120,14 +119,14 @@ class PrimitiveParameterTest : DescribeSpec({
         }
 
         describe("Boolean Type Tests") {
-            it("Boolean properties should be mapped to Boolean type") {
+            it("should map boolean properties to Boolean type") {
                 val booleanTypesParam = getParameter<BooleanTypes>() as Parameter.Complex.Object
                 val booleanParam = getPrimitiveParameter(booleanTypesParam, "booleanValue")
                 booleanParam.type shouldBe ParameterType.Primitive.Boolean
                 booleanParam.isRequired shouldBe true
             }
 
-            it("Nullable boolean properties should be mapped to Boolean type and marked as not required") {
+            it("should map nullable boolean properties to Boolean type and mark as not required") {
                 val booleanTypesParam = getParameter<BooleanTypes>() as Parameter.Complex.Object
                 val nullableBooleanParam = getPrimitiveParameter(booleanTypesParam, "nullableBoolean")
                 nullableBooleanParam.type shouldBe ParameterType.Primitive.Boolean
@@ -136,37 +135,37 @@ class PrimitiveParameterTest : DescribeSpec({
         }
 
         describe("All Primitive Types Tests") {
-            it("String value should be mapped to String type") {
+            it("should map string value to String type") {
                 val allPrimitiveTypesParam = getParameter<AllPrimitiveTypes>() as Parameter.Complex.Object
                 val stringParam = getPrimitiveParameter(allPrimitiveTypesParam, "stringValue")
                 stringParam.type shouldBe ParameterType.Primitive.String
             }
 
-            it("Int value should be mapped to Integer type") {
+            it("should map int value to Integer type") {
                 val allPrimitiveTypesParam = getParameter<AllPrimitiveTypes>() as Parameter.Complex.Object
                 val intParam = getPrimitiveParameter(allPrimitiveTypesParam, "intValue")
                 intParam.type shouldBe ParameterType.Primitive.Integer
             }
 
-            it("Long value should be mapped to Integer type") {
+            it("should map long value to Integer type") {
                 val allPrimitiveTypesParam = getParameter<AllPrimitiveTypes>() as Parameter.Complex.Object
                 val longParam = getPrimitiveParameter(allPrimitiveTypesParam, "longValue")
                 longParam.type shouldBe ParameterType.Primitive.Integer
             }
 
-            it("Float value should be mapped to Number type") {
+            it("should map float value to Number type") {
                 val allPrimitiveTypesParam = getParameter<AllPrimitiveTypes>() as Parameter.Complex.Object
                 val floatParam = getPrimitiveParameter(allPrimitiveTypesParam, "floatValue")
                 floatParam.type shouldBe ParameterType.Primitive.Number
             }
 
-            it("Double value should be mapped to Number type") {
+            it("should map double value to Number type") {
                 val allPrimitiveTypesParam = getParameter<AllPrimitiveTypes>() as Parameter.Complex.Object
                 val doubleParam = getPrimitiveParameter(allPrimitiveTypesParam, "doubleValue")
                 doubleParam.type shouldBe ParameterType.Primitive.Number
             }
 
-            it("Boolean value should be mapped to Boolean type") {
+            it("should map boolean value to Boolean type") {
                 val allPrimitiveTypesParam = getParameter<AllPrimitiveTypes>() as Parameter.Complex.Object
                 val booleanParam = getPrimitiveParameter(allPrimitiveTypesParam, "booleanValue")
                 booleanParam.type shouldBe ParameterType.Primitive.Boolean
