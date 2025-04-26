@@ -21,7 +21,6 @@ include(
     "src:code-generation:annotations",
     "src:code-generation:ksp-processor",
     "src:code-generation:ksp-test",
-    "src:code-generation:ksp-gradle-plugin",
     "src:tools:http",
     "src:tools:openapi",
     "src:platform",

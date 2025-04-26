@@ -2,12 +2,7 @@ import org.gradle.api.file.DuplicatesStrategy
 
 plugins {
     `kotlin-dsl`
-    //id("module.publication")
-}
-
-repositories {
-    mavenCentral()
-    google()
+//    id("module.publication")
 }
 
 tasks.withType<ProcessResources> {
@@ -15,8 +10,8 @@ tasks.withType<ProcessResources> {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23")
-    implementation("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.23-1.0.20")
+    implementation(libs.kotlin.gradle.plugin)
+    implementation(libs.ksp.gradle.plugin)
 }
 
 gradlePlugin {

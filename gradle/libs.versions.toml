@@ -55,6 +55,8 @@ wirespec-core = { group = "community.flock.wirespec.compiler", name = "core-jvm"
 logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
 # KSP
 ksp-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradle-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
