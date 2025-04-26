@@ -17,6 +17,7 @@ subprojects {
     configure<SpotlessExtension> {
         kotlin {
             target("**/*.kt")
+            targetExclude("**/build/**")
             trimTrailingWhitespace()
             endWithNewline()
             ktlint().editorConfigOverride(
