@@ -1,6 +1,6 @@
 pluginManagement {
-    includeBuild("convention-plugins")
-    includeBuild("src/code-generation/ksp-gradle-plugin")
+    includeBuild("src/plugins/convention-plugins")
+    includeBuild("src/plugins/gradle-plugin")
     repositories {
         google()
         mavenCentral()
