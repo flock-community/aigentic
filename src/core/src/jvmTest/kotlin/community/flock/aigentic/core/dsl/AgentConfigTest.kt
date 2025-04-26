@@ -4,6 +4,9 @@ import community.flock.aigentic.core.agent.Context
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
+import community.flock.aigentic.core.tool.Parameter
+import community.flock.aigentic.core.tool.ParameterRegistry
+import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.Tool
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -101,7 +104,33 @@ class AgentConfigTest : DescribeSpec({
                 message shouldBe testCase.expectedMessage
             }
         }
+
+        it("should build agent with finishResponse using type parameter") {
+            val testParameter = Parameter.Primitive(
+                name = "testResponse",
+                description = "Test response parameter",
+                isRequired = true,
+                type = ParameterType.Primitive.String
+            )
+
+            ParameterRegistry.register(
+                packageName = "community.flock.aigentic.core.dsl",
+                simpleName = "TestResponse",
+                parameter = testParameter
+            )
+
+            agent {
+                model(mockk(relaxed = true))
+                task("Task description") {}
+                addTool(mockk(relaxed = true))
+                finishResponse<TestResponse>()
+            }.run {
+                responseParameter shouldBe testParameter
+            }
+        }
     }
 })
+
+class TestResponse
 
 private data class MissingPropertyTestCase(val agentConfig: AgentConfig.() -> Unit, val expectedMessage: String)

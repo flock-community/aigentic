@@ -24,7 +24,7 @@ private val geminiKey by lazy {
 }
 
 // Set the active example and provider here
-val activeRunExample = RunExamples.INVOICE_EXTRACTOR_AGENT
+val activeRunExample = RunExamples.ADMINISTRATIVE_AGENT
 val activeProvider = Provider.GEMINI
 
 fun main() {

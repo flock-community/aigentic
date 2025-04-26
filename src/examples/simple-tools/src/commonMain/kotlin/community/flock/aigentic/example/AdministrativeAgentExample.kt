@@ -2,6 +2,7 @@
 
 package community.flock.aigentic.example
 
+import community.flock.aigentic.code.generation.annotations.AigenticParameter
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
@@ -9,16 +10,20 @@ import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.AgentConfig
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
+import community.flock.aigentic.core.tool.ParameterRegistry
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getIntValue
 import community.flock.aigentic.core.tool.getStringValue
+import community.flock.aigentic.generated.parameter.initialize
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 suspend fun runAdministrativeAgentExample(configureModel: AgentConfig.() -> Unit): Run {
+    ParameterRegistry.initialize()
+
     val run =
         agent {
             configureModel()
@@ -38,7 +43,8 @@ suspend fun runAdministrativeAgentExample(configureModel: AgentConfig.() -> Unit
             addTool(askManagerForResponseTool)
             addTool(sendSignalMessageTool)
             addTool(updateEmployeeTool)
-            finishResponse(agentAdministrativeResponse)
+            finishResponse<AgentAdministrativeResponse>()
+//            finishResponse(agentAdministrativeResponse)
         }.start()
 
     when (val result = run.result) {
@@ -204,6 +210,7 @@ val responsePersonItem =
     )
 
 @Serializable
+@AigenticParameter
 data class AgentAdministrativeResponse(
     val messagedPeople: List<String>,
     val completedPeople: List<String>,

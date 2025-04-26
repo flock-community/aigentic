@@ -42,7 +42,7 @@ class GeminiClient(
         }
         install(Logging) {
             logger = Logger.SIMPLE
-            level = LogLevel.NONE
+            level = LogLevel.ALL
         }
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = config.numberOfRetriesOnServerErrors)

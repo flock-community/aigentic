@@ -50,7 +50,7 @@ When working with this project, Junie should:
 - Follow Kotlin coding conventions
 - Keep functions focused and concise
 - Use meaningful variable and function names
-- Don't use comments on variables and function names
+- Don't use comments on variables, function names or tests
 - Use functional programming style
 - Don't add debug logging or other println's
 - Use the YAGNI principle
