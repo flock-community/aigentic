@@ -379,7 +379,7 @@ class AigenticParameterProcessor(
             codeGenerator.createNewFile(
                 dependencies = Dependencies(false),
                 packageName = generatedPackageName,
-                fileName = "ParameterRegistryInitializer",
+                fileName = "AigenticInitializer",
                 extensionName = "kt",
             )
         outputFile.write(content.toByteArray())
@@ -389,10 +389,15 @@ class AigenticParameterProcessor(
         """
         |package $generatedPackageName
         |
+        |import community.flock.aigentic.core.Aigentic
         |import community.flock.aigentic.core.tool.ParameterRegistry
         |
         |fun ParameterRegistry.initialize() {
         |    ${generatedMetadataClasses.joinToString("\n    ") { (_, className) -> "$generatedPackageName.$className" }}
+        |}
+        |
+        |fun Aigentic.initialize() {
+        |    ParameterRegistry.initialize()
         |}
         """.trimMargin()
 }

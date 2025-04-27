@@ -3,6 +3,7 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.code.generation.annotations.AigenticParameter
+import community.flock.aigentic.core.Aigentic
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
@@ -10,7 +11,6 @@ import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.AgentConfig
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
-import community.flock.aigentic.core.tool.ParameterRegistry
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.Tool
@@ -22,8 +22,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 suspend fun runAdministrativeAgentExample(configureModel: AgentConfig.() -> Unit): Run {
-    ParameterRegistry.initialize()
-
     val run =
         agent {
             configureModel()

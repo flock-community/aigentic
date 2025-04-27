@@ -1,11 +1,13 @@
 package community.flock.aigentic.example
 
+import community.flock.aigentic.core.Aigentic
 import community.flock.aigentic.core.agent.inputTokens
 import community.flock.aigentic.core.agent.outputTokens
 import community.flock.aigentic.core.dsl.AgentConfig
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
+import community.flock.aigentic.generated.parameter.initialize
 import community.flock.aigentic.ollama.dsl.ollamaModel
 import community.flock.aigentic.openai.dsl.openAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
@@ -29,6 +31,10 @@ val activeProvider = Provider.GEMINI
 
 fun main() {
     runBlocking {
+
+        // Initialize the Aigentic framework
+        Aigentic.initialize()
+
         when (activeRunExample) {
             RunExamples.ADMINISTRATIVE_AGENT -> runAdministrativeAgentExample(AgentConfig::configureModel)
             RunExamples.KOTLIN_MESSAGE_AGENT -> runKotlinMessageAgentExample(AgentConfig::configureModel)
