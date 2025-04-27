@@ -18,27 +18,28 @@ data class KotlinMessage(val message: String)
 @AigenticResponse
 data class MessageSendResult(val result: String)
 
-fun main(): Unit = runBlocking {
+fun main(): Unit =
+    runBlocking {
+        Aigentic.initialize()
 
-    Aigentic.initialize()
+        val run: Run =
+            agent {
+                geminiModel {
+                    apiKey(geminiKey)
+                    modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
+                }
+                task("Send 2 nice messages about Kotlin") {
+                    addInstruction("use the sendMessageTool to send an individual message")
+                    addInstruction("After the message has been send you're finished")
+                }
+                addTool("sendMessageTool") { input: KotlinMessage ->
+                    MessageSendResult("Sent successfully: ${input.message}")
+                }
+            }.start()
 
-    val run: Run = agent {
-        geminiModel {
-            apiKey(geminiKey)
-            modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
-        }
-        task("Send 2 nice messages about Kotlin") {
-            addInstruction("use the sendMessageTool to send an individual message")
-            addInstruction("After the message has been send you're finished")
-        }
-        addTool("sendMessageTool") { input: KotlinMessage ->
-            MessageSendResult("Sent successfully: ${input.message}")
-        }
-    }.start()
-
-    when (val result = run.result) {
-        is Result.Finished -> "Agent finished successfully"
-        is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
-        is Result.Fatal -> "Agent crashed: ${result.message}"
-    }.also(::println)
-}
+        when (val result = run.result) {
+            is Result.Finished -> "Agent finished successfully"
+            is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
+            is Result.Fatal -> "Agent crashed: ${result.message}"
+        }.also(::println)
+    }

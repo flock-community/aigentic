@@ -13,8 +13,6 @@ import community.flock.aigentic.openai.dsl.openAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import kotlinx.coroutines.runBlocking
 
-
-
 // Set the active example and provider here
 val activeRunExample = RunExamples.ADMINISTRATIVE_AGENT
 val activeProvider = Provider.GEMINI
@@ -77,6 +75,7 @@ fun AgentConfig.configureModel() {
 
 enum class RunExamples {
     ADMINISTRATIVE_AGENT,
+
 //    KOTLIN_MESSAGE_AGENT,
     ITEM_CATEGORIZE_AGENT,
     INVOICE_EXTRACTOR_AGENT,
