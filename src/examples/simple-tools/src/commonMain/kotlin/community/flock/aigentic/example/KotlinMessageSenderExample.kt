@@ -2,7 +2,6 @@ package community.flock.aigentic.example
 
 import community.flock.aigentic.code.generation.annotations.AigenticParameter
 import community.flock.aigentic.code.generation.annotations.AigenticResponse
-import community.flock.aigentic.core.Aigentic
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result

@@ -8,8 +8,6 @@ import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.agent
-import community.flock.aigentic.openai.dsl.openAIModel
-import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
@@ -17,6 +15,8 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getIntValue
 import community.flock.aigentic.core.tool.getStringValue
+import community.flock.aigentic.openai.dsl.openAIModel
+import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
