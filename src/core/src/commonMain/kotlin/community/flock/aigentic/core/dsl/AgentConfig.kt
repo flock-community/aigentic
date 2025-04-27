@@ -12,7 +12,13 @@ import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
+import community.flock.aigentic.core.tool.ToolName
+import community.flock.aigentic.core.tool.TypedTool
 import community.flock.aigentic.core.tool.getParameter
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 
 fun agent(agentConfig: AgentConfig.() -> Unit): Agent = AgentConfig().apply(agentConfig).build()
 
@@ -23,7 +29,7 @@ class AgentConfig : Config<Agent> {
     internal var task: TaskConfig? = null
     internal var contexts: List<Context> = emptyList()
     internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
-    internal val tools = mutableListOf<Tool>()
+    val tools = mutableListOf<Tool>()
     var responseParameter: Parameter? = null
 
     fun AgentConfig.platform(platform: Platform) {
@@ -31,6 +37,24 @@ class AgentConfig : Config<Agent> {
     }
 
     fun AgentConfig.addTool(tool: Tool) = tools.add(tool)
+
+    inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(tool: TypedTool<I, O>) {
+        tools.add(object : Tool {
+            override val name: ToolName = tool.name
+            override val description: String? = tool.description
+            override val parameters: List<Parameter>
+                get() {
+                    val parameter = getParameter<I>() as Parameter.Complex.Object
+                    val bla = parameter.parameters
+                    return bla
+                }
+            override val handler: suspend (toolArguments: JsonObject) -> String = {
+                val obj = Json.decodeFromJsonElement<I>(it)
+                val res = tool.handler(obj)
+                Json.encodeToString<O>(res)
+            }
+        })
+    }
 
     fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) =
         ContextConfig().apply(contextConfig).build()

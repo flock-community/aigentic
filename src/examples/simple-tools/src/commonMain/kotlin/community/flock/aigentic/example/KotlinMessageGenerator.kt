@@ -1,5 +1,6 @@
 package community.flock.aigentic.example
 
+import community.flock.aigentic.code.generation.annotations.AigenticParameter
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.AgentConfig
@@ -8,29 +9,25 @@ import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
+import community.flock.aigentic.core.tool.TypedTool
 import community.flock.aigentic.core.tool.getStringValue
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
-val sendMessageTool =
-    object : Tool {
-        val messageParam =
-            Parameter.Primitive(
-                "message",
-                null,
-                true,
-                Primitive.String,
-            )
+@AigenticParameter
+@Serializable
+data class KotlinMessage(val message: String)
 
-        override val name = ToolName("sendMessage")
-        override val description = "Sends a message"
-        override val parameters = listOf(messageParam)
-
-        override val handler: suspend (JsonObject) -> String = { arguments ->
-
-            val message = messageParam.getStringValue(arguments)
-            "Successfully sent: '$message' "
-        }
+val sendMessageTool = object : TypedTool<KotlinMessage, String> {
+    override val name = ToolName("sendMessageTool")
+    override val description = "Optional description of the tool."
+    override val parameters = emptyList<Parameter>()
+    override val handler: suspend (toolArguments: KotlinMessage) -> String = {
+        "Sent: ${it.message}"
     }
+}
+
+data class MessageToolResult(val result: String)
 
 suspend fun runKotlinMessageAgentExample(configureModel: AgentConfig.() -> Unit): Run {
     val run =

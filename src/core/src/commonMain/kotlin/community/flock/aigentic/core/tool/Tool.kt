@@ -3,8 +3,8 @@ package community.flock.aigentic.core.tool
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmInline
 
-interface ToolHandler<T> {
-    val handler: suspend (toolArguments: JsonObject) -> T
+interface ToolHandler<A, T> {
+    val handler: suspend (toolArguments: A) -> T
 }
 
 interface ToolDescription {
@@ -19,6 +19,8 @@ interface ToolDescription {
 @JvmInline
 value class ToolName(val value: String)
 
-interface Tool : ToolDescription, ToolHandler<String>
+interface Tool : ToolDescription, ToolHandler<JsonObject, String>
 
-internal interface InternalTool<T> : ToolDescription, ToolHandler<T>
+interface TypedTool<I, O>: ToolDescription, ToolHandler<I, O>
+
+internal interface InternalTool<T> : ToolDescription, ToolHandler<JsonObject, T>
