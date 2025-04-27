@@ -1,88 +1,58 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.Aigentic
-import community.flock.aigentic.core.agent.inputTokens
-import community.flock.aigentic.core.agent.outputTokens
-import community.flock.aigentic.core.dsl.AgentConfig
-import community.flock.aigentic.core.model.ModelIdentifier
-import community.flock.aigentic.gemini.dsl.geminiModel
-import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import community.flock.aigentic.generated.parameter.initialize
-import community.flock.aigentic.ollama.dsl.ollamaModel
-import community.flock.aigentic.openai.dsl.openAIModel
-import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import kotlinx.coroutines.runBlocking
 
-// Set the active example and provider here
-val activeRunExample = RunExamples.ADMINISTRATIVE_AGENT
-val activeProvider = Provider.GEMINI
+object AdministrativeAgentExample {
 
-fun main() {
-    runBlocking {
-        // Initialize the Aigentic framework
+    @JvmStatic
+    fun main(args: Array<String>) {
         Aigentic.initialize()
+        runBlocking {
+            runAdministrativeAgentExample(openAIAPIKey)
+        }
+    }
+}
 
-        when (activeRunExample) {
-            RunExamples.ADMINISTRATIVE_AGENT -> runAdministrativeAgentExample(AgentConfig::configureModel)
-//            RunExamples.KOTLIN_MESSAGE_AGENT -> runKotlinMessageAgentExample(AgentConfig::configureModel)
-            RunExamples.ITEM_CATEGORIZE_AGENT ->
-                runItemCategorizeExample(
-                    FileReader.readFileBase64("/table-items.png"),
-                    AgentConfig::configureModel,
-                )
-            /**
-             * PDF is currently only supported by Gemini
-             */
-            RunExamples.INVOICE_EXTRACTOR_AGENT ->
-                invoiceExtractorAgent(
-                    FileReader.readFileBase64("/test-invoice.pdf"),
-                    AgentConfig::configureModel,
-                )
-        }.also {
-            println(
-                """
-                Took ${it.finishedAt - it.startedAt}
-                Input token count: ${it.inputTokens()}
-                Output tokens count: ${it.outputTokens()}
-                """.trimIndent(),
+object InvoiceExtractorExample {
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        Aigentic.initialize()
+        runBlocking {
+            invoiceExtractorAgent(
+                FileReader.readFileBase64("/test-invoice.pdf"),
+                geminiKey
             )
         }
     }
 }
 
-fun AgentConfig.configureModel() {
-    when (activeProvider) {
-        Provider.GEMINI ->
-            geminiModel {
-                apiKey(geminiKey)
-                modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
-            }
-        Provider.OPENAI ->
-            openAIModel {
-                apiKey(openAIAPIKey)
-                modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
-            }
-        Provider.OLLAMA ->
-            ollamaModel {
-                modelIdentifier(
-                    object : ModelIdentifier {
-                        override val stringValue: String = "llama3.1"
-                    },
-                )
-            }
+object ItemCategorizeExample {
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        Aigentic.initialize()
+        runBlocking {
+            runItemCategorizeExample(
+                FileReader.readFileBase64("/table-items.png"),
+                openAIAPIKey
+            )
+        }
     }
 }
 
-enum class RunExamples {
-    ADMINISTRATIVE_AGENT,
+object KotlinMessageSenderExample {
 
-//    KOTLIN_MESSAGE_AGENT,
-    ITEM_CATEGORIZE_AGENT,
-    INVOICE_EXTRACTOR_AGENT,
+    @JvmStatic
+    fun main(args: Array<String>) {
+        Aigentic.initialize()
+        runBlocking {
+            runKotlinMessageAgent(openAIAPIKey)
+        }
+    }
 }
 
-enum class Provider {
-    GEMINI,
-    OPENAI,
-    OLLAMA,
-}
+
+

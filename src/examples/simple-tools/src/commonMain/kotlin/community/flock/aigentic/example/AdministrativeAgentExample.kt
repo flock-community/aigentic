@@ -7,8 +7,9 @@ import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
-import community.flock.aigentic.core.dsl.AgentConfig
 import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.openai.dsl.openAIModel
+import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
@@ -19,10 +20,13 @@ import community.flock.aigentic.core.tool.getStringValue
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
-suspend fun runAdministrativeAgentExample(configureModel: AgentConfig.() -> Unit): Run {
-    val run =
+suspend fun runAdministrativeAgentExample(apiKey: String) {
+    val run: Run =
         agent {
-            configureModel()
+            openAIModel {
+                apiKey(apiKey)
+                modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
+            }
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(
                     "For all employees: only when the employee has not yet received 5 reminders to completed his hours send him a reminder through Signal. Base the tone of the message on the number of reminders sent",
@@ -40,7 +44,6 @@ suspend fun runAdministrativeAgentExample(configureModel: AgentConfig.() -> Unit
             addTool(sendSignalMessageTool)
             addTool(updateEmployeeTool)
             finishResponse<AgentAdministrativeResponse>()
-//            finishResponse(agentAdministrativeResponse)
         }.start()
 
     when (val result = run.result) {
@@ -48,8 +51,6 @@ suspend fun runAdministrativeAgentExample(configureModel: AgentConfig.() -> Unit
         is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
         is Result.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)
-
-    return run
 }
 
 val getAllEmployeesOverviewTool =
@@ -212,31 +213,3 @@ data class AgentAdministrativeResponse(
     val completedPeople: List<String>,
     val notCompletedPeople: List<String>,
 )
-
-val agentAdministrativeResponse =
-    Parameter.Complex.Object(
-        "response",
-        isRequired = false,
-        description = "When all tasks succeeded put the results in this field, when failed skip this response",
-        parameters =
-            listOf(
-                Parameter.Complex.Array(
-                    name = "messagedPeople",
-                    description = "A list of names of people that where messaged",
-                    isRequired = true,
-                    itemDefinition = responsePersonItem,
-                ),
-                Parameter.Complex.Array(
-                    name = "completedPeople",
-                    description = "A list of names of people that have filled in there hours",
-                    isRequired = true,
-                    itemDefinition = responsePersonItem,
-                ),
-                Parameter.Complex.Array(
-                    name = "notCompletedPeople",
-                    description = "A list of names of people that didn't filled in there hours",
-                    isRequired = true,
-                    itemDefinition = responsePersonItem,
-                ),
-            ),
-    )

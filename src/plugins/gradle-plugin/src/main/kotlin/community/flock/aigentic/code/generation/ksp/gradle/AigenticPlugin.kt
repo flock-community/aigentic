@@ -21,6 +21,8 @@ class AigenticPlugin : Plugin<Project> {
             project.dependencies {
                 add("kspCommonMainMetadata", project.project(":src:code-generation:ksp-processor"))
                 add("commonMainImplementation", project.project(":src:code-generation:annotations"))
+                add("kspJvm", project.project(":src:code-generation:ksp-processor"))
+                add("jvmMainImplementation", project.project(":src:code-generation:annotations"))
             }
 
             // Configure Kotlin source sets to include generated code
