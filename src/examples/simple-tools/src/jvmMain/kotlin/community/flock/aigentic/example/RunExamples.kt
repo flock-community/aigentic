@@ -13,20 +13,10 @@ import community.flock.aigentic.openai.dsl.openAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import kotlinx.coroutines.runBlocking
 
-private val openAIAPIKey by lazy {
-    System.getenv("OPENAI_KEY").also {
-        if (it.isNullOrEmpty()) error("Set 'OPENAI_KEY' environment variable!")
-    }
-}
 
-private val geminiKey by lazy {
-    System.getenv("GEMINI_API_KEY").also {
-        if (it.isNullOrEmpty()) error("Set 'GEMINI_API_KEY' environment variable!")
-    }
-}
 
 // Set the active example and provider here
-val activeRunExample = RunExamples.KOTLIN_MESSAGE_AGENT
+val activeRunExample = RunExamples.ADMINISTRATIVE_AGENT
 val activeProvider = Provider.GEMINI
 
 fun main() {
@@ -36,7 +26,7 @@ fun main() {
 
         when (activeRunExample) {
             RunExamples.ADMINISTRATIVE_AGENT -> runAdministrativeAgentExample(AgentConfig::configureModel)
-            RunExamples.KOTLIN_MESSAGE_AGENT -> runKotlinMessageAgentExample(AgentConfig::configureModel)
+//            RunExamples.KOTLIN_MESSAGE_AGENT -> runKotlinMessageAgentExample(AgentConfig::configureModel)
             RunExamples.ITEM_CATEGORIZE_AGENT ->
                 runItemCategorizeExample(
                     FileReader.readFileBase64("/table-items.png"),
@@ -87,7 +77,7 @@ fun AgentConfig.configureModel() {
 
 enum class RunExamples {
     ADMINISTRATIVE_AGENT,
-    KOTLIN_MESSAGE_AGENT,
+//    KOTLIN_MESSAGE_AGENT,
     ITEM_CATEGORIZE_AGENT,
     INVOICE_EXTRACTOR_AGENT,
 }
