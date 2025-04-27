@@ -65,7 +65,7 @@ class AgentConfig : Config<Agent> {
                 override val description: String? = tool.description
                 override val parameters: List<Parameter>
                     get() {
-                       return emptyList()
+                        return emptyList()
                     }
                 override val handler: suspend (toolArguments: JsonObject) -> String = {
                     val res = tool.handler(Unit)

@@ -11,7 +11,7 @@ import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 
 @AigenticParameter
 data class ItemName(
-    val itemName: String
+    val itemName: String,
 )
 
 @AigenticResponse

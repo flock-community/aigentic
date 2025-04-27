@@ -21,6 +21,6 @@ value class ToolName(val value: String)
 
 interface Tool : ToolDescription, ToolHandler<JsonObject, String>
 
-interface TypedTool<I: Any, O: Any> : ToolDescription, ToolHandler<I, O>
+interface TypedTool<I : Any, O : Any> : ToolDescription, ToolHandler<I, O>
 
 internal interface InternalTool<T> : ToolDescription, ToolHandler<JsonObject, T>

@@ -45,9 +45,10 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
     }.also(::println)
 }
 
-private fun getAllEmployeesOverview(): suspend (Unit) -> EmployeesOverviewResponse = {
-    EmployeesOverviewResponse(
-        """
+private fun getAllEmployeesOverview(): suspend (Unit) -> EmployeesOverviewResponse =
+    {
+        EmployeesOverviewResponse(
+            """
         |Employee: Niels
         |Telephone number: 0612345678
         |
@@ -56,9 +57,9 @@ private fun getAllEmployeesOverview(): suspend (Unit) -> EmployeesOverviewRespon
         |
         |Employee: Jan
         |Telephone number: 0643211234
-        """.trimMargin()
-    )
-}
+            """.trimMargin(),
+        )
+    }
 
 private fun updateEmployee(): suspend (UpdateEmployee) -> UpdateEmployeeResponse =
     { input: UpdateEmployee ->
@@ -77,36 +78,36 @@ private fun getManagerResponse(): suspend (EmployeeName) -> ManagerResponse =
 
 private fun getEmployeeByName(): suspend (EmployeeName) -> EmployeeDetailsResponse =
     { input: EmployeeName ->
-        val details = when (input.name) {
-            "Niels" ->
-                """
+        val details =
+            when (input.name) {
+                "Niels" ->
+                    """
                 |Employee: Niels
                 |Telephone number: 0612345678
                 |Has completed hours: NO
                 |Number of reminders sent: 1
-                """.trimMargin()
+                    """.trimMargin()
 
-            "Henk" ->
-                """
+                "Henk" ->
+                    """
                 |Employee: Henk
                 |Telephone number: 0687654321
                 |Has completed hours: YES
                 |Number of reminders sent: 2
-                """.trimMargin()
+                    """.trimMargin()
 
-            "Jan" ->
-                """
+                "Jan" ->
+                    """
                 |Employee: Jan
                 |Telephone number: 0643211234
                 |Has completed hours: NO
                 |Number of reminders sent: 5
-                """.trimMargin()
+                    """.trimMargin()
 
-            else -> "Unknown employee"
-        }
+                else -> "Unknown employee"
+            }
         EmployeeDetailsResponse(details)
     }
-
 
 @AigenticParameter
 data class EmployeeName(

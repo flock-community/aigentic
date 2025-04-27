@@ -5,20 +5,19 @@ import community.flock.aigentic.code.generation.annotations.AigenticResponse
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
-import community.flock.aigentic.core.message.MimeType
-import kotlinx.serialization.Serializable
 
 @AigenticParameter
 data class InvoiceComponents(
-    val components: List<InvoiceComponent>
+    val components: List<InvoiceComponent>,
 )
 
 @AigenticParameter
 data class InvoiceComponent(
     val name: String,
-    val value: String
+    val value: String,
 )
 
 @AigenticResponse
