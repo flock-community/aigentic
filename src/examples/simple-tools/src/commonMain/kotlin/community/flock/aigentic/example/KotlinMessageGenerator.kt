@@ -18,15 +18,7 @@ import kotlinx.serialization.json.JsonObject
 @Serializable
 data class KotlinMessage(val message: String)
 
-val sendMessageTool = object : TypedTool<KotlinMessage, String> {
-    override val name = ToolName("sendMessageTool")
-    override val description = "Optional description of the tool."
-    override val parameters = emptyList<Parameter>()
-    override val handler: suspend (toolArguments: KotlinMessage) -> String = {
-        "Sent: ${it.message}"
-    }
-}
-
+@Serializable
 data class MessageToolResult(val result: String)
 
 suspend fun runKotlinMessageAgentExample(configureModel: AgentConfig.() -> Unit): Run {
@@ -34,10 +26,12 @@ suspend fun runKotlinMessageAgentExample(configureModel: AgentConfig.() -> Unit)
         agent {
             configureModel()
             task("Send 2 nice messages about Kotlin") {
-                addInstruction("use the sendMessage tool to send an individual message")
+                addInstruction("use the sendMessageTool to send an individual message")
                 addInstruction("After the message has been send you're finished")
             }
-            addTool(sendMessageTool)
+            addTool("sendMessageTool") { input: KotlinMessage ->
+                MessageToolResult("Sent: ${input.message}")
+            }
         }.start()
 
     return run

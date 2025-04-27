@@ -56,6 +56,21 @@ class AgentConfig : Config<Agent> {
         })
     }
 
+    inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(
+        name: String,
+        description: String? = null,
+        noinline handler: suspend (I) -> O
+    ) {
+        val tool = object : TypedTool<I, O> {
+            override val name = ToolName(name)
+            override val description = description
+            override val parameters = getParameter<I>()?.let { listOf(it) } ?: emptyList()
+            override val handler: suspend (toolArguments: I) -> O = handler
+        }
+
+        addTool(tool)
+    }
+
     fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) =
         ContextConfig().apply(contextConfig).build()
             .also { contexts = it }
