@@ -30,11 +30,21 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
                     "When you for sure know that the signal message is successfully sent, make sure that you update the numberOfRemindersSent for each and every the specific employee.",
                 )
             }
-            addToolUnit("getAllEmployeesOverview", handler = getAllEmployeesOverview())
-            addTool("getEmployeeDetailByName", handler = getEmployeeByName())
-            addTool("askManagerForResponse", handler = getManagerResponse())
-            addTool("sendSignalMessage", handler = sendSignalMessage())
-            addTool("updateEmployee", handler = updateEmployee())
+            addToolUnit("getAllEmployeesOverview") {
+                getAllEmployeesOverviewHandler()
+            }
+            addTool("getEmployeeDetailByName") { input: EmployeeName ->
+                getEmployeeByName(input)
+            }
+            addTool("askManagerForResponse") { input: EmployeeName ->
+                getManagerResponse(input)
+            }
+            addTool("sendSignalMessage") { input: SignalMessage ->
+                sendSignalMessage(input)
+            }
+            addTool("updateEmployee") { input: UpdateEmployee ->
+                updateEmployee(input)
+            }
             finishResponse<AgentAdministrativeResponse>()
         }.start()
 
@@ -45,69 +55,59 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
     }.also(::println)
 }
 
-private fun getAllEmployeesOverview(): suspend (Unit) -> EmployeesOverviewResponse =
-    {
-        EmployeesOverviewResponse(
-            """
-        |Employee: Niels
-        |Telephone number: 0612345678
-        |
-        |Employee: Henk
-        |Telephone number: 0687654321
-        |
-        |Employee: Jan
-        |Telephone number: 0643211234
-            """.trimMargin(),
-        )
-    }
+private fun getAllEmployeesOverviewHandler(): EmployeesOverviewResponse =
+    EmployeesOverviewResponse(
+        """
+    |Employee: Niels
+    |Telephone number: 0612345678
+    |
+    |Employee: Henk
+    |Telephone number: 0687654321
+    |
+    |Employee: Jan
+    |Telephone number: 0643211234
+        """.trimMargin(),
+    )
 
-private fun updateEmployee(): suspend (UpdateEmployee) -> UpdateEmployeeResponse =
-    { input: UpdateEmployee ->
-        UpdateEmployeeResponse("Updated number of reminders sent for '${input.name}' to '${input.numberOfRemindersSent}'")
-    }
+private fun updateEmployee(input: UpdateEmployee): UpdateEmployeeResponse =
+    UpdateEmployeeResponse("Updated number of reminders sent for '${input.name}' to '${input.numberOfRemindersSent}'")
 
-private fun sendSignalMessage(): suspend (SignalMessage) -> SignalMessageResponse =
-    { input: SignalMessage ->
-        SignalMessageResponse("✉️ Sending: '${input.message}' to '${input.phoneNumber}'")
-    }
+private fun sendSignalMessage(input: SignalMessage): SignalMessageResponse = SignalMessageResponse("✉️ Sending: '${input.message}' to '${input.phoneNumber}'")
 
-private fun getManagerResponse(): suspend (EmployeeName) -> ManagerResponse =
-    { input: EmployeeName ->
-        ManagerResponse("${input.name}, please submit your hours, you have been reminded 5 times already. Kind regards, the management")
-    }
+private fun getManagerResponse(input: EmployeeName): ManagerResponse =
+    ManagerResponse("${input.name}, please submit your hours, you have been reminded 5 times already. Kind regards, the management")
 
-private fun getEmployeeByName(): suspend (EmployeeName) -> EmployeeDetailsResponse =
-    { input: EmployeeName ->
-        val details =
-            when (input.name) {
-                "Niels" ->
-                    """
+private fun getEmployeeByName(input: EmployeeName): EmployeeDetailsResponse {
+    val details =
+        when (input.name) {
+            "Niels" ->
+                """
                 |Employee: Niels
                 |Telephone number: 0612345678
                 |Has completed hours: NO
                 |Number of reminders sent: 1
-                    """.trimMargin()
+                """.trimMargin()
 
-                "Henk" ->
-                    """
+            "Henk" ->
+                """
                 |Employee: Henk
                 |Telephone number: 0687654321
                 |Has completed hours: YES
                 |Number of reminders sent: 2
-                    """.trimMargin()
+                """.trimMargin()
 
-                "Jan" ->
-                    """
+            "Jan" ->
+                """
                 |Employee: Jan
                 |Telephone number: 0643211234
                 |Has completed hours: NO
                 |Number of reminders sent: 5
-                    """.trimMargin()
+                """.trimMargin()
 
-                else -> "Unknown employee"
-            }
-        EmployeeDetailsResponse(details)
-    }
+            else -> "Unknown employee"
+        }
+    return EmployeeDetailsResponse(details)
+}
 
 @AigenticParameter
 data class EmployeeName(
