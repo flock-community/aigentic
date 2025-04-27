@@ -106,17 +106,18 @@ class AgentConfigTest : DescribeSpec({
         }
 
         it("should build agent with finishResponse using type parameter") {
-            val testParameter = Parameter.Primitive(
-                name = "testResponse",
-                description = "Test response parameter",
-                isRequired = true,
-                type = ParameterType.Primitive.String
-            )
+            val testParameter =
+                Parameter.Primitive(
+                    name = "testResponse",
+                    description = "Test response parameter",
+                    isRequired = true,
+                    type = ParameterType.Primitive.String,
+                )
 
             ParameterRegistry.register(
                 packageName = "community.flock.aigentic.core.dsl",
                 simpleName = "TestResponse",
-                parameter = testParameter
+                parameter = testParameter,
             )
 
             agent {

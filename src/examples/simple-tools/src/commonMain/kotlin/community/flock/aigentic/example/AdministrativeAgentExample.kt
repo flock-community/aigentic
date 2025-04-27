@@ -3,7 +3,6 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.code.generation.annotations.AigenticParameter
-import community.flock.aigentic.core.Aigentic
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
@@ -17,7 +16,6 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getIntValue
 import community.flock.aigentic.core.tool.getStringValue
-import community.flock.aigentic.generated.parameter.initialize
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 

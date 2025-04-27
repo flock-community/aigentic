@@ -31,7 +31,6 @@ val activeProvider = Provider.GEMINI
 
 fun main() {
     runBlocking {
-
         // Initialize the Aigentic framework
         Aigentic.initialize()
 

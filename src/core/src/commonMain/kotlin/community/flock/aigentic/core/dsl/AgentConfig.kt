@@ -39,34 +39,37 @@ class AgentConfig : Config<Agent> {
     fun AgentConfig.addTool(tool: Tool) = tools.add(tool)
 
     inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(tool: TypedTool<I, O>) {
-        tools.add(object : Tool {
-            override val name: ToolName = tool.name
-            override val description: String? = tool.description
-            override val parameters: List<Parameter>
-                get() {
-                    val parameter = getParameter<I>() as Parameter.Complex.Object
-                    val bla = parameter.parameters
-                    return bla
+        tools.add(
+            object : Tool {
+                override val name: ToolName = tool.name
+                override val description: String? = tool.description
+                override val parameters: List<Parameter>
+                    get() {
+                        val parameter = getParameter<I>() as Parameter.Complex.Object
+                        val bla = parameter.parameters
+                        return bla
+                    }
+                override val handler: suspend (toolArguments: JsonObject) -> String = {
+                    val obj = Json.decodeFromJsonElement<I>(it)
+                    val res = tool.handler(obj)
+                    Json.encodeToString<O>(res)
                 }
-            override val handler: suspend (toolArguments: JsonObject) -> String = {
-                val obj = Json.decodeFromJsonElement<I>(it)
-                val res = tool.handler(obj)
-                Json.encodeToString<O>(res)
-            }
-        })
+            },
+        )
     }
 
     inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(
         name: String,
         description: String? = null,
-        noinline handler: suspend (I) -> O
+        noinline handler: suspend (I) -> O,
     ) {
-        val tool = object : TypedTool<I, O> {
-            override val name = ToolName(name)
-            override val description = description
-            override val parameters = getParameter<I>()?.let { listOf(it) } ?: emptyList()
-            override val handler: suspend (toolArguments: I) -> O = handler
-        }
+        val tool =
+            object : TypedTool<I, O> {
+                override val name = ToolName(name)
+                override val description = description
+                override val parameters = getParameter<I>()?.let { listOf(it) } ?: emptyList()
+                override val handler: suspend (toolArguments: I) -> O = handler
+            }
 
         addTool(tool)
     }
