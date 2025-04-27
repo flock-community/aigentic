@@ -37,7 +37,6 @@ suspend fun invoiceExtractorAgent(
             task("Extract the different invoice components") {
                 addInstruction("Please provide list of the invoice components")
             }
-            // Use the new addTool function with lambda
             addTool("saveInvoiceComponents") { input: InvoiceComponents ->
                 SaveResult("Saved ${input.components.size} invoice components successfully")
             }

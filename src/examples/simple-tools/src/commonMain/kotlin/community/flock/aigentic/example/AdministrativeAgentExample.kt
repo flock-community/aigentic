@@ -9,16 +9,15 @@ import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.agent
-import community.flock.aigentic.openai.dsl.openAIModel
-import community.flock.aigentic.openai.model.OpenAIModelIdentifier
-import kotlinx.serialization.Serializable
+import community.flock.aigentic.gemini.dsl.geminiModel
+import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
 suspend fun runAdministrativeAgentExample(apiKey: String) {
     val run: Run =
         agent {
-            openAIModel {
+            geminiModel {
                 apiKey(apiKey)
-                modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
+                modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
             }
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(
@@ -31,56 +30,11 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
                     "When you for sure know that the signal message is successfully sent, make sure that you update the numberOfRemindersSent for each and every the specific employee.",
                 )
             }
-            addTool("getAllEmployeesOverview") { _: EmptyInput ->
-                EmployeesOverviewResponse(
-                    """
-                    |Employee: Niels
-                    |Telephone number: 0612345678
-                    |
-                    |Employee: Henk
-                    |Telephone number: 0687654321
-                    |
-                    |Employee: Jan
-                    |Telephone number: 0643211234
-                    """.trimMargin()
-                )
-            }
-            addTool("getEmployeeDetailByName") { input: EmployeeName ->
-                val details = when (input.name) {
-                    "Niels" ->
-                        """
-                        |Employee: Niels
-                        |Telephone number: 0612345678
-                        |Has completed hours: NO
-                        |Number of reminders sent: 1
-                        """.trimMargin()
-                    "Henk" ->
-                        """
-                        |Employee: Henk
-                        |Telephone number: 0687654321
-                        |Has completed hours: YES
-                        |Number of reminders sent: 2
-                        """.trimMargin()
-                    "Jan" ->
-                        """
-                        |Employee: Jan
-                        |Telephone number: 0643211234
-                        |Has completed hours: NO
-                        |Number of reminders sent: 5
-                        """.trimMargin()
-                    else -> "Unknown employee"
-                }
-                EmployeeDetailsResponse(details)
-            }
-            addTool("askManagerForResponse") { input: EmployeeName ->
-                ManagerResponse("${input.name}, please submit your hours, you have been reminded 5 times already. Kind regards, the management")
-            }
-            addTool("sendSignalMessage") { input: SignalMessage ->
-                SignalMessageResponse("✉️ Sending: '${input.message}' to '${input.phoneNumber}'")
-            }
-            addTool("updateEmployee") { input: UpdateEmployee ->
-                UpdateEmployeeResponse("Updated number of reminders sent for '${input.name}' to '${input.numberOfRemindersSent}'")
-            }
+            addToolUnit("getAllEmployeesOverview", handler = getAllEmployeesOverview())
+            addTool("getEmployeeDetailByName", handler = getEmployeeByName())
+            addTool("askManagerForResponse", handler = getManagerResponse())
+            addTool("sendSignalMessage", handler = sendSignalMessage())
+            addTool("updateEmployee", handler = updateEmployee())
             finishResponse<AgentAdministrativeResponse>()
         }.start()
 
@@ -91,29 +45,86 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
     }.also(::println)
 }
 
+private fun getAllEmployeesOverview(): suspend (Unit) -> EmployeesOverviewResponse = {
+    EmployeesOverviewResponse(
+        """
+        |Employee: Niels
+        |Telephone number: 0612345678
+        |
+        |Employee: Henk
+        |Telephone number: 0687654321
+        |
+        |Employee: Jan
+        |Telephone number: 0643211234
+        """.trimMargin()
+    )
+}
 
-// Parameter classes for tools
-@AigenticParameter
-data class EmptyInput(val dummy: String = "")
+private fun updateEmployee(): suspend (UpdateEmployee) -> UpdateEmployeeResponse =
+    { input: UpdateEmployee ->
+        UpdateEmployeeResponse("Updated number of reminders sent for '${input.name}' to '${input.numberOfRemindersSent}'")
+    }
+
+private fun sendSignalMessage(): suspend (SignalMessage) -> SignalMessageResponse =
+    { input: SignalMessage ->
+        SignalMessageResponse("✉️ Sending: '${input.message}' to '${input.phoneNumber}'")
+    }
+
+private fun getManagerResponse(): suspend (EmployeeName) -> ManagerResponse =
+    { input: EmployeeName ->
+        ManagerResponse("${input.name}, please submit your hours, you have been reminded 5 times already. Kind regards, the management")
+    }
+
+private fun getEmployeeByName(): suspend (EmployeeName) -> EmployeeDetailsResponse =
+    { input: EmployeeName ->
+        val details = when (input.name) {
+            "Niels" ->
+                """
+                |Employee: Niels
+                |Telephone number: 0612345678
+                |Has completed hours: NO
+                |Number of reminders sent: 1
+                """.trimMargin()
+
+            "Henk" ->
+                """
+                |Employee: Henk
+                |Telephone number: 0687654321
+                |Has completed hours: YES
+                |Number of reminders sent: 2
+                """.trimMargin()
+
+            "Jan" ->
+                """
+                |Employee: Jan
+                |Telephone number: 0643211234
+                |Has completed hours: NO
+                |Number of reminders sent: 5
+                """.trimMargin()
+
+            else -> "Unknown employee"
+        }
+        EmployeeDetailsResponse(details)
+    }
+
 
 @AigenticParameter
 data class EmployeeName(
-    val name: String
+    val name: String,
 )
 
 @AigenticParameter
 data class UpdateEmployee(
     val name: String,
-    val numberOfRemindersSent: Int
+    val numberOfRemindersSent: Int,
 )
 
 @AigenticParameter
 data class SignalMessage(
     val phoneNumber: String,
-    val message: String
+    val message: String,
 )
 
-// Response classes for tools
 @AigenticResponse
 data class EmployeeDetailsResponse(val details: String)
 
@@ -129,7 +140,6 @@ data class SignalMessageResponse(val message: String)
 @AigenticResponse
 data class EmployeesOverviewResponse(val overview: String)
 
-@Serializable
 @AigenticParameter
 data class AgentAdministrativeResponse(
     val messagedPeople: List<String>,
