@@ -18,9 +18,6 @@ import kotlinx.serialization.json.JsonObject
 @Serializable
 data class KotlinMessage(val message: String)
 
-@Serializable
-data class MessageToolResult(val result: String)
-
 suspend fun runKotlinMessageAgentExample(configureModel: AgentConfig.() -> Unit): Run {
     val run =
         agent {
@@ -30,7 +27,7 @@ suspend fun runKotlinMessageAgentExample(configureModel: AgentConfig.() -> Unit)
                 addInstruction("After the message has been send you're finished")
             }
             addTool("sendMessageTool") { input: KotlinMessage ->
-                MessageToolResult("Sent: ${input.message}")
+                "Sent successfully: ${input.message}"
             }
         }.start()
 
