@@ -20,12 +20,14 @@ class AigenticPlugin : Plugin<Project> {
             // Add KSP dependency
             project.dependencies {
                 add("kspCommonMainMetadata", project.project(":src:code-generation:ksp-processor"))
+                add("kspJvm", project.project(":src:code-generation:ksp-processor"))
                 add("commonMainImplementation", project.project(":src:code-generation:annotations"))
             }
 
             // Configure Kotlin source sets to include generated code
             project.extensions.getByType<KotlinMultiplatformExtension>().apply {
                 sourceSets.getByName("commonMain").kotlin.srcDir(extension.generateSourceDir)
+                sourceSets.getByName("jvmMain").kotlin.srcDir(extension.generateJvmSourceDir)
             }
 
             // Fix task dependencies between KSP and Kotlin compile tasks
