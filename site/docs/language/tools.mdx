@@ -1,0 +1,169 @@
+---
+id: tools
+title: Tools
+slug: /language/tools
+sidebar_position: 3
+---
+
+## Tools in Aigentic
+
+Tools are a core concept in Aigentic that extend an agent's capabilities beyond just conversation. They allow agents to perform specific actions, access external systems, and process data in structured ways.
+
+## Creating Tools
+
+Tools in Aigentic are defined using the Kotlin DSL:
+
+```kotlin
+tool("calculator") {
+    description = "Performs basic arithmetic calculations"
+
+    // Define input schema
+    input {
+        property("expression", String::class) {
+            description = "The arithmetic expression to evaluate"
+        }
+    }
+
+    // Define output schema
+    output {
+        property("result", Double::class) {
+            description = "The result of the calculation"
+        }
+    }
+
+    // Implement the tool logic
+    handler { input ->
+        val expression = input.get<String>("expression")
+        val result = evaluateExpression(expression)
+        mapOf("result" to result)
+    }
+}
+```
+
+## Built-in Tools
+
+Aigentic provides several built-in tools that you can use out of the box:
+
+### HTTP Tool
+
+Make HTTP requests to external APIs:
+
+```kotlin
+// Add the HTTP tool to your agent
+tool(HttpTool())
+
+// Or with custom configuration
+tool(HttpTool(
+    baseUrl = "https://api.example.com",
+    defaultHeaders = mapOf("Authorization" to "Bearer ${apiKey}")
+))
+```
+
+### OpenAPI Tool
+
+Interact with REST APIs defined by OpenAPI specifications:
+
+```kotlin
+// Add an OpenAPI tool to your agent
+tool(OpenApiTool("https://api.example.com/openapi.json"))
+
+// Or with a local file
+tool(OpenApiTool(File("path/to/openapi.json")))
+```
+
+### File System Tool
+
+Access and manipulate files:
+
+```kotlin
+// Add the file system tool to your agent
+tool(FileSystemTool(
+    basePath = "/safe/directory",
+    allowedOperations = setOf(
+        FileOperation.READ,
+        FileOperation.WRITE,
+        FileOperation.LIST
+    )
+))
+```
+
+## Tool Composition
+
+You can compose multiple tools together to create more complex capabilities:
+
+```kotlin
+// Create a composite tool
+val researchTool = CompositeTool(
+    name = "research",
+    description = "Research information from multiple sources",
+    tools = listOf(
+        HttpTool(),
+        SearchTool(),
+        SummarizationTool()
+    )
+)
+
+// Add it to your agent
+tool(researchTool)
+```
+
+## Tool Security
+
+When implementing tools, consider these security best practices:
+
+1. **Input Validation**: Always validate inputs before processing
+2. **Scope Limitation**: Restrict tool capabilities to only what's necessary
+3. **Resource Limits**: Implement timeouts and resource constraints
+4. **Error Handling**: Gracefully handle and report errors
+5. **Audit Logging**: Log tool usage for monitoring and debugging
+
+## Advanced Tool Features
+
+### Streaming Responses
+
+Tools can provide streaming responses for long-running operations:
+
+```kotlin
+tool("streamingTool") {
+    // ... schema definitions ...
+
+    streamingHandler { input, emitter ->
+        // Process in chunks and emit results
+        for (i in 1..5) {
+            emitter.emit(mapOf("progress" to i * 20))
+            delay(500) // Simulate work
+        }
+        mapOf("result" to "Completed")
+    }
+}
+```
+
+### Asynchronous Tools
+
+For operations that take time to complete:
+
+```kotlin
+tool("asyncTask") {
+    // ... schema definitions ...
+
+    asyncHandler { input ->
+        // Return a deferred result
+        coroutineScope {
+            async {
+                delay(5000) // Simulate long-running task
+                mapOf("result" to "Task completed")
+            }
+        }
+    }
+}
+```
+
+## Tool Development Best Practices
+
+1. **Clear Descriptions**: Write clear, concise descriptions for tools and parameters
+2. **Focused Functionality**: Each tool should do one thing well
+3. **Robust Error Handling**: Provide helpful error messages when things go wrong
+4. **Comprehensive Schema**: Define detailed schemas for inputs and outputs
+5. **Testability**: Write unit tests for your tools
+6. **Documentation**: Document examples of how to use the tool
+7. **Performance**: Optimize for speed and resource usage

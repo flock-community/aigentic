@@ -4,6 +4,6 @@ build/
 .DS_Store
 .env
 *.iml
-docs
+/docs
 node_modules
 

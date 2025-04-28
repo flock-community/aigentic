@@ -1,0 +1,163 @@
+---
+id: providers
+title: Providers
+slug: /language/providers
+sidebar_position: 1
+---
+
+## LLM Providers in Aigentic
+
+Providers in Aigentic are the bridge between your application and various Large Language Model (LLM) services. Aigentic is designed to be model-agnostic, allowing you to easily switch between different LLM providers without changing your application logic.
+
+## Supported Providers
+
+Aigentic supports multiple LLM providers out of the box:
+
+### OpenAI
+
+Connect to OpenAI's models like GPT-4, GPT-3.5, and more:
+
+```kotlin
+val openAIProvider = OpenAIProvider(
+    apiKey = System.getenv("OPENAI_API_KEY"),
+    model = "gpt-4o",
+    temperature = 0.7,
+    maxTokens = 2000
+)
+
+val agent = agent {
+    provider = openAIProvider
+    // Rest of agent configuration...
+}
+```
+
+#### Configuration Options
+
+- `apiKey`: Your OpenAI API key
+- `model`: The model to use (e.g., "gpt-4o", "gpt-3.5-turbo")
+- `temperature`: Controls randomness (0.0 to 1.0)
+- `maxTokens`: Maximum tokens in the response
+- `topP`: Controls diversity via nucleus sampling
+- `presencePenalty`: Penalizes new tokens based on presence in text
+- `frequencyPenalty`: Penalizes new tokens based on frequency in text
+- `baseUrl`: Optional custom API endpoint
+
+### Gemini (Google)
+
+Connect to Google's Gemini models:
+
+```kotlin
+val geminiProvider = GeminiProvider(
+    apiKey = System.getenv("GEMINI_API_KEY"),
+    model = "gemini-pro",
+    temperature = 0.8,
+    maxOutputTokens = 1024
+)
+
+val agent = agent {
+    provider = geminiProvider
+    // Rest of agent configuration...
+}
+```
+
+#### Configuration Options
+
+- `apiKey`: Your Google API key
+- `model`: The model to use (e.g., "gemini-pro", "gemini-ultra")
+- `temperature`: Controls randomness
+- `maxOutputTokens`: Maximum tokens in the response
+- `topK`: Limits token selection to top K options
+- `topP`: Controls diversity via nucleus sampling
+
+### Ollama
+
+Connect to locally hosted models via Ollama:
+
+```kotlin
+val ollamaProvider = OllamaProvider(
+    baseUrl = "http://localhost:11434",
+    model = "llama3",
+    temperature = 0.5
+)
+
+val agent = agent {
+    provider = ollamaProvider
+    // Rest of agent configuration...
+}
+```
+
+#### Configuration Options
+
+- `baseUrl`: URL of your Ollama instance
+- `model`: The model to use (e.g., "llama3", "mistral")
+- `temperature`: Controls randomness
+- `numPredict`: Maximum number of tokens to predict
+
+### JSON Schema Provider
+
+For structured output with any LLM:
+
+```kotlin
+val jsonSchemaProvider = JsonSchemaProvider(
+    baseProvider = openAIProvider,
+    enforceSchema = true
+)
+
+val agent = agent {
+    provider = jsonSchemaProvider
+    // Rest of agent configuration...
+}
+```
+
+#### Configuration Options
+
+- `baseProvider`: The underlying LLM provider
+- `enforceSchema`: Whether to strictly enforce schema compliance
+- `maxRetries`: Number of retries for invalid responses
+
+## Creating Custom Providers
+
+You can create custom providers by implementing the `Provider` interface:
+
+```kotlin
+class MyCustomProvider(
+    private val apiKey: String,
+    private val model: String
+) : Provider {
+    override suspend fun generate(
+        messages: List<Message>,
+        tools: List<Tool>?,
+        options: GenerateOptions?
+    ): GenerateResponse {
+        // Custom implementation to connect to your LLM service
+        // ...
+    }
+
+    override suspend fun generateStream(
+        messages: List<Message>,
+        tools: List<Tool>?,
+        options: GenerateOptions?
+    ): Flow<GenerateResponseChunk> {
+        // Custom implementation for streaming responses
+        // ...
+    }
+}
+```
+
+## Provider Selection Strategy
+
+When choosing a provider, consider these factors:
+
+1. **Capabilities**: Different models excel at different tasks
+2. **Cost**: Pricing varies significantly between providers
+3. **Latency**: Response time requirements for your application
+4. **Privacy**: Data handling policies and compliance requirements
+5. **Availability**: API reliability and rate limits
+
+## Best Practices
+
+1. **Environment Variables**: Store API keys in environment variables
+2. **Provider Abstraction**: Design your code to easily switch providers
+3. **Fallback Mechanisms**: Implement fallbacks between providers
+4. **Caching**: Cache responses when appropriate to reduce costs
+5. **Monitoring**: Track usage, costs, and performance metrics

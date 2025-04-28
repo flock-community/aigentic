@@ -1,0 +1,264 @@
+---
+id: getting-started
+title: Getting Started
+slug: /getting-started
+sidebar_position: 0
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+## What is Aigentic?
+
+Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications. It streamlines the process of creating, deploying, and managing LLM agents within your software ecosystem.
+
+With Aigentic, you can:
+- Create AI agents with a clean, intuitive Kotlin DSL
+- Connect to various LLM providers (OpenAI, Gemini, Ollama, and more)
+- Define custom tools for your agents to use
+- Handle complex conversations and multi-step reasoning
+
+## Installation
+
+Aigentic can be added to your project using Gradle or Maven.
+
+<Tabs>
+  <TabItem value="gradle-kotlin" label="Gradle (Kotlin)">
+    Add the following to your `build.gradle.kts` file:
+
+```kotlin
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("io.aigentic:aigentic-core:{{AIGENTIC_VERSION}}")
+
+    // Add provider implementations as needed
+    implementation("io.aigentic:aigentic-provider-openai:{{AIGENTIC_VERSION}}")
+    implementation("io.aigentic:aigentic-provider-gemini:{{AIGENTIC_VERSION}}")
+    implementation("io.aigentic:aigentic-provider-ollama:{{AIGENTIC_VERSION}}")
+
+    // Add tools as needed
+    implementation("io.aigentic:aigentic-tools-http:{{AIGENTIC_VERSION}}")
+    implementation("io.aigentic:aigentic-tools-openapi:{{AIGENTIC_VERSION}}")
+}
+```
+  </TabItem>
+  <TabItem value="gradle-groovy" label="Gradle (Groovy)">
+    Add the following to your `build.gradle` file:
+
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'io.aigentic:aigentic-core:{{AIGENTIC_VERSION}}'
+
+    // Add provider implementations as needed
+    implementation 'io.aigentic:aigentic-provider-openai:{{AIGENTIC_VERSION}}'
+    implementation 'io.aigentic:aigentic-provider-gemini:{{AIGENTIC_VERSION}}'
+    implementation 'io.aigentic:aigentic-provider-ollama:{{AIGENTIC_VERSION}}'
+
+    // Add tools as needed
+    implementation 'io.aigentic:aigentic-tools-http:{{AIGENTIC_VERSION}}'
+    implementation 'io.aigentic:aigentic-tools-openapi:{{AIGENTIC_VERSION}}'
+}
+```
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+    Add the following to your `pom.xml` file:
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>io.aigentic</groupId>
+        <artifactId>aigentic-core</artifactId>
+        <version>{{AIGENTIC_VERSION}}</version>
+    </dependency>
+
+    <!-- Add provider implementations as needed -->
+    <dependency>
+        <groupId>io.aigentic</groupId>
+        <artifactId>aigentic-provider-openai</artifactId>
+        <version>{{AIGENTIC_VERSION}}</version>
+    </dependency>
+
+    <!-- Add tools as needed -->
+    <dependency>
+        <groupId>io.aigentic</groupId>
+        <artifactId>aigentic-tools-http</artifactId>
+        <version>{{AIGENTIC_VERSION}}</version>
+    </dependency>
+</dependencies>
+```
+  </TabItem>
+</Tabs>
+
+## Basic Example
+
+Here's a simple example of creating an AI agent with Aigentic using the Kotlin DSL:
+
+```kotlin
+// Initialize the OpenAI provider
+val openAI = OpenAIProvider(
+    apiKey = System.getenv("OPENAI_API_KEY"),
+    model = "gpt-4o"
+)
+
+// Create an agent
+val agent = agent {
+    provider = openAI
+
+    // Define the system prompt
+    systemPrompt = """
+        You are a helpful assistant that provides information about Kotlin programming.
+        Be concise and provide code examples when appropriate.
+    """
+
+    // Add a simple calculator tool
+    tool("calculator") {
+        description = "Performs basic arithmetic calculations"
+
+        // Define the input schema
+        input {
+            property("expression", String::class) {
+                description = "The arithmetic expression to evaluate (e.g., '2 + 2')"
+            }
+        }
+
+        // Define the output schema
+        output {
+            property("result", Double::class) {
+                description = "The result of the calculation"
+            }
+        }
+
+        // Implement the tool logic
+        handler { input ->
+            val expression = input.get<String>("expression")
+            val result = evaluateExpression(expression)
+            mapOf("result" to result)
+        }
+    }
+}
+
+// Use the agent
+suspend fun main() {
+    val response = agent.execute("What is the result of 15 * 7?")
+    println(response.content)
+}
+
+// Helper function to evaluate expressions
+fun evaluateExpression(expression: String): Double {
+    // Simple implementation for demo purposes
+    return when {
+        "+" in expression -> {
+            val (a, b) = expression.split("+").map { it.trim().toDouble() }
+            a + b
+        }
+        "-" in expression -> {
+            val (a, b) = expression.split("-").map { it.trim().toDouble() }
+            a - b
+        }
+        "*" in expression -> {
+            val (a, b) = expression.split("*").map { it.trim().toDouble() }
+            a * b
+        }
+        "/" in expression -> {
+            val (a, b) = expression.split("/").map { it.trim().toDouble() }
+            a / b
+        }
+        else -> expression.toDouble()
+    }
+}
+```
+
+## Advanced Example: Multi-step Reasoning
+
+Aigentic excels at handling complex tasks that require multiple steps of reasoning:
+
+```kotlin
+// Create an agent with HTTP capabilities
+val researchAgent = agent {
+    provider = openAI
+
+    systemPrompt = """
+        You are a research assistant that helps find information online.
+        Follow these steps for each query:
+        1. Determine what information is needed
+        2. Search for relevant information using the provided tools
+        3. Synthesize the information into a concise response
+        4. Cite your sources
+    """
+
+    // Add HTTP tool for web requests
+    tool(HttpTool())
+
+    // Add a search tool
+    tool("search") {
+        description = "Search for information on the web"
+
+        input {
+            property("query", String::class) {
+                description = "The search query"
+            }
+        }
+
+        output {
+            property("results", List::class) {
+                description = "List of search results"
+                items {
+                    property("title", String::class)
+                    property("url", String::class)
+                    property("snippet", String::class)
+                }
+            }
+        }
+
+        handler { input ->
+            val query = input.get<String>("query")
+            // Implementation would connect to a search API
+            mapOf("results" to listOf(
+                mapOf(
+                    "title" to "Example Result 1",
+                    "url" to "https://example.com/1",
+                    "snippet" to "This is an example search result."
+                ),
+                mapOf(
+                    "title" to "Example Result 2",
+                    "url" to "https://example.com/2",
+                    "snippet" to "Another example search result."
+                )
+            ))
+        }
+    }
+}
+
+// Use the agent
+suspend fun main() {
+    val response = researchAgent.execute("What are the latest developments in Kotlin Multiplatform?")
+    println(response.content)
+}
+```
+
+## What's next?
+
+<div style={{ display: 'flex', gap: '20px' }}>  {}
+    <div style={{ flex: '1', border: '1px solid #ccc', padding: '15px', borderRadius: '5px' }}>
+        <h3>Kotlin DSL</h3>
+        <p>A comprehensive guide to the Aigentic Kotlin DSL for building AI agents.</p>
+        <a href="/docs/language">Read More</a>
+    </div>
+    <div style={{ flex: '1', border: '1px solid #ccc', padding: '15px', borderRadius: '5px' }}>
+        <h3>Providers</h3>
+        <p>Learn about the different LLM providers supported by Aigentic.</p>
+        <a href="/docs/providers">Read More</a>
+    </div>
+    <div style={{ flex: '1', border: '1px solid #ccc', padding: '15px', borderRadius: '5px' }}>
+        <h3>Tools</h3>
+        <p>Explore the built-in tools and learn how to create custom tools.</p>
+        <a href="/docs/tools">Read More</a>
+    </div>
+</div>

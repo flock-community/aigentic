@@ -1,0 +1,193 @@
+---
+id: language
+title: Kotlin DSL
+slug: /language
+sidebar_position: 1
+---
+
+## Aigentic Kotlin DSL
+
+The Aigentic Kotlin DSL provides a powerful and intuitive way to build AI agents in your Kotlin applications. This guide covers the core components and concepts of the DSL.
+
+## Agent Creation
+
+The entry point to the Aigentic DSL is the `agent` function, which creates a new agent with the specified configuration:
+
+```kotlin
+val myAgent = agent {
+    // Agent configuration goes here
+    provider = openAIProvider
+    systemPrompt = "You are a helpful assistant."
+
+    // Add tools, configure behavior, etc.
+}
+```
+
+### Core Components
+
+An agent consists of several key components:
+
+- **Provider**: The LLM provider to use (OpenAI, Gemini, etc.)
+- **System Prompt**: Instructions that define the agent's behavior
+- **Tools**: Capabilities that the agent can use to perform tasks
+- **Memory**: Optional storage for maintaining conversation context
+
+## Providers
+
+Providers connect your agent to specific LLM implementations. Aigentic supports multiple providers:
+
+```kotlin
+// OpenAI provider
+val openAIProvider = OpenAIProvider(
+    apiKey = System.getenv("OPENAI_API_KEY"),
+    model = "gpt-4o"
+)
+
+// Gemini provider
+val geminiProvider = GeminiProvider(
+    apiKey = System.getenv("GEMINI_API_KEY"),
+    model = "gemini-pro"
+)
+
+// Ollama provider (local models)
+val ollamaProvider = OllamaProvider(
+    baseUrl = "http://localhost:11434",
+    model = "llama3"
+)
+```
+
+## System Prompts
+
+The system prompt defines the agent's personality, capabilities, and constraints:
+
+```kotlin
+agent {
+    systemPrompt = """
+        You are a customer service assistant for a tech company.
+
+        Guidelines:
+        - Be polite and professional
+        - Answer questions about products and services
+        - Escalate complex issues to human support
+        - Never make up information
+    """
+}
+```
+
+## Tools
+
+Tools extend an agent's capabilities beyond just conversation. Aigentic provides a flexible way to define tools:
+
+```kotlin
+agent {
+    // Add a simple calculator tool
+    tool("calculator") {
+        description = "Performs basic arithmetic calculations"
+
+        // Define the input schema
+        input {
+            property("expression", String::class) {
+                description = "The arithmetic expression to evaluate"
+            }
+        }
+
+        // Define the output schema
+        output {
+            property("result", Double::class) {
+                description = "The result of the calculation"
+            }
+        }
+
+        // Implement the tool logic
+        handler { input ->
+            val expression = input.get<String>("expression")
+            val result = evaluateExpression(expression)
+            mapOf("result" to result)
+        }
+    }
+}
+```
+
+### Built-in Tools
+
+Aigentic comes with several built-in tools:
+
+```kotlin
+agent {
+    // HTTP tool for making web requests
+    tool(HttpTool())
+
+    // OpenAPI tool for interacting with REST APIs
+    tool(OpenApiTool("https://api.example.com/openapi.json"))
+}
+```
+
+## Executing Agents
+
+Once configured, agents can be executed to process user inputs:
+
+```kotlin
+// Simple execution with a string input
+val response = myAgent.execute("What's the weather like today?")
+println(response.content)
+
+// Execution with a structured message
+val response = myAgent.execute(Message.User("What's the weather like today?"))
+
+// Conversation with multiple turns
+val conversation = myAgent.conversation()
+conversation.addMessage(Message.User("Hello, who are you?"))
+val response1 = conversation.execute()
+
+conversation.addMessage(Message.User("Can you help me with a math problem?"))
+val response2 = conversation.execute()
+```
+
+## Advanced Features
+
+### Streaming Responses
+
+For real-time interactions, Aigentic supports streaming responses:
+
+```kotlin
+myAgent.executeStreaming("Tell me a story") { chunk ->
+    print(chunk.content)
+}
+```
+
+### Function Calling
+
+Agents can automatically determine which tools to use:
+
+```kotlin
+val response = myAgent.execute("What's 25 * 16?")
+// The agent will automatically use the calculator tool
+```
+
+### Memory and Context Management
+
+Maintain conversation history and context:
+
+```kotlin
+agent {
+    memory = BufferedMemory(maxMessages = 10)
+}
+```
+
+## Best Practices
+
+When working with the Aigentic DSL:
+
+1. **Be specific in system prompts**: Clearly define the agent's role and constraints
+2. **Design focused tools**: Each tool should have a single, well-defined purpose
+3. **Validate inputs and outputs**: Use schema definitions to ensure data integrity
+4. **Handle errors gracefully**: Implement error handling in tool handlers
+5. **Test thoroughly**: Create unit tests for your agents and tools
+
+## Code Organization
+
+Organize your Aigentic code for maintainability:
+
+- Define reusable tools in separate files
+- Create agent factories for common configurations
+- Use dependency injection for providers and external services
