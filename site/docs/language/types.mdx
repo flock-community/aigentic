@@ -1,0 +1,201 @@
+---
+id: types
+title: Schema System
+slug: /language/types
+sidebar_position: 2
+---
+
+## Schema System in Aigentic
+
+Aigentic uses a powerful schema system to define the structure of data for tool inputs and outputs. This ensures type safety and provides clear documentation for both developers and AI models.
+
+## Defining Schemas
+
+Schemas in Aigentic are defined using the Kotlin DSL within tool definitions:
+
+```kotlin
+tool("weatherForecast") {
+    description = "Get weather forecast for a location"
+
+    // Input schema
+    input {
+        property("location", String::class) {
+            description = "The city and country, e.g., 'Amsterdam, Netherlands'"
+            required = true
+        }
+
+        property("days", Int::class) {
+            description = "Number of days to forecast"
+            required = false
+            defaultValue = 1
+        }
+    }
+
+    // Output schema
+    output {
+        property("forecast", List::class) {
+            description = "Daily weather forecasts"
+            items {
+                property("date", String::class)
+                property("temperature", Double::class)
+                property("conditions", String::class)
+                property("precipitation", Double::class) {
+                    description = "Chance of precipitation (0-100%)"
+                }
+            }
+        }
+
+        property("location", String::class) {
+            description = "The location for which the forecast was generated"
+        }
+    }
+
+    // Handler implementation
+    handler { input ->
+        // Implementation details...
+    }
+}
+```
+
+## Supported Types
+
+Aigentic supports a wide range of types for schema definitions:
+
+### Primitive Types
+
+- `String::class` - Text values
+- `Int::class` - Integer values
+- `Long::class` - Long integer values
+- `Double::class` - Floating-point values
+- `Boolean::class` - True/false values
+- `Any::class` - Any type (use sparingly)
+
+### Complex Types
+
+- `List::class` - Ordered collections of items
+- `Map::class` - Key-value pairs
+- `Set::class` - Unique collections of items
+- Custom classes - Your own data classes
+
+## Property Configuration
+
+Each property in a schema can be configured with various options:
+
+```kotlin
+property("username", String::class) {
+    description = "The user's display name"
+    required = true
+    minLength = 3
+    maxLength = 50
+    pattern = "^[a-zA-Z0-9_]+$"
+}
+
+property("age", Int::class) {
+    description = "User's age in years"
+    required = false
+    minimum = 13
+    maximum = 120
+}
+
+property("tags", List::class) {
+    description = "User interests"
+    required = false
+    minItems = 1
+    maxItems = 10
+    items {
+        type = String::class
+    }
+}
+```
+
+## Nested Objects
+
+You can define complex nested structures:
+
+```kotlin
+property("address", Map::class) {
+    description = "User's address information"
+
+    properties {
+        property("street", String::class)
+        property("city", String::class)
+        property("zipCode", String::class)
+
+        property("coordinates", Map::class) {
+            properties {
+                property("latitude", Double::class)
+                property("longitude", Double::class)
+            }
+        }
+    }
+}
+```
+
+## Enumerations
+
+Define properties with a fixed set of allowed values:
+
+```kotlin
+property("status", String::class) {
+    description = "Current user status"
+    enum = listOf("active", "inactive", "suspended")
+}
+
+property("role", String::class) {
+    description = "User role in the system"
+    enum = listOf("admin", "moderator", "user")
+}
+```
+
+## Custom Validation
+
+For more complex validation requirements, you can add custom validation logic:
+
+```kotlin
+property("email", String::class) {
+    description = "User's email address"
+    required = true
+    validate { value ->
+        if (!value.contains("@")) {
+            throw ValidationException("Invalid email format")
+        }
+    }
+}
+```
+
+## Schema Reuse
+
+For commonly used schemas, you can create reusable definitions:
+
+```kotlin
+// Define a reusable schema
+val userSchema = schema {
+    property("id", String::class)
+    property("name", String::class)
+    property("email", String::class)
+}
+
+// Use it in a tool
+tool("getUser") {
+    input {
+        property("userId", String::class)
+    }
+
+    output {
+        // Reuse the schema
+        schema(userSchema)
+    }
+
+    handler { input ->
+        // Implementation...
+    }
+}
+```
+
+## Best Practices
+
+1. **Be descriptive**: Always include clear descriptions for all properties
+2. **Validate appropriately**: Use constraints like `minLength`, `maximum`, etc. to enforce valid data
+3. **Keep it simple**: Design schemas that are easy for the AI to understand
+4. **Use required judiciously**: Only mark properties as required when they are truly necessary
+5. **Document examples**: Include example values in property descriptions when helpful
