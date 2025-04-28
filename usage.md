@@ -92,12 +92,12 @@ val agent = agent {
         addInstruction("Create a concise summary")
         addInstruction("Highlight key points")
     }
-    
+
     openAIModel {
         apiKey("<your-api-key>")
         modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
     }
-    
+
     addTool(summarizeTool)
 }
 ```
@@ -121,7 +121,6 @@ You can provide additional context to the agent using the `context` block:
 ```kotlin
 context {
     addText("Here is some background information...")
-    addUrl("https://example.com/data.json", MimeType.ApplicationJson)
     addBase64(encodedImage, MimeType.ImagePng)
 }
 ```
@@ -136,7 +135,7 @@ Aigentic supports multiple LLM providers, each with its own configuration.
 openAIModel {
     apiKey("<your-openai-api-key>")
     modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
-    
+
     // Optional: Configure generation settings
     generationConfig {
         temperature(0.7f)
@@ -150,15 +149,27 @@ Available OpenAI models include:
 - GPT4OMini
 - GPT4Turbo
 - GPT3_5Turbo
-- And many more (see OpenAIModelIdentifier class)
+- GPT4_1
+- GPT4_1Mini
+- GPT4_1Nano
+- GPT4_5Preview
+- O1
+- O1Pro
+- O1Mini
+- O3
+- O3Mini
+- O4Mini
+- GPT4OMiniSearchPreview
+- GPT4OSearchPreview
+- Custom (for any other model identifier)
 
 ### Gemini
 
 ```kotlin
 geminiModel {
     apiKey("<your-gemini-api-key>")
-    modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
-    
+    modelIdentifier(GeminiModelIdentifier.Gemini2_5FlashPreview)
+
     // Optional: Configure generation settings
     generationConfig {
         temperature(0.7f)
@@ -167,6 +178,16 @@ geminiModel {
 }
 ```
 
+Available Gemini models include:
+- Gemini2_5FlashPreview
+- Gemini2_5ProPreview
+- Gemini2_0Flash
+- Gemini2_0FlashLite
+- Gemini1_5Flash
+- Gemini1_5Flash8b
+- Gemini1_5Pro
+- Custom (for any other model identifier)
+
 ### Ollama
 
 ```kotlin
@@ -174,7 +195,7 @@ ollamaModel {
     modelIdentifier(object : ModelIdentifier {
         override val stringValue: String = "llama3.1"
     })
-    
+
     // Optional: Configure generation settings
     generationConfig {
         temperature(0.7f)
@@ -199,11 +220,11 @@ val weatherTool = object : Tool {
         isRequired = true,
         type = ParameterType.Primitive.String
     )
-    
+
     override val name = ToolName("getWeather")
     override val description = "Gets the current weather for a city"
     override val parameters = listOf(cityParameter)
-    
+
     override val handler: suspend (JsonObject) -> String = { arguments ->
         val city = cityParameter.getStringValue(arguments)
         // Fetch and return weather data
@@ -284,12 +305,12 @@ agent {
         addInstruction("Retrieve data from the API")
         addInstruction("Analyze the results")
     }
-    
+
     openAIModel {
         apiKey("<your-api-key>")
         modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
     }
-    
+
     // Add tools from an OpenAPI specification
     openApiTools(apiSpecificationJson)
 }
@@ -389,10 +410,10 @@ Aigentic provides a regression testing framework to validate your agents:
 val testReport = regressionTest {
     // The agent to test
     agent(myAgent)
-    
+
     // Historical tagged runs to test against
     addTag("validated")
-    
+
     // Number of iterations for each run
     numberOfIterations(5)
 }.start()
@@ -415,11 +436,11 @@ val calculateTool = object : Tool {
         isRequired = true,
         type = ParameterType.Primitive.String
     )
-    
+
     override val name = ToolName("calculate")
     override val description = "Calculates the result of a mathematical expression"
     override val parameters = listOf(expressionParameter)
-    
+
     override val handler: suspend (JsonObject) -> String = { arguments ->
         val expression = expressionParameter.getStringValue(arguments)
         // Simple expression evaluator (for demonstration)
@@ -437,16 +458,16 @@ val agent = agent {
         addInstruction("Solve the given mathematical problems")
         addInstruction("Show your work")
     }
-    
+
     context {
         addText("Please solve: 1. 25 * 4 + 10, 2. (17 + 8) / 5")
     }
-    
+
     openAIModel {
         apiKey("<your-api-key>")
         modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
     }
-    
+
     addTool(calculateTool)
 }
 
@@ -468,12 +489,12 @@ val agent = agent {
         addInstruction("Retrieve the top 10 Hacker News stories")
         addInstruction("Summarize the stories about AI or machine learning")
     }
-    
+
     openAIModel {
         apiKey("<your-api-key>")
         modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
     }
-    
+
     // Add tools from the Hacker News API specification
     openApiTools(hackerNewsApiSpec)
 }
@@ -520,12 +541,12 @@ val agent = agent {
         addInstruction("Retrieve and analyze the top Hacker News stories")
         addInstruction("Identify AI-related stories and emerging trends")
     }
-    
+
     openAIModel {
         apiKey("<your-api-key>")
         modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
     }
-    
+
     openApiTools(hackerNewsApiSpec)
     finishResponse(newsAnalysisParameter)
 }
