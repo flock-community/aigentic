@@ -11,28 +11,28 @@ import CodeBlock from "@theme/CodeBlock";
 export default function ContractPage() {
   return (
     <Layout
-      title="Wirespec your APIs"
-      description="Simplify your API development workflows, accelerate implementation, and guarantee strict adherence to defined contract specifications"
+      title="Design AI Agents with Aigentic"
+      description="Simplify your AI agent development workflows, accelerate implementation, and guarantee effective AI interactions with Aigentic's design-first approach"
       image="/img/code-snippet.jpg"
     >
       <div className={styles.mainContainer}>
         <main className={styles.contractMain}>
           <div id="contract">
             <section className={styles.hero} style={{ paddingTop: "4rem" }}>
-              <h1>Contract</h1>
+              <h1>Design-First</h1>
               <p>
-                The contract–first approach for interface design, as envisioned
-                by Wirespec, is a methodology that emphasizes the creation of a
-                formal specification before any implementation occurs. This
+                The design-first approach for AI agents, as envisioned
+                by Aigentic, is a methodology that emphasizes the creation of a
+                comprehensive agent design before any implementation occurs. This
                 approach recognizes the importance of defining clear and
-                detailed contracts (specifications) as the cornerstone of
-                building robust interfaces. Here's a more detailed exploration
+                detailed agent behaviors and capabilities as the cornerstone of
+                building effective AI interactions. Here's a more detailed exploration
                 of this concept:
               </p>
             </section>
 
             <section className={styles.section}>
-              <h2>Key Principles of the Contract-First Approach:</h2>
+              <h2>Key Principles of the Design-First Approach for AI Agents:</h2>
 
               <ol className={styles.principles}>
                 <li>
@@ -40,33 +40,32 @@ export default function ContractPage() {
                   <ul>
                     <li>
                       <span className={styles.bullet}></span> At the heart of
-                      the contract–first approach is the idea that a
-                      well-defined contract serves as the single authoritative
-                      source of truth for the interface.
+                      the design-first approach is the idea that a
+                      well-defined agent design serves as the single authoritative
+                      source of truth for the AI agent's behavior.
                     </li>
                     <li>
                       <span className={styles.bullet}></span> These
-                      specifications are written in a concise and human–readable
-                      language, making them accessible and understandable across
-                      teams, regardless of their technical expertise.
+                      designs are expressed in an intuitive Kotlin DSL, making them accessible and understandable across
+                      teams, regardless of their technical expertise with AI technologies.
                     </li>
                   </ul>
                 </li>
 
                 <li>
-                  <strong>Independence from Implementation:</strong>
+                  <strong>Independence from LLM Providers:</strong>
                   <ul>
                     <li>
-                      <span className={styles.bullet}></span> The interface
-                      contract is agnostic of any specific programming language,
-                      framework, or architectural style.
+                      <span className={styles.bullet}></span> The agent
+                      design is agnostic of any specific LLM provider, model version,
+                      or deployment environment.
                     </li>
                     <li>
                       <span className={styles.bullet}></span> By abstracting the
-                      specification from implementation details, teams are free
-                      to implement the interface in diverse tech stacks while
+                      design from implementation details, teams are free
+                      to deploy agents with different LLM providers while
                       maintaining consistency and adherence to the defined
-                      standards.
+                      behaviors.
                     </li>
                   </ul>
                 </li>
@@ -77,14 +76,14 @@ export default function ContractPage() {
                     <li>
                       <span className={styles.bullet}></span> This approach
                       simplifies communication between cross–functional teams
-                      (e.g., developers, designers, product managers, and
+                      (e.g., developers, AI specialists, product managers, and
                       quality assurance teams).
                     </li>
                     <li>
-                      <span className={styles.bullet}></span> Specifications
+                      <span className={styles.bullet}></span> Agent designs
                       serve as a shared reference point, ensuring everyone is
                       aligned on expectations and requirements for the
-                      interface. This reduces ambiguity and miscommunication
+                      AI interactions. This reduces ambiguity and miscommunication
                       during the development lifecycle.
                     </li>
                   </ul>
@@ -96,92 +95,174 @@ export default function ContractPage() {
               style={{ marginTop: "2rem" }}
             >
               <CodeBlock
-                language="wirespec"
-                title="todo.ws"
+                language="kotlin"
+                title="TodoAgent.kt"
                 className="custom-code-block"
               >
-                {`type TodoDto {
-    id: Integer?,
-    name: String
-}
+                {`import community.flock.aigentic.core.agent.Agent
+import community.flock.aigentic.core.agent.tool.CoreTools
+import community.flock.aigentic.core.agent.tool.Tool
+import community.flock.aigentic.providers.openai.OpenAIProvider
 
-endpoint GetTodos GET /api/todos -> {
-    200 -> TodoDto[]
-}
+data class Todo(val id: Int, val name: String)
 
-endpoint GetById GET /api/todos/{id: Integer} -> {
-    200 -> TodoDto
-    404 -> String
-}
+class TodoRepository {
+    private val todos = mutableListOf<Todo>()
 
-endpoint CreateTodo POST TodoDto /api/todos -> {
-    201 -> TodoDto
-}
+    fun getAllTodos(): List<Todo> = todos.toList()
 
-endpoint DeleteTodo DELETE /api/todos/{id: Integer} -> {
-    204 -> Unit
-    404 -> String
-}
+    fun getTodoById(id: Int): Todo? = todos.find { it.id == id }
 
-endpoint UpdateTodo PUT TodoDto /api/todos/{id: Integer} -> {
-    200 -> TodoDto
+    fun createTodo(name: String): Todo {
+        val id = (todos.maxOfOrNull { it.id } ?: 0) + 1
+        val todo = Todo(id, name)
+        todos.add(todo)
+        return todo
+    }
+
+    fun updateTodo(id: Int, name: String): Todo? {
+        val index = todos.indexOfFirst { it.id == id }
+        if (index == -1) return null
+        val updatedTodo = Todo(id, name)
+        todos[index] = updatedTodo
+        return updatedTodo
+    }
+
+    fun deleteTodo(id: Int): Boolean {
+        val removed = todos.removeIf { it.id == id }
+        return removed
+    }
 }`}
               </CodeBlock>
             </section>
           </div>
 
-          <div id="generate">
+          <div id="create">
             <section className={styles.generateSection}>
-              <h2>Generate</h2>
+              <h2>Create</h2>
               <p>
-                The vision of code generation centers on enabling a
-                contract–first approach where specifications act as the single
-                source of truth. By prioritizing the specification over the
+                The vision of agent creation centers on enabling a
+                design-first approach where agent designs act as the single
+                source of truth. By prioritizing the design over the
                 implementation, development is streamlined, reducing ambiguity
-                and fostering better collaboration among cross–functional teams.
+                and fostering better collaboration among cross-functional teams.
               </p>
               <p>
-                Interfaces, often mapped to the domain, play a pivotal role in
+                AI agent designs, often mapped to specific use cases, play a pivotal role in
                 this vision. They are designed to have a longer lifespan
                 compared to implementation code and must remain isolated to
                 ensure they are reusable, adaptable, and independent of specific
-                technological constraints. This isolation allows interfaces to
+                LLM providers. This isolation allows agent designs to
                 act as durable blueprints, transcending implementation changes
                 and maintaining a stable foundation for the system’s evolution.
               </p>
               <p>
-                Code generation helps bridge the gap between specification and
-                implementation by automating the creation of typesafe,
-                functional, and dependency–free code from the specification.
-                This approach ensures that the generated code precisely reflects
-                the defined interfaces, capturing all possible inputs, outputs,
-                and interactions in a consistent and predictable manner.
+                Aigentic's Kotlin DSL helps bridge the gap between design and
+                implementation by providing an intuitive way to define AI agents with their tools,
+                behaviors, and capabilities. This approach ensures that the created agents precisely reflect
+                the defined design, capturing all possible interactions in a consistent and predictable manner.
               </p>
               <Tabs>
-                <TabItem value="TypeScript" label="TypeScript">
-                  <CodeBlock language="bash">{`wirespec compile --input . --language typescript`}</CodeBlock>
-                  <p>This will generate the following file:</p>
-                  <CodeBlock>{`project/out/community/flock/wirespec/generated/
-  └─ Todo.ts`}</CodeBlock>
+                <TabItem value="OpenAI" label="OpenAI">
+                  <CodeBlock language="kotlin">{`val todoRepository = TodoRepository()
+
+val todoAgent = Agent.create {
+    provider = OpenAIProvider(
+        apiKey = System.getenv("OPENAI_API_KEY"),
+        model = "gpt-4o"
+    )
+
+    tools {
+        tool("getAllTodos") {
+            description = "Get all todos"
+            execute { todoRepository.getAllTodos() }
+        }
+
+        tool("getTodoById") {
+            description = "Get a todo by ID"
+            parameters {
+                parameter<Int>("id") { description = "The ID of the todo" }
+            }
+            execute { params -> todoRepository.getTodoById(params["id"]) }
+        }
+
+        tool("createTodo") {
+            description = "Create a new todo"
+            parameters {
+                parameter<String>("name") { description = "The name of the todo" }
+            }
+            execute { params -> todoRepository.createTodo(params["name"]) }
+        }
+    }
+}`}</CodeBlock>
                 </TabItem>
 
-                <TabItem value="Kotlin" label="Kotlin">
-                  <CodeBlock language="bash">{`wirespec compile --input . --language kotlin`}</CodeBlock>
-                  <p>This will generate the following file:</p>
-                  <CodeBlock>{`project/out/community/flock/wirespec/generated/
-  └─ Todo.kt`}</CodeBlock>
+                <TabItem value="Gemini" label="Gemini">
+                  <CodeBlock language="kotlin">{`val todoRepository = TodoRepository()
+
+val todoAgent = Agent.create {
+    provider = GeminiProvider(
+        apiKey = System.getenv("GEMINI_API_KEY"),
+        model = "gemini-pro"
+    )
+
+    tools {
+        tool("getAllTodos") {
+            description = "Get all todos"
+            execute { todoRepository.getAllTodos() }
+        }
+
+        tool("getTodoById") {
+            description = "Get a todo by ID"
+            parameters {
+                parameter<Int>("id") { description = "The ID of the todo" }
+            }
+            execute { params -> todoRepository.getTodoById(params["id"]) }
+        }
+
+        tool("createTodo") {
+            description = "Create a new todo"
+            parameters {
+                parameter<String>("name") { description = "The name of the todo" }
+            }
+            execute { params -> todoRepository.createTodo(params["name"]) }
+        }
+    }
+}`}</CodeBlock>
                 </TabItem>
 
-                <TabItem value="Java" label="Java">
-                  <CodeBlock language="bash">{`wirespec compile --input . --language java`}</CodeBlock>
-                  <p>This will generate the following files:</p>
-                  <CodeBlock>{`project/out/community/flock/wirespec/generated/
-  └─ CreateTodoEndpoint.java
-  └─ DeleteTodoEndpoint.java
-  └─ GetByIdEndpoint.java
-  └─ GetTodosEndpoint.java
-  └─ TodoDto.java
-  └─ UpdateTodoEndpoint.java`}</CodeBlock>
+                <TabItem value="Ollama" label="Ollama">
+                  <CodeBlock language="kotlin">{`val todoRepository = TodoRepository()
+
+val todoAgent = Agent.create {
+    provider = OllamaProvider(
+        baseUrl = "http://localhost:11434",
+        model = "llama3"
+    )
+
+    tools {
+        tool("getAllTodos") {
+            description = "Get all todos"
+            execute { todoRepository.getAllTodos() }
+        }
+
+        tool("getTodoById") {
+            description = "Get a todo by ID"
+            parameters {
+                parameter<Int>("id") { description = "The ID of the todo" }
+            }
+            execute { params -> todoRepository.getTodoById(params["id"]) }
+        }
+
+        tool("createTodo") {
+            description = "Create a new todo"
+            parameters {
+                parameter<String>("name") { description = "The name of the todo" }
+            }
+            execute { params -> todoRepository.createTodo(params["name"]) }
+        }
+    }
+}`}</CodeBlock>
                 </TabItem>
               </Tabs>
             </section>
