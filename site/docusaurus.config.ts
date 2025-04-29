@@ -175,7 +175,7 @@ const config: Config = {
             copyright: `© ${new Date().getFullYear()} Aigentic. All rights reserved.`,
         },
         prism: {
-            theme: prismThemes.vsLight,
+            theme: prismThemes.vsDark,
             darkTheme: prismThemes.vsDark,
             // https://docusaurus.io/docs/markdown-features/code-blocks#supported-languages
             // Additional languages for syntax highlighting
