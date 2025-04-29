@@ -2,7 +2,6 @@ import org.gradle.api.file.DuplicatesStrategy
 
 plugins {
     `kotlin-dsl`
-//    id("module.publication")
 }
 
 tasks.withType<ProcessResources> {
@@ -18,7 +17,7 @@ gradlePlugin {
     plugins {
         create("aigentic") {
             id = "aigentic"
-            implementationClass = "community.flock.aigentic.code.generation.ksp.gradle.AigenticPlugin"
+            implementationClass = "community.flock.aigentic.plugin.gradle.AigenticPlugin"
         }
     }
 }

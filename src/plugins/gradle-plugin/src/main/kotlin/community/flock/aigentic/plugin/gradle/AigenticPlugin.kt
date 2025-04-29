@@ -1,4 +1,4 @@
-package community.flock.aigentic.code.generation.ksp.gradle
+package community.flock.aigentic.plugin.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
