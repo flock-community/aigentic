@@ -20,9 +20,12 @@
     --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
     --ifm-footer-color: #ffffff;
     --ifm-footer-link-color: #9F9F9F !important;
+    --ifm-navbar-link-color: #cccccc;
     --ifm-navbar-link-hover-color: #ffdf00;
     --ifm-footer-link-hover-color: #ffdf00;
     --ifm-menu-color-active: #ffffff;
+    --ifm-dropdown-link-color: #cccccc;
+    --ifm-dropdown-background-color: #101010;
     --ifm-heading-font-family: "Funnel Display", sans-serif;
 }
 
@@ -39,9 +42,12 @@
     --ifm-color-primary-lightest: #4fddbf;
     --ifm-background-color: #101010 !important;
     --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+    --ifm-navbar-link-color: #cccccc;
     --ifm-navbar-link-hover-color: #ffdf00;
     --ifm-footer-link-hover-color: #ffdf00;
     --ifm-menu-color-active: #ffffff;
+    --ifm-dropdown-link-color: #cccccc;
+    --ifm-dropdown-background-color: #101010;
     --ifm-heading-font-family: "Funnel Display", sans-serif;
 }
 

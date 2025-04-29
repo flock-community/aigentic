@@ -1,5 +1,8 @@
 :root {
     --ifm-heading-color: #fcde00;
+    --ifm-navbar-link-color: #cccccc;
+    --ifm-dropdown-link-color: #cccccc;
+    --ifm-dropdown-background-color: #101010;
 }
 
 
