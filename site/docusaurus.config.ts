@@ -27,7 +27,7 @@ const config: Config = {
                 docs: {
                     sidebarPath: "./sidebars.ts",
                     editUrl:
-                        "https://github.com/flock-community/wirespec/tree/master/src/site/docs/",
+                        "https://github.com/flock-community/aigentic/tree/main/site/docs/",
                 },
                 blog: {
                     path: "./blog",
@@ -178,7 +178,7 @@ const config: Config = {
             theme: prismThemes.vsLight,
             darkTheme: prismThemes.vsDark,
             // https://docusaurus.io/docs/markdown-features/code-blocks#supported-languages
-            // Note: wirespec is not an official prism language, it's added through prism-include-languages.ts
+            // Additional languages for syntax highlighting
             additionalLanguages: ['java', 'typescript', 'bash', 'properties', 'gradle'],
         },
         // Algolia configuration inside themeConfig
