@@ -17,12 +17,15 @@ import community.flock.aigentic.gemini.mapper.toModelResponse
 sealed class GeminiModelIdentifier(
     override val stringValue: String,
 ) : ModelIdentifier {
-    data object GeminiPro : GeminiModelIdentifier("gemini-pro")
-    data object GeminiProVision : GeminiModelIdentifier("gemini-pro-vision")
-    data object Gemini1_5ProLatest : GeminiModelIdentifier("gemini-1.5-pro-latest")
-    data object Gemini1_5ProLatestStable : GeminiModelIdentifier("gemini-1.5-pro")
-    data object Gemini1_5FlashLatest : GeminiModelIdentifier("gemini-1.5-flash-latest")
-    data object Gemini1_5FlashLatestStable : GeminiModelIdentifier("gemini-1.5-flash")
+    data object Gemini2_5FlashPreview : GeminiModelIdentifier("gemini-2.5-flash-preview-04-17")
+    data object Gemini2_5ProPreview : GeminiModelIdentifier("gemini-2.5-pro-preview-03-25")
+    data object Gemini2_0Flash : GeminiModelIdentifier("gemini-2.0-flash")
+    data object Gemini2_0FlashLite : GeminiModelIdentifier("gemini-2.0-flash-lite")
+    data object Gemini1_5Flash : GeminiModelIdentifier("gemini-1.5-flash")
+    data object Gemini1_5Flash8b : GeminiModelIdentifier("gemini-1.5-flash-8b")
+    data object Gemini1_5Pro : GeminiModelIdentifier("gemini-1.5-pro")
+
+    data class Custom(val identifier: String) : GeminiModelIdentifier(identifier)
 }
 
 class GeminiModel(
