@@ -64,12 +64,10 @@ fun Run.toDto(agent: Agent) =
                             parameters = tool.parameters.map { it.toDto() },
                         )
                     },
-                exampleRunIds = emptyList(),
             ),
         messages = messages.map { it.toDto() },
         modelRequests = modelRequests.map { it.toDto() },
         result = result.toDto(),
-        exampleRunIds = emptyList(),
     )
 
 private fun Parameter.toDto(): ParameterDto =
