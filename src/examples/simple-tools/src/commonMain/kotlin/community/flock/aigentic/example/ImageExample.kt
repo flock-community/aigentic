@@ -1,6 +1,6 @@
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.agent.Context
+import community.flock.aigentic.core.agent.InputData
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.AgentConfig
@@ -44,5 +44,5 @@ suspend fun runItemCategorizeExample(
             task("Identify all items in the image and save each individual item") {}
             addTool(saveItemTool)
         }
-    return agent.start(listOf(Context.Base64(base64Image, MimeType.JPEG)))
+    return agent.start(listOf(InputData.Base64(base64Image, MimeType.JPEG)))
 }

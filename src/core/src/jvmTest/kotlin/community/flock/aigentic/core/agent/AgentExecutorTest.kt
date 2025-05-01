@@ -152,13 +152,13 @@ class AgentExecutorTest : DescribeSpec({
                     addTool(mockk(relaxed = true))
                 }
 
-            val context =
+            val inputData =
                 listOf(
-                    Context.Text(expectedTextContext),
-                    Context.Base64(base64 = expectedImageContextBase64, mimeType = expectedImageContextMimeType),
+                    InputData.Text(expectedTextContext),
+                    InputData.Base64(base64 = expectedImageContextBase64, mimeType = expectedImageContextMimeType),
                 )
 
-            agent.start(context).apply {
+            agent.start(inputData).apply {
                 messages.drop(1).take(2) shouldBe
                     listOf(
                         Message.Text(Sender.Agent, MessageType.New, expectedTextContext),

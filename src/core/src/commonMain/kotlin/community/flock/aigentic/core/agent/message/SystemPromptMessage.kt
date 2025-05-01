@@ -22,7 +22,7 @@ private fun Agent.createSystemPrompt(): Message.SystemPrompt {
         """.trimMargin()
 
     val contextInstruction =
-        if (contexts.isNotEmpty()) {
+        if (inputData.isNotEmpty()) {
             """
         |Essential context for this task is provided in the initial messages.
         |Carefully analyze and utilize this context to inform your actions and decision-making.

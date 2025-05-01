@@ -62,7 +62,6 @@ class AgentConfig : Config<Agent> {
                     tools.isNotEmpty() || responseParameter != null,
                     builderPropertyMissingErrorMessage("tools", "addTool()"),
                 ).let { tools.associateBy { it.name } },
-            contexts = emptyList(),
             responseParameter = responseParameter,
             tags = tags,
         )

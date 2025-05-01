@@ -18,12 +18,12 @@ data class Task(
 
 data class Instruction(val text: String)
 
-sealed interface Context {
-    data class Text(val text: String) : Context
+sealed interface InputData {
+    data class Text(val text: String) : InputData
 
-    data class Url(val url: String, val mimeType: MimeType) : Context
+    data class Url(val url: String, val mimeType: MimeType) : InputData
 
-    data class Base64(val base64: String, val mimeType: MimeType) : Context
+    data class Base64(val base64: String, val mimeType: MimeType) : InputData
 }
 
 data class Agent(
@@ -31,10 +31,10 @@ data class Agent(
     val systemPromptBuilder: SystemPromptBuilder,
     val model: Model,
     val task: Task,
-    val contexts: List<Context>,
     val tools: Map<ToolName, Tool>,
     val responseParameter: Parameter? = null,
     val tags: List<RunTag>,
+    val inputData: List<InputData> = emptyList(),
 ) {
     internal val finishedTaskTool = finishedTaskTool(responseParameter)
     internal val internalTools: Map<ToolName, InternalTool<*>> =

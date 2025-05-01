@@ -40,7 +40,6 @@ fun createAgent() =
                 description = "description",
                 instructions = listOf(Instruction("Some instruction")),
             ),
-        contexts = emptyList(),
         tools = emptyMap(),
         tags = emptyList(),
     )
