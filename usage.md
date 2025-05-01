@@ -8,7 +8,7 @@
 - [Creating and Configuring Agents](#creating-and-configuring-agents)
   - [Agent Configuration](#agent-configuration)
   - [Task Configuration](#task-configuration)
-  - [Context Configuration](#context-configuration)
+  - [Input Data Configuration](#input-data-configuration)
 - [Using Different LLM Providers](#using-different-llm-providers)
   - [OpenAI](#openai)
   - [Gemini](#gemini)
@@ -35,7 +35,7 @@ The Aigentic DSL is designed to be intuitive and flexible, allowing you to:
 - Create agents with specific tasks and instructions
 - Configure different LLM providers (OpenAI, Gemini, Ollama)
 - Add custom tools for agents to use
-- Provide context for agents to work with
+- Provide input data for agents to work with
 - Define structured response formats
 - Handle errors and test your agents
 
@@ -65,7 +65,7 @@ The Aigentic DSL revolves around a few key concepts:
 2. **Task**: What the agent needs to accomplish, with specific instructions
 3. **Model**: The LLM model that powers the agent (OpenAI, Gemini, etc.)
 4. **Tools**: Functions that the agent can use to perform actions
-5. **Context**: Additional information provided to the agent
+5. **Input Data**: The input that changes each run
 
 ## Creating and Configuring Agents
 
@@ -114,15 +114,17 @@ task("Analyze customer feedback") {
 }
 ```
 
-### Context Configuration
+### Input Data Configuration
 
-You can provide additional context to the agent using the `context` block:
+You can provide additional input data to the agent when starting it:
 
 ```kotlin
-context {
-    addText("Here is some background information...")
-    addBase64(encodedImage, MimeType.ImagePng)
-}
+val inputData = listOf(
+    InputData.Text("Here is some background information..."),
+    InputData.Base64(encodedImage, MimeType.ImagePng)
+)
+
+val run = agent.start(inputData)
 ```
 
 ## Using Different LLM Providers
@@ -459,9 +461,6 @@ val agent = agent {
         addInstruction("Show your work")
     }
 
-    context {
-        addText("Please solve: 1. 25 * 4 + 10, 2. (17 + 8) / 5")
-    }
 
     openAIModel {
         apiKey("<your-api-key>")
@@ -471,7 +470,9 @@ val agent = agent {
     addTool(calculateTool)
 }
 
-val run = agent.start()
+val inputData = listOf(InputData.Text("Please solve: 1. 25 * 4 + 10, 2. (17 + 8) / 5"))
+val run = agent.start(inputData)
+
 when (val result = run.result) {
     is Result.Finished -> println("Result: ${result.response}")
     is Result.Stuck -> println("Agent is stuck: ${result.reason}")
