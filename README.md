@@ -83,9 +83,6 @@ val agent = agent {
     addInstruction("Analyze the sentiment for each news event")
     addInstruction("Save the sentiment for each news event")
   }
-  context {
-    addText(newsFeed)
-  }
   openAIModel {
     apiKey("<insert your OpenAI API key here>")
     modelIdentifier(GPT4OMini)
@@ -137,7 +134,8 @@ val saveNewsEventSentimentTool =
 To start the agent call it's `start` function:
 
 ```kotlin
-val run = agent.start()
+val inputData = listOf(addText(newsFeed))
+val run = agent.start(inputData)
 ```
 
 ![Agent logging](./docs/images/agent-logging.gif)
