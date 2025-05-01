@@ -42,6 +42,7 @@ fun createAgent() =
             ),
         contexts = emptyList(),
         tools = emptyMap(),
+        tags = emptyList(),
     )
 
 fun createRun() =

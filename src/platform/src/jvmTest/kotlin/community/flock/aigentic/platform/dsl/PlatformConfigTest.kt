@@ -1,7 +1,6 @@
 package community.flock.aigentic.platform.dsl
 
 import community.flock.aigentic.core.dsl.agent
-import community.flock.aigentic.core.platform.Authentication
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.datatest.withData
@@ -23,7 +22,7 @@ class PlatformConfigTest : DescribeSpec({
                 task("Task description") {}
                 addTool(mockk(relaxed = true))
             }.run {
-                val basicAuth = platform!!.authentication as Authentication.BasicAuth
+                val basicAuth = platform!!.authentication
                 basicAuth.username shouldBe "some-name"
                 basicAuth.password shouldBe "some-secret"
             }
