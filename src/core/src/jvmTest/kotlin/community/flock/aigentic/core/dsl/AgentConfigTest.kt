@@ -57,21 +57,6 @@ class AgentConfigTest : DescribeSpec({
             }
         }
 
-        it("should build agent with multiple contexts") {
-            agent {
-                model(mockk(relaxed = true))
-                task("Task description") {}
-                context {
-                    addText("Some text")
-                    addUrl("https://example.com/image.jpg", MimeType.JPEG)
-                }
-                addTool(mockk(relaxed = true))
-            }.run {
-                contexts.size shouldBe 2
-                contexts.first() shouldBe Context.Text("Some text")
-                contexts.last() shouldBe Context.Url("https://example.com/image.jpg", MimeType.JPEG)
-            }
-        }
 
         withData(
             nameFn = { "Should fail with: '${it.expectedMessage}'" },

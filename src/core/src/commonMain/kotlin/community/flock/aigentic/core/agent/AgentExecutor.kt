@@ -33,13 +33,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 
-suspend fun Agent.start(): Run =
+suspend fun Agent.start(contexts: List<Context> = emptyList()): Run =
     coroutineScope {
         val state = State()
         state.events.emit(AgentStatus.Started)
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
         try {
-            val run = executeAction(Initialize(state, this@start)).toRun()
+            val run = executeAction(Initialize(state, this@start.copy(contexts = contexts))).toRun()
             publishRun(this@start, run, state)
             run
         } catch (e: AigenticException) {

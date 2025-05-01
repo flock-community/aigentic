@@ -21,7 +21,6 @@ class AgentConfig : Config<Agent> {
     internal var model: Model? = null
     internal var platform: Platform? = null
     internal var task: TaskConfig? = null
-    internal var contexts: List<Context> = emptyList()
     internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
     internal var responseParameter: Parameter? = null
     internal val tools = mutableListOf<Tool>()
@@ -32,10 +31,6 @@ class AgentConfig : Config<Agent> {
     }
 
     fun AgentConfig.addTool(tool: Tool) = tools.add(tool)
-
-    fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) =
-        ContextConfig().apply(contextConfig).build()
-            .also { contexts = it }
 
     fun AgentConfig.task(
         description: String,
@@ -69,7 +64,7 @@ class AgentConfig : Config<Agent> {
                     tools.isNotEmpty() || responseParameter != null,
                     builderPropertyMissingErrorMessage("tools", "addTool()"),
                 ).let { tools.associateBy { it.name } },
-            contexts = contexts,
+            contexts = emptyList(),
             responseParameter = responseParameter,
             tags = tags,
         )
@@ -86,28 +81,6 @@ class TaskConfig(
     override fun build(): Task = Task(description, instructions)
 }
 
-@AgentDSL
-class ContextConfig : Config<List<Context>> {
-    internal val contexts = mutableListOf<Context>()
-
-    fun ContextConfig.addText(text: String) =
-        Context.Text(text)
-            .also { contexts.add(it) }
-
-    fun ContextConfig.addUrl(
-        url: String,
-        mimeType: MimeType,
-    ) = Context.Url(url = url, mimeType = mimeType)
-        .also { contexts.add(it) }
-
-    fun ContextConfig.addBase64(
-        base64: String,
-        mimeType: MimeType,
-    ) = Context.Base64(base64 = base64, mimeType = mimeType)
-        .also { contexts.add(it) }
-
-    override fun build(): List<Context> = contexts
-}
 
 @AgentDSL
 class GenerationConfig : Config<GenerationSettings> {
