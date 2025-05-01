@@ -38,13 +38,11 @@ suspend fun runItemCategorizeExample(
     base64Image: String,
     configureModel: AgentConfig.() -> Unit,
 ): Run {
-    val agent = agent {
-        configureModel()
-        task("Identify all items in the image and save each individual item") {}
-        addTool(saveItemTool)
-    }
-
-    val contexts = listOf(Context.Base64(base64Image, MimeType.JPEG))
-
-    return agent.start(contexts)
+    val agent =
+        agent {
+            configureModel()
+            task("Identify all items in the image and save each individual item") {}
+            addTool(saveItemTool)
+        }
+    return agent.start(listOf(Context.Base64(base64Image, MimeType.JPEG)))
 }

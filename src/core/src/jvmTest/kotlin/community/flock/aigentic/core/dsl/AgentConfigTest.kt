@@ -1,8 +1,6 @@
 package community.flock.aigentic.core.dsl
 
-import community.flock.aigentic.core.agent.Context
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
-import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Tool
 import io.kotest.assertions.throwables.shouldThrow
@@ -56,7 +54,6 @@ class AgentConfigTest : DescribeSpec({
                 systemPromptBuilder shouldBe systemPromptBuilder
             }
         }
-
 
         withData(
             nameFn = { "Should fail with: '${it.expectedMessage}'" },

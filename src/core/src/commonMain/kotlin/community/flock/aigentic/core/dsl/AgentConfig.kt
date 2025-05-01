@@ -1,13 +1,11 @@
 package community.flock.aigentic.core.dsl
 
 import community.flock.aigentic.core.agent.Agent
-import community.flock.aigentic.core.agent.Context
 import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
-import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.platform.Platform
@@ -80,7 +78,6 @@ class TaskConfig(
 
     override fun build(): Task = Task(description, instructions)
 }
-
 
 @AgentDSL
 class GenerationConfig : Config<GenerationSettings> {

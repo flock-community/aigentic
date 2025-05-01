@@ -15,7 +15,6 @@ import community.flock.aigentic.core.tool.getStringValue
 import community.flock.aigentic.openai.dsl.openAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 
 @JsExport
 fun main() {
@@ -64,9 +63,10 @@ fun main() {
             }
             task("Greet the person with a warm and welcome message") {}
             addTool(greetTool)
-            context {
-                addText("Person to greet: '${request.body.jsonObject["name"] ?: "Error: Person to greet not found"}'")
-            }
+            // TODO
+//            context {
+//                addText("Person to greet: '${request.body.jsonObject["name"] ?: "Error: Person to greet not found"}'")
+//            }
             finishResponse(responseParameter)
         }
     }

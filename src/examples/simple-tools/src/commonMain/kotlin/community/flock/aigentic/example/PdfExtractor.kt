@@ -1,5 +1,6 @@
 package community.flock.aigentic.example
 
+import community.flock.aigentic.core.agent.Context
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.AgentConfig
@@ -65,17 +66,14 @@ suspend fun invoiceExtractorAgent(
     invoicePdfBase64: String,
     configureModel: AgentConfig.() -> Unit,
 ): Run {
-    val run =
+    val agent =
         agent {
             configureModel()
             task("Extract the different invoice components") {
                 addInstruction("Please provide list of the invoice components")
             }
             addTool(saveInvoiceComponents)
-            context {
-                addBase64(invoicePdfBase64, MimeType.PDF)
-            }
-        }.start()
+        }
 
-    return run
+    return agent.start(listOf(Context.Base64(invoicePdfBase64, MimeType.PDF)))
 }
