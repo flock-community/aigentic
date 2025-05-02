@@ -3,22 +3,22 @@ package community.flock.aigentic.core.tool
 import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
-inline fun <reified T : Any> getParameter(): Parameter? {
+inline fun <reified T : Any> getParameter(): Parameter.Complex.Object? {
     return ParameterRegistry.getParameter(T::class)
 }
 
 object ParameterRegistry {
-    private val parameterRegistry = mutableMapOf<ParameterIdentifier, Parameter>()
+    private val parameterRegistry = mutableMapOf<ParameterIdentifier, Parameter.Complex.Object>()
 
     fun register(
         packageName: String,
         simpleName: String,
-        parameter: Parameter,
+        parameter: Parameter.Complex.Object,
     ) {
         parameterRegistry[ParameterIdentifier(packageName, simpleName)] = parameter
     }
 
-    fun <T : Any> getParameter(clazz: KClass<T>): Parameter? = parameterRegistry.entries.firstOrNull { it.key.simpleName == clazz.simpleName }?.value
+    fun <T : Any> getParameter(clazz: KClass<T>): Parameter.Complex.Object? = parameterRegistry.entries.firstOrNull { it.key.simpleName == clazz.simpleName }?.value
 }
 
 @JvmInline

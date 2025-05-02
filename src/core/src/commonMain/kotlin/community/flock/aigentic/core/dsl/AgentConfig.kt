@@ -46,9 +46,6 @@ class AgentConfig : Config<Agent> {
                 override val parameters: List<Parameter>
                     get() {
                         val parameter = getParameter<I>() ?: error("No parameter found for type ${I::class.simpleName}. Make sure the class has @AigenticParameter annotation and Aigentic.initialize() has been called.")
-                        if (parameter !is Parameter.Complex.Object) {
-                            error("Parameter for type ${I::class.simpleName} is not a Complex.Object parameter. Found: ${parameter::class.simpleName}")
-                        }
                         return parameter.parameters
                     }
                 override val handler: suspend (toolArguments: JsonObject) -> String = {

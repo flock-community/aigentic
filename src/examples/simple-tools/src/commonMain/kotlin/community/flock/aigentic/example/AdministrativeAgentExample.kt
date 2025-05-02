@@ -30,7 +30,7 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
                     "When you for sure know that the signal message is successfully sent, make sure that you update the numberOfRemindersSent for each and every the specific employee.",
                 )
             }
-            addTool("getAllEmployeesOverview") { _: Unit ->
+            addToolUnit("getAllEmployeesOverview") { _: Unit ->
                 getAllEmployeesOverviewHandler()
             }
             addTool("getEmployeeDetailByName") { input: EmployeeName ->

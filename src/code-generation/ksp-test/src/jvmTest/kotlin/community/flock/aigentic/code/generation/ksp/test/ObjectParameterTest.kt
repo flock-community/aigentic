@@ -99,34 +99,34 @@ class ObjectParameterTest : DescribeSpec({
 
         describe("Nested Object Tests") {
             it("should contain person parameter in user") {
-                val userParam = UserParameter.parameter as Parameter.Complex.Object
+                val userParam = UserParameter.parameter
                 val personParam = userParam.parameters.find { it.name == "person" }
                 personParam shouldNotBe null
                 personParam.shouldBeInstanceOf<Parameter.Complex.Object>()
             }
 
             it("should have correct number of properties for person") {
-                val userParam = UserParameter.parameter as Parameter.Complex.Object
+                val userParam = UserParameter.parameter
                 val personParam = getObjectParameter(userParam, "person")
                 personParam.parameters.size shouldBe 3
             }
 
             it("should have person id as required") {
-                val userParam = UserParameter.parameter as Parameter.Complex.Object
+                val userParam = UserParameter.parameter
                 val personParam = getObjectParameter(userParam, "person")
                 val idParam = getPrimitiveParameter(personParam, "id")
                 idParam.isRequired shouldBe true
             }
 
             it("should have person name as not required") {
-                val userParam = UserParameter.parameter as Parameter.Complex.Object
+                val userParam = UserParameter.parameter
                 val personParam = getObjectParameter(userParam, "person")
                 val nameParam = getPrimitiveParameter(personParam, "name")
                 nameParam.isRequired shouldBe false
             }
 
             it("should have person age as required") {
-                val userParam = UserParameter.parameter as Parameter.Complex.Object
+                val userParam = UserParameter.parameter
                 val personParam = getObjectParameter(userParam, "person")
                 val ageParam = getPrimitiveParameter(personParam, "age")
                 ageParam.isRequired shouldBe true
