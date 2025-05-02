@@ -20,6 +20,26 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
+/**
+ * Extension function to convert a TypedTool to a Tool
+ */
+inline fun <reified I : Any, reified O : Any> TypedTool<I, O>.toTool(): Tool {
+    return object : Tool {
+        override val name: ToolName = this@toTool.name
+        override val description: String? = this@toTool.description
+        override val parameters: List<Parameter>
+            get() {
+                val parameter = getParameter<I>() ?: error("No parameter found for type ${I::class.simpleName}. Make sure the class has @AigenticParameter annotation and Aigentic.initialize() has been called.")
+                return parameter.parameters
+            }
+        override val handler: suspend (toolArguments: JsonObject) -> String = {
+            val obj = Json.decodeFromJsonElement<I>(it)
+            val res = this@toTool.handler(obj)
+            Json.encodeToString<O>(res)
+        }
+    }
+}
+
 fun agent(agentConfig: AgentConfig.() -> Unit): Agent = AgentConfig().apply(agentConfig).build()
 
 @AgentDSL
@@ -39,22 +59,7 @@ class AgentConfig : Config<Agent> {
     fun AgentConfig.addTool(tool: Tool) = tools.add(tool)
 
     inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(tool: TypedTool<I, O>) {
-        tools.add(
-            object : Tool {
-                override val name: ToolName = tool.name
-                override val description: String? = tool.description
-                override val parameters: List<Parameter>
-                    get() {
-                        val parameter = getParameter<I>() ?: error("No parameter found for type ${I::class.simpleName}. Make sure the class has @AigenticParameter annotation and Aigentic.initialize() has been called.")
-                        return parameter.parameters
-                    }
-                override val handler: suspend (toolArguments: JsonObject) -> String = {
-                    val obj = Json.decodeFromJsonElement<I>(it)
-                    val res = tool.handler(obj)
-                    Json.encodeToString<O>(res)
-                }
-            },
-        )
+        tools.add(tool.toTool())
     }
 
 
