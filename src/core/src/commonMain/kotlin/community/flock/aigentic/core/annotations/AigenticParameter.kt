@@ -1,4 +1,4 @@
-package community.flock.aigentic.code.generation.annotations
+package community.flock.aigentic.core.annotations
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MetaSerializable

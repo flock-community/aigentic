@@ -115,7 +115,7 @@ class AigenticParameterProcessor(
         """.trimMargin()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver.getSymbolsWithAnnotation("community.flock.aigentic.code.generation.annotations.AigenticParameter")
+        val symbols = resolver.getSymbolsWithAnnotation("community.flock.aigentic.core.annotations.AigenticParameter")
 
         symbols.filterIsInstance<KSClassDeclaration>()
             .filter { it.validate() && it.isDataClass() }

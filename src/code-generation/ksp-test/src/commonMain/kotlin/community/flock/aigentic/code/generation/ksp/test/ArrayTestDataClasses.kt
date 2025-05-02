@@ -1,6 +1,6 @@
 package community.flock.aigentic.code.generation.ksp.test
 
-import community.flock.aigentic.code.generation.annotations.AigenticParameter
+import community.flock.aigentic.core.annotations.AigenticParameter
 
 // Test class for nullable array items
 @AigenticParameter

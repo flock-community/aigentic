@@ -1,7 +1,7 @@
 package community.flock.aigentic.code.generation.ksp.test
 
+import community.flock.aigentic.core.Aigentic
 import community.flock.aigentic.core.tool.Parameter
-import community.flock.aigentic.core.tool.ParameterRegistry
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.getParameter
 import community.flock.aigentic.generated.parameter.PersonParameter
@@ -14,7 +14,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 class PrimitiveParameterTest : DescribeSpec({
 
     beforeTest {
-        ParameterRegistry.initialize()
+        Aigentic.initialize()
     }
 
     fun getPrimitiveParameter(

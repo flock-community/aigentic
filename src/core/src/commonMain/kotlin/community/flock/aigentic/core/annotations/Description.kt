@@ -1,4 +1,4 @@
-package community.flock.aigentic.code.generation.annotations
+package community.flock.aigentic.core.annotations
 
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
