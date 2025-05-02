@@ -16,7 +16,6 @@ import community.flock.aigentic.core.tool.TypedTool
 import community.flock.aigentic.core.tool.getParameter
 import community.flock.aigentic.core.tool.toTool
 
-
 fun agent(agentConfig: AgentConfig.() -> Unit): Agent = AgentConfig().apply(agentConfig).build()
 
 @AgentDSL

@@ -49,9 +49,10 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
         }.start()
 
     when (val result = run.result) {
-        is Result.Finished -> result.getFinishResponse<AgentAdministrativeResponse>().let { response ->
-            "Hours inspected successfully: $response"
-        }
+        is Result.Finished ->
+            result.getFinishResponse<AgentAdministrativeResponse>().let { response ->
+                "Hours inspected successfully: $response"
+            }
 
         is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
         is Result.Fatal -> "Agent crashed: ${result.message}"
@@ -75,8 +76,7 @@ private fun getAllEmployeesOverviewHandler(): EmployeesOverviewResponse =
 private fun updateEmployee(input: UpdateEmployee): UpdateEmployeeResponse =
     UpdateEmployeeResponse("Updated number of reminders sent for '${input.name}' to '${input.numberOfRemindersSent}'")
 
-private fun sendSignalMessage(input: SignalMessage): SignalMessageResponse =
-    SignalMessageResponse("✉️ Sending: '${input.message}' to '${input.phoneNumber}'")
+private fun sendSignalMessage(input: SignalMessage): SignalMessageResponse = SignalMessageResponse("✉️ Sending: '${input.message}' to '${input.phoneNumber}'")
 
 private fun getManagerResponse(input: EmployeeName): ManagerResponse =
     ManagerResponse("${input.name}, please submit your hours, you have been reminded 5 times already. Kind regards, the management")
