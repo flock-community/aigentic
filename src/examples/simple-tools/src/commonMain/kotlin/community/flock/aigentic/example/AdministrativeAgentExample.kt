@@ -30,7 +30,7 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
                     "When you for sure know that the signal message is successfully sent, make sure that you update the numberOfRemindersSent for each and every the specific employee.",
                 )
             }
-            addToolUnit("getAllEmployeesOverview") {
+            addTool("getAllEmployeesOverview") { _: Unit ->
                 getAllEmployeesOverviewHandler()
             }
             addTool("getEmployeeDetailByName") { input: EmployeeName ->
@@ -72,7 +72,8 @@ private fun getAllEmployeesOverviewHandler(): EmployeesOverviewResponse =
 private fun updateEmployee(input: UpdateEmployee): UpdateEmployeeResponse =
     UpdateEmployeeResponse("Updated number of reminders sent for '${input.name}' to '${input.numberOfRemindersSent}'")
 
-private fun sendSignalMessage(input: SignalMessage): SignalMessageResponse = SignalMessageResponse("✉️ Sending: '${input.message}' to '${input.phoneNumber}'")
+private fun sendSignalMessage(input: SignalMessage): SignalMessageResponse =
+    SignalMessageResponse("✉️ Sending: '${input.message}' to '${input.phoneNumber}'")
 
 private fun getManagerResponse(input: EmployeeName): ManagerResponse =
     ManagerResponse("${input.name}, please submit your hours, you have been reminded 5 times already. Kind regards, the management")
