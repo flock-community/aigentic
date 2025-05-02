@@ -12,33 +12,10 @@ import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
-import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.TypedTool
 import community.flock.aigentic.core.tool.getParameter
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.decodeFromJsonElement
+import community.flock.aigentic.core.tool.toTool
 
-/**
- * Extension function to convert a TypedTool to a Tool
- */
-inline fun <reified I : Any, reified O : Any> TypedTool<I, O>.toTool(): Tool {
-    return object : Tool {
-        override val name: ToolName = this@toTool.name
-        override val description: String? = this@toTool.description
-        override val parameters: List<Parameter>
-            get() {
-                val parameter = getParameter<I>() ?: error("No parameter found for type ${I::class.simpleName}. Make sure the class has @AigenticParameter annotation and Aigentic.initialize() has been called.")
-                return parameter.parameters
-            }
-        override val handler: suspend (toolArguments: JsonObject) -> String = {
-            val obj = Json.decodeFromJsonElement<I>(it)
-            val res = this@toTool.handler(obj)
-            Json.encodeToString<O>(res)
-        }
-    }
-}
 
 fun agent(agentConfig: AgentConfig.() -> Unit): Agent = AgentConfig().apply(agentConfig).build()
 
@@ -56,27 +33,20 @@ class AgentConfig : Config<Agent> {
         this.platform = platform
     }
 
-    fun AgentConfig.addTool(tool: Tool) = tools.add(tool)
-
-    inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(tool: TypedTool<I, O>) {
-        tools.add(tool.toTool())
+    fun AgentConfig.addTool(tool: Tool) {
+        tools += tool
     }
 
+    inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(tool: TypedTool<I, O>) {
+        tools += tool.toTool()
+    }
 
     inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(
         name: String,
         description: String? = null,
         noinline handler: suspend (I) -> O,
     ) {
-        val tool =
-            object : TypedTool<I, O> {
-                override val name = ToolName(name)
-                override val description = description
-                override val parameters = getParameter<I>()?.let { listOf(it) } ?: emptyList()
-                override val handler: suspend (toolArguments: I) -> O = handler
-            }
-
-        addTool(tool)
+        tools += toTool(name, description, handler)
     }
 
     fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) =

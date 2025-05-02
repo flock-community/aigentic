@@ -52,6 +52,7 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
         is Result.Finished -> result.getFinishResponse<AgentAdministrativeResponse>().let { response ->
             "Hours inspected successfully: $response"
         }
+
         is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
         is Result.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)

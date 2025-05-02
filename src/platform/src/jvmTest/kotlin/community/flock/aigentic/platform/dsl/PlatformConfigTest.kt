@@ -23,7 +23,7 @@ class PlatformConfigTest : DescribeSpec({
                 task("Task description") {}
                 addTool(mockk(relaxed = true))
             }.run {
-                val basicAuth = platform!!.authentication as Authentication.BasicAuth
+                val basicAuth = platform!!.authentication
                 basicAuth.username shouldBe "some-name"
                 basicAuth.password shouldBe "some-secret"
             }
