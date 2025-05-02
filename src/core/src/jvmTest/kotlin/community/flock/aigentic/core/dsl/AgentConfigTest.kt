@@ -135,6 +135,21 @@ class AgentConfigTest : DescribeSpec({
                 responseParameter shouldBe testParameter
             }
         }
+
+        it("should add tool with Unit input type") {
+            agent {
+                model(mockk(relaxed = true))
+                task("Task description") {}
+                addTool<Unit, String>(
+                    name = "unitTool",
+                    description = "A tool with Unit input",
+                    handler = { "result" }
+                )
+            }.run {
+                tools.size shouldBe 1
+                tools.keys.first().value shouldBe "unitTool"
+            }
+        }
     }
 })
 

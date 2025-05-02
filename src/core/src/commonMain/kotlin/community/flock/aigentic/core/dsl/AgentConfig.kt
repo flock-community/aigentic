@@ -57,22 +57,6 @@ class AgentConfig : Config<Agent> {
         )
     }
 
-    inline fun <reified O : Any> AgentConfig.addToolUnit(tool: TypedTool<Unit, O>) {
-        tools.add(
-            object : Tool {
-                override val name: ToolName = tool.name
-                override val description: String? = tool.description
-                override val parameters: List<Parameter>
-                    get() {
-                        return emptyList()
-                    }
-                override val handler: suspend (toolArguments: JsonObject) -> String = {
-                    val res = tool.handler(Unit)
-                    Json.encodeToString<O>(res)
-                }
-            },
-        )
-    }
 
     inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(
         name: String,
@@ -88,22 +72,6 @@ class AgentConfig : Config<Agent> {
             }
 
         addTool(tool)
-    }
-
-    inline fun <reified O : Any> AgentConfig.addToolUnit(
-        name: String,
-        description: String? = null,
-        noinline handler: suspend (Unit) -> O,
-    ) {
-        val tool =
-            object : TypedTool<Unit, O> {
-                override val name = ToolName(name)
-                override val description = description
-                override val parameters = emptyList<Parameter>()
-                override val handler: suspend (toolArguments: Unit) -> O = handler
-            }
-
-        addToolUnit(tool)
     }
 
     fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) =

@@ -30,7 +30,7 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
                     "When you for sure know that the signal message is successfully sent, make sure that you update the numberOfRemindersSent for each and every the specific employee.",
                 )
             }
-            addToolUnit("getAllEmployeesOverview") { _: Unit ->
+            addTool("getAllEmployeesOverview") { _: Unit ->
                 getAllEmployeesOverviewHandler()
             }
             addTool("getEmployeeDetailByName") { input: EmployeeName ->
@@ -49,7 +49,9 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
         }.start()
 
     when (val result = run.result) {
-        is Result.Finished -> "Hours inspected successfully: ${result.getFinishResponse<AgentAdministrativeResponse>()}"
+        is Result.Finished -> result.getFinishResponse<AgentAdministrativeResponse>().let { response ->
+            "Hours inspected successfully: $response"
+        }
         is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
         is Result.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)

@@ -10,6 +10,15 @@ inline fun <reified T : Any> getParameter(): Parameter.Complex.Object? {
 object ParameterRegistry {
     private val parameterRegistry = mutableMapOf<ParameterIdentifier, Parameter.Complex.Object>()
 
+    init {
+        register("kotlin", "Unit", Parameter.Complex.Object(
+            name = "unit",
+            description = "No parameters required",
+            isRequired = true,
+            parameters = emptyList()
+        ))
+    }
+
     fun register(
         packageName: String,
         simpleName: String,
