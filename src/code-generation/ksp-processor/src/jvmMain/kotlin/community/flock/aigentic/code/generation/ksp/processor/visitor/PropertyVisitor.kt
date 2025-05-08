@@ -13,21 +13,10 @@ import community.flock.aigentic.code.generation.ksp.processor.util.StringUtils
 import community.flock.aigentic.code.generation.ksp.processor.util.TypeUtils
 import community.flock.aigentic.core.tool.ParameterType
 
-/**
- * Visitor for traversing the property hierarchy and generating parameter definitions.
- * This implements the visitor pattern to eliminate duplication in parameter generation logic.
- */
 class PropertyVisitor(
     private val resolver: Resolver,
     private val errorUtils: ErrorUtils,
 ) {
-    /**
-     * Visits a property and generates a parameter definition.
-     *
-     * @param property The property to visit
-     * @param indentLevel The indentation level
-     * @return A string representation of the parameter definition
-     */
     fun visitProperty(
         property: KSPropertyDeclaration,
         indentLevel: Int = 0,
@@ -52,16 +41,6 @@ class PropertyVisitor(
         }
     }
 
-    /**
-     * Visits a primitive property and generates a parameter definition.
-     *
-     * @param name The property name
-     * @param typeName The type name
-     * @param isNullable Whether the property is nullable
-     * @param indentLevel The indentation level
-     * @param description The property description
-     * @return A string representation of the parameter definition
-     */
     private fun visitPrimitiveProperty(
         name: String,
         typeName: String,
@@ -77,16 +56,6 @@ class PropertyVisitor(
         return StringUtils.indent(content, indentLevel)
     }
 
-    /**
-     * Visits an array property and generates a parameter definition.
-     *
-     * @param name The property name
-     * @param type The property type
-     * @param isNullable Whether the property is nullable
-     * @param indentLevel The indentation level
-     * @param description The property description
-     * @return A string representation of the parameter definition
-     */
     private fun visitArrayProperty(
         name: String,
         type: KSType,
@@ -121,13 +90,6 @@ class PropertyVisitor(
         return StringUtils.indent(content, indentLevel)
     }
 
-    /**
-     * Visits a primitive item definition and generates a parameter definition.
-     *
-     * @param name The item name
-     * @param elementTypeName The element type name
-     * @return A string representation of the parameter definition
-     */
     private fun visitPrimitiveItemDefinition(
         name: String,
         elementTypeName: String,
@@ -139,16 +101,6 @@ class PropertyVisitor(
         return ParameterBuilder.buildPrimitiveParameter(name, primitiveType, true)
     }
 
-    /**
-     * Visits an object property and generates a parameter definition.
-     *
-     * @param name The property name
-     * @param typeDeclaration The type declaration
-     * @param isNullable Whether the property is nullable
-     * @param indentLevel The indentation level
-     * @param description The property description
-     * @return A string representation of the parameter definition
-     */
     private fun visitObjectProperty(
         name: String,
         typeDeclaration: KSClassDeclaration,
@@ -162,13 +114,6 @@ class PropertyVisitor(
         return StringUtils.indent(content, indentLevel)
     }
 
-    /**
-     * Visits nested parameters and generates parameter definitions.
-     *
-     * @param classDeclaration The class declaration
-     * @param indentLevel The indentation level
-     * @return A string representation of the parameter definitions
-     */
     private fun visitNestedParameters(
         classDeclaration: KSClassDeclaration,
         indentLevel: Int = 0,
@@ -178,16 +123,6 @@ class PropertyVisitor(
             .joinToString(",\n")
     }
 
-    /**
-     * Visits an enum property and generates a parameter definition.
-     *
-     * @param name The property name
-     * @param enumClassDeclaration The enum class declaration
-     * @param isNullable Whether the property is nullable
-     * @param indentLevel The indentation level
-     * @param description The property description
-     * @return A string representation of the parameter definition
-     */
     private fun visitEnumProperty(
         name: String,
         enumClassDeclaration: KSClassDeclaration,
@@ -218,13 +153,6 @@ class PropertyVisitor(
         return StringUtils.indent(content, indentLevel)
     }
 
-    /**
-     * Gets an annotation value from a property.
-     *
-     * @param annotationName The annotation name
-     * @param argumentName The argument name
-     * @return The annotation value, or null if not found
-     */
     private fun KSPropertyDeclaration.getAnnotationValue(
         annotationName: String,
         argumentName: String,

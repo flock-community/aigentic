@@ -61,7 +61,7 @@ implementation("community.flock.aigentic:core:<version>")
 
 // Also available: community.flock.aigentic:gemini or community.flock.aigentic:ollama 
 implementation("community.flock.aigentic:openai:<version>") 
- 
+
 // Add the ktor client library depending on your platform. CIO is for JVM, Android, Native. For other platforms pick the correct engine: https://ktor.io/docs/client-engines.html#platforms
 implementation("io.ktor:ktor-client-cio:2.3.10")
 
@@ -78,7 +78,7 @@ import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import kotlinx.serialization.json.JsonObject
 
 
-val agent = agent {
+val agent: Agent = agent {
   task("Summarize the newsfeed of the day and determine the sentiment") {
     addInstruction("Analyze the sentiment for each news event")
     addInstruction("Save the sentiment for each news event")
@@ -123,7 +123,7 @@ val saveNewsEventSentimentTool =
 
     override val parameters = listOf(titleParameter, sentimentParameter)
 
-    override val handler: suspend (JsonObject) -> String = { arguments ->
+    override val handler: suspend (JsonObject) -> String = { arguments: JsonObject ->
 
       val title = titleParameter.getStringValue(arguments)
       val sentiment = sentimentParameter.getStringValue(arguments)
@@ -217,6 +217,91 @@ In order to use SNAPSHOT versions of Aigentic please make sure both maven centra
 repositories {
     mavenCentral()
     maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
+}
+```
+
+## Code Generation with KSP
+
+Aigentic provides a Kotlin Symbol Processing (KSP) processor to automatically generate parameter classes for your data classes. This can be used to simplify the creation of tools and response parameters.
+
+### Setup
+
+To use the KSP processor, add the following to your project:
+
+```kotlin
+plugins {
+    id("com.google.devtools.ksp") version "<ksp-version>" // Must match your Kotlin version
+}
+
+dependencies {
+    implementation("community.flock.aigentic:core:<version>")
+    ksp("community.flock.aigentic:ksp-processor:<version>")
+
+    // Kotlinx serialization is required
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
+}
+```
+
+> **Note**: The KSP processor currently only works with Gradle. The KSP version must match your Kotlin version (e.g., for Kotlin 1.9.23, use KSP version 1.9.23-1.0.20).
+
+### Usage
+
+1. Annotate your data classes with `@AigenticParameter`:
+
+```kotlin
+import community.flock.aigentic.core.annotations.AigenticParameter
+
+@AigenticParameter
+data class Person(
+    val name: String,
+    val age: Int,
+    val address: Address
+)
+
+data class Address(
+    val street: String,
+    val city: String,
+    val zipCode: String
+)
+```
+
+2. The KSP processor will generate parameter classes for your annotated data classes, which you can use in your tools:
+
+```kotlin
+import community.flock.aigentic.core.agent.Agent
+import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.core.tool.Tool
+import community.flock.aigentic.core.tool.ToolName
+import community.flock.aigentic.generated.parameter.PersonParameter
+import kotlinx.serialization.json.JsonObject
+
+// Example of using the generated parameter class with the inline tool function
+val agent: Agent = agent {
+    // ... other agent configuration
+
+    // Using the inline tool function with the generated parameter class
+    // This approach provides type safety and eliminates the need for manual JSON parsing
+    addTool<Person, String>(
+        name = "createPerson",
+        description = "Creates a new person",
+        handler = { person: Person ->
+            // Handle the person creation with strongly-typed input
+            // The Person object is automatically deserialized from the JSON input
+            "Person created successfully: ${person.name}, age ${person.age}"
+        }
+    )
+}
+
+// You can also use the generated parameter class directly in a traditional tool object
+val traditionalTool = object : Tool {
+    override val name = ToolName("createPerson")
+    override val description = "Creates a new person"
+    override val parameters = listOf(PersonParameter.parameter)
+
+    override val handler: suspend (JsonObject) -> String = { arguments: JsonObject ->
+        // Handle the person creation
+        "Person created successfully"
+    }
 }
 ```
 
