@@ -14,16 +14,17 @@ import community.flock.aigentic.core.tool.ToolName
 data class Task(
     val description: String,
     val instructions: List<Instruction>,
+    val input: List<Data> = emptyList(),
 )
 
 data class Instruction(val text: String)
 
-sealed interface InputData {
-    data class Text(val text: String) : InputData
+sealed interface Data {
+    data class Text(val text: String) : Data
 
-    data class Url(val url: String, val mimeType: MimeType) : InputData
+    data class Url(val url: String, val mimeType: MimeType) : Data
 
-    data class Base64(val base64: String, val mimeType: MimeType) : InputData
+    data class Base64(val base64: String, val mimeType: MimeType) : Data
 }
 
 data class Agent(
@@ -31,10 +32,10 @@ data class Agent(
     val systemPromptBuilder: SystemPromptBuilder,
     val model: Model,
     val task: Task,
+    val contexts: List<Data>,
     val tools: Map<ToolName, Tool>,
     val responseParameter: Parameter? = null,
     val tags: List<RunTag>,
-    val inputData: List<InputData> = emptyList(),
 ) {
     internal val finishedTaskTool = finishedTaskTool(responseParameter)
     internal val internalTools: Map<ToolName, InternalTool<*>> =

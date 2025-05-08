@@ -1,6 +1,8 @@
 package community.flock.aigentic.core.dsl
 
+import community.flock.aigentic.core.agent.Data
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Tool
 import io.kotest.assertions.throwables.shouldThrow
@@ -52,6 +54,22 @@ class AgentConfigTest : DescribeSpec({
                 addTool(mockk(relaxed = true))
             }.run {
                 systemPromptBuilder shouldBe systemPromptBuilder
+            }
+        }
+
+        it("should build agent with multiple contexts") {
+            agent {
+                model(mockk(relaxed = true))
+                task("Task description") {}
+                context {
+                    addText("Some text")
+                    addUrl("https://example.com/image.jpg", MimeType.JPEG)
+                }
+                addTool(mockk(relaxed = true))
+            }.run {
+                contexts.size shouldBe 2
+                contexts.first() shouldBe Data.Text("Some text")
+                contexts.last() shouldBe Data.Url("https://example.com/image.jpg", MimeType.JPEG)
             }
         }
 

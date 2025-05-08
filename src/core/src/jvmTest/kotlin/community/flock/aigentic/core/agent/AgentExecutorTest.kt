@@ -149,16 +149,14 @@ class AgentExecutorTest : DescribeSpec({
                 agent {
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
+                    context {
+                        addText(expectedTextContext)
+                        addBase64(base64 = expectedImageContextBase64, mimeType = expectedImageContextMimeType)
+                    }
                     addTool(mockk(relaxed = true))
                 }
 
-            val inputData =
-                listOf(
-                    InputData.Text(expectedTextContext),
-                    InputData.Base64(base64 = expectedImageContextBase64, mimeType = expectedImageContextMimeType),
-                )
-
-            agent.start(inputData).apply {
+            agent.start().apply {
                 messages.drop(1).take(2) shouldBe
                     listOf(
                         Message.Text(Sender.Agent, MessageType.New, expectedTextContext),

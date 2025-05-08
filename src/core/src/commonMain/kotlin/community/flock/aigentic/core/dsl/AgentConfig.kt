@@ -1,11 +1,13 @@
 package community.flock.aigentic.core.dsl
 
 import community.flock.aigentic.core.agent.Agent
+import community.flock.aigentic.core.agent.Data
 import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.platform.Platform
@@ -19,6 +21,7 @@ class AgentConfig : Config<Agent> {
     internal var model: Model? = null
     internal var platform: Platform? = null
     internal var task: TaskConfig? = null
+    internal var contexts: List<Data> = emptyList()
     internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
     internal var responseParameter: Parameter? = null
     internal val tools = mutableListOf<Tool>()
@@ -29,6 +32,10 @@ class AgentConfig : Config<Agent> {
     }
 
     fun AgentConfig.addTool(tool: Tool) = tools.add(tool)
+
+    fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) =
+        ContextConfig().apply(contextConfig).build()
+            .also { contexts = it }
 
     fun AgentConfig.task(
         description: String,
@@ -62,6 +69,7 @@ class AgentConfig : Config<Agent> {
                     tools.isNotEmpty() || responseParameter != null,
                     builderPropertyMissingErrorMessage("tools", "addTool()"),
                 ).let { tools.associateBy { it.name } },
+            contexts = contexts,
             responseParameter = responseParameter,
             tags = tags,
         )
@@ -76,6 +84,29 @@ class TaskConfig(
     fun TaskConfig.addInstruction(instruction: String) = instructions.add(Instruction(instruction))
 
     override fun build(): Task = Task(description, instructions)
+}
+
+@AgentDSL
+class ContextConfig : Config<List<Data>> {
+    internal val contexts = mutableListOf<Data>()
+
+    fun ContextConfig.addText(text: String) =
+        Data.Text(text)
+            .also { contexts.add(it) }
+
+    fun ContextConfig.addUrl(
+        url: String,
+        mimeType: MimeType,
+    ) = Data.Url(url = url, mimeType = mimeType)
+        .also { contexts.add(it) }
+
+    fun ContextConfig.addBase64(
+        base64: String,
+        mimeType: MimeType,
+    ) = Data.Base64(base64 = base64, mimeType = mimeType)
+        .also { contexts.add(it) }
+
+    override fun build(): List<Data> = contexts
 }
 
 @AgentDSL

@@ -1,6 +1,5 @@
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.agent.InputData
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.AgentConfig
@@ -38,11 +37,15 @@ suspend fun runItemCategorizeExample(
     base64Image: String,
     configureModel: AgentConfig.() -> Unit,
 ): Run {
-    val agent =
+    val run =
         agent {
             configureModel()
             task("Identify all items in the image and save each individual item") {}
             addTool(saveItemTool)
-        }
-    return agent.start(listOf(InputData.Base64(base64Image, MimeType.JPEG)))
+            context {
+                addBase64(base64Image, MimeType.JPEG)
+            }
+        }.start()
+
+    return run
 }
