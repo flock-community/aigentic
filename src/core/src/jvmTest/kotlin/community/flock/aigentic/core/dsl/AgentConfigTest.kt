@@ -1,6 +1,6 @@
 package community.flock.aigentic.core.dsl
 
-import community.flock.aigentic.core.agent.Context
+import community.flock.aigentic.core.agent.Data
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
@@ -68,8 +68,8 @@ class AgentConfigTest : DescribeSpec({
                 addTool(mockk(relaxed = true))
             }.run {
                 contexts.size shouldBe 2
-                contexts.first() shouldBe Context.Text("Some text")
-                contexts.last() shouldBe Context.Url("https://example.com/image.jpg", MimeType.JPEG)
+                contexts.first() shouldBe Data.Text("Some text")
+                contexts.last() shouldBe Data.Url("https://example.com/image.jpg", MimeType.JPEG)
             }
         }
 

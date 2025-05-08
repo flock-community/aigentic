@@ -1,5 +1,6 @@
 package community.flock.aigentic.example
 
+import community.flock.aigentic.core.agent.Data
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.AgentConfig
@@ -72,10 +73,7 @@ suspend fun invoiceExtractorAgent(
                 addInstruction("Please provide list of the invoice components")
             }
             addTool(saveInvoiceComponents)
-            context {
-                addBase64(invoicePdfBase64, MimeType.PDF)
-            }
-        }.start()
+        }.start(taskInput = listOf(Data.Base64(invoicePdfBase64, MimeType.PDF)))
 
     return run
 }

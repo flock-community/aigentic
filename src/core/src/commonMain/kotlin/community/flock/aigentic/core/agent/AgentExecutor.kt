@@ -33,13 +33,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 
-suspend fun Agent.start(): Run =
+suspend fun Agent.start(taskInput: List<Data> = emptyList()): Run =
     coroutineScope {
         val state = State()
         state.events.emit(AgentStatus.Started)
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
         try {
-            val run = executeAction(Initialize(state, this@start)).toRun()
+            val run = executeAction(Initialize(state, this@start.copy(task = this@start.task.copy(input = taskInput)))).toRun()
             publishRun(this@start, run, state)
             run
         } catch (e: AigenticException) {
@@ -244,8 +244,8 @@ private fun initializeStartMessages(agent: Agent): List<Message> =
     listOf(agent.systemPromptBuilder.buildSystemPrompt(agent)) +
         agent.contexts.map {
             when (it) {
-                is Context.Url -> Message.Url(sender = Sender.Agent, url = it.url, mimeType = it.mimeType, messageType = MessageType.New)
-                is Context.Base64 ->
+                is Data.Url -> Message.Url(sender = Sender.Agent, url = it.url, mimeType = it.mimeType, messageType = MessageType.New)
+                is Data.Base64 ->
                     Message.Base64(
                         sender = Sender.Agent,
                         base64Content = it.base64,
@@ -253,7 +253,7 @@ private fun initializeStartMessages(agent: Agent): List<Message> =
                         messageType = MessageType.New,
                     )
 
-                is Context.Text -> Message.Text(Sender.Agent, messageType = MessageType.New, it.text)
+                is Data.Text -> Message.Text(Sender.Agent, messageType = MessageType.New, it.text)
             }
         }
 

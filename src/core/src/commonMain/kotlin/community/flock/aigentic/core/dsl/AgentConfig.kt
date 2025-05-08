@@ -1,7 +1,7 @@
 package community.flock.aigentic.core.dsl
 
 import community.flock.aigentic.core.agent.Agent
-import community.flock.aigentic.core.agent.Context
+import community.flock.aigentic.core.agent.Data
 import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
@@ -21,7 +21,7 @@ class AgentConfig : Config<Agent> {
     internal var model: Model? = null
     internal var platform: Platform? = null
     internal var task: TaskConfig? = null
-    internal var contexts: List<Context> = emptyList()
+    internal var contexts: List<Data> = emptyList()
     internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
     internal var responseParameter: Parameter? = null
     internal val tools = mutableListOf<Tool>()
@@ -87,26 +87,26 @@ class TaskConfig(
 }
 
 @AgentDSL
-class ContextConfig : Config<List<Context>> {
-    internal val contexts = mutableListOf<Context>()
+class ContextConfig : Config<List<Data>> {
+    internal val contexts = mutableListOf<Data>()
 
     fun ContextConfig.addText(text: String) =
-        Context.Text(text)
+        Data.Text(text)
             .also { contexts.add(it) }
 
     fun ContextConfig.addUrl(
         url: String,
         mimeType: MimeType,
-    ) = Context.Url(url = url, mimeType = mimeType)
+    ) = Data.Url(url = url, mimeType = mimeType)
         .also { contexts.add(it) }
 
     fun ContextConfig.addBase64(
         base64: String,
         mimeType: MimeType,
-    ) = Context.Base64(base64 = base64, mimeType = mimeType)
+    ) = Data.Base64(base64 = base64, mimeType = mimeType)
         .also { contexts.add(it) }
 
-    override fun build(): List<Context> = contexts
+    override fun build(): List<Data> = contexts
 }
 
 @AgentDSL
