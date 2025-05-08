@@ -3,6 +3,7 @@ package community.flock.aigentic.core.dsl
 import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.Context
 import community.flock.aigentic.core.agent.Instruction
+import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
@@ -25,8 +26,9 @@ class AgentConfig : Config<Agent> {
     internal var task: TaskConfig? = null
     internal var contexts: List<Context> = emptyList()
     internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
-    val tools = mutableListOf<Tool>()
     var responseParameter: Parameter? = null
+    val tools = mutableListOf<Tool>()
+    internal val tags = mutableListOf<RunTag>()
 
     fun AgentConfig.platform(platform: Platform) {
         this.platform = platform
@@ -75,8 +77,10 @@ class AgentConfig : Config<Agent> {
         this.responseParameter = getParameter<T>()
     }
 
-    override fun build(): Agent {
-        return Agent(
+    fun AgentConfig.tags(tag: String) = tags.add(RunTag(tag))
+
+    override fun build(): Agent =
+        Agent(
             platform = platform,
             systemPromptBuilder = systemPromptBuilder,
             model = checkNotNull(model, builderPropertyMissingErrorMessage("model", "model()")),
@@ -88,8 +92,8 @@ class AgentConfig : Config<Agent> {
                 ).let { tools.associateBy { it.name } },
             contexts = contexts,
             responseParameter = responseParameter,
+            tags = tags,
         )
-    }
 }
 
 @AgentDSL

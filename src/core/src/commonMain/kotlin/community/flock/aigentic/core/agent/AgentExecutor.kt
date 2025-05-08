@@ -8,6 +8,7 @@ import community.flock.aigentic.core.agent.Action.SendModelRequest
 import community.flock.aigentic.core.agent.message.correctionMessage
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.state.State
+import community.flock.aigentic.core.agent.state.addExampleRun
 import community.flock.aigentic.core.agent.state.addMessage
 import community.flock.aigentic.core.agent.state.addMessages
 import community.flock.aigentic.core.agent.state.addModelRequestInfo
@@ -16,9 +17,13 @@ import community.flock.aigentic.core.agent.state.toRun
 import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.exception.AigenticException
+import community.flock.aigentic.core.exception.aigenticException
+import community.flock.aigentic.core.message.ContextMessage
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
+import community.flock.aigentic.core.message.mapToTextMessages
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.core.util.withStartFinishTiming
@@ -73,8 +78,120 @@ suspend fun executeAction(action: Action): Pair<State, Result> =
 
 private suspend fun Initialize.process(): Action {
     state.addMessages(initializeStartMessages(agent))
+    if (agent.tags.isNotEmpty()) {
+        state.addMessages(prependWithExampleMessages())
+    }
     return SendModelRequest(state, agent)
 }
+
+private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
+    val runs = fetchRuns()
+    state.addMessage(
+        Message.ExampleToolMessage(
+            sender = Sender.Agent,
+            text =
+                """
+        |The messages below are example run messages. Each example run has a clearly marked start and end.
+        |The example messages continue until you encounter: <END_OF_ALL_EXAMPLES>
+                """.trimMargin(),
+        ),
+    )
+    val runMessages: List<List<Message>> =
+        runs.mapIndexed { index, run ->
+            val messages = run.second.messages
+            state.addExampleRun(run.first)
+            val textMessages = messages.mapToTextMessages()
+            val exampleMessageDescription =
+                listOf(
+                    Message.ExampleToolMessage(
+                        sender = Sender.Agent,
+                        text =
+                            """
+        |The messages below are part of example $index. The example ends when you encounter: <END_EXAMPLE_$index>
+                            """.trimMargin(),
+                    ),
+                )
+            val exampleEndMessageDescription =
+                listOf(
+                    Message.ExampleToolMessage(
+                        sender = Sender.Agent,
+                        text =
+                            """
+        |<END_EXAMPLE_$index>.
+                            """.trimMargin(),
+                    ),
+                )
+            try {
+                exampleMessageDescription
+                    .plus(listOf(messages.filterIsInstance<ContextMessage>().first().toExampleMessage()))
+                    .plus(textMessages)
+                    .plus(exampleEndMessageDescription)
+                    .mapNotNull { it }
+            } catch (e: Exception) {
+                println("test" + e.message)
+                return emptyList()
+            }
+        }
+    val finalExampleMessageDescription =
+        listOf(
+            Message.ExampleToolMessage(
+                sender = Sender.Agent,
+                text =
+                    """
+        |<END_OF_ALL_EXAMPLES>
+        |All of the previous example messages are to be considered as the results of a desired run.
+        |Carefully analyze the relationship between the input (instructions, tool calls and arguments) and the output (responses).
+        |Use these relations in the current task and make sure to apply the instructions below to come to the same relationships.
+        |All messages following are the input for the current task.
+                    """.trimMargin(),
+            ),
+        )
+    val allMessages = runMessages.flatMap { it }
+    return allMessages
+        .plus(finalExampleMessageDescription)
+}
+
+private fun ContextMessage.toExampleMessage(): Message =
+    when (this) {
+        is Message.Base64 ->
+            Message.Base64(
+                sender = sender,
+                messageType = MessageType.Example,
+                base64Content = base64Content,
+                mimeType = mimeType,
+            )
+
+        is Message.Text ->
+            Message.Text(
+                sender = sender,
+                messageType = MessageType.Example,
+                text = text,
+            )
+
+        is Message.Url ->
+            Message.Url(
+                sender = sender,
+                messageType = MessageType.Example,
+                url = url,
+                mimeType = mimeType,
+            )
+
+        is Message.ExampleToolMessage ->
+            Message.ExampleToolMessage(
+                sender = sender,
+                text = text,
+                id = id,
+            )
+    }
+
+private suspend fun Initialize.fetchRuns(): List<Pair<RunId, Run>> =
+    runCatching {
+        agent.platform
+            ?.getRuns(agent.tags)
+    }.onFailure {
+        state.addMessages(initializeStartMessages(agent))
+        aigenticException(it.message.toString())
+    }.getOrNull() ?: emptyList()
 
 private suspend fun ProcessModelResponse.process(): Action =
     when (responseMessage) {
@@ -127,9 +244,16 @@ private fun initializeStartMessages(agent: Agent): List<Message> =
     listOf(agent.systemPromptBuilder.buildSystemPrompt(agent)) +
         agent.contexts.map {
             when (it) {
-                is Context.Url -> Message.Url(sender = Sender.Agent, url = it.url, mimeType = it.mimeType)
-                is Context.Base64 -> Message.Base64(sender = Sender.Agent, base64Content = it.base64, mimeType = it.mimeType)
-                is Context.Text -> Message.Text(Sender.Agent, it.text)
+                is Context.Url -> Message.Url(sender = Sender.Agent, url = it.url, mimeType = it.mimeType, messageType = MessageType.New)
+                is Context.Base64 ->
+                    Message.Base64(
+                        sender = Sender.Agent,
+                        base64Content = it.base64,
+                        mimeType = it.mimeType,
+                        messageType = MessageType.New,
+                    )
+
+                is Context.Text -> Message.Text(Sender.Agent, messageType = MessageType.New, it.text)
             }
         }
 

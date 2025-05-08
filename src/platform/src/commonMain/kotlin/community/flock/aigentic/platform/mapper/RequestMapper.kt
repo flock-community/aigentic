@@ -56,6 +56,7 @@ fun Run.toDto(agent: Agent) =
                     ),
                 modelIdentifier = agent.model.modelIdentifier.stringValue,
                 systemPrompt = messages.filterIsInstance<Message.SystemPrompt>().first().prompt,
+                exampleRunIds = exampleRunIds.map { it.value },
                 tools =
                     agent.tools.map { (name, tool) ->
                         ToolDto(
@@ -65,7 +66,7 @@ fun Run.toDto(agent: Agent) =
                         )
                     },
             ),
-        messages = messages.map { it.toDto() },
+        messages = messages.mapNotNull { it.toDto() },
         modelRequests = modelRequests.map { it.toDto() },
         result = result.toDto(),
     )
@@ -158,7 +159,7 @@ private fun Sender.toDto(): SenderDto =
         is Sender.Model -> SenderDto.Model
     }
 
-private fun Message.toDto(): MessageDto =
+private fun Message.toDto(): MessageDto? =
     when (this) {
         is Message.Base64 ->
             Base64MessageDto(
@@ -205,6 +206,8 @@ private fun Message.toDto(): MessageDto =
                 response = response.result,
                 toolName = toolName,
             )
+
+        is Message.ExampleToolMessage -> null
     }
 
 private fun ToolCall.toDto(): ToolCallDto =
