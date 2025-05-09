@@ -2,7 +2,6 @@ package community.flock.aigentic.openai.model
 
 import com.aallam.openai.api.exception.OpenAIException
 import com.aallam.openai.api.http.Timeout
-import com.aallam.openai.api.logging.LogLevel
 import com.aallam.openai.client.LoggingConfig
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIHost
@@ -10,6 +9,7 @@ import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.GenerationSettings
+import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
@@ -18,6 +18,7 @@ import community.flock.aigentic.openai.mapper.toModelResponse
 import community.flock.aigentic.openai.request.createChatCompletionsRequest
 import kotlin.jvm.JvmInline
 import kotlin.time.Duration.Companion.seconds
+import com.aallam.openai.api.logging.LogLevel as OpenAILogLevel
 
 @Suppress("ktlint:standard:class-naming")
 sealed class OpenAIModelIdentifier(
@@ -47,9 +48,10 @@ class OpenAIModel(
     override val authentication: Authentication.APIKey,
     override val modelIdentifier: ModelIdentifier,
     override val generationSettings: GenerationSettings,
+    logLevel: LogLevel = LogLevel.NONE,
     apiUrl: OpenAIApiUrl,
 ) : Model {
-    private val openAI: OpenAI = defaultOpenAI(authentication, apiUrl)
+    private val openAI: OpenAI = defaultOpenAI(authentication, apiUrl, logLevel)
 
     override suspend fun sendRequest(
         messages: List<Message>,
@@ -74,9 +76,16 @@ class OpenAIModel(
         fun defaultOpenAI(
             authentication: Authentication.APIKey,
             apiUrl: OpenAIApiUrl,
+            logLevel: LogLevel = LogLevel.NONE,
         ) = OpenAI(
             token = authentication.key,
-            logging = LoggingConfig(LogLevel.None),
+            logging =
+                LoggingConfig(
+                    when (logLevel) {
+                        LogLevel.NONE -> OpenAILogLevel.None
+                        LogLevel.DEBUG -> OpenAILogLevel.All
+                    },
+                ),
             timeout = Timeout(socket = 60.seconds),
             host = OpenAIHost(apiUrl.value),
         )

@@ -3,6 +3,7 @@ package community.flock.aigentic.gemini.model
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.GenerationSettings
+import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
@@ -32,7 +33,8 @@ class GeminiModel(
     override val authentication: Authentication.APIKey,
     override val modelIdentifier: GeminiModelIdentifier,
     override val generationSettings: GenerationSettings,
-    private val geminiClient: GeminiClient = defaultGeminiClient(authentication),
+    private val logLevel: LogLevel = LogLevel.NONE,
+    private val geminiClient: GeminiClient = defaultGeminiClient(authentication, logLevel),
 ) : Model {
     override suspend fun sendRequest(
         messages: List<Message>,
@@ -47,11 +49,13 @@ class GeminiModel(
     companion object {
         fun defaultGeminiClient(
             apiKeyAuthentication: Authentication.APIKey,
+            logLevel: LogLevel = LogLevel.NONE,
             requestsPerMinute: Int = 15,
         ): GeminiClient =
             GeminiClient(
                 config = GeminiApiConfig(apiKeyAuthentication),
                 rateLimiter = RateLimitBucket(requestsPerMinute),
+                logLevel = logLevel,
             )
     }
 }
