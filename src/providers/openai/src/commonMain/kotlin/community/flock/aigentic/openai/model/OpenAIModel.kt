@@ -2,7 +2,6 @@ package community.flock.aigentic.openai.model
 
 import com.aallam.openai.api.exception.OpenAIException
 import com.aallam.openai.api.http.Timeout
-import com.aallam.openai.api.logging.LogLevel as OpenAILogLevel
 import com.aallam.openai.client.LoggingConfig
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIHost
@@ -19,6 +18,7 @@ import community.flock.aigentic.openai.mapper.toModelResponse
 import community.flock.aigentic.openai.request.createChatCompletionsRequest
 import kotlin.jvm.JvmInline
 import kotlin.time.Duration.Companion.seconds
+import com.aallam.openai.api.logging.LogLevel as OpenAILogLevel
 
 @Suppress("ktlint:standard:class-naming")
 sealed class OpenAIModelIdentifier(
@@ -79,10 +79,13 @@ class OpenAIModel(
             logLevel: LogLevel = LogLevel.NONE,
         ) = OpenAI(
             token = authentication.key,
-            logging = LoggingConfig(when (logLevel) {
-                LogLevel.NONE -> OpenAILogLevel.None
-                LogLevel.DEBUG -> OpenAILogLevel.All
-            }),
+            logging =
+                LoggingConfig(
+                    when (logLevel) {
+                        LogLevel.NONE -> OpenAILogLevel.None
+                        LogLevel.DEBUG -> OpenAILogLevel.All
+                    },
+                ),
             timeout = Timeout(socket = 60.seconds),
             host = OpenAIHost(apiUrl.value),
         )
