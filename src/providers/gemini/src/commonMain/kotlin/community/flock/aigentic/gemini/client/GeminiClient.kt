@@ -1,6 +1,7 @@
 package community.flock.aigentic.gemini.client
 
 import community.flock.aigentic.core.exception.aigenticException
+import community.flock.aigentic.core.model.LogLevel.NONE
 import community.flock.aigentic.gemini.client.config.GeminiApiConfig
 import community.flock.aigentic.gemini.client.model.ErrorResponse
 import community.flock.aigentic.gemini.client.model.GenerateContentRequest
@@ -30,6 +31,7 @@ import kotlinx.serialization.json.Json
 class GeminiClient(
     private val config: GeminiApiConfig,
     private val rateLimiter: RateLimiter,
+    private val logLevel: community.flock.aigentic.core.model.LogLevel = NONE,
     engine: HttpClientEngine? = null,
 ) {
     private val configuration: HttpClientConfig<*>.() -> Unit = {
@@ -42,7 +44,10 @@ class GeminiClient(
         }
         install(Logging) {
             logger = Logger.SIMPLE
-            level = LogLevel.NONE
+            level = when (logLevel) {
+                NONE -> LogLevel.NONE
+                community.flock.aigentic.core.model.LogLevel.DEBUG -> LogLevel.ALL
+            }
         }
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = config.numberOfRetriesOnServerErrors)
