@@ -9,26 +9,20 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 class AigenticPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        // Create extension for configuration
         val extension = project.extensions.create<AigenticExtension>("aigentic")
 
-        // Apply KSP plugin
         project.plugins.apply("com.google.devtools.ksp")
 
-        // Configure the plugin after project evaluation
         project.afterEvaluate {
-            // Add KSP dependency
             project.dependencies {
                 add("kspCommonMainMetadata", project.project(":src:code-generation:ksp-processor"))
                 add("kspJvm", project.project(":src:code-generation:ksp-processor"))
             }
 
-            // Configure Kotlin source sets to include generated code
             project.extensions.getByType<KotlinMultiplatformExtension>().apply {
                 sourceSets.getByName("commonMain").kotlin.srcDir(extension.generateSourceDir)
             }
 
-            // Fix task dependencies between KSP and Kotlin compile tasks
             project.tasks.named("compileKotlinJvm") {
                 dependsOn("kspCommonMainKotlinMetadata")
             }

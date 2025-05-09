@@ -231,14 +231,12 @@ To use the KSP processor, add the following to your project:
 ```kotlin
 plugins {
     id("com.google.devtools.ksp") version "<ksp-version>" // Must match your Kotlin version
+    kotlin("plugin.serialization") version "<kotlin-version>"
 }
 
 dependencies {
     implementation("community.flock.aigentic:core:<version>")
     ksp("community.flock.aigentic:ksp-processor:<version>")
-
-    // Kotlinx serialization is required
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
 }
 ```
 
@@ -251,7 +249,7 @@ dependencies {
 ```kotlin
 import community.flock.aigentic.core.annotations.AigenticParameter
 
-@AigenticParameter
+@AigenticParameter("The person to create")
 data class Person(
     val name: String,
     val age: Int,
@@ -280,7 +278,6 @@ val agent: Agent = agent {
     // ... other agent configuration
 
     // Using the inline tool function with the generated parameter class
-    // This approach provides type safety and eliminates the need for manual JSON parsing
     addTool<Person, String>(
         name = "createPerson",
         description = "Creates a new person",
@@ -292,17 +289,6 @@ val agent: Agent = agent {
     )
 }
 
-// You can also use the generated parameter class directly in a traditional tool object
-val traditionalTool = object : Tool {
-    override val name = ToolName("createPerson")
-    override val description = "Creates a new person"
-    override val parameters = listOf(PersonParameter.parameter)
-
-    override val handler: suspend (JsonObject) -> String = { arguments: JsonObject ->
-        // Handle the person creation
-        "Person created successfully"
-    }
-}
 ```
 
 ## License
