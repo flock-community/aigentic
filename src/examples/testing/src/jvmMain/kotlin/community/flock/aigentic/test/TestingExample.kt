@@ -57,8 +57,7 @@ val invoiceExtractTool =
         override val description = "Saves the invoice details"
         override val parameters = listOf(invoiceNumber, customerNumber, licencePlates, invoiceTotal)
 
-        override val handler: suspend (JsonObject) -> String = { arguments ->
-
+        override val handler: suspend (JsonObject) -> String = {
             error("I shouldn't be called")
         }
     }

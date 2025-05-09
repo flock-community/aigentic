@@ -13,6 +13,9 @@ import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
+import community.flock.aigentic.core.tool.TypedTool
+import community.flock.aigentic.core.tool.getParameter
+import community.flock.aigentic.core.tool.toTool
 
 fun agent(agentConfig: AgentConfig.() -> Unit): Agent = AgentConfig().apply(agentConfig).build()
 
@@ -23,15 +26,29 @@ class AgentConfig : Config<Agent> {
     internal var task: TaskConfig? = null
     internal var contexts: List<Context> = emptyList()
     internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
-    internal var responseParameter: Parameter? = null
-    internal val tools = mutableListOf<Tool>()
+    var responseParameter: Parameter? = null
+    val tools = mutableListOf<Tool>()
     internal val tags = mutableListOf<RunTag>()
 
     fun AgentConfig.platform(platform: Platform) {
         this.platform = platform
     }
 
-    fun AgentConfig.addTool(tool: Tool) = tools.add(tool)
+    fun AgentConfig.addTool(tool: Tool) {
+        tools += tool
+    }
+
+    inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(tool: TypedTool<I, O>) {
+        tools += tool.toTool()
+    }
+
+    inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(
+        name: String,
+        description: String? = null,
+        noinline handler: suspend (I) -> O,
+    ) {
+        tools += toTool(name, description, handler)
+    }
 
     fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) =
         ContextConfig().apply(contextConfig).build()
@@ -54,6 +71,10 @@ class AgentConfig : Config<Agent> {
 
     fun AgentConfig.finishResponse(response: Parameter) {
         this.responseParameter = response
+    }
+
+    inline fun <reified T : Any> AgentConfig.finishResponse() {
+        this.responseParameter = getParameter<T>()
     }
 
     fun AgentConfig.tags(tag: String) = tags.add(RunTag(tag))
