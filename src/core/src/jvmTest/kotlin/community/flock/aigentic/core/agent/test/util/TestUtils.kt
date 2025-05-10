@@ -10,6 +10,10 @@ import kotlinx.serialization.json.JsonObject
 
 fun List<ToolCall>.toModelResponse() = map { it.toModelResponse() }
 
-fun ToolCall.toModelResponse() = ModelResponse(Message.ToolCalls(listOf(this)), Usage(inputTokenCount = 100, outputTokenCount = 100))
+fun ToolCall.toModelResponse() =
+    ModelResponse(
+        Message.ToolCalls(listOf(this)),
+        Usage(inputTokenCount = 100, outputTokenCount = 100, thinkingOutputTokenCount = 0),
+    )
 
 fun JsonObject.encode(): String = Json.encodeToString(this)

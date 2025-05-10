@@ -11,7 +11,8 @@ type ModelRequestInfoDto {
     startedAt: String,
     finishedAt: String,
     inputTokenCount: Integer,
-    outputTokenCount: Integer
+    outputTokenCount: Integer,
+    thinkingOutputTokenCount: Integer?
 }
 
 type ConfigDto {
