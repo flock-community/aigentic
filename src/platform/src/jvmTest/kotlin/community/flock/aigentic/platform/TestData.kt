@@ -13,7 +13,11 @@ import kotlinx.serialization.json.put
 
 fun List<ToolCall>.toModelResponse() = map { it.toModelResponse() }
 
-fun ToolCall.toModelResponse() = ModelResponse(Message.ToolCalls(listOf(this)), Usage(inputTokenCount = 100, outputTokenCount = 100))
+fun ToolCall.toModelResponse() =
+    ModelResponse(
+        Message.ToolCalls(listOf(this)),
+        Usage(inputTokenCount = 100, outputTokenCount = 100, thinkingOutputTokenCount = 0),
+    )
 
 object TestData {
     val finishedTaskToolCall =

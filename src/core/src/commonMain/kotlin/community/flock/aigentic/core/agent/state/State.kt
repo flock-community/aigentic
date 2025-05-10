@@ -53,4 +53,5 @@ data class ModelRequestInfo(
     val finishedAt: Instant,
     val inputTokenCount: Int,
     val outputTokenCount: Int,
+    val thinkingOutputTokenCount: Int = 0,
 )
