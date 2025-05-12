@@ -1,0 +1,11 @@
+package community.flock.aigentic.code.generation.ksp.processor
+
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
+
+class MetadataProcessorProvider : SymbolProcessorProvider {
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
+        return AigenticParameterProcessor(environment.codeGenerator, environment.logger)
+    }
+}
