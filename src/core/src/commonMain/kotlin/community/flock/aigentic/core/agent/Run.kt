@@ -26,4 +26,6 @@ fun Run.inputTokens(): Int = modelRequests.sumOf { it.inputTokenCount }
 
 fun Run.outputTokens(): Int = modelRequests.sumOf { it.outputTokenCount }
 
+fun Run.thinkingOutputTokens(): Int = modelRequests.sumOf { it.thinkingOutputTokenCount }
+
 inline fun <reified T> Result.Finished.getFinishResponse(): T? = response?.let { Json.decodeFromString(it) }
