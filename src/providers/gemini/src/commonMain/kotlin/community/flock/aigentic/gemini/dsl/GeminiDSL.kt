@@ -5,6 +5,7 @@ import community.flock.aigentic.core.dsl.Config
 import community.flock.aigentic.core.dsl.GenerationConfig
 import community.flock.aigentic.core.dsl.builderPropertyMissingErrorMessage
 import community.flock.aigentic.core.model.Authentication
+import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.gemini.model.GeminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
@@ -16,6 +17,7 @@ class GeminiModelConfig : Config<GeminiModel> {
     private var apiKey: String? = null
     private var modelIdentifier: GeminiModelIdentifier? = null
     private var generationConfig: GenerationConfig = GenerationConfig()
+    private var logLevel: LogLevel = LogLevel.NONE
 
     fun GeminiModelConfig.apiKey(apiKey: String) {
         this.apiKey = apiKey
@@ -27,6 +29,10 @@ class GeminiModelConfig : Config<GeminiModel> {
 
     fun GeminiModelConfig.generationConfig(generationConfig: GenerationConfig.() -> Unit) {
         this.generationConfig = GenerationConfig().apply(generationConfig)
+    }
+
+    fun GeminiModelConfig.logLevel(level: LogLevel) {
+        this.logLevel = level
     }
 
     override fun build(): GeminiModel =
@@ -44,5 +50,6 @@ class GeminiModelConfig : Config<GeminiModel> {
                     builderPropertyMissingErrorMessage("modelIdentifier", "geminiModel { modelIdentifier() }"),
                 ),
             generationSettings = generationConfig.build(),
+            logLevel = logLevel,
         )
 }

@@ -1,6 +1,8 @@
 package community.flock.aigentic.gemini.client
 
 import community.flock.aigentic.core.exception.aigenticException
+import community.flock.aigentic.core.model.LogLevel
+import community.flock.aigentic.core.model.LogLevel.NONE
 import community.flock.aigentic.gemini.client.config.GeminiApiConfig
 import community.flock.aigentic.gemini.client.model.ErrorResponse
 import community.flock.aigentic.gemini.client.model.GenerateContentRequest
@@ -14,7 +16,6 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
@@ -26,10 +27,12 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import io.ktor.client.plugins.logging.LogLevel as KtorLogLevel
 
 class GeminiClient(
     private val config: GeminiApiConfig,
     private val rateLimiter: RateLimiter,
+    private val logLevel: LogLevel = NONE,
     engine: HttpClientEngine? = null,
 ) {
     private val configuration: HttpClientConfig<*>.() -> Unit = {
@@ -42,7 +45,11 @@ class GeminiClient(
         }
         install(Logging) {
             logger = Logger.SIMPLE
-            level = LogLevel.NONE
+            level =
+                when (logLevel) {
+                    NONE -> KtorLogLevel.NONE
+                    LogLevel.DEBUG -> KtorLogLevel.ALL
+                }
         }
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = config.numberOfRetriesOnServerErrors)
