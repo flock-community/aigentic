@@ -31,4 +31,5 @@ private fun UsageMetadata.toUsage(): Usage =
     Usage(
         inputTokenCount = promptTokenCount ?: 0,
         outputTokenCount = candidatesTokenCount ?: 0,
+        thinkingOutputTokenCount = thoughtsTokenCount ?: 0,
     )

@@ -9,6 +9,7 @@ data class TestReport(
     val errors: Set<TestResult.AgentError>,
     val inputTokenCount: Long,
     val outputTokenCount: Long,
+    val thinkingOutputTokenCount: Long = 0,
 ) {
     companion object {
         fun from(results: List<TestResult>) = results.toTestReport()
@@ -26,21 +27,24 @@ fun TestReport.prettyPrint() =
 
         Input token count: $inputTokenCount
         Output token count: $outputTokenCount
+        Thinking output token count: $thinkingOutputTokenCount
         """.trimIndent(),
     )
 
 private fun List<TestResult>.toTestReport() =
     fold(
-        TestReport(emptySet(), emptySet(), emptySet(), 0, 0),
+        TestReport(emptySet(), emptySet(), emptySet(), 0, 0, 0),
     ) { rapport, result ->
         when (result) {
             is TestResult.Success -> {
                 val inputTokens = result.state.modelRequestInfos.replayCache.sumOf { it.inputTokenCount }
                 val outputTokens = result.state.modelRequestInfos.replayCache.sumOf { it.outputTokenCount }
+                val thinkingOutputTokens = result.state.modelRequestInfos.replayCache.sumOf { it.thinkingOutputTokenCount }
                 rapport.copy(
                     successes = rapport.successes + result,
                     inputTokenCount = rapport.inputTokenCount + inputTokens,
                     outputTokenCount = rapport.outputTokenCount + outputTokens,
+                    thinkingOutputTokenCount = rapport.thinkingOutputTokenCount + thinkingOutputTokens,
                 )
             }
             is TestResult.Failed -> rapport.copy(failures = rapport.failures + result)

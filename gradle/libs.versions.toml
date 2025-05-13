@@ -8,10 +8,11 @@ nexus-publish = "2.0.0"
 kotlinOpenapiBindings = "0.0.24"
 kotest = "5.8.1"
 mockk = "1.13.10"
-openaiClient = "3.8.2"
-google-cloud-functions-framework = "^3.4.0"
+openaiClient = "4.0.1"
+google-cloud-functions-framework = "^3.5.1"
 wirespec = "0.9.23"
 logback = "1.5.6"
+ksp = "1.9.23-1.0.20"
 
 [libraries]
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
@@ -52,6 +53,10 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 wirespec-core = { group = "community.flock.wirespec.compiler", name = "core-jvm", version.ref = "wirespec" }
 # Logging
 logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+# KSP
+ksp-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradle-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
