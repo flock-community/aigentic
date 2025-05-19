@@ -215,6 +215,7 @@ private suspend fun SendModelRequest.process(): ProcessModelResponse {
             inputTokenCount = response.usage.inputTokenCount,
             outputTokenCount = response.usage.outputTokenCount,
             thinkingOutputTokenCount = response.usage.thinkingOutputTokenCount,
+            cachedInputTokenCount = response.usage.cachedInputTokenCount,
         ),
     )
 
