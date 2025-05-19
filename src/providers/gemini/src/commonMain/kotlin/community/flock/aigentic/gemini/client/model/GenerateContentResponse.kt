@@ -44,4 +44,5 @@ data class UsageMetadata(
     val candidatesTokenCount: Int? = null,
     val totalTokenCount: Int? = null,
     val thoughtsTokenCount: Int? = null,
+    val cachedContentTokenCount: Int? = null,
 )

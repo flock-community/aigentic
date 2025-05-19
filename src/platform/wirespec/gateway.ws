@@ -12,7 +12,8 @@ type ModelRequestInfoDto {
     finishedAt: String,
     inputTokenCount: Integer,
     outputTokenCount: Integer,
-    thinkingOutputTokenCount: Integer?
+    thinkingOutputTokenCount: Integer?,
+    cachedInputTokenCount: Integer?
 }
 
 type ConfigDto {

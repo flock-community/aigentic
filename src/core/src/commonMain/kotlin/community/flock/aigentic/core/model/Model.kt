@@ -50,8 +50,9 @@ data class Usage(
     val inputTokenCount: Int,
     val outputTokenCount: Int,
     val thinkingOutputTokenCount: Int = 0,
+    val cachedInputTokenCount: Int = 0,
 ) {
     companion object {
-        val EMPTY = Usage(inputTokenCount = 0, outputTokenCount = 0, thinkingOutputTokenCount = 0)
+        val EMPTY = Usage(inputTokenCount = 0, outputTokenCount = 0, thinkingOutputTokenCount = 0, cachedInputTokenCount = 0)
     }
 }
