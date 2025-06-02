@@ -17,6 +17,7 @@ import community.flock.aigentic.gemini.client.model.HarmCategory
 import community.flock.aigentic.gemini.client.model.Part
 import community.flock.aigentic.gemini.client.model.Role
 import community.flock.aigentic.gemini.client.model.SafetySettings
+import community.flock.aigentic.gemini.client.model.ThinkingConfig
 import community.flock.aigentic.gemini.client.model.Tool
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.json.Json
@@ -36,6 +37,7 @@ internal fun createGenerateContentRequest(
                 topP = generationSettings.topP,
                 topK = generationSettings.topK,
                 candidateCount = 1,
+                thinkingConfig = generationSettings.thinkingConfig?.let { ThinkingConfig(it.thinkingBudget) },
             ),
         contents =
             messages.map { message ->
