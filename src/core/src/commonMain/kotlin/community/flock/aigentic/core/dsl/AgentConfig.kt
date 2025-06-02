@@ -10,6 +10,7 @@ import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
+import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
@@ -135,6 +136,7 @@ class GenerationConfig : Config<GenerationSettings> {
     internal var temperature: Float = GenerationSettings.DEFAULT_TEMPERATURE
     internal var topK: Int = GenerationSettings.DEFAULT_TOP_K
     internal var topP: Float = GenerationSettings.DEFAULT_TOP_P
+    internal var thinkingBudget: Int? = null
 
     fun GenerationConfig.temperature(temperature: Float) {
         this.temperature = temperature
@@ -148,10 +150,15 @@ class GenerationConfig : Config<GenerationSettings> {
         this.topP = topP
     }
 
+    fun GenerationConfig.thinkingBudget(thinkingBudget: Int) {
+        this.thinkingBudget = thinkingBudget
+    }
+
     override fun build(): GenerationSettings =
         GenerationSettings(
             temperature = temperature,
             topK = topK,
             topP = topP,
+            thinkingBudget?.let(::ThinkingConfig),
         )
 }
