@@ -30,7 +30,7 @@ sealed class GeminiModelIdentifier(
 }
 
 class GeminiModel(
-    override val authentication: Authentication.APIKey,
+    val authentication: Authentication.APIKey,
     override val modelIdentifier: GeminiModelIdentifier,
     override val generationSettings: GenerationSettings,
     private val logLevel: LogLevel = LogLevel.NONE,

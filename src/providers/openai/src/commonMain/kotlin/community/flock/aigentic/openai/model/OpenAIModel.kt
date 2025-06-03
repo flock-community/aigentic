@@ -45,7 +45,7 @@ sealed class OpenAIModelIdentifier(
 }
 
 class OpenAIModel(
-    override val authentication: Authentication.APIKey,
+    val authentication: Authentication.APIKey,
     override val modelIdentifier: ModelIdentifier,
     override val generationSettings: GenerationSettings,
     logLevel: LogLevel = LogLevel.NONE,

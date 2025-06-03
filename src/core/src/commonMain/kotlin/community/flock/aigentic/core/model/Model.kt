@@ -12,7 +12,6 @@ interface ModelIdentifier {
 }
 
 interface Model {
-    val authentication: Authentication
     val modelIdentifier: ModelIdentifier
     val generationSettings: GenerationSettings
 
