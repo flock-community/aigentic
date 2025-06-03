@@ -4,7 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class GenerateContentResponse(
-    val candidates: List<Candidate>,
+    val candidates: List<Candidate>? = null,
+    val promptFeedback: PromptFeedback? = null,
     val usageMetadata: UsageMetadata?,
 )
 
@@ -45,4 +46,27 @@ data class UsageMetadata(
     val totalTokenCount: Int? = null,
     val thoughtsTokenCount: Int? = null,
     val cachedContentTokenCount: Int? = null,
+)
+
+@Serializable
+data class PromptFeedback(
+    val blockReason: BlockReason? = null,
+    val safetyRatings: List<SafetyRating>? = null,
+)
+
+@Serializable
+enum class BlockReason {
+    BLOCK_REASON_UNSPECIFIED,
+    SAFETY,
+    OTHER,
+    BLOCKLIST,
+    PROHIBITED_CONTENT,
+    IMAGE_SAFETY,
+}
+
+@Serializable
+data class SafetyRating(
+    val category: HarmCategory,
+    val probability: HarmProbability,
+    val blocked: Boolean,
 )

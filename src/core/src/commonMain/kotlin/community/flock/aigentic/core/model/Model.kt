@@ -31,6 +31,7 @@ data class GenerationSettings(
     val temperature: Float,
     val topK: Int,
     val topP: Float,
+    val thinkingConfig: ThinkingConfig?,
 ) {
     companion object {
         const val DEFAULT_TEMPERATURE = 0.0f
@@ -42,9 +43,14 @@ data class GenerationSettings(
                 temperature = DEFAULT_TEMPERATURE,
                 topK = DEFAULT_TOP_K,
                 topP = DEFAULT_TOP_P,
+                null,
             )
     }
 }
+
+data class ThinkingConfig(
+    val thinkingBudget: Int? = null,
+)
 
 data class Usage(
     val inputTokenCount: Int,

@@ -44,6 +44,14 @@ enum class HarmBlockThreshold {
     BLOCK_NONE,
 }
 
+enum class HarmProbability {
+    HARM_PROBABILITY_UNSPECIFIED,
+    NEGLIGIBLE,
+    LOW,
+    MEDIUM,
+    HIGH,
+}
+
 @Serializable
 data class GenerationConfig(
     val temperature: Float?,
@@ -55,6 +63,12 @@ data class GenerationConfig(
     @SerialName("response_mime_type") val responseMimeType: String? = null,
     @SerialName("presence_penalty") val presencePenalty: Float? = null,
     @SerialName("frequency_penalty") val frequencyPenalty: Float? = null,
+    val thinkingConfig: ThinkingConfig? = null,
+)
+
+@Serializable
+data class ThinkingConfig(
+    val thinkingBudget: Int? = null,
 )
 
 @Serializable

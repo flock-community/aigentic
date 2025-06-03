@@ -1,5 +1,6 @@
 package community.flock.aigentic.gemini.mapper
 
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
@@ -13,11 +14,20 @@ import generateRandomString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-fun GenerateContentResponse.toModelResponse(): ModelResponse =
-    ModelResponse(
-        message = candidates.first().content.toMessages(),
-        usage = usageMetadata?.toUsage() ?: Usage.EMPTY,
-    )
+fun GenerateContentResponse.toModelResponse(): ModelResponse {
+    val candidate = candidates?.firstOrNull()
+
+    return if (promptFeedback?.blockReason != null) {
+        aigenticException("Gemini blocked the prompt because of reason: '${promptFeedback.blockReason}'")
+    } else if (candidate != null) {
+        ModelResponse(
+            message = candidate.content.toMessages(),
+            usage = usageMetadata?.toUsage() ?: Usage.EMPTY,
+        )
+    } else {
+        aigenticException("No candidate found in Gemini response: $this.")
+    }
+}
 
 internal fun Content.toMessages(): Message {
     val toolCalls =
