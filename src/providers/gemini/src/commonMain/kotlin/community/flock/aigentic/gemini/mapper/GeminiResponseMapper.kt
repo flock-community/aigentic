@@ -42,4 +42,5 @@ private fun UsageMetadata.toUsage(): Usage =
         inputTokenCount = promptTokenCount ?: 0,
         outputTokenCount = candidatesTokenCount ?: 0,
         thinkingOutputTokenCount = thoughtsTokenCount ?: 0,
+        cachedInputTokenCount = cachedContentTokenCount ?: 0,
     )

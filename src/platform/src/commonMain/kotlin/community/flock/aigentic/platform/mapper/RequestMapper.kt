@@ -152,6 +152,7 @@ private fun ModelRequestInfo.toDto(): ModelRequestInfoDto =
         inputTokenCount = inputTokenCount.toLong(),
         outputTokenCount = outputTokenCount.toLong(),
         thinkingOutputTokenCount = thinkingOutputTokenCount.toLong(),
+        cachedInputTokenCount = cachedInputTokenCount.toLong(),
     )
 
 private fun Sender.toDto(): SenderDto =
