@@ -19,34 +19,38 @@ fun GenerateContentResponse.toModelResponse(): ModelResponse {
         aigenticException("VertexAI blocked the prompt because of reason: '$it'")
     }
 
-    val candidate = candidates().getOrNull()?.firstOrNull()
-        ?: aigenticException("No candidate found in VertexAI response: $this.")
+    val candidate =
+        candidates().getOrNull()?.firstOrNull()
+            ?: aigenticException("No candidate found in VertexAI response: $this.")
 
     return ModelResponse(
         message = candidate.content().getOrNull()?.toMessages() ?: aigenticException("No message found in response."),
-        usage = usageMetadata().getOrNull()?.toUsage() ?: Usage.EMPTY
+        usage = usageMetadata().getOrNull()?.toUsage() ?: Usage.EMPTY,
     )
 }
 
 internal fun Content.toMessages(): Message {
-    val toolCalls = parts().getOrNull()
-        ?.mapNotNull { it.functionCall().getOrNull() }
-        ?.map(::toToolCall)
-        ?: emptyList()
+    val toolCalls =
+        parts().getOrNull()
+            ?.mapNotNull { it.functionCall().getOrNull() }
+            ?.map(::toToolCall)
+            ?: emptyList()
 
     return Message.ToolCalls(toolCalls)
 }
 
 private fun toToolCall(call: FunctionCall): ToolCall {
-    val name = call.name().getOrNull()
-        ?: aigenticException("No name found in VertexAI FunctionCall: $call.")
-    val args = call.args().getOrNull()
-        ?: aigenticException("No arguments found in VertexAI FunctionCall: $call.")
+    val name =
+        call.name().getOrNull()
+            ?: aigenticException("No name found in VertexAI FunctionCall: $call.")
+    val args =
+        call.args().getOrNull()
+            ?: aigenticException("No arguments found in VertexAI FunctionCall: $call.")
 
     return ToolCall(
         id = ToolCallId(generateRandomString(20)),
         name = name,
-        arguments = args.toJson()
+        arguments = args.toJson(),
     )
 }
 
