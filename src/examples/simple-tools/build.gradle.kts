@@ -18,16 +18,20 @@ kotlin {
                 implementation(project(":src:platform"))
                 implementation(project(":src:providers:openai"))
                 implementation(project(":src:providers:gemini"))
+
                 implementation(project(":src:providers:ollama"))
                 implementation(project(":src:tools:openapi"))
-                implementation(libs.logback.classic)
             }
         }
 
         val jvmMain by getting {
             dependencies {
+                implementation(project(":src:providers:vertexai"))
                 // CIO is for JVM, Android, Native. For other platforms pick the correct engine: https://ktor.io/docs/client-engines.html#platforms
                 implementation(libs.ktor.client.cio)
+
+                implementation(libs.logback.classic)
+                implementation("org.slf4j:slf4j-api:2.0.9")
             }
         }
     }

@@ -20,8 +20,6 @@ fun createAgent() =
         systemPromptBuilder = DefaultSystemPromptBuilder,
         model =
             object : Model {
-                override val authentication: community.flock.aigentic.core.model.Authentication
-                    get() = TODO("Not yet implemented")
                 override val modelIdentifier: ModelIdentifier =
                     object : ModelIdentifier {
                         override val stringValue: String = "test-model-identifier"

@@ -5,7 +5,6 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Message.ToolCalls
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
-import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
@@ -33,7 +32,6 @@ val testTool =
 
 fun modelFinishDirectly(finishToolCall: ToolCall = finishedTaskToolCall) =
     object : Model {
-        override val authentication = Authentication.APIKey("some-secret")
         override val modelIdentifier =
             object : ModelIdentifier {
                 override val stringValue: String = "TestModelIdentifier"
@@ -48,7 +46,6 @@ fun modelFinishDirectly(finishToolCall: ToolCall = finishedTaskToolCall) =
 
 fun modelException() =
     object : Model {
-        override val authentication = Authentication.APIKey("some-secret")
         override val modelIdentifier =
             object : ModelIdentifier {
                 override val stringValue: String = "TestModelIdentifier"
