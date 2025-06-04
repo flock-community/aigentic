@@ -13,6 +13,7 @@ google-cloud-functions-framework = "^3.5.1"
 wirespec = "0.9.23"
 logback = "1.5.6"
 ksp = "1.9.23-1.0.20"
+google-gen-ai = "1.2.0"
 
 [libraries]
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
@@ -57,6 +58,8 @@ logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.
 ksp-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradle-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+# Google GenAI
+google-gen-ai = { module = "com.google.genai:google-genai", version.ref = "google-gen-ai"}
 
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

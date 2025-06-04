@@ -12,6 +12,8 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(project(":src:core"))
+                implementation(project(":src:providers:jsonschema"))
+                implementation(libs.google.gen.ai)
             }
         }
         val jvmTest by getting {

@@ -5,7 +5,6 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Message.ToolCalls
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
-import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
