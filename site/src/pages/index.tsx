@@ -103,7 +103,7 @@ export default function Home(): JSX.Element {
               <div className="col col--7">
                 <div className="card card-border-bottom card-nospace">
                   <img
-                    src="/img/code-snippet.png"
+                    src="/img/agent-code.png"
                     alt="aigentic-code-example"
                   />
                 </div>
