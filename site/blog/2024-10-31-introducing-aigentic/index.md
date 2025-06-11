@@ -4,7 +4,7 @@ slug: /introducing-aigentic
 description: Discover how Aigentic is transforming business automation by handling complex, unstructured tasks with AI
 authors: [joanna]
 tags: [AI, Automation, Business]
-image: /img/blog-bg.png
+image: /img/blog/introducing-aigentic.png
 ---
 
 # Introducing Aigentic: Revolutionising Business Automation with AI

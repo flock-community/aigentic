@@ -14,7 +14,6 @@ export default function BlogPostPage(props: Props): JSX.Element {
         <section className={styles.hero}>
           <h1>{title}</h1>
         </section>
-
         {frontMatter.image && (
           <section className={styles.imageSection}>
             <img

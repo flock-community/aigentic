@@ -386,11 +386,11 @@ export default function Home(): JSX.Element {
                 <div className="col col--6">
                   <div className="how-content">
                     <Heading as="h2" className={clsx(styles.heading2)}>
-                      Deploy
+                      Validate
                     </Heading>
                     <p>
                       Aigentic bridges the gap between proof of concept and production-ready
-                      applications. With its Kotlin Multiplatform foundation, you can deploy
+                      applications. With its Kotlin Multiplatform foundation, you can validate
                       your AI agents across different platforms and environments. Aigentic
                       provides tools for monitoring, logging, and managing your agents in
                       production, enabling you to iterate quickly based on real-world feedback.
@@ -486,93 +486,6 @@ export default function Home(): JSX.Element {
         </section>
         <section className="other-capabilites">
           <div className="container">
-            <div className="row">
-              <div className="col col--6">
-                <Heading as="h2" className={clsx(styles.heading2)}>
-                  Comparison with other <span>frameworks</span>
-                </Heading>
-                <p>
-                  By understanding your project's specific needs and
-                  requirements, you can choose the most suitable AI agent framework
-                  to streamline development and enhance your applications.
-                </p>
-              </div>
-            </div>
-            <div className="table">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Feature / Aspect</th>
-                    <th>Aigentic</th>
-                    <th>LangChain</th>
-                    <th>LlamaIndex</th>
-                    <th>AutoGPT</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Primary focus</td>
-                    <td>Streamlined API design</td>
-                    <td>Restful API’s</td>
-                    <td>Asynchronous API’s</td>
-                    <td>Programmatic API design</td>
-                  </tr>
-                  <tr>
-                    <td>Specification Format</td>
-                    <td>Minimal, Wirespec syntax</td>
-                    <td>YAML/JSON</td>
-                    <td>YAML/JSON</td>
-                    <td>TypeScript-like syntax</td>
-                  </tr>
-                  <tr>
-                    <td>Ecosystem Support</td>
-                    <td>Emerging</td>
-                    <td>Mature and extensive</td>
-                    <td>Growing rapidly</td>
-                    <td>Emerging</td>
-                  </tr>
-                  <tr>
-                    <td>Code Generation</td>
-                    <td>Built-in, cross-language</td>
-                    <td>Extensive via tools</td>
-                    <td>Robust via tools</td>
-                    <td>Flexible and customizable</td>
-                  </tr>
-                  <tr>
-                    <td>Best for Microservices</td>
-                    <td>Excellent</td>
-                    <td>Good</td>
-                    <td>Excellent</td>
-                    <td>Good</td>
-                  </tr>
-                  <tr>
-                    <td>Asynchronous Support</td>
-                    <td>Limited</td>
-                    <td>Limited</td>
-                    <td>Excellent</td>
-                    <td>Limited</td>
-                  </tr>
-                  <tr>
-                    <td>Ease of Use</td>
-                    <td>High (minimalist)</td>
-                    <td>Moderate (can be verbose)</td>
-                    <td>Moderate</td>
-                    <td>Moderate (requires coding)</td>
-                  </tr>
-                  <tr>
-                    <td>Technology</td>
-                    <td>Multiplatform (JVM Node.js Binary)</td>
-                    <td>JVM</td>
-                    <td>Node.js</td>
-                    <td>Node.js</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-        <section className="other-capabilites">
-          <div className="container">
             <div className="row row--align-center">
               <div className="col col--6">
                 <Heading as="h2" className={clsx(styles.heading2)}>
@@ -596,18 +509,7 @@ export default function Home(): JSX.Element {
                   framework that elevates your AI projects to new heights.
                 </p>
               </div>
-              <div className="col col--1"></div>
-              <div className="col col--5">
-                <div className="card-flock-wrap">
-                  <div className="card card-border-bottom card-nospace card-flock">
-                    <img
-                      src="/img/hero-image.png"
-                      alt="Aigentic AI Agents"
-                      width="100%"
-                    />
-                  </div>
-                </div>
-              </div>
+              <div className="col col--6"></div>
             </div>
           </div>
         </section>

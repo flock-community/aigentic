@@ -93,7 +93,7 @@ class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
             tools =
                 check(
                     tools.isNotEmpty() || responseParameter != null,
-                    builderPropertyMissingErrorMessage("tools", "addTool()"),
+                    builderPropertyMissingErrorMessage("tools || responseParameter", "addTool() or finishResponse()"),
                 ).let { tools.associateBy { it.name } },
             contexts = contexts,
             responseParameter = responseParameter,
