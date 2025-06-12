@@ -128,8 +128,8 @@ const config: Config = {
               to: "/vision",
             },
             {
-              label: "Examples",
-              to: "https://github.com/flock-community/aigentic", // TODO: Update with actual GitHub URL
+              label: "Initializr",
+              to: "https://github.com/flock-community/aigentic-initializr", // TODO: Update with actual GitHub URL
             },
           ],
         },
