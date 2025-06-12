@@ -70,16 +70,6 @@ body {
   overflow: hidden;
 }
 
-.container {
-  max-width: 1310px;
-  padding: 0px 15px;
-  width: 98%;
-}
-
-.container-fluid {
-  max-width: 100%;
-}
-
 .designFirstContent {
   padding: 87px 0px;
 }
@@ -818,16 +808,6 @@ body {
 
 .main-wrapper {
   overflow: hidden;
-}
-
-.container {
-  max-width: 1310px;
-  padding: 0px 15px;
-  width: 98%;
-}
-
-.container-fluid {
-  max-width: 100%;
 }
 
 .designFirstContent {

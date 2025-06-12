@@ -68,14 +68,7 @@ body {
   overflow: hidden;
 }
 
-.container {
-  max-width: 1310px;
-  padding: 0px 15px;
-}
 
-.container-fluid {
-  max-width: 100%;
-}
 
 .designFirstContent {
   padding: 87px 0px;

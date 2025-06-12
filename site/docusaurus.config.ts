@@ -5,7 +5,7 @@ import type * as Preset from "@docusaurus/preset-classic";
 const config: Config = {
   title: "Aigentic",
   tagline: "Build and integrate AI agents with Kotlin",
-  favicon: "img/wirespec-favicon.png", // TODO: Replace with Aigentic favicon
+  favicon: "img/favicon.png", // TODO: Replace with Aigentic favicon
   url: "https://aigentic.io/", // TODO: Update with actual URL
   baseUrl: "/",
   organizationName: "flock-community/aigentic", // TODO: Update with actual organization
@@ -126,10 +126,6 @@ const config: Config = {
             {
               label: "Vision",
               to: "/vision",
-            },
-            {
-              label: "Features",
-              to: "/how",
             },
             {
               label: "Examples",

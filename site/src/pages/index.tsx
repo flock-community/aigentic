@@ -8,6 +8,7 @@ import styles from "./index.module.css";
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { JSX } from "react";
+import {agent} from "../code/examples";
 
 function HomepageHeader() {
   return (
@@ -17,7 +18,7 @@ function HomepageHeader() {
           as="h1"
           className={clsx("hero__title hero-heading", styles.heroHeading)}
         >
-          Aigentic <br /> <span className="primary-text-color">AI Aagents with Kotlin</span>
+          Aigentic <br /> <span className="primary-text-color">AI agents with Kotlin</span>
         </Heading>
         <p className={clsx("hero__subtitle", styles.heroSubtitle)}>
           Streamline your LLM development journey with a powerful Kotlin DSL for building
@@ -32,7 +33,7 @@ function HomepageHeader() {
           </Link>
           <Link
             className={clsx(styles.button, styles.buttonDefault)}
-            to="https://github.com/aigentic/aigentic"
+            to="https://github.com/flock-community/aigentic"
           >
             GitHub
           </Link>
@@ -291,33 +292,7 @@ export default function Home(): JSX.Element {
                       title="SimpleAgent.kt"
                       className="custom-code-block"
                     >
-                      {`val agent = agent {
-    model = openAI {
-        modelName = "gpt-4"
-        apiKey = System.getenv("OPENAI_API_KEY")
-    }
-
-    tools {
-        tool("calculator") {
-            description = "Performs arithmetic calculations"
-            parameters {
-                parameter("expression", String) {
-                    description = "The arithmetic expression to evaluate"
-                }
-            }
-            handler { params ->
-                val expression = params["expression"] as String
-                val result = evaluateExpression(expression)
-                result.toString()
-            }
-        }
-    }
-
-    messageHandler { messages ->
-        // Process messages and generate responses
-        processMessages(messages)
-    }
-}`}
+                      {agent}
                     </CodeBlock>
                   </div>
                 </div>
@@ -331,23 +306,22 @@ export default function Home(): JSX.Element {
                   <div>
                     <Tabs>
                       <TabItem value="OpenAI" label="OpenAI">
-                        <CodeBlock language="kotlin">{`val model = openAI {
-    modelName = "gpt-4"
-    apiKey = System.getenv("OPENAI_API_KEY")
-}`}</CodeBlock>
+                        <CodeBlock language="kotlin">{`val model = openAIModel {
+      apiKey("YOUR_API_KEY")
+      modelIdentifier(OpenAIModelIdentifier.GPT4Turbo)
+  }`}</CodeBlock>
                       </TabItem>
 
                       <TabItem value="Gemini" label="Gemini">
-                        <CodeBlock language="kotlin">{`val model = gemini {
-    modelName = "gemini-pro"
-    apiKey = System.getenv("GEMINI_API_KEY")
+                        <CodeBlock language="kotlin">{`val model = geminiModel {
+    apiKey("YOUR_API_KEY")
+    modelIdentifier(GeminiModelIdentifier.Gemini2_5FlashPreview)
 }`}</CodeBlock>
                       </TabItem>
 
                       <TabItem value="Ollama" label="Ollama">
-                        <CodeBlock language="kotlin">{`val model = ollama {
-    modelName = "llama2"
-    baseUrl = "http://localhost:11434"
+                        <CodeBlock language="kotlin">{`val model = ollamaModel {
+    apiUrl("http://localhost:11434/v1/")
 }`}</CodeBlock>
                       </TabItem>
                     </Tabs>
@@ -356,7 +330,7 @@ export default function Home(): JSX.Element {
                 <div className="col col--6">
                   <div>
                     <Heading as="h2" className={clsx(styles.heading2)}>
-                      Integrate
+                      Providers
                     </Heading>
                     <p>
                       Aigentic is designed to be model-agnostic, allowing you to seamlessly
@@ -371,7 +345,7 @@ export default function Home(): JSX.Element {
                         styles.button,
                         styles.buttonPrimary,
                       )}
-                      to="/docs/providers"
+                      to="/docs/dsl/providers"
                     >
                       Explore Providers
                     </Link>
@@ -401,9 +375,9 @@ export default function Home(): JSX.Element {
                         styles.button,
                         styles.buttonPrimary,
                       )}
-                      to="/docs/deployment"
+                      to="/vision"
                     >
-                      Deployment Guide
+                      Vision
                     </Link>
                   </div>
                 </div>
@@ -460,7 +434,7 @@ export default function Home(): JSX.Element {
               <div className="col col--6">
                 <div className="card card-other card-border-bottom">
                   <Heading as="h4" className={clsx(styles.heading2)}>
-                    Context Management
+                    Context
                   </Heading>
                   <p>
                     Efficient handling of conversation context and message history.
@@ -473,7 +447,7 @@ export default function Home(): JSX.Element {
               <div className="col col--6">
                 <div className="card card-other card-border-bottom">
                   <Heading as="h4" className={clsx(styles.heading2)}>
-                    Testing
+                    Validation
                   </Heading>
                   <p>Comprehensive testing utilities for AI agent development.</p>
                   <p>
@@ -509,7 +483,14 @@ export default function Home(): JSX.Element {
                   framework that elevates your AI projects to new heights.
                 </p>
               </div>
-              <div className="col col--6"></div>
+              <div className="col col--1"></div>
+              <div className="col col--5">
+                <iframe width="530" height="315" src="https://www.youtube.com/embed/MitNJPjN_SQ?si=W2GDiyoaVmTdWX7M"
+                        title="YouTube video player" frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allowFullScreen></iframe>
+              </div>
             </div>
           </div>
         </section>
