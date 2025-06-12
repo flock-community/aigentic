@@ -6,7 +6,7 @@ import styles from "./blogs.module.css";
 export default function BlogListPage({ metadata, items }) {
   return (
     <Layout
-      title="Wirespec Blogs"
+      title="Aigentic Blogs"
       description="Simplify your API development workflows, accelerate implementation, and guarantee strict adherence to defined contract specifications"
     >
       <main className={styles.blogMain}>

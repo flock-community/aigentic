@@ -27,7 +27,7 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           editUrl:
-            "https://github.com/flock-community/wirespec/tree/master/src/site/docs/",
+            "https://github.com/flock-community/aigentic/tree/main/site/docs/",
         },
         blog: {
           path: "./blog",
@@ -166,7 +166,7 @@ const config: Config = {
       // apiKey: "ab006ab5e8aaea60cfcafc0dfa6e3a67",
       apiKey: "36710561274c40b93985864373d1aadb",
       // indexName: "wirespec_io_wijtzn3w54_pages",
-      indexName: "wirespec",
+      indexName: "aigentic",
       contextualSearch: true,
       searchPagePath: "search",
       insights: false,

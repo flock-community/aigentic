@@ -21,7 +21,7 @@ export default function FooterLayout({ style, links, logo, copyright }) {
               </div>
               <p>Follow us for latest updates, contributions, and more.</p>
               <a
-                href="https://github.com/flock-community/wirespec"
+                href="https://github.com/flock-community/aigentic"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="navbar__item navbar__link header-github-link"
