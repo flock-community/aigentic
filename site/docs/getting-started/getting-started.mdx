@@ -62,6 +62,7 @@ First, let's create a basic agent that can answer questions using OpenAI's GPT m
 // Create a simple agent
 fun agent(question: String) = agent {
 
+    @AigenticParameter
     data class Answer(val answer: String)
 
     // Configure the Gemini model for the agent
@@ -80,7 +81,7 @@ fun agent(question: String) = agent {
         addText(question)
     }
 
-    // Set the finish
+    // Set the output
     finishResponse<Answer>()
 
 }
@@ -159,7 +160,7 @@ data class WeatherResponse(
 ```
 
 :::caution Don't forget the KSP plugin
-To use parameter annotations, make sure you have the KSP plugin configured in your project. See the [Getting Started](/docs/getting-started) guide for setup instructions.
+To use the @AigenticParameter annotation, make sure you have the KSP plugin configured in your project. See the [Getting Started](/docs/getting-started) guide for setup instructions.
 :::
 
 ## More Examples

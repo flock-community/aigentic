@@ -21,9 +21,20 @@ The Aigentic DSL consists of several key components:
 The core of the Aigentic DSL is the agent function, which allows you to create and configure AI agents:
 
 ```kotlin
+
+@AigenticParameter
+data class Answer(val message: String)
+
+@AigenticResponse
+data class AnswerSavedResult(val result: String)
+
 agent {
-  // Configure system prompt
-  systemPrompt("You are a helpfully agent")
+
+  // Configure your provider of choice
+  openAIModel {
+    apiKey("<your-api-key")
+    modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
+  }
 
   // Configure the task for the agent
   task("Answer questions about Kotlin Multiplatform") {
@@ -35,6 +46,10 @@ agent {
     addText("Why is Kolin cool ?")
   }
 
+  // Add capabilities
+  addTool("saveAnswer") { input: Answer ->
+    AnswerSavedResult("Answer saved successfully: ${input.message}")
+  }
 }
 ```
 
@@ -65,7 +80,9 @@ val ollamaModel = ollamaModel {
 
 ## Tool Definition
 
-The DSL provides functions for defining custom tools that extend your agent's capabilities:
+Aigentic provides functions for defining custom tools that extend your agent's capabilities.
+You can use `addTool` to inline a tool directly into the agent, or create a reusable tool using `toTool`.
+
 
 ```kotlin
 data class WeatherRequest(val location: String)
