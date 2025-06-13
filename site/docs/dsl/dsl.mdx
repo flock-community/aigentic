@@ -1,0 +1,80 @@
+---
+id: dsl
+title: Kotlin DSL
+sidebar_position: 1
+---
+
+## Aigentic DSL
+
+Aigentic provides a powerful and intuitive Kotlin DSL (Domain-Specific Language) for building and configuring AI agents. The DSL is designed to be expressive, type-safe, and easy to use, allowing you to create sophisticated AI agents with minimal boilerplate code.
+
+## Core Components
+
+The Aigentic DSL consists of several key components:
+
+- [Agents](/docs/dsl/agent) - Creating and configuring agents
+- [Providers](/docs/dsl/models) - Connecting to LLM providers
+- [Tools](/docs/dsl/tools) - Extending agents with custom capabilities
+
+## Agent Building
+
+The core of the Aigentic DSL is the agent function, which allows you to create and configure AI agents:
+
+```kotlin
+agent {
+  // Configure system prompt
+  systemPrompt("You are a helpfully agent")
+
+  // Configure the task for the agent
+  task("Answer questions about Kotlin Multiplatform") {
+    addInstruction("Provide concise and accurate answers")
+  }
+
+  // Define context
+  context {
+    addText("Why is Kolin cool ?")
+  }
+
+}
+```
+
+This fluent API makes it easy to configure various aspects of your agent, including the LLM model to use, system prompts, and tools.
+
+## Model Integration
+
+Aigentic's DSL provides a consistent interface for working with different LLM providers:
+
+```kotlin
+// OpenAI model
+val openAIModel = openAIModel {
+  apiKey("YOUR_API_KEY")
+  modelIdentifier(OpenAIModelIdentifier.GPT4Turbo)
+}
+
+// Gemini model
+val geminiModel = geminiModel {
+    apiKey("YOUR_API_KEY")
+    modelIdentifier(GeminiModelIdentifier.Gemini2_5FlashPreview)
+}
+
+// Ollama model
+val ollamaModel = ollamaModel {
+    apiUrl("http://localhost:11434/v1/")
+}
+```
+
+## Tool Definition
+
+The DSL provides functions for defining custom tools that extend your agent's capabilities:
+
+```kotlin
+data class WeatherRequest(val location: String)
+data class WeatherResponse(val temperature: Double, val conditions: String)
+
+val weatherTool = toTool<WeatherRequest, WeatherResponse>(
+    name = "get_weather",
+    description = "Get the current weather for a location"
+) { request ->
+    weatherService.getWeather(request.location)
+}
+```

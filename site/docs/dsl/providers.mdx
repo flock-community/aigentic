@@ -1,0 +1,68 @@
+---
+id: providers
+title: Providers
+sidebar_position: 3
+---
+
+# Providers
+
+Aigentic provides a consistent interface for working with different Large Language Model (LLM) providers. This allows you to easily switch between models or use multiple models in your application.
+
+## Model Interface
+
+All model implementations in Aigentic implement the `Model` interface, which defines the contract for interacting with LLM providers:
+
+```kotlin
+interface Model {
+    val authentication: Authentication
+    val modelIdentifier: ModelIdentifier
+    val generationSettings: GenerationSettings
+
+    suspend fun sendRequest(
+        messages: List<Message>,
+        tools: List<ToolDescription>,
+    ): ModelResponse
+}
+```
+
+## Supported Models
+
+Aigentic supports several LLM providers out of the box:
+
+### OpenAI
+
+```kotlin
+val openAIModel = OpenAIModel(
+    apiKey = "your-api-key",
+    model = "gpt-3.5-turbo",
+    generationSettings = GenerationSettings(
+        temperature = 0.7f,
+        topK = 40,
+        topP = 0.95f
+    )
+)
+```
+
+### Gemini
+
+```kotlin
+val geminiModel = GeminiModel(
+    apiKey = "your-api-key",
+    model = "gemini-pro",
+    generationSettings = GenerationSettings(
+        temperature = 0.2f,
+        topK = 40,
+        topP = 0.8f
+    )
+)
+```
+
+### Ollama
+
+```kotlin
+val ollamaModel = OllamaModel(
+    baseUrl = "http://localhost:11434",
+    model = "llama2",
+    generationSettings = GenerationSettings.DEFAULT
+)
+```

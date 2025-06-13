@@ -1,0 +1,143 @@
+---
+id: agent
+title: Agents
+sidebar_position: 1
+---
+
+# Agent Building
+
+Aigentic provides a powerful DSL for creating and configuring AI agents. The DSL is designed to be expressive, type-safe, and easy to use, allowing you to create sophisticated AI agents with minimal boilerplate code.
+
+## Creating an Agent
+
+The main entry point for creating an agent is the `agent` function, which takes a lambda with `AgentConfig` as the receiver:
+
+```kotlin
+val myAgent = agent {
+    model(openAIModel)
+    task("Answer questions about the weather") {
+        addInstruction("Provide accurate and concise weather information")
+        addInstruction("If you don't know the answer, say so")
+    }
+    addTool(weatherTool)
+    systemPrompt(customSystemPromptBuilder)
+}
+```
+
+## Agent Configuration
+
+The `AgentConfig` class provides several methods for configuring an agent:
+
+### Setting the Model
+
+```kotlin
+agent {
+    model(openAIModel)
+}
+```
+
+### Defining Tasks
+
+Tasks define what the agent should do. A task has a description and can have multiple instructions:
+
+```kotlin
+agent {
+    task("Summarize text") {
+        addInstruction("Create a concise summary of the provided text")
+        addInstruction("Highlight key points and main ideas")
+        addInstruction("Keep the summary under 200 words")
+    }
+}
+```
+
+### Adding Tools
+
+Tools extend an agent's capabilities by allowing it to perform specific actions:
+
+```kotlin
+agent {
+    // Add a pre-defined tool
+    addTool(weatherTool)
+
+    // Add a tool with inline definition
+    addTool<WeatherRequest, WeatherResponse>(
+        name = "get_weather",
+        description = "Get the current weather for a location",
+    ) { request ->
+        // Tool implementation
+        weatherService.getWeather(request.location)
+    }
+}
+```
+
+### Adding Context
+
+Context provides additional information to the agent:
+
+```kotlin
+agent {
+    context {
+        addText("This is some background information the agent should know.")
+        addUrl("https://example.com/data.json", MimeType.JSON)
+        addBase64(encodedImage, MimeType.PNG)
+    }
+}
+```
+
+### Setting System Prompt
+
+The system prompt defines the agent's behavior and capabilities:
+
+```kotlin
+agent {
+    systemPrompt(DefaultSystemPromptBuilder)
+}
+```
+
+### Configuring Response Format
+
+You can specify the format for the agent's final response:
+
+```kotlin
+@AigenticParameter
+data class Answer(val answer: String)
+
+// Parameter configuration
+agent {
+    finishResponse(Parameter.Primitive(
+      name = "answer",
+      description = "The answer to the question",
+      isRequired = true,
+      type = ParameterType.Primitive.String
+    ))
+}
+
+// KSP provide
+agent {
+    finishResponse<Answer>()
+}
+```
+
+### Adding Tags
+
+Tags can be used for tracking and organizing agent runs:
+
+```kotlin
+agent {
+    tags("production")
+    tags("weather-agent")
+}
+```
+
+## More Examples
+
+For more examples and reference implementations, check out the [Aigentic Initializr repository](https://github.com/flock-community/aigentic-initializr). This repository contains various agent configurations and use cases that demonstrate different aspects of the Aigentic DSL:
+
+- Basic agent configurations
+- Tool integrations
+- Custom system prompts
+- Complex response formats
+- Context handling examples
+- And more...
+
+Feel free to explore the repository and use these examples as a starting point for your own agent implementations.

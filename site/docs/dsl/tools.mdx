@@ -1,0 +1,200 @@
+---
+id: tools
+title: Tools
+sidebar_position: 2
+---
+
+# Tool Definition
+
+Tools extend an agent's capabilities by allowing it to perform specific actions or access external systems. Aigentic provides a flexible API for defining and using tools.
+
+## Tool Interface
+
+All tools in Aigentic implement the `Tool` interface, which combines a description of the tool with its implementation:
+
+```kotlin
+interface Tool : ToolDescription, ToolHandler<JsonObject, String>
+
+interface ToolDescription {
+    val name: ToolName
+    val description: String?
+    val parameters: List<Parameter>
+}
+
+interface ToolHandler<A, T> {
+    val handler: suspend (toolArguments: A) -> T
+}
+```
+
+## Creating Tools
+
+Aigentic provides several ways to create tools:
+
+### Simple Tool Creation
+
+The simplest way to create a tool is using the `toTool` function with type parameters:
+
+```kotlin
+// Define input and output types
+data class WeatherRequest(val location: String)
+data class WeatherResponse(val temperature: Double, val conditions: String)
+
+// Create the tool
+val weatherTool = toTool<WeatherRequest, WeatherResponse>(
+    name = "get_weather",
+    description = "Get the current weather for a location"
+) { request ->
+    // Tool implementation
+    weatherService.getWeather(request.location)
+}
+```
+
+### Inline Tool Definition
+
+You can define tools inline when configuring an agent:
+
+```kotlin
+agent {
+    addTool<SearchRequest, SearchResponse>(
+        name = "search",
+        description = "Search for information on the web"
+    ) { request ->
+        // Tool implementation
+        searchService.search(request.query)
+    }
+}
+```
+
+### TypedTool Implementation
+
+For more complex tools, you can implement the `TypedTool` interface:
+
+```kotlin
+class WeatherTool(
+    private val weatherService: WeatherService
+) : TypedTool<WeatherRequest, WeatherResponse> {
+    override val name = ToolName("get_weather")
+    override val description = "Get the current weather for a location"
+    override val parameters: List<Parameter>
+        get() = getParameter<WeatherRequest>()?.parameters ?: emptyList()
+    override val handler: suspend (WeatherRequest) -> WeatherResponse = { request ->
+        weatherService.getWeather(request.location)
+    }
+}
+
+// Convert to Tool when adding to an agent
+agent {
+    addTool(WeatherTool(weatherService))
+}
+```
+
+## Tool Parameters
+
+Tool parameters define the input structure for a tool. Aigentic uses Kotlin's reflection capabilities to automatically derive parameters from data classes:
+
+```kotlin
+@AigenticParameter
+data class CalculatorRequest(
+    val operation: String,
+    val a: Double,
+    val b: Double
+)
+
+val calculatorTool = toTool<CalculatorRequest, Double>(
+    name = "calculator",
+    description = "Perform basic arithmetic operations"
+) { request ->
+    when (request.operation) {
+        "add" -> request.a + request.b
+        "subtract" -> request.a - request.b
+        "multiply" -> request.a * request.b
+        "divide" -> request.a / request.b
+        else -> throw IllegalArgumentException("Unknown operation: ${request.operation}")
+    }
+}
+```
+
+The `@AigenticParameter` annotation is required for Aigentic to recognize the class as a parameter type.
+
+:::caution Don't forget the KSP plugin
+To use parameter annotations, make sure you have the KSP plugin configured in your project. See the [Getting Started](/docs/getting-started) guide for setup instructions.
+:::
+
+
+## Common Tool Patterns
+
+### HTTP Tools
+
+For tools that make HTTP requests:
+
+```kotlin
+val newsApiTool = toTool<NewsRequest, List<NewsItem>>(
+    name = "get_news",
+    description = "Get the latest news on a topic"
+) { request ->
+    val response = httpClient.get("https://newsapi.org/v2/everything") {
+        parameter("q", request.topic)
+        parameter("apiKey", apiKey)
+    }
+
+    response.body<NewsApiResponse>().articles.map { article ->
+        NewsItem(
+            title = article.title,
+            description = article.description,
+            url = article.url
+        )
+    }
+}
+```
+
+### Database Tools
+
+For tools that interact with databases:
+
+```kotlin
+val userLookupTool = toTool<UserLookupRequest, UserProfile>(
+    name = "lookup_user",
+    description = "Look up a user by ID or email"
+) { request ->
+    when {
+        request.id != null -> userRepository.findById(request.id)
+        request.email != null -> userRepository.findByEmail(request.email)
+        else -> throw IllegalArgumentException("Either id or email must be provided")
+    }
+}
+```
+
+## Best Practices
+
+When creating tools for Aigentic agents, follow these best practices:
+
+1. **Clear Descriptions**: Provide clear and concise descriptions for your tools
+2. **Type Safety**: Use strongly typed input and output types
+3. **Error Handling**: Implement robust error handling
+4. **Idempotency**: Make tools idempotent when possible
+5. **Security**: Validate inputs and handle sensitive data carefully
+
+```kotlin
+// Example of a well-designed tool
+val emailTool = toTool<EmailRequest, EmailResponse>(
+    name = "send_email",
+    description = "Send an email to a recipient"
+) { request ->
+    // Validate input
+    require(request.to.isNotEmpty()) { "Recipient email cannot be empty" }
+    require(request.subject.isNotEmpty()) { "Email subject cannot be empty" }
+
+    // Execute with error handling
+    runCatching {
+        emailService.sendEmail(
+            to = request.to,
+            subject = request.subject,
+            body = request.body
+        )
+
+        EmailResponse(success = true, messageId = generateMessageId())
+    }.getOrElse { error ->
+        EmailResponse(success = false, error = error.message)
+    }
+}
+```
