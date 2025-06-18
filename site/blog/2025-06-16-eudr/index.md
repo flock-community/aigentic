@@ -1,23 +1,23 @@
 ---
-title: "Leveraging AI for EUTR Compliance"
-slug: /ai-eutr-compliance
-description: Using Aigentic to automate EUTR compliance for product catalogs
+title: "Leveraging AI for EUDR Compliance"
+slug: /ai-EUDR-compliance
+description: Using Aigentic to automate EUDR compliance for product catalogs
 authors: [nsmnds, wilmveel]
-tags: [AI, EUTR, Compliance, Aigentic, Product Classification]
-image: /img/blog/eutr.png
+tags: [AI, EUDR, Compliance, Aigentic, Product Classification]
+image: /img/blog/eudr.png
 ---
 
-# Leveraging AI for EUTR Compliance
+# Leveraging AI for EUDR Compliance
 
-## The Challenge of EUTR Compliance for Product Catalogs
+## The Challenge of EUDR Compliance for Product Catalogs
 
-The European Union Timber Regulation (EUTR) represents a significant compliance challenge for retailers and manufacturers dealing with timber-based products. Implemented in 2013, this regulation prohibits placing illegally harvested timber on the EU market and requires operators to exercise due diligence in their supply chains. For retailers with extensive product catalogs containing thousands or even millions of items, manually classifying which products fall under EUTR jurisdiction is an overwhelming task.
+The EU Regulation on Deforestation (EUDR) represents a significant compliance challenge for retailers and manufacturers dealing with timber-based products. This regulation prohibits placing illegally harvested timber on the EU market and requires operators to exercise due diligence in their supply chains. For retailers with extensive product catalogs containing thousands or even millions of items, manually classifying which products fall under EUDR jurisdiction is an overwhelming task.
 
 <!-- truncate -->
 
 ## The Need for an Automated Solution
 
-One of our clients, a major Dutch online retailer with over 35,000,000 products in their catalog, approached us with this exact problem. They needed to identify which products in their extensive catalog contained timber or timber-derived materials and therefore required EUTR compliance documentation. 
+One of our clients, a major Dutch online retailer with over 35,000,000 products in their catalog, approached us with this exact problem. They needed to identify which products in their extensive catalog contained timber or timber-derived materials and therefore required EUDR compliance documentation. 
 
 The client needed a solution that could:
 - Automatically analyze product descriptions and specifications
@@ -30,7 +30,7 @@ The client needed a solution that could:
 
 To address this challenge, we developed a custom AI solution using our Aigentic library. Aigentic provided the perfect foundation for this project, offering a powerful Kotlin Multiplatform DSL for building and integrating AI agents tailored to specific business needs.
 
-Our approach involved creating a specialized classification agent that could analyze product data and determine EUTR applicability with high accuracy. The solution leveraged several key components of the Aigentic ecosystem:
+Our approach involved creating a specialized classification agent that could analyze product data and determine EUDR applicability with high accuracy. The solution leveraged several key components of the Aigentic ecosystem:
 
 ## The Data Validation Challenge
 
@@ -45,10 +45,10 @@ We implemented a multi-stage validation process:
 
 The Aigentic platform's ability to facilitate human-in-the-loop validation was crucial for building trust in the system. Product managers and compliance officers could review classifications, provide feedback, and see how the system improved over time.
 
-## Looking Forward: Complete EUTR Classification
+## Looking Forward: Complete EUDR Classification
 
-Based on the success of this project, it appears that Aigentic can be deployed to provide complete EUTR classification for product catalogs of any size. The solution we developed is not just a one-time fix but a sustainable approach to ongoing compliance.
+Based on the success of this project, it appears that Aigentic can be deployed to provide complete EUDR classification for product catalogs of any size. The solution we developed is not just a one-time fix but a sustainable approach to ongoing compliance.
 
 As regulations evolve and product catalogs grow, AI-powered classification using Aigentic offers a scalable, accurate, and efficient solution. The combination of powerful language models with human expertise creates a system that continuously improves while maintaining the critical human oversight necessary for regulatory compliance.
 
-For retailers and manufacturers struggling with EUTR compliance, AI-powered solutions built on platforms like Aigentic represent the future of regulatory technology – turning what was once an overwhelming burden into a streamlined, reliable process.
+For retailers and manufacturers struggling with EUDR compliance, AI-powered solutions built on platforms like Aigentic represent the future of regulatory technology – turning what was once an overwhelming burden into a streamlined, reliable process.

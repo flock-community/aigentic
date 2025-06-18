@@ -64,18 +64,9 @@ const config: Config = {
         content:
           "A Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications",
       },
-      { property: "og:image", content: "/img/aigentic-logo.png" },
+      { property: "og:image", content: "/img/og-image.png" },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://aigentic.io/" },
-
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: `Aigentic - AI Agents with Kotlin` },
-      {
-        name: "twitter:description",
-        content:
-          "A Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications",
-      },
-      { name: "twitter:image", content: "/img/aigentic-logo.png" },
     ],
     stylesheets: [
       {
