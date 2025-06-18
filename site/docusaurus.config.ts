@@ -19,7 +19,6 @@ const config: Config = {
   customFields: {
     version: "0.0.0-SNAPSHOT",
   },
-  plugins: [["drawio", {}]],
   presets: [
     [
       "classic",
@@ -65,7 +64,7 @@ const config: Config = {
         content:
           "A Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications",
       },
-      { property: "og:image", content: "/img/aigentic-logo.svg" },
+      { property: "og:image", content: "/img/aigentic-logo.png" },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://aigentic.io/" },
 
@@ -76,7 +75,7 @@ const config: Config = {
         content:
           "A Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications",
       },
-      { name: "twitter:image", content: "/img/aigentic-logo.svg" },
+      { name: "twitter:image", content: "/img/aigentic-logo.png" },
     ],
     stylesheets: [
       {

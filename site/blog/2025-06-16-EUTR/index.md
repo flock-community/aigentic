@@ -1,5 +1,5 @@
 ---
-title: "Leveraging AI for EUTR Compliance: How Aigentic Revolutionized Product Catalog Classification"
+title: "Leveraging AI for EUTR Compliance"
 slug: /ai-eutr-compliance
 description: Using Aigentic to automate EUTR compliance for product catalogs
 authors: [nsmnds, wilmveel]
@@ -7,7 +7,7 @@ tags: [AI, EUTR, Compliance, Aigentic, Product Classification]
 image: /img/blog/eutr.png
 ---
 
-# Leveraging AI for EUTR Compliance: How Aigentic Revolutionized Product Catalog Classification
+# Leveraging AI for EUTR Compliance
 
 ## The Challenge of EUTR Compliance for Product Catalogs
 
