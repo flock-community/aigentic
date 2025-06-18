@@ -17,7 +17,7 @@ The European Union Timber Regulation (EUTR) represents a significant compliance 
 
 ## The Need for an Automated Solution
 
-One of our clients, a major Dutch online retailer with over 35,000,000 products in their catalog, approached us with this exact problem. They needed to identify which products in their extensive catalog contained timber or timber-derived materials and therefore required EUTR compliance documentation. Their existing process involved manual review by product managers, which was time-consuming, inconsistent, and ultimately unsustainable as their catalog continued to grow.
+One of our clients, a major Dutch online retailer with over 35,000,000 products in their catalog, approached us with this exact problem. They needed to identify which products in their extensive catalog contained timber or timber-derived materials and therefore required EUTR compliance documentation. 
 
 The client needed a solution that could:
 - Automatically analyze product descriptions and specifications
@@ -32,10 +32,6 @@ To address this challenge, we developed a custom AI solution using our Aigentic 
 
 Our approach involved creating a specialized classification agent that could analyze product data and determine EUTR applicability with high accuracy. The solution leveraged several key components of the Aigentic ecosystem:
 
-1. **Custom Agent Configuration**: We designed an agent specifically trained to understand timber products and EUTR requirements
-2. **Multi-Model Integration**: The solution combined different LLM models to optimize for both accuracy and processing speed
-3. **Domain-Specific Tools**: We implemented specialized tools for processing product descriptions, images, and technical specifications
-
 ## The Data Validation Challenge
 
 One of the most significant challenges in the project was validating the data and ensuring the accuracy of the AI classifications. This is where the Aigentic platform proved particularly valuable.
@@ -48,17 +44,6 @@ We implemented a multi-stage validation process:
 4. **Continuous Improvement**: The system continuously learned from expert feedback, improving its accuracy over time
 
 The Aigentic platform's ability to facilitate human-in-the-loop validation was crucial for building trust in the system. Product managers and compliance officers could review classifications, provide feedback, and see how the system improved over time.
-
-## Results and Impact
-
-After implementing the solution, our client experienced significant improvements in their EUTR compliance process:
-
-- **Efficiency**: What previously took a team of product managers weeks to accomplish could now be done in hours
-- **Accuracy**: Classification accuracy improved from approximately 70% with manual review to over 95% with the AI solution
-- **Consistency**: The system provided uniform classification across all product categories
-- **Scalability**: The entire catalog could be re-classified whenever regulations changed or new products were added
-
-The most impressive outcome was the system's ability to identify EUTR-relevant products that had previously been missed by manual review. This significantly reduced the client's regulatory risk and potential liability.
 
 ## Looking Forward: Complete EUTR Classification
 
