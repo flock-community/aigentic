@@ -1,6 +1,6 @@
 ---
 title: "Leveraging Aigentic for EUDR Compliance"
-slug: /ai-EUDR-compliance
+slug: /ai-eudr-compliance
 description: Using Aigentic to automate EUDR compliance for product catalogs
 authors: [nsmnds, wilmveel]
 tags: [AI, EUDR, Compliance, Aigentic, Product Classification]
