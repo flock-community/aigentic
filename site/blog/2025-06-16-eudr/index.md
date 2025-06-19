@@ -34,21 +34,21 @@ For this POC, our approach involved creating a specialized classification agent 
 
 ## The Data Validation Challenge in Our POC
 
-One of the most significant challenges in the POC was validating the data and ensuring the accuracy of the AI classifications. This is where the Aigentic proved particularly valuable for our proof of concept. By manually validating the data, we were able to identify and correct any errors that were introduced during the classification process. Aigentic gave us the ability to review and correct the output of the AI agent, providing a human-in-the-loop validation process that was essential for the POC.
+One of the most significant challenges in the POC was validating the data and ensuring the accuracy of the AI classifications. This is where Aigentic proved particularly valuable for our proof of concept. By manually validating the data, we were able to identify and correct any errors that were introduced during the classification process. Aigentic gave us the ability to review and correct the output of the AI agent, providing a human-in-the-loop validation process that was essential for the POC.
 
 We implemented a multi-stage validation process:
 
-1. **Initial Training**: We started with a small set of pre-classified products to train our initial model
-2. **Iterative Labeling**: Using the Aigentic, we created an interface for experts to review and correct AI classifications
+1. **Initial Training**: We started with a small set of products to classify them with our initial agent
+2. **Iterative Labeling**: Using Aigentic, we created an interface through Excel for experts to review and correct AI classifications
 3. **Golden Dataset Creation**: Through this process, we gradually built a "golden dataset" of correctly classified products
 4. **Continuous Improvement**: The system continuously learned from expert feedback, improving its accuracy over time
 
-The Aigentic's ability to facilitate human-in-the-loop validation was crucial for building trust in the POC system. During the proof of concept, product managers and compliance officers could review classifications, provide feedback, and see how the system improved over time, which was essential for validating the approach.
+Aigentic's ability to facilitate human-in-the-loop validation by using Excel was crucial for building trust in the system. During the proof of concept, stakeholders could review classifications, provide feedback, and see how the system improved over time, which was essential for validating the approach.
 
 ## Looking Forward: From POC to Complete EUDR Classification
 
-With EUDR compliance deadlines approaching, organizations need to act quickly to prepare their due diligence systems. Based on the success of this POC, we are planning next steps to deploy Aigentic for complete EUDR classification for product catalogs of any size. The POC has demonstrated that our approach can be developed into a sustainable solution for ongoing compliance that helps companies meet these critical deadlines.
+With EUDR compliance deadlines approaching, organizations need to act quickly to prepare their due diligence systems. Based on the success of this POC, we are planning to deploy Aigentic for complete EUDR classification for product catalogs of any size. The POC has demonstrated that our approach can be developed into a sustainable solution for ongoing compliance that helps companies meet these critical deadlines.
 
 As regulations evolve and product catalogs grow, our POC suggests that AI-powered classification using Aigentic could offer a scalable, accurate, and efficient solution. The POC demonstrated how the combination of powerful language models with human expertise can create a system that continuously improves while maintaining the critical human oversight necessary for regulatory compliance.
 
-For retailers and manufacturers struggling with EUDR compliance, our POC demonstrates that AI-powered solutions built on platforms like Aigentic have the potential to transform regulatory compliance – turning what was once an overwhelming burden into a streamlined, reliable process. Based on the output of this POC, we are making next steps to develop a full-scale solution.
+For retailers and manufacturers struggling with EUDR compliance, our POC demonstrates that AI-powered solutions built on platforms like Aigentic have the potential to transform regulatory compliance – turning what was once an overwhelming burden into a streamlined, reliable process. Based on the success of this POC, we are now proceeding with the development of a full-scale solution.
