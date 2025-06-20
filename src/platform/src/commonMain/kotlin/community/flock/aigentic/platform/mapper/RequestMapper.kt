@@ -236,10 +236,10 @@ private fun Result.toDto() =
                 message = message,
             )
 
-        is Result.Finished ->
+        is Result.Finished<*> ->
             FinishedResultDto(
                 description = description,
-                response = response,
+                response = response.toString(),
             )
 
         is Result.Stuck ->

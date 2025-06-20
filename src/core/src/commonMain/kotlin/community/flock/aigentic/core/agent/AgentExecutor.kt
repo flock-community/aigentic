@@ -70,9 +70,9 @@ private suspend fun <I, O> publishRun(
 suspend fun <I, O> executeAction(action: Action<I, O>): Pair<State, Result> =
     when (action) {
         is Initialize -> executeAction<I, O>(action.process())
-        is SendModelRequest -> executeAction<I, O>(action.process())
-        is ProcessModelResponse -> executeAction<I, O>(action.process())
-        is ExecuteTools -> executeAction<I, O>(action.process())
+        is SendModelRequest -> executeAction(action.process())
+        is ProcessModelResponse -> executeAction(action.process())
+        is ExecuteTools -> executeAction(action.process())
         is Finished -> action.process()
     }
 

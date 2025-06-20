@@ -4,7 +4,6 @@ import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.message.Message
 import kotlinx.datetime.Instant
-import kotlinx.serialization.json.Json
 import kotlin.jvm.JvmInline
 
 data class Run(
@@ -29,5 +28,3 @@ fun Run.outputTokens(): Int = modelRequests.sumOf { it.outputTokenCount }
 fun Run.thinkingOutputTokens(): Int = modelRequests.sumOf { it.thinkingOutputTokenCount }
 
 fun Run.cachedInputTokens(): Int = modelRequests.sumOf { it.cachedInputTokenCount }
-
-inline fun <reified T> Result.Finished.getFinishResponse(): T? = response?.let { Json.decodeFromString(it) }

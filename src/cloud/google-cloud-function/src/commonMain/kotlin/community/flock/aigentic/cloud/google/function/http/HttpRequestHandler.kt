@@ -44,7 +44,7 @@ internal suspend fun <I, O> GoogleHttpCloudFunction<I, O>.handleRequest(
         }
 
     when (val result = run.result) {
-        is Result.Finished -> response.status(200).send(result.response ?: result.description)
+        is Result.Finished<*> -> response.status(200).send(result.response ?: result.description)
         is Result.Stuck -> response.status(422).send(result.reason)
         is Result.Fatal -> {
             console.error("Fatal: ${result.message}")

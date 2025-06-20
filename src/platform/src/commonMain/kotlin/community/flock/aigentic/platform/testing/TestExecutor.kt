@@ -56,7 +56,7 @@ private suspend fun <I, O> RegressionTest<I, O>.executeTest(
         val initializedState = initializeTestState(run)
         val (resultState, result) = executeAction(SendModelRequest(initializedState, mockedAgent))
         when (result) {
-            is Result.Finished -> {
+            is Result.Finished<*> -> {
                 val unInvokedMocks =
                     toolMocks.filter { (name, mock) ->
                         mock.invocations.size != mock.expectations.size

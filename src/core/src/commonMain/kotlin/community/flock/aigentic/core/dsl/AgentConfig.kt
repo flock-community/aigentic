@@ -78,7 +78,7 @@ class AgentConfig<I, O> : Config<Agent<I, O>> {
         this.responseParameter = response
     }
 
-    inline fun <reified T : Any> AgentConfig<I, O>.finishResponse() {
+    inline fun <reified T : Any> AgentConfig<I, T>.finishResponse() {
         this.responseParameter = getParameter<T>()
     }
 

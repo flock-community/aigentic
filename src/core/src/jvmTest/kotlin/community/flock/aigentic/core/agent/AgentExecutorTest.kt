@@ -94,8 +94,8 @@ class AgentExecutorTest : DescribeSpec({
                 addTool(newsEventTool)
             }.start().apply {
 
-                result.shouldBeInstanceOf<Finished>()
-                (result as Finished).description shouldBe "Finished the task"
+                result.shouldBeInstanceOf<Finished<*>>()
+                (result as Finished<*>).description shouldBe "Finished the task"
                 modelRequests.size shouldBe 2
 
                 coVerify(exactly = 1) { toolHandlerMock.invoke(expectedArguments) }
@@ -283,8 +283,8 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished>()
-                (this.result as Finished).response shouldBe response.encode()
+                result.shouldBeTypeOf<Finished<*>>()
+                (this.result as Finished<*>).response shouldBe response.encode()
             }
         }
 
@@ -297,8 +297,8 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished>()
-                (this.result as Finished).response shouldBe null
+                result.shouldBeTypeOf<Finished<*>>()
+                (this.result as Finished<*>).response shouldBe null
             }
         }
 

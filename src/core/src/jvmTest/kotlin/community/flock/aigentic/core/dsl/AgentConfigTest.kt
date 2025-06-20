@@ -128,7 +128,7 @@ class AgentConfigTest : DescribeSpec({
                 parameter = testParameter,
             )
 
-            agent {
+            agent<Unit, TestResponse> {
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 addTool(mockk(relaxed = true))
