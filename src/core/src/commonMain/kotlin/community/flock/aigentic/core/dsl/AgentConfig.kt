@@ -20,7 +20,7 @@ import community.flock.aigentic.core.tool.toTool
 import kotlin.jvm.JvmName
 
 @JvmName("agentDefault")
-fun agent(agentConfig: AgentConfig<Unit, String>.() -> Unit): Agent<Unit, String> = AgentConfig<Unit, String>().apply(agentConfig).build()
+fun agent(agentConfig: AgentConfig<Unit, Unit>.() -> Unit): Agent<Unit, Unit> = AgentConfig<Unit, Unit>().apply(agentConfig).build()
 
 fun <I, O> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> = AgentConfig<I, O>().apply(agentConfig).build()
 
