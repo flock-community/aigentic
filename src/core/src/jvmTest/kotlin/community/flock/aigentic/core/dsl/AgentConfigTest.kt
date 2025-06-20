@@ -157,4 +157,4 @@ class AgentConfigTest : DescribeSpec({
 
 class TestResponse
 
-private data class MissingPropertyTestCase(val agentConfig: AgentConfig.() -> Unit, val expectedMessage: String)
+private data class MissingPropertyTestCase(val agentConfig: AgentConfig<Unit, Unit>.() -> Unit, val expectedMessage: String)

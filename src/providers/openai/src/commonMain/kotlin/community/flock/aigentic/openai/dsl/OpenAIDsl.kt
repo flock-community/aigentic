@@ -11,7 +11,7 @@ import community.flock.aigentic.openai.model.OpenAIApiUrl
 import community.flock.aigentic.openai.model.OpenAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 
-fun AgentConfig.openAIModel(openAIModelConfig: OpenAIModelConfig.() -> Unit) =
+fun <I, O> AgentConfig<I, O>.openAIModel(openAIModelConfig: OpenAIModelConfig.() -> Unit) =
     OpenAIModelConfig().apply(openAIModelConfig).build().also { model(it) }
         .also { model(it) }
 

@@ -55,7 +55,7 @@ fun main() {
             ),
         )
 
-    googleHttpCloudFunction {
+    googleHttpCloudFunction<Unit, Unit> {
         authentication(AuthorizationHeader("some-secret-key"))
         agent { request ->
             openAIModel {

@@ -6,14 +6,14 @@ import community.flock.aigentic.core.agent.tool.STUCK_WITH_TASK_TOOL_NAME
 import community.flock.aigentic.core.message.Message
 
 interface SystemPromptBuilder {
-    fun buildSystemPrompt(agent: Agent): Message.SystemPrompt
+    fun <I, O> buildSystemPrompt(agent: Agent<I, O>): Message.SystemPrompt
 }
 
 data object DefaultSystemPromptBuilder : SystemPromptBuilder {
-    override fun buildSystemPrompt(agent: Agent): Message.SystemPrompt = agent.createSystemPrompt()
+    override fun <I, O> buildSystemPrompt(agent: Agent<I, O>): Message.SystemPrompt = agent.createSystemPrompt()
 }
 
-private fun Agent.createSystemPrompt(): Message.SystemPrompt {
+private fun <I, O> Agent<I, O>.createSystemPrompt(): Message.SystemPrompt {
     val baseInstruction =
         """
         |You are an AI agent designed to accomplish a specified task.

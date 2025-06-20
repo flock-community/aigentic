@@ -15,9 +15,9 @@ data class AigenticPlatform(
     override val apiUrl: PlatformApiUrl,
     private val platformClient: AigenticPlatformClient = defaultAigenticPlatformClient(authentication, apiUrl),
 ) : Platform {
-    override suspend fun sendRun(
+    override suspend fun <I, O> sendRun(
         run: Run,
-        agent: Agent,
+        agent: Agent<I, O>,
     ): RunSentResult = platformClient.sendRun(run, agent)
 
     override suspend fun getRuns(tags: List<RunTag>): List<Pair<RunId, Run>> = platformClient.getRuns(tags)

@@ -9,9 +9,8 @@ import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.gemini.model.GeminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
-fun AgentConfig.geminiModel(geminiModelConfig: GeminiModelConfig.() -> Unit) =
+fun <I, O> AgentConfig<I, O>.geminiModel(geminiModelConfig: GeminiModelConfig.() -> Unit) =
     GeminiModelConfig().apply(geminiModelConfig).build().also { model(it) }
-        .also { model(it) }
 
 class GeminiModelConfig : Config<GeminiModel> {
     private var apiKey: String? = null

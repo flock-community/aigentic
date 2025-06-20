@@ -13,13 +13,13 @@ import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.message.argumentsAsJson
 import community.flock.aigentic.core.tool.ToolName
 
-suspend fun executeToolCalls(
-    agent: Agent,
+suspend fun <I, O> executeToolCalls(
+    agent: Agent<I, O>,
     toolCalls: List<ToolCall>,
 ): List<ToolExecutionResult> = toolCalls.map { executeTool(agent, it) }
 
-private suspend fun executeTool(
-    agent: Agent,
+private suspend fun <I, O> executeTool(
+    agent: Agent<I, O>,
     toolCall: ToolCall,
 ): ToolExecutionResult =
     when (toolCall.name) {

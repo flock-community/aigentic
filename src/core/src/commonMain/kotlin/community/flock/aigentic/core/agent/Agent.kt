@@ -26,7 +26,7 @@ sealed interface Context {
     data class Base64(val base64: String, val mimeType: MimeType) : Context
 }
 
-data class Agent(
+data class Agent<I, O>(
     val platform: Platform?,
     val systemPromptBuilder: SystemPromptBuilder,
     val model: Model,

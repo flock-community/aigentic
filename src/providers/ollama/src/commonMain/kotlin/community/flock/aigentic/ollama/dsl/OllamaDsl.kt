@@ -9,7 +9,7 @@ import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.openai.model.OpenAIApiUrl
 import community.flock.aigentic.openai.model.OpenAIModel
 
-fun AgentConfig.ollamaModel(ollamaConfig: OllamaConfig.() -> Unit) =
+fun <I, O> AgentConfig<I, O>.ollamaModel(ollamaConfig: OllamaConfig.() -> Unit) =
     OllamaConfig().apply(ollamaConfig).build().also { model(it) }
         .also { model(it) }
 

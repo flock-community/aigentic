@@ -122,7 +122,7 @@ class AgentExecutorTest : DescribeSpec({
             val expectedSystemPrompt = Message.SystemPrompt("You are a helpful agent")
             val systemPromptMock =
                 mockk<SystemPromptBuilder>().apply {
-                    every { buildSystemPrompt(any()) } returns expectedSystemPrompt
+                    every { buildSystemPrompt(any<Agent<Unit, Unit>>()) } returns expectedSystemPrompt
                 }
 
             val agent =
@@ -135,7 +135,7 @@ class AgentExecutorTest : DescribeSpec({
 
             agent.start().apply {
                 messages[0] shouldBe expectedSystemPrompt
-                verify(exactly = 1) { systemPromptMock.buildSystemPrompt(any()) }
+                verify(exactly = 1) { systemPromptMock.buildSystemPrompt(any<Agent<Unit, Unit>>()) }
             }
         }
 
@@ -322,7 +322,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val platform =
                 mockk<Platform>().apply {
-                    coEvery { sendRun(any(), any()) } throws IOException("Something went wrong")
+                    coEvery { sendRun(any(), any<Agent<Unit, Unit>>()) } throws IOException("Something went wrong")
                 }
 
             val agent =

@@ -7,7 +7,7 @@ import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.AgentConfig
 
-internal suspend fun GoogleHttpCloudFunction.handleRequest(
+internal suspend fun <I, O> GoogleHttpCloudFunction<I, O>.handleRequest(
     googleRequest: GoogleRequest,
     response: dynamic,
 ) {
@@ -37,7 +37,7 @@ internal suspend fun GoogleHttpCloudFunction.handleRequest(
             throw Exception("Internal server error")
         }
 
-    val agent = AgentConfig().apply { agentBuilder(this, interceptedRequest) }.build()
+    val agent = AgentConfig<I, O>().apply { agentBuilder(this, interceptedRequest) }.build()
     val run =
         agent.start().also {
             console.log("Agent finished with result: ${it.result}")

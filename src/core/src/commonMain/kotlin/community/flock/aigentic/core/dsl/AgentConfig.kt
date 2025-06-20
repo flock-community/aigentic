@@ -17,11 +17,15 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.TypedTool
 import community.flock.aigentic.core.tool.getParameter
 import community.flock.aigentic.core.tool.toTool
+import kotlin.jvm.JvmName
 
-fun agent(agentConfig: AgentConfig.() -> Unit): Agent = AgentConfig().apply(agentConfig).build()
+@JvmName("agentDefault")
+fun agent(agentConfig: AgentConfig<Unit, String>.() -> Unit): Agent<Unit, String> = AgentConfig<Unit, String>().apply(agentConfig).build()
+
+fun <I, O> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> = AgentConfig<I, O>().apply(agentConfig).build()
 
 @AgentDSL
-class AgentConfig : Config<Agent> {
+class AgentConfig<I, O> : Config<Agent<I, O>> {
     internal var model: Model? = null
     internal var platform: Platform? = null
     internal var task: TaskConfig? = null
@@ -31,56 +35,56 @@ class AgentConfig : Config<Agent> {
     val tools = mutableListOf<Tool>()
     internal val tags = mutableListOf<RunTag>()
 
-    fun AgentConfig.platform(platform: Platform) {
+    fun AgentConfig<I, O>.platform(platform: Platform) {
         this.platform = platform
     }
 
-    fun AgentConfig.addTool(tool: Tool) {
+    fun AgentConfig<I, O>.addTool(tool: Tool) {
         tools += tool
     }
 
-    inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(tool: TypedTool<I, O>) {
+    inline fun <reified TI : Any, reified TO : Any> AgentConfig<I, O>.addTool(tool: TypedTool<TI, TO>) {
         tools += tool.toTool()
     }
 
-    inline fun <reified I : Any, reified O : Any> AgentConfig.addTool(
+    inline fun <reified TI : Any, reified TO : Any> AgentConfig<I, O>.addTool(
         name: String,
         description: String? = null,
-        noinline handler: suspend (I) -> O,
+        noinline handler: suspend (TI) -> TO,
     ) {
         tools += toTool(name, description, handler)
     }
 
-    fun AgentConfig.context(contextConfig: ContextConfig.() -> Unit) =
+    fun AgentConfig<I, O>.context(contextConfig: ContextConfig.() -> Unit) =
         ContextConfig().apply(contextConfig).build()
             .also { contexts = it }
 
-    fun AgentConfig.task(
+    fun AgentConfig<I, O>.task(
         description: String,
         taskConfig: TaskConfig.() -> Unit,
     ): TaskConfig =
         TaskConfig(description).apply(taskConfig)
             .also { task = it }
 
-    fun AgentConfig.systemPrompt(systemPromptBuilder: SystemPromptBuilder) {
+    fun AgentConfig<I, O>.systemPrompt(systemPromptBuilder: SystemPromptBuilder) {
         this.systemPromptBuilder = systemPromptBuilder
     }
 
-    fun AgentConfig.model(model: Model) {
+    fun AgentConfig<I, O>.model(model: Model) {
         this.model = model
     }
 
-    fun AgentConfig.finishResponse(response: Parameter) {
+    fun AgentConfig<I, O>.finishResponse(response: Parameter) {
         this.responseParameter = response
     }
 
-    inline fun <reified T : Any> AgentConfig.finishResponse() {
+    inline fun <reified T : Any> AgentConfig<I, O>.finishResponse() {
         this.responseParameter = getParameter<T>()
     }
 
-    fun AgentConfig.tags(tag: String) = tags.add(RunTag(tag))
+    fun AgentConfig<I, O>.tags(tag: String) = tags.add(RunTag(tag))
 
-    override fun build(): Agent =
+    override fun build(): Agent<I, O> =
         Agent(
             platform = platform,
             systemPromptBuilder = systemPromptBuilder,

@@ -15,7 +15,7 @@ import community.flock.aigentic.core.tool.ToolDescription
 import kotlinx.datetime.Clock
 
 fun createAgent() =
-    Agent(
+    Agent<Unit, Unit>(
         platform = null,
         systemPromptBuilder = DefaultSystemPromptBuilder,
         model =

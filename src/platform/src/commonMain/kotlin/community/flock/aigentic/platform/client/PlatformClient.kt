@@ -52,9 +52,9 @@ class AigenticPlatformClient(
     apiUrl: PlatformApiUrl,
     private val endpoints: PlatformEndpoints = AigenticPlatformEndpoints(basicAuth, apiUrl, null),
 ) {
-    suspend fun sendRun(
+    suspend fun <I, O> sendRun(
         run: Run,
-        agent: Agent,
+        agent: Agent<I, O>,
     ): RunSentResult {
         val runDto = run.toDto(agent)
         val request = GatewayEndpoint.RequestApplicationJson(runDto)
