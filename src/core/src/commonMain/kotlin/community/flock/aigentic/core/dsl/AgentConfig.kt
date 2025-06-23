@@ -22,10 +22,10 @@ import kotlin.jvm.JvmName
 @JvmName("agentDefault")
 fun agent(agentConfig: AgentConfig<Unit, Unit>.() -> Unit): Agent<Unit, Unit> = AgentConfig<Unit, Unit>().apply(agentConfig).build()
 
-fun <I, O> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> = AgentConfig<I, O>().apply(agentConfig).build()
+fun <I : Any, O : Any> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> = AgentConfig<I, O>().apply(agentConfig).build()
 
 @AgentDSL
-class AgentConfig<I, O> : Config<Agent<I, O>> {
+class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
     internal var model: Model? = null
     internal var platform: Platform? = null
     internal var task: TaskConfig? = null

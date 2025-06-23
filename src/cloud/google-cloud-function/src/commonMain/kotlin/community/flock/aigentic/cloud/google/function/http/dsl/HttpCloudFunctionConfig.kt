@@ -11,13 +11,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-fun <I, O> googleHttpCloudFunction(config: HttpCloudFunctionConfig<I, O>.() -> Unit) =
+fun <I : Any, O : Any> googleHttpCloudFunction(config: HttpCloudFunctionConfig<I, O>.() -> Unit) =
     HttpCloudFunctionConfig<I, O>().apply(config).build().run {
         registerHttpFunction(this)
     }
 
 @AgentDSL
-class HttpCloudFunctionConfig<I, O> : Config<GoogleHttpCloudFunction<I, O>> {
+class HttpCloudFunctionConfig<I : Any, O : Any> : Config<GoogleHttpCloudFunction<I, O>> {
     internal var entryPoint: String? = "runAgent"
     internal var authentication: Authentication? = null
     internal var beforeRequestAction: suspend (request: Request) -> Request = { it }
@@ -48,7 +48,7 @@ class HttpCloudFunctionConfig<I, O> : Config<GoogleHttpCloudFunction<I, O>> {
     }
 }
 
-private fun <I, O> registerHttpFunction(function: GoogleHttpCloudFunction<I, O>) {
+private fun <I : Any, O : Any> registerHttpFunction(function: GoogleHttpCloudFunction<I, O>) {
     functions.http(function.entryPoint) { request, response ->
         CoroutineScope(Dispatchers.Default).launch {
             function.handleRequest(request, response)
@@ -60,7 +60,7 @@ sealed interface Authentication {
     data class AuthorizationHeader(val key: String) : Authentication
 }
 
-data class GoogleHttpCloudFunction<I, O>(
+data class GoogleHttpCloudFunction<I : Any, O : Any>(
     val entryPoint: String,
     val requestInterceptor: suspend (request: Request) -> Request,
     val agentBuilder: suspend AgentConfig<I, O>.(request: Request) -> Unit,

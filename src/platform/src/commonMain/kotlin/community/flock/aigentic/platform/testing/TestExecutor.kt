@@ -19,7 +19,7 @@ import createToolCallExpectations
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 
-suspend fun <I, O> RegressionTest<I, O>.start(): TestReport {
+suspend fun <I : Any, O : Any> RegressionTest<I, O>.start(): TestReport {
     return when (val configuredPlatform = agent.platform) {
         null -> aigenticException("Make sure to configure a platform in your agent")
         else -> {
@@ -43,7 +43,7 @@ suspend fun <I, O> RegressionTest<I, O>.start(): TestReport {
     }
 }
 
-private suspend fun <I, O> RegressionTest<I, O>.executeTest(
+private suspend fun <I : Any, O : Any> RegressionTest<I, O>.executeTest(
     run: Run,
     runId: RunId,
     iteration: Int,
@@ -92,7 +92,7 @@ private suspend fun <I, O> RegressionTest<I, O>.executeTest(
     }
 }
 
-private suspend fun <I, O> RegressionTest<I, O>.initializeTestState(run: Run): State {
+private suspend fun <I : Any, O : Any> RegressionTest<I, O>.initializeTestState(run: Run): State {
     val systemPrompt = agent.systemPromptBuilder.buildSystemPrompt(agent)
     val contextMessages = run.messages.filter { it is ContextMessage }
     val initialMessages = listOf(systemPrompt) + contextMessageInterceptor(contextMessages)

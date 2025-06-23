@@ -40,7 +40,7 @@ data class ToolMock(
     }
 }
 
-fun <I, O> createToolMocks(
+fun <I : Any, O : Any> createToolMocks(
     agent: Agent<I, O>,
     toolCallExpectations: List<ToolCallExpectation>,
 ) = agent.tools.mapValues { (name, value) ->

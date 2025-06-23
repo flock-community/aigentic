@@ -43,7 +43,7 @@ import community.flock.aigentic.gateway.wirespec.ToolDto
 import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
 
-fun <I, O> Run.toDto(agent: Agent<I, O>) =
+fun <I : Any, O : Any> Run.toDto(agent: Agent<I, O>) =
     RunDto(
         startedAt = startedAt.toString(),
         finishedAt = finishedAt.toString(),

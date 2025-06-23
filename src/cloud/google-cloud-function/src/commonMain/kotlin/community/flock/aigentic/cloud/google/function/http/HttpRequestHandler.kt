@@ -7,7 +7,7 @@ import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.AgentConfig
 
-internal suspend fun <I, O> GoogleHttpCloudFunction<I, O>.handleRequest(
+internal suspend fun <I : Any, O : Any> GoogleHttpCloudFunction<I, O>.handleRequest(
     googleRequest: GoogleRequest,
     response: dynamic,
 ) {

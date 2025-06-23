@@ -52,7 +52,7 @@ class AigenticPlatformClient(
     apiUrl: PlatformApiUrl,
     private val endpoints: PlatformEndpoints = AigenticPlatformEndpoints(basicAuth, apiUrl, null),
 ) {
-    suspend fun <I, O> sendRun(
+    suspend fun <I : Any, O : Any> sendRun(
         run: Run,
         agent: Agent<I, O>,
     ): RunSentResult {

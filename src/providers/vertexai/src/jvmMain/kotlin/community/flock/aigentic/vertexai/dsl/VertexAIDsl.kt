@@ -9,7 +9,7 @@ import community.flock.aigentic.vertexai.Project
 import community.flock.aigentic.vertexai.VertexAIModel
 import community.flock.aigentic.vertexai.VertexAIModelIdentifier
 
-fun <I, O> AgentConfig<I, O>.vertexAIModel(vertexAIModelConfig: VertexAIModelConfig.() -> Unit) =
+fun <I : Any, O : Any> AgentConfig<I, O>.vertexAIModel(vertexAIModelConfig: VertexAIModelConfig.() -> Unit) =
     VertexAIModelConfig().apply(
         vertexAIModelConfig,
     ).build().also {

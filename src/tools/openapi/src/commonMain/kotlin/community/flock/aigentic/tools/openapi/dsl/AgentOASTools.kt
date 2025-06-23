@@ -8,7 +8,7 @@ import community.flock.aigentic.tools.http.RestClientExecutor
 import community.flock.aigentic.tools.http.toToolDefinition
 import community.flock.aigentic.tools.openapi.OpenAPIv3Parser
 
-fun <I, O> AgentConfig<I, O>.openApiTools(
+fun <I : Any, O : Any> AgentConfig<I, O>.openApiTools(
     oasJson: String,
     restClientExecutor: RestClientExecutor = RestClientExecutor.default,
     oasHeaderConfig: (OASHeaderConfig.() -> Unit)? = null,

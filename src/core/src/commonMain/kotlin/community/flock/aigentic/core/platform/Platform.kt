@@ -19,7 +19,7 @@ interface Platform {
     val authentication: Authentication.BasicAuth
     val apiUrl: PlatformApiUrl
 
-    suspend fun <I, O> sendRun(
+    suspend fun <I : Any, O : Any> sendRun(
         run: Run,
         agent: Agent<I, O>,
     ): RunSentResult

@@ -17,7 +17,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
-class HttpRequestHandlerTest<I, O> : DescribeSpec({
+class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
 
     val finishedTaskConfig: HttpCloudFunctionConfig<I, O>.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
@@ -185,6 +185,6 @@ class HttpRequestHandlerTest<I, O> : DescribeSpec({
     }
 })
 
-fun <I, O> (HttpCloudFunctionConfig<I, O>.() -> Unit).build(): GoogleHttpCloudFunction<I, O> {
+fun <I : Any, O : Any> (HttpCloudFunctionConfig<I, O>.() -> Unit).build(): GoogleHttpCloudFunction<I, O> {
     return HttpCloudFunctionConfig<I, O>().apply(this).build()
 }

@@ -10,7 +10,7 @@ import community.flock.aigentic.core.platform.PlatformApiUrl
 import community.flock.aigentic.platform.AigenticPlatform
 import community.flock.aigentic.platform.client.defaultPlatformApiUrl
 
-fun <I, O> AgentConfig<I, O>.platform(platformConfig: PlatformConfig.() -> Unit) =
+fun <I : Any, O : Any> AgentConfig<I, O>.platform(platformConfig: PlatformConfig.() -> Unit) =
     PlatformConfig().apply(platformConfig).build().also {
         this.platform(it)
     }

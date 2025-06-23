@@ -5,7 +5,7 @@ import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCallId
 
-class RegressionTest<I, O>(
+class RegressionTest<I : Any, O : Any>(
     val numberOfIterations: Int,
     val tags: List<RunTag>,
     val agent: Agent<I, O>,
