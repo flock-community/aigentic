@@ -1,6 +1,6 @@
 export const agent = `fun agent(question: String) = agent {
 
-  @AigenticParameter
+  @AigenticResponse
   data class Answer(val answer: String)
 
   // Configure the model for the agent
@@ -30,4 +30,14 @@ when (val result = run.result) {
   is Result.Finished -> println(result.getFinishResponse<Answer>()?.answer)
   is Result.Stuck -> println("Agent is stuck: \${result.reason}")
   is Result.Fatal -> println("Error: \${result.message}")
-}`
+}
+
+println("""
+     Token Usage:
+    - Input tokens: \${run.inputTokens()}
+    - Output tokens: \${run.outputTokens()}
+    - Thinking output tokens: \${run.thinkingOutputTokens()}
+    - Cached input tokens: \${run.cachedInputTokens()}
+""")
+
+`

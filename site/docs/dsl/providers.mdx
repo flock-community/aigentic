@@ -8,7 +8,61 @@ sidebar_position: 3
 
 Aigentic provides a consistent interface for working with different Large Language Model (LLM) providers. This allows you to easily switch between models or use multiple models in your application.
 
-## Model Interface
+## Supported Models
+
+Aigentic supports several LLM providers out of the box:
+
+### OpenAI
+
+```kotlin
+val openAIModel = openAIModel {
+    apiKey("your-api-key")
+    modelIdentifier(OpenAIModelIdentifier.GPT35Turbo)
+    generationConfig {
+        temperature(0.7f)
+        topK(40)
+        topP(0.95f)
+    }
+}
+```
+
+### Gemini
+
+```kotlin
+val geminiModel = geminiModel {
+    apiKey("your-api-key")
+    modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
+    generationConfig {
+        temperature(0.2f)
+        topK(40)
+        topP(0.8f)
+    }
+}
+```
+
+### Ollama
+
+```kotlin
+val ollamaModel = ollamaModel {
+    apiUrl("http://localhost:11434/v1/")
+    modelIdentifier(OllamaModelIdentifier.Llama2)
+    generationConfig {
+        // Use default settings
+    }
+}
+```
+
+### VertexAI
+
+```kotlin
+val vertexAIModel = vertexAIModel {
+    project("your-project-id")
+    location("your-location")
+    modelIdentifier(VertexAIModelIdentifier.Gemini2_0Flash)
+}
+```
+
+## Bring your own model
 
 All model implementations in Aigentic implement the `Model` interface, which defines the contract for interacting with LLM providers:
 
@@ -25,44 +79,4 @@ interface Model {
 }
 ```
 
-## Supported Models
-
-Aigentic supports several LLM providers out of the box:
-
-### OpenAI
-
-```kotlin
-val openAIModel = OpenAIModel(
-    apiKey = "your-api-key",
-    model = "gpt-3.5-turbo",
-    generationSettings = GenerationSettings(
-        temperature = 0.7f,
-        topK = 40,
-        topP = 0.95f
-    )
-)
-```
-
-### Gemini
-
-```kotlin
-val geminiModel = GeminiModel(
-    apiKey = "your-api-key",
-    model = "gemini-pro",
-    generationSettings = GenerationSettings(
-        temperature = 0.2f,
-        topK = 40,
-        topP = 0.8f
-    )
-)
-```
-
-### Ollama
-
-```kotlin
-val ollamaModel = OllamaModel(
-    baseUrl = "http://localhost:11434",
-    model = "llama2",
-    generationSettings = GenerationSettings.DEFAULT
-)
-```
+You can implement this interface to connect to your own model

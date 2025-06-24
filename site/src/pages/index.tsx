@@ -121,7 +121,7 @@ export default function Home(): JSX.Element {
                   </p>
                   <p>
                     By offering a model-agnostic approach, Aigentic supports multiple LLM providers
-                    including OpenAI, Gemini, Ollama, and more. This flexibility allows you to choose
+                    including OpenAI, Gemini, Ollama, VertexAI, and more. This flexibility allows you to choose
                     the best model for your specific use case without being locked into a single provider.
                   </p>
                   <p>
@@ -324,6 +324,14 @@ export default function Home(): JSX.Element {
     apiUrl("http://localhost:11434/v1/")
 }`}</CodeBlock>
                       </TabItem>
+
+                      <TabItem value="VertexAI" label="VertexAI">
+                        <CodeBlock language="kotlin">{`val model = vertexAIModel {
+    project("YOUR_PROJECT_ID")
+    location("YOUR_LOCATION")
+    modelIdentifier(VertexAIModelIdentifier.Gemini2_0Flash)
+}`}</CodeBlock>
+                      </TabItem>
                     </Tabs>
                   </div>
                 </div>
@@ -334,10 +342,10 @@ export default function Home(): JSX.Element {
                     </Heading>
                     <p>
                       Aigentic is designed to be model-agnostic, allowing you to seamlessly
-                      integrate with various LLM providers including OpenAI, Gemini, Ollama,
-                      and more. This flexibility enables you to choose the best model for your
+                      integrate with various LLM providers including OpenAI, Gemini, Ollama, VertexAI,
+                      or your own. This flexibility enables you to choose the best model for your
                       specific use case without being locked into a single provider. You can
-                      even switch between providers with minimal code changes.
+                      switch between providers with minimal code changes.
                     </p>
                     <Link
                       className={clsx(
@@ -405,7 +413,7 @@ export default function Home(): JSX.Element {
                     Aigentic supports multiple LLM providers, giving you flexibility and choice.
                   </p>
                   <p>
-                    <span>Supported:</span> OpenAI, Gemini, Ollama, JSON Schema
+                    <span>Supported:</span> OpenAI, Gemini, Ollama, VertexAI, or your own
                   </p>
                 </div>
               </div>
@@ -416,18 +424,18 @@ export default function Home(): JSX.Element {
                   </Heading>
                   <p>Built with Kotlin Multiplatform for cross-platform compatibility.</p>
                   <p>
-                    <span>Platforms:</span> JVM, JavaScript, Native
+                    <span>Platforms:</span> JVM, JavaScript, Node, Native
                   </p>
                 </div>
               </div>
               <div className="col col--6">
                 <div className="card card-other card-border-bottom">
                   <Heading as="h4" className={clsx(styles.heading2)}>
-                    Tools
+                    Integrations
                   </Heading>
-                  <p>Aigentic includes a variety of built-in tools for common agent tasks.</p>
+                  <p>Aigentic includes a variety of built-in tools for common agent integrations.</p>
                   <p>
-                    <span>Included:</span> HTTP tools, OpenAPI tools, File operations, Data processing
+                    <span>Included:</span> HTTP tools, OpenAPI tools
                   </p>
                 </div>
               </div>
@@ -440,7 +448,7 @@ export default function Home(): JSX.Element {
                     Efficient handling of conversation context and message history.
                   </p>
                   <p>
-                    <span>Features:</span> Memory management, Context windowing, Summarization
+                    <span>Features:</span> Memory management, Context caching
                   </p>
                 </div>
               </div>
