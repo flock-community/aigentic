@@ -19,7 +19,7 @@ import createToolCallExpectations
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 
-suspend fun RegressionTest.start(): TestReport {
+suspend fun <I : Any, O : Any> RegressionTest<I, O>.start(): TestReport {
     return when (val configuredPlatform = agent.platform) {
         null -> aigenticException("Make sure to configure a platform in your agent")
         else -> {
@@ -43,7 +43,7 @@ suspend fun RegressionTest.start(): TestReport {
     }
 }
 
-private suspend fun RegressionTest.executeTest(
+private suspend fun <I : Any, O : Any> RegressionTest<I, O>.executeTest(
     run: Run,
     runId: RunId,
     iteration: Int,
@@ -56,7 +56,7 @@ private suspend fun RegressionTest.executeTest(
         val initializedState = initializeTestState(run)
         val (resultState, result) = executeAction(SendModelRequest(initializedState, mockedAgent))
         when (result) {
-            is Result.Finished -> {
+            is Result.Finished<*> -> {
                 val unInvokedMocks =
                     toolMocks.filter { (name, mock) ->
                         mock.invocations.size != mock.expectations.size
@@ -92,7 +92,7 @@ private suspend fun RegressionTest.executeTest(
     }
 }
 
-private suspend fun RegressionTest.initializeTestState(run: Run): State {
+private suspend fun <I : Any, O : Any> RegressionTest<I, O>.initializeTestState(run: Run): State {
     val systemPrompt = agent.systemPromptBuilder.buildSystemPrompt(agent)
     val contextMessages = run.messages.filter { it is ContextMessage }
     val initialMessages = listOf(systemPrompt) + contextMessageInterceptor(contextMessages)

@@ -94,8 +94,8 @@ class AgentExecutorTest : DescribeSpec({
                 addTool(newsEventTool)
             }.start().apply {
 
-                result.shouldBeInstanceOf<Finished>()
-                (result as Finished).description shouldBe "Finished the task"
+                result.shouldBeInstanceOf<Finished<*>>()
+                (result as Finished<*>).description shouldBe "Finished the task"
                 modelRequests.size shouldBe 2
 
                 coVerify(exactly = 1) { toolHandlerMock.invoke(expectedArguments) }
@@ -122,7 +122,7 @@ class AgentExecutorTest : DescribeSpec({
             val expectedSystemPrompt = Message.SystemPrompt("You are a helpful agent")
             val systemPromptMock =
                 mockk<SystemPromptBuilder>().apply {
-                    every { buildSystemPrompt(any()) } returns expectedSystemPrompt
+                    every { buildSystemPrompt(any<Agent<Unit, Unit>>()) } returns expectedSystemPrompt
                 }
 
             val agent =
@@ -135,7 +135,7 @@ class AgentExecutorTest : DescribeSpec({
 
             agent.start().apply {
                 messages[0] shouldBe expectedSystemPrompt
-                verify(exactly = 1) { systemPromptMock.buildSystemPrompt(any()) }
+                verify(exactly = 1) { systemPromptMock.buildSystemPrompt(any<Agent<Unit, Unit>>()) }
             }
         }
 
@@ -283,8 +283,8 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished>()
-                (this.result as Finished).response shouldBe response.encode()
+                result.shouldBeTypeOf<Finished<*>>()
+                (this.result as Finished<*>).response shouldBe response.encode()
             }
         }
 
@@ -297,8 +297,8 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished>()
-                (this.result as Finished).response shouldBe null
+                result.shouldBeTypeOf<Finished<*>>()
+                (this.result as Finished<*>).response shouldBe null
             }
         }
 
@@ -322,7 +322,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val platform =
                 mockk<Platform>().apply {
-                    coEvery { sendRun(any(), any()) } throws IOException("Something went wrong")
+                    coEvery { sendRun(any(), any<Agent<Unit, Unit>>()) } throws IOException("Something went wrong")
                 }
 
             val agent =

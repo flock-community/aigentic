@@ -9,12 +9,15 @@ import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.platform.testing.RegressionTest
 import community.flock.aigentic.platform.testing.ToolCallOverride
 
-fun regressionTest(regressionTestConfig: RegressionTestConfig.() -> Unit): RegressionTest = RegressionTestConfig().apply(regressionTestConfig).build()
+fun <I : Any, O : Any> regressionTest(regressionTestConfig: RegressionTestConfig<I, O>.() -> Unit): RegressionTest<I, O> =
+    RegressionTestConfig<I, O>().apply(
+        regressionTestConfig,
+    ).build()
 
-class RegressionTestConfig : Config<RegressionTest> {
+class RegressionTestConfig<I : Any, O : Any> : Config<RegressionTest<I, O>> {
     internal var numberOfIterations: Int = 1
     internal val tags: MutableSet<String> = mutableSetOf()
-    internal var agent: Agent? = null
+    internal var agent: Agent<I, O>? = null
     internal val toolCallOverrides: MutableList<ToolCallOverride> = mutableListOf()
     internal var contextMessageInterceptor: (List<Message>) -> List<Message> = { it }
 
@@ -22,15 +25,15 @@ class RegressionTestConfig : Config<RegressionTest> {
         this.numberOfIterations = numberOfIterations
     }
 
-    fun RegressionTestConfig.tags(vararg tags: String) {
+    fun RegressionTestConfig<I, O>.tags(vararg tags: String) {
         this.tags.addAll(tags)
     }
 
-    fun RegressionTestConfig.agent(agent: Agent) {
+    fun RegressionTestConfig<I, O>.agent(agent: Agent<I, O>) {
         this.agent = agent
     }
 
-    fun RegressionTestConfig.addExpectationOverride(
+    fun RegressionTestConfig<I, O>.addExpectationOverride(
         toolCallId: String,
         arguments: String,
     ) {
@@ -41,7 +44,7 @@ class RegressionTestConfig : Config<RegressionTest> {
         this.contextMessageInterceptor = contextMessageInterceptor
     }
 
-    override fun build(): RegressionTest =
+    override fun build(): RegressionTest<I, O> =
         RegressionTest(
             numberOfIterations = numberOfIterations,
             tags = tags.map { RunTag(it) },

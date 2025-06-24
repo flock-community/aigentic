@@ -19,9 +19,9 @@ interface Platform {
     val authentication: Authentication.BasicAuth
     val apiUrl: PlatformApiUrl
 
-    suspend fun sendRun(
+    suspend fun <I : Any, O : Any> sendRun(
         run: Run,
-        agent: Agent,
+        agent: Agent<I, O>,
     ): RunSentResult
 
     suspend fun getRuns(tags: List<RunTag>): List<Pair<RunId, Run>>

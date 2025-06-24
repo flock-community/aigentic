@@ -2,8 +2,6 @@
 
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.agent.Run
-import community.flock.aigentic.core.agent.getFinishResponse
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.annotations.AigenticParameter
@@ -13,8 +11,8 @@ import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
 suspend fun runAdministrativeAgentExample(apiKey: String) {
-    val run: Run =
-        agent {
+    val run =
+        agent<Unit, AgentAdministrativeResponse> {
             geminiModel {
                 apiKey(apiKey)
                 modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
@@ -45,15 +43,13 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
             addTool("updateEmployee") { input: UpdateEmployee ->
                 updateEmployee(input)
             }
-            finishResponse<AgentAdministrativeResponse>()
         }.start()
 
     when (val result = run.result) {
-        is Result.Finished ->
-            result.getFinishResponse<AgentAdministrativeResponse>().let { response ->
+        is Result.Finished<*> ->
+            result.response.let { response ->
                 "Hours inspected successfully: $response"
             }
-
         is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
         is Result.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)

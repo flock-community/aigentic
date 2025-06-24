@@ -128,7 +128,7 @@ class AgentConfigTest : DescribeSpec({
                 parameter = testParameter,
             )
 
-            agent {
+            agent<Unit, TestResponse> {
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 addTool(mockk(relaxed = true))
@@ -157,4 +157,4 @@ class AgentConfigTest : DescribeSpec({
 
 class TestResponse
 
-private data class MissingPropertyTestCase(val agentConfig: AgentConfig.() -> Unit, val expectedMessage: String)
+private data class MissingPropertyTestCase(val agentConfig: AgentConfig<Unit, Unit>.() -> Unit, val expectedMessage: String)

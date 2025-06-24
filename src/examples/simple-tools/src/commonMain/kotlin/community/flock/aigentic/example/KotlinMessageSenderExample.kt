@@ -32,7 +32,7 @@ suspend fun runKotlinMessageAgent(apiKey: String) {
         }.start()
 
     when (val result = run.result) {
-        is Result.Finished -> "Agent finished successfully"
+        is Result.Finished<*> -> "Agent finished successfully"
         is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
         is Result.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)

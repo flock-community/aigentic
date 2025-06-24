@@ -1,7 +1,6 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.Aigentic
-import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.generated.parameter.initialize
@@ -38,7 +37,7 @@ suspend fun runVertexAIWeatherExample(
     project: String,
     location: String,
 ) {
-    val run: Run =
+    val run =
         agent {
             vertexAIModel {
                 project(project)
@@ -64,7 +63,7 @@ suspend fun runVertexAIWeatherExample(
         }.start()
 
     when (val result = run.result) {
-        is community.flock.aigentic.core.agent.tool.Result.Finished -> "Agent finished successfully"
+        is community.flock.aigentic.core.agent.tool.Result.Finished<*> -> "Agent finished successfully"
         is community.flock.aigentic.core.agent.tool.Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
         is community.flock.aigentic.core.agent.tool.Result.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)

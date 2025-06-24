@@ -42,8 +42,10 @@ import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
 import community.flock.aigentic.gateway.wirespec.ToolDto
 import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-fun Run.toDto(agent: Agent) =
+fun <I : Any, O : Any> Run.toDto(agent: Agent<I, O>) =
     RunDto(
         startedAt = startedAt.toString(),
         finishedAt = finishedAt.toString(),
@@ -236,10 +238,10 @@ private fun Result.toDto() =
                 message = message,
             )
 
-        is Result.Finished ->
+        is Result.Finished<*> ->
             FinishedResultDto(
                 description = description,
-                response = response,
+                response = Json.encodeToString(response),
             )
 
         is Result.Stuck ->

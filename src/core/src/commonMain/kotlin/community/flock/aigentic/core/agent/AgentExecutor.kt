@@ -33,7 +33,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 
-suspend fun Agent.start(): Run =
+suspend fun <I : Any, O : Any> Agent<I, O>.start(): Run =
     coroutineScope {
         val state = State()
         state.events.emit(AgentStatus.Started)
@@ -53,8 +53,8 @@ suspend fun Agent.start(): Run =
         }
     }
 
-private suspend fun publishRun(
-    agent: Agent,
+private suspend fun <I : Any, O : Any> publishRun(
+    agent: Agent<I, O>,
     run: Run,
     state: State,
 ) {
@@ -67,16 +67,16 @@ private suspend fun publishRun(
     }
 }
 
-suspend fun executeAction(action: Action): Pair<State, Result> =
+suspend fun <I : Any, O : Any> executeAction(action: Action<I, O>): Pair<State, Result> =
     when (action) {
-        is Initialize -> executeAction(action.process())
+        is Initialize -> executeAction<I, O>(action.process())
         is SendModelRequest -> executeAction(action.process())
         is ProcessModelResponse -> executeAction(action.process())
         is ExecuteTools -> executeAction(action.process())
         is Finished -> action.process()
     }
 
-private suspend fun Initialize.process(): Action {
+private suspend fun <I : Any, O : Any> Initialize<I, O>.process(): Action<I, O> {
     state.addMessages(initializeStartMessages(agent))
     if (agent.tags.isNotEmpty()) {
         state.addMessages(prependWithExampleMessages())
@@ -84,7 +84,7 @@ private suspend fun Initialize.process(): Action {
     return SendModelRequest(state, agent)
 }
 
-private suspend fun Initialize.prependWithExampleMessages(): List<Message> {
+private suspend fun <I : Any, O : Any> Initialize<I, O>.prependWithExampleMessages(): List<Message> {
     val runs = fetchRuns()
     state.addMessage(
         Message.ExampleToolMessage(
@@ -184,7 +184,7 @@ private fun ContextMessage.toExampleMessage(): Message =
             )
     }
 
-private suspend fun Initialize.fetchRuns(): List<Pair<RunId, Run>> =
+private suspend fun <I : Any, O : Any> Initialize<I, O>.fetchRuns(): List<Pair<RunId, Run>> =
     runCatching {
         agent.platform
             ?.getRuns(agent.tags)
@@ -193,7 +193,7 @@ private suspend fun Initialize.fetchRuns(): List<Pair<RunId, Run>> =
         aigenticException(it.message.toString())
     }.getOrNull() ?: emptyList()
 
-private suspend fun ProcessModelResponse.process(): Action =
+private suspend fun <I : Any, O : Any> ProcessModelResponse<I, O>.process(): Action<I, O> =
     when (responseMessage) {
         is Message.ToolCalls -> ExecuteTools(state, agent, responseMessage.toolCalls)
         else -> {
@@ -202,7 +202,7 @@ private suspend fun ProcessModelResponse.process(): Action =
         }
     }
 
-private suspend fun SendModelRequest.process(): ProcessModelResponse {
+private suspend fun <I : Any, O : Any> SendModelRequest<I, O>.process(): ProcessModelResponse<I, O> {
     val (startedAt, finishedAt, response) =
         withStartFinishTiming {
             agent.sendModelRequest(state)
@@ -224,9 +224,9 @@ private suspend fun SendModelRequest.process(): ProcessModelResponse {
     return ProcessModelResponse(state, agent, message)
 }
 
-private fun Finished.process() = state to result
+private fun <I : Any, O : Any> Finished<I, O>.process() = state to result
 
-private suspend fun ExecuteTools.process(): Action {
+private suspend fun <I : Any, O : Any> ExecuteTools<I, O>.process(): Action<I, O> {
     val toolExecutionResults = executeToolCalls(agent, toolCalls)
 
     toolExecutionResults.filterIsInstance<ToolExecutionResult.ToolResult>().forEach {
@@ -242,7 +242,7 @@ private suspend fun ExecuteTools.process(): Action {
     }
 }
 
-private fun initializeStartMessages(agent: Agent): List<Message> =
+private fun <I : Any, O : Any> initializeStartMessages(agent: Agent<I, O>): List<Message> =
     listOf(agent.systemPromptBuilder.buildSystemPrompt(agent)) +
         agent.contexts.map {
             when (it) {
@@ -259,17 +259,17 @@ private fun initializeStartMessages(agent: Agent): List<Message> =
             }
         }
 
-private suspend fun Agent.sendModelRequest(state: State): ModelResponse =
+private suspend fun <I : Any, O : Any> Agent<I, O>.sendModelRequest(state: State): ModelResponse =
     model.sendRequest(state.messages.replayCache, tools.values.toList() + internalTools.values.toList())
 
-sealed interface Action {
-    data class Initialize(val state: State, val agent: Agent) : Action
+sealed interface Action<I : Any, O : Any> {
+    data class Initialize<I : Any, O : Any>(val state: State, val agent: Agent<I, O>) : Action<I, O>
 
-    data class ExecuteTools(val state: State, val agent: Agent, val toolCalls: List<ToolCall>) : Action
+    data class ExecuteTools<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val toolCalls: List<ToolCall>) : Action<I, O>
 
-    data class SendModelRequest(val state: State, val agent: Agent) : Action
+    data class SendModelRequest<I : Any, O : Any>(val state: State, val agent: Agent<I, O>) : Action<I, O>
 
-    data class ProcessModelResponse(val state: State, val agent: Agent, val responseMessage: Message) : Action
+    data class ProcessModelResponse<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val responseMessage: Message) : Action<I, O>
 
-    data class Finished(val state: State, val agent: Agent, val result: Result) : Action
+    data class Finished<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val result: Result) : Action<I, O>
 }
