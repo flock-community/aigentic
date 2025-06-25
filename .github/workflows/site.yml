@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  build-and-deploy:
+  site:
     runs-on: ubuntu-latest
 
     steps:
@@ -47,7 +47,7 @@ jobs:
     - name: Build and push Docker image
       working-directory: ./site
       run: |
-        docker buildx build --platform linux/amd64 -t europe-docker.pkg.dev/aigentic-458115/aigentic-docker/aigentic-docs .
+        docker buildx build -t europe-docker.pkg.dev/aigentic-458115/aigentic-docker/aigentic-docs .
         docker push europe-docker.pkg.dev/aigentic-458115/aigentic-docker/aigentic-docs
 
     - name: Deploy to Google Cloud Run
