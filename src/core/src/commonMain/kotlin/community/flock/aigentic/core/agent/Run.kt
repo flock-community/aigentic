@@ -30,8 +30,9 @@ fun <O : Any> Run<O>.thinkingOutputTokens(): Int = modelRequests.sumOf { it.thin
 
 fun <O : Any> Run<O>.cachedInputTokens(): Int = modelRequests.sumOf { it.cachedInputTokenCount }
 
-inline fun <reified O : Any> Run<O>.finishResponse(): O? = when (result) {
-    is Result.Finished -> result.response?.let { Json.decodeFromString(it) }
-    is Result.Fatal -> error("Cannot read finsh response from: Fatal")
-    is Result.Stuck -> error("Cannot read finsh response from: Stuck")
-}
+inline fun <reified O : Any> Run<O>.finishResponse(): O? =
+    when (result) {
+        is Result.Finished -> result.response?.let { Json.decodeFromString(it) }
+        is Result.Fatal -> error("Cannot read finsh response from: Fatal")
+        is Result.Stuck -> error("Cannot read finsh response from: Stuck")
+    }
