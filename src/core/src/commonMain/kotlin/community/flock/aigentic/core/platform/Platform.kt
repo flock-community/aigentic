@@ -20,11 +20,11 @@ interface Platform {
     val apiUrl: PlatformApiUrl
 
     suspend fun <I : Any, O : Any> sendRun(
-        run: Run,
+        run: Run<O>,
         agent: Agent<I, O>,
     ): RunSentResult
 
-    suspend fun getRuns(tags: List<RunTag>): List<Pair<RunId, Run>>
+    suspend fun <O : Any> getRuns(tags: List<RunTag>): List<Pair<RunId, Run<O>>>
 }
 
 sealed interface RunSentResult {

@@ -32,20 +32,23 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-suspend fun <I : Any, O : Any> Agent<I, O>.start(): Run =
+suspend inline fun <reified I : Any, O : Any> Agent<I, O>.start(input: I? = null): Run<O> =
     coroutineScope {
+        val agent = this@start.copy(contexts = listOf(Context.Text(Json.encodeToString(input))) + this@start.contexts)
         val state = State()
         state.events.emit(AgentStatus.Started)
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
         try {
-            val run = executeAction(Initialize(state, this@start)).toRun()
-            publishRun(this@start, run, state)
+            val run = executeAction(Initialize(state, agent)).toRun<O>()
+            publishRun(agent, run, state)
             run
         } catch (e: AigenticException) {
-            state.events.emit(AgentStatus.Fatal(e.message))
-            val run = (state to Result.Fatal(e.message)).toRun()
-            publishRun(this@start, run, state)
+            state.events.emit(AgentStatus.Fatal(e.msg))
+            val run = (state to Result.Fatal(e.msg)).toRun<O>()
+            publishRun(agent, run, state)
             run
         } finally {
             delay(10) // Allow some time for the logging to finish
@@ -53,9 +56,9 @@ suspend fun <I : Any, O : Any> Agent<I, O>.start(): Run =
         }
     }
 
-private suspend fun <I : Any, O : Any> publishRun(
+suspend fun <I : Any, O : Any> publishRun(
     agent: Agent<I, O>,
-    run: Run,
+    run: Run<O>,
     state: State,
 ) {
     if (agent.platform != null) {
@@ -69,7 +72,7 @@ private suspend fun <I : Any, O : Any> publishRun(
 
 suspend fun <I : Any, O : Any> executeAction(action: Action<I, O>): Pair<State, Result> =
     when (action) {
-        is Initialize -> executeAction<I, O>(action.process())
+        is Initialize -> executeAction(action.process())
         is SendModelRequest -> executeAction(action.process())
         is ProcessModelResponse -> executeAction(action.process())
         is ExecuteTools -> executeAction(action.process())
@@ -184,10 +187,9 @@ private fun ContextMessage.toExampleMessage(): Message =
             )
     }
 
-private suspend fun <I : Any, O : Any> Initialize<I, O>.fetchRuns(): List<Pair<RunId, Run>> =
+private suspend fun <I : Any, O : Any> Initialize<I, O>.fetchRuns(): List<Pair<RunId, Run<O>>> =
     runCatching {
-        agent.platform
-            ?.getRuns(agent.tags)
+        agent.platform?.getRuns<O>(agent.tags)
     }.onFailure {
         state.addMessages(initializeStartMessages(agent))
         aigenticException(it.message.toString())

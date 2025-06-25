@@ -23,7 +23,7 @@ suspend fun <I : Any, O : Any> RegressionTest<I, O>.start(): TestReport {
     return when (val configuredPlatform = agent.platform) {
         null -> aigenticException("Make sure to configure a platform in your agent")
         else -> {
-            val runs = configuredPlatform.getRuns(tags)
+            val runs = configuredPlatform.getRuns<O>(tags)
 
             println("🏃 ${runs.size} runs found with tags: ${tags.joinToString(",") { it.value }}")
 
@@ -44,7 +44,7 @@ suspend fun <I : Any, O : Any> RegressionTest<I, O>.start(): TestReport {
 }
 
 private suspend fun <I : Any, O : Any> RegressionTest<I, O>.executeTest(
-    run: Run,
+    run: Run<O>,
     runId: RunId,
     iteration: Int,
 ): TestResult {
@@ -56,7 +56,7 @@ private suspend fun <I : Any, O : Any> RegressionTest<I, O>.executeTest(
         val initializedState = initializeTestState(run)
         val (resultState, result) = executeAction(SendModelRequest(initializedState, mockedAgent))
         when (result) {
-            is Result.Finished<*> -> {
+            is Result.Finished -> {
                 val unInvokedMocks =
                     toolMocks.filter { (name, mock) ->
                         mock.invocations.size != mock.expectations.size
@@ -92,7 +92,7 @@ private suspend fun <I : Any, O : Any> RegressionTest<I, O>.executeTest(
     }
 }
 
-private suspend fun <I : Any, O : Any> RegressionTest<I, O>.initializeTestState(run: Run): State {
+private suspend fun <I : Any, O : Any> RegressionTest<I, O>.initializeTestState(run: Run<O>): State {
     val systemPrompt = agent.systemPromptBuilder.buildSystemPrompt(agent)
     val contextMessages = run.messages.filter { it is ContextMessage }
     val initialMessages = listOf(systemPrompt) + contextMessageInterceptor(contextMessages)

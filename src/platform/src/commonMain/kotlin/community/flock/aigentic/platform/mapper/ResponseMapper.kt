@@ -23,8 +23,8 @@ import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
 import kotlinx.datetime.Instant
 
-fun RunDetailsDto.toRun() =
-    Run(
+fun <O : Any> RunDetailsDto.toRun() =
+    Run<O>(
         startedAt = Instant.parse(startedAt),
         finishedAt = Instant.parse(finishedAt),
         messages =

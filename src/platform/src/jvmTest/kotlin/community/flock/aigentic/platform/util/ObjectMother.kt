@@ -44,7 +44,7 @@ fun createAgent() =
     )
 
 fun createRun() =
-    Run(
+    Run<Unit>(
         startedAt = Clock.System.now(),
         finishedAt = Clock.System.now(),
         messages = listOf(Message.SystemPrompt("You are a helpful agent")),

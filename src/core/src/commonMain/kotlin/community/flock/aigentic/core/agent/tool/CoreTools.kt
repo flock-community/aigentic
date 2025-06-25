@@ -15,7 +15,7 @@ const val FINISHED_TASK_TOOL_NAME = "finishedTask"
 const val STUCK_WITH_TASK_TOOL_NAME = "stuckWithTask"
 
 internal fun finishedTaskTool(responseParameter: Parameter? = null) =
-    object : InternalTool<Finished<String?>> {
+    object : InternalTool<Finished> {
         val descriptionParameter =
             Parameter.Primitive(
                 name = "description",
@@ -28,10 +28,10 @@ internal fun finishedTaskTool(responseParameter: Parameter? = null) =
         override val description: String = "When you've successfully finished the task call this function to indicate you're done."
         override val parameters = listOfNotNull(descriptionParameter, responseParameter)
 
-        override val handler: suspend (toolArguments: JsonObject) -> Finished<String?> = { arguments ->
+        override val handler: suspend (toolArguments: JsonObject) -> Finished = { arguments ->
             val description = descriptionParameter.getStringValue(arguments)
             val response = responseParameter?.let { Json.encodeToString(arguments.getValue(it.name)) }
-            Finished<String?>(description, response)
+            Finished(description, response)
         }
     }
 
@@ -57,7 +57,7 @@ internal val stuckWithTaskTool =
     }
 
 sealed interface Result {
-    data class Finished<O>(val description: String, val response: O) : Result
+    data class Finished(val description: String, val response: String?) : Result
 
     data class Stuck(val reason: String) : Result
 
