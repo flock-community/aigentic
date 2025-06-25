@@ -26,7 +26,7 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           editUrl:
-            "https://github.com/flock-community/aigentic/tree/main/site/docs/",
+            "https://github.com/flock-community/aigentic/tree/main/site/",
         },
         blog: {
           path: "./blog",
@@ -106,7 +106,7 @@ const config: Config = {
     footer: {
       style: "dark",
       logo: {
-        href: "/docs/intro",
+        href: "/",
         alt: "Aigentic Logo",
         src: "img/aigentic-logo.svg", // TODO: Replace with Aigentic logo
       },
