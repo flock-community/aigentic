@@ -48,7 +48,7 @@ jobs:
     - name: Build and push Docker image
       working-directory: ./site
       run: |
-        docker buildx build --push -t europe-docker.pkg.dev/aigentic-458115/aigentic-docker/aigentic-docs .
+        docker buildx build --platform linux/amd64 --push -t europe-docker.pkg.dev/aigentic-458115/aigentic-docker/aigentic-docs .
 
     - name: Deploy to Google Cloud Run
       run: |
