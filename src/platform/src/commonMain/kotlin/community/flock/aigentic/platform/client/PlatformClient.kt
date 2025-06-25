@@ -53,7 +53,7 @@ class AigenticPlatformClient(
     private val endpoints: PlatformEndpoints = AigenticPlatformEndpoints(basicAuth, apiUrl, null),
 ) {
     suspend fun <I : Any, O : Any> sendRun(
-        run: Run,
+        run: Run<O>,
         agent: Agent<I, O>,
     ): RunSentResult {
         val runDto = run.toDto(agent)
@@ -69,7 +69,7 @@ class AigenticPlatformClient(
         }
     }
 
-    suspend fun getRuns(tags: List<RunTag>): List<Pair<RunId, Run>> =
+    suspend fun <O : Any> getRuns(tags: List<RunTag>): List<Pair<RunId, Run<O>>> =
         when (val response = endpoints.getRuns(GetRunsEndpoint.RequestUnit(tags.joinToString(",") { it.value }))) {
             is GetRunsEndpoint.Response200ApplicationJson -> response.content.body
             is GetRunsEndpoint.Response401Unit -> aigenticException("Unauthorized to get runs")

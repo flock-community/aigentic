@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-internal fun GoogleRequest.map(): Request =
+fun GoogleRequest.map(): Request =
     Request(
         method = method,
         headers = dynamicObjectToMap(headers),

@@ -63,7 +63,7 @@ suspend fun runVertexAIWeatherExample(
         }.start()
 
     when (val result = run.result) {
-        is community.flock.aigentic.core.agent.tool.Result.Finished<*> -> "Agent finished successfully"
+        is community.flock.aigentic.core.agent.tool.Result.Finished -> "Agent finished successfully"
         is community.flock.aigentic.core.agent.tool.Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
         is community.flock.aigentic.core.agent.tool.Result.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)
