@@ -1,0 +1,62 @@
+name: Build and Deploy Docusaurus Site
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: site/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./site
+      run: npm install
+
+    - name: Build Docusaurus site
+      working-directory: ./site
+      run: npm run build
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: aigentic-458115
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+
+    - name: Configure Docker for GCP
+      run: gcloud auth configure-docker europe-docker.pkg.dev
+
+    - name: Build and push Docker image
+      working-directory: ./site
+      run: |
+        docker buildx build --platform linux/amd64 -t europe-docker.pkg.dev/aigentic-458115/aigentic-docker/aigentic-docs .
+        docker push europe-docker.pkg.dev/aigentic-458115/aigentic-docker/aigentic-docs
+
+    - name: Deploy to Google Cloud Run
+      run: |
+        gcloud run deploy aigentic-docs \
+          --image=europe-docker.pkg.dev/aigentic-458115/aigentic-docker/aigentic-docs \
+          --project=aigentic-458115 \
+          --region=europe-west4 \
+          --platform=managed \
+          --allow-unauthenticated \
+          --ingress=all
+
