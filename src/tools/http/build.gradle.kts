@@ -23,8 +23,8 @@ kotlin {
                 api(libs.ktor.client.core)
                 implementation(libs.ktor.client.logging)
                 implementation(libs.ktor.client.auth)
-                implementation(libs.ktor.client.content.negotiation)
-                implementation(libs.ktor.client.serialization.json)
+                api(libs.ktor.client.content.negotiation)
+                api(libs.ktor.client.serialization.json)
 
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))

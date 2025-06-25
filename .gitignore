@@ -5,7 +5,9 @@ build/
 .DS_Store
 .env
 *.iml
-docs
+
+./docs/*
+
 node_modules
-package.json
-package-lock.json
+./package.json
+./package-lock.json

@@ -1,0 +1,209 @@
+---
+id: agent
+title: Agents
+sidebar_position: 1
+---
+
+# Agents
+
+Aigentic provides a powerful DSL for creating and configuring AI agents. The DSL is designed to be expressive, type-safe, and easy to use, allowing you to create sophisticated AI agents with minimal boilerplate code.
+
+## Creating an Agent
+
+The main entry point for creating an agent is the `agent` function, which takes a lambda with `AgentConfig` as the receiver:
+
+```kotlin
+val myAgent = agent {
+    geminiModel {
+        apiKey("your-api-key")
+        modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
+    }
+    task("Answer questions about the weather") {
+        addInstruction("Provide accurate and concise weather information")
+        addInstruction("If you don't know the answer, say so")
+    }
+    addTool(weatherTool)
+}
+```
+
+## Agent Configuration
+
+The `AgentConfig` class provides several methods for configuring an agent:
+
+### Setting the Model
+
+```kotlin
+agent {
+    model(openAIModel {
+        apiKey("your-api-key")
+        modelIdentifier(OpenAIModelIdentifier.GPT3_5Turbo)
+        generationConfig {
+            temperature(0.5f)
+        }
+    })
+}
+```
+
+### Defining Tasks
+
+Tasks define what the agent should do. A task has a description and can have multiple instructions:
+
+```kotlin
+agent {
+    task("Summarize text") {
+        addInstruction("Create a concise summary of the provided text")
+        addInstruction("Highlight key points and main ideas")
+        addInstruction("Keep the summary under 200 words")
+    }
+}
+```
+
+### Adding Tools
+
+Tools extend an agent's capabilities by allowing it to perform specific actions:
+
+```kotlin
+agent {
+    // Add a pre-defined tool
+    addTool(weatherTool)
+
+    // Add a tool with inline definition
+    addTool<WeatherRequest, WeatherResponse>(
+        name = "get_weather",
+        description = "Get the current weather for a location",
+    ) { request ->
+        // Tool implementation
+        weatherService.getWeather(request.location)
+    }
+}
+```
+
+### Adding Context
+
+Context provides additional information to the agent:
+
+```kotlin
+agent {
+    context {
+        addText("This is some background information the agent should know.")
+        addUrl("https://example.com/data.json", MimeType.JSON)
+        addBase64(encodedImage, MimeType.PNG)
+    }
+}
+```
+
+### Overriding the System Prompt
+
+The system prompt defines the agent's behavior, capabilities, and personality. It's the first message sent to the LLM and sets the foundation for how the agent will operate.
+
+Aigentic provides a sensible default system prompt through the `DefaultSystemPromptBuilder`, which includes instructions about:
+- The agent's purpose and mode of operation
+- How to use tools
+- Task description and specific instructions
+- Task completion protocol
+
+You only need to override the system prompt when you want to customize the agent's behavior beyond the default settings.
+
+```kotlin
+
+val customSystemPromptBuilder = object : SystemPromptBuilder {
+        override fun buildSystemPrompt(agent: Agent): Message.SystemPrompt {
+            return Message.SystemPrompt("""
+                You are a specialized customer service agent for a tech company.
+
+                Your primary task is: ${agent.task.description}
+
+                Follow these specific instructions:
+                ${agent.task.instructions.joinToString("\n") { "- ${it.text}" }}
+
+                Always be polite, concise, and helpful. Use a friendly tone.
+                When you've completed your task, use the ${FINISHED_TASK_TOOL_NAME} tool.
+                If you're stuck, use the ${STUCK_WITH_TASK_TOOL_NAME} tool.
+            """.trimIndent())
+        }
+    }
+
+// Creating a custom system prompt builder
+agent {
+    systemPrompt(customSystemPromptBuilder)
+}
+```
+
+The `SystemPromptBuilder` interface has a single method `buildSystemPrompt(agent: Agent)` that returns a `Message.SystemPrompt`. This gives you access to the agent's configuration, including its task, instructions, and tools, allowing you to create a highly customized system prompt.
+
+### Configuring Response Format
+
+You can specify the format for the agent's final response:
+
+```kotlin
+@AigenticParameter
+data class Answer(val answer: String)
+
+// Parameter configuration if you don't use KSP
+agent {
+    finishResponse(Parameter.Primitive(
+      name = "answer",
+      description = "The answer to the question",
+      isRequired = true,
+      type = ParameterType.Primitive.String
+    ))
+}
+
+// KSP provide
+agent {
+    finishResponse<Answer>()
+}
+```
+
+### Processing Agent Responses
+
+When an agent finishes its task, you can extract the response in a type-safe way using the `getFinishResponse<T>()` extension function:
+
+```kotlin
+when (val result = run.result) {
+    is Result.Finished -> {
+        val answer = result.getFinishResponse<Answer>()
+        println("The agent's answer is: ${answer?.answer}")
+    }
+    is Result.Stuck -> println("Agent is stuck: ${result.reason}")
+    is Result.Fatal -> println("Agent encountered an error: ${result.message}")
+}
+```
+
+### Using @AigenticResponse Annotation
+
+While `@AigenticParameter` is used for agent inputs and final responses, the `@AigenticResponse` annotation is used to mark data classes that represent responses from tools:
+
+```kotlin
+// Tool response class
+@AigenticResponse
+data class WeatherResponse(val temperature: Float, val conditions: String)
+
+// Agent final response class
+@AigenticParameter
+data class Answer(val weatherSummary: String)
+
+// In your agent configuration
+agent {
+    addTool("getWeather") { location: Location ->
+        // Returns a WeatherResponse
+        weatherService.getWeather(location)
+    }
+    finishResponse<Answer>()
+}
+```
+
+This annotation helps the Aigentic framework properly handle and serialize tool responses.
+
+## More Examples
+
+For more examples and reference implementations, check out the [Aigentic Initializr repository](https://github.com/flock-community/aigentic-initializr). This repository contains various agent configurations and use cases that demonstrate different aspects of the Aigentic DSL:
+
+- Basic agent configurations
+- Tool integrations
+- Custom system prompts
+- Complex response formats
+- Context handling examples
+- And more...
+
+Feel free to explore the repository and use these examples as a starting point for your own agent implementations.

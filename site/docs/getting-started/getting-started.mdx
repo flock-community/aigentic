@@ -1,0 +1,168 @@
+---
+id: getting-started
+title: Getting Started
+slug: /getting-started
+sidebar_position: 0
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+## What is Aigentic?
+
+Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications. It streamlines the process of creating, deploying, and managing LLM agents within your software ecosystem. Aigentic is designed to be model-agnostic, supporting various LLM providers including OpenAI, Gemini, Ollama, and more.
+
+## Installation
+
+Aigentic can be added to your project using Gradle, the preferred build tool for Kotlin projects.
+
+### Kotlin Multiplatform
+
+Add the following to your `build.gradle.kts` file:
+
+```kotlin
+plugins {
+    kotlin("jvm") version "2.1.21"
+    kotlin("plugin.serialization") version "1.9.23"
+    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
+}
+
+dependencies {
+    // Core module
+    implementation("community.flock.aigentic:core:{{AIGENTIC_VERSION}}")
+
+    // Provider modules (choose the ones you need)
+    implementation("community.flock.aigentic:openai:{{AIGENTIC_VERSION}}")
+    implementation("community.flock.aigentic:gemini:{{AIGENTIC_VERSION}}")
+    implementation("community.flock.aigentic:ollama:{{AIGENTIC_VERSION}}")
+    implementation("community.flock.aigentic:vertexai:{{AIGENTIC_VERSION}}")
+
+    // Tools modules (optional)
+    implementation("community.flock.aigentic:http:{{AIGENTIC_VERSION}}")
+    implementation("community.flock.aigentic:openapi:{{AIGENTIC_VERSION}}")
+
+    // KSP processor
+    ksp("community.flock.aigentic:ksp-processor:{{AIGENTIC_VERSION}}")
+
+}
+
+```
+
+---
+
+## Example
+
+Let's create a simple AI agent using Aigentic that can answer questions and perform basic tasks. This example demonstrates how to set up an agent with the OpenAI provider and add a simple tool.
+
+### Creating a Basic Agent
+
+First, let's create a basic agent that can answer questions using OpenAI's GPT model:
+
+```kotlin
+// Create a simple agent
+fun agent(question: String) = agent {
+
+    @AigenticParameter
+    data class Answer(val answer: String)
+
+    // Configure the Gemini model for the agent
+    geminiModel {
+        apiKey("YOUR_API_KEY")
+        modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
+    }
+
+    // Configure the task for the agent
+    task("Answer questions about Kotlin Multiplatform") {
+        addInstruction("Provide concise and accurate answers")
+    }
+
+    // Define context
+    context {
+        addText(question)
+    }
+
+    // Set the output
+    finishResponse<Answer>()
+
+}
+// Start the agent and get a run
+val run = agent("What is cool about kotlin?").start()
+
+// Print the result
+when (val result = run.result) {
+    is Result.Finished -> println(result.response)
+    is Result.Stuck -> println("Agent is stuck: ${result.reason}")
+    is Result.Fatal -> println("Error: ${result.message}")
+}
+```
+
+### Adding Tools to Your Agent
+
+Now, let's enhance our agent by adding a tool that can fetch weather information:
+
+```kotlin
+// Create a weather agent
+suspend fun main() {
+
+    Aigentic.initialize()
+
+    val httpClient = HttpClient{
+        install(ContentNegotiation) {
+            json(Json {ignoreUnknownKeys = true })
+        }
+    }
+
+    fun weatherUrl(location: String) = "https://weerlive.nl/api/json-data-10min.php?key=demo&locatie=${location}"
+
+    // Define a weather tool using the DSL
+    fun agent(location: String) = agent {
+
+        // Configure the Gemini model for the agent
+        geminiModel {
+            apiKey("YOUR_API_KEY")
+            modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
+        }
+
+        // Configure the task for the agent
+        task("Provide weather information") {
+            addInstruction("Respond to user queries about weather")
+        }
+
+        // Set context
+        context {
+            addText("Weather Information for location: $location")
+        }
+
+        // Add a weather tool
+        addTool("get_weather", "Get the current weather for a location") { req: WeatherRequest ->
+            // Make an API call to get weather data
+            weatherUrl(req.location).run{ httpClient.get(this).body<WeatherResponse>()}
+        }
+    }
+
+    val run = agent("Amsterdam").start()
+
+    // Print the result
+    when (val result = run.result) {
+        is Result.Finished -> println(result.getFinishResponse<WeatherResponse>()?.liveweer[0]?.verw)
+        is Result.Stuck -> println("Agent is stuck: ${result.reason}")
+        is Result.Fatal -> println("Error: ${result.message}")
+    }
+}
+
+@AigenticResponse
+data class WeatherResponse(
+    val liveweer: List<Weather>
+){
+    @Serializable
+    data class Weather(val verw: String)
+}
+```
+
+:::caution Don't forget the KSP plugin
+To use the @AigenticParameter annotation, make sure you have the KSP plugin configured in your project. See the [Getting Started](/docs/getting-started) guide for setup instructions.
+:::
+
+## More Examples
+The Aigentic Initializr repository contains many ready-to-use example projects, including agents for various use cases, tools implementations, and provider configurations. You can find these examples at [Aigentic Initializr repository](https://github.com/flock-community/aigentic-initializr). We encourage you to explore these examples to better understand how to structure your own AI agents and integrate different tools and providers.
+
