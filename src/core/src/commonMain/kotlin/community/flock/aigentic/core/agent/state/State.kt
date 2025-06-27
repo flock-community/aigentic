@@ -26,7 +26,8 @@ data class State(
 
 internal fun State.getMessages() = messages.asSharedFlow()
 
-fun State.getStatus() = merge(messages.flatMapConcat { it.toStatus().asFlow() }, events)
+@PublishedApi
+internal fun State.getStatus() = merge(messages.flatMapConcat { it.toStatus().asFlow() }, events)
 
 internal suspend fun State.addMessages(messages: List<Message>) = messages.forEach { addMessage(it) }
 
@@ -36,7 +37,8 @@ internal suspend fun State.addModelRequestInfo(modelRequestInfo: ModelRequestInf
 
 internal suspend fun State.addExampleRun(run: RunId) = this.exampleRunIds.emit(run)
 
-fun <O : Any> Pair<State, Result>.toRun(): Run<O> =
+@PublishedApi
+internal fun <O : Any> Pair<State, Result>.toRun(): Run<O> =
     with(first) {
         Run(
             startedAt = startedAt,

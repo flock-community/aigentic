@@ -48,7 +48,8 @@ class HttpCloudFunctionConfig<I : Any, O : Any> : Config<GoogleHttpCloudFunction
     }
 }
 
-inline fun <reified I : Any, O : Any> registerHttpFunction(function: GoogleHttpCloudFunction<I, O>) {
+@PublishedApi
+internal inline fun <reified I : Any, O : Any> registerHttpFunction(function: GoogleHttpCloudFunction<I, O>) {
     functions.http(function.entryPoint) { request, response ->
         CoroutineScope(Dispatchers.Default).launch {
             function.handleRequest(request, response)
