@@ -17,9 +17,9 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
-class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
+class HttpRequestHandlerTest : DescribeSpec({
 
-    val finishedTaskConfig: HttpCloudFunctionConfig<I, O>.() -> Unit = {
+    val finishedTaskConfig: HttpCloudFunctionConfig<Unit, Unit>.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
             model(modelFinishDirectly(finishedTaskToolCall))
@@ -28,7 +28,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
         }
     }
 
-    val finishedTaskWithResponseConfig: HttpCloudFunctionConfig<I, O>.() -> Unit = {
+    val finishedTaskWithResponseConfig: HttpCloudFunctionConfig<Unit, Unit>.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
             model(modelFinishDirectly(finishedTaskWithResponseToolCall))
@@ -45,7 +45,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
         }
     }
 
-    val imStuckConfig: HttpCloudFunctionConfig<I, O>.() -> Unit = {
+    val imStuckConfig: HttpCloudFunctionConfig<Unit, Unit>.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
             model(modelFinishDirectly(stuckWithTaskToolCall))
@@ -54,7 +54,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
         }
     }
 
-    val fatalConfig: HttpCloudFunctionConfig<I, O>.() -> Unit = {
+    val fatalConfig: HttpCloudFunctionConfig<Unit, Unit>.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
             model(modelException())
@@ -69,7 +69,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
         val (googleRequest, googleResponseWrapper) = createRequestResponse(true)
 
         shouldThrow<Exception> {
-            httpCloudFunction.handleRequest<I, O>(googleRequest, googleResponseWrapper.googleResponse)
+            httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
         }
 
         with(googleResponseWrapper) {
@@ -83,7 +83,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
         val httpCloudFunction = finishedTaskConfig.build()
         val (googleRequest, googleResponseWrapper) = createRequestResponse()
 
-        httpCloudFunction.handleRequest<I, O>(googleRequest, googleResponseWrapper.googleResponse)
+        httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
 
         with(googleResponseWrapper) {
             statusCode shouldBe 200
@@ -96,7 +96,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
         val httpCloudFunction = finishedTaskWithResponseConfig.build()
         val (googleRequest, googleResponseWrapper) = createRequestResponse()
 
-        httpCloudFunction.handleRequest<I, O>(googleRequest, googleResponseWrapper.googleResponse)
+        httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
 
         with(googleResponseWrapper) {
             statusCode shouldBe 200
@@ -109,7 +109,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
         val httpCloudFunction = imStuckConfig.build()
         val (googleRequest, googleResponseWrapper) = createRequestResponse()
 
-        httpCloudFunction.handleRequest<I, O>(googleRequest, googleResponseWrapper.googleResponse)
+        httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
 
         with(googleResponseWrapper) {
             statusCode shouldBe 422
@@ -122,7 +122,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
         val httpCloudFunction = fatalConfig.build()
         val (googleRequest, googleResponseWrapper) = createRequestResponse()
 
-        httpCloudFunction.handleRequest<I, O>(googleRequest, googleResponseWrapper.googleResponse)
+        httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
 
         with(googleResponseWrapper) {
             statusCode shouldBe 500
@@ -132,7 +132,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
 
     it("should intercept request and pass intercepted request to agent") {
 
-        val interceptedRequestConfig: HttpCloudFunctionConfig<I, O>.() -> Unit = {
+        val interceptedRequestConfig: HttpCloudFunctionConfig<Unit, Unit>.() -> Unit = {
             authentication(AuthorizationHeader("some-secret-key"))
             requestInterceptor { request ->
                 request.copy(
@@ -150,7 +150,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
         val httpCloudFunction = interceptedRequestConfig.build()
         val (googleRequest, googleResponseWrapper) = createRequestResponse()
 
-        httpCloudFunction.handleRequest<I, O>(googleRequest, googleResponseWrapper.googleResponse)
+        httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
 
         with(googleResponseWrapper) {
             statusCode shouldBe 200
@@ -159,7 +159,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
 
     it("should return 500 when exception is thrown in requestInterceptor") {
 
-        val interceptedRequestConfig: HttpCloudFunctionConfig<I, O>.() -> Unit = {
+        val interceptedRequestConfig: HttpCloudFunctionConfig<Unit, Unit>.() -> Unit = {
             authentication(AuthorizationHeader("some-secret-key"))
             requestInterceptor { request ->
                 error("Request interceptor error")
@@ -176,7 +176,7 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
         val (googleRequest, googleResponseWrapper) = createRequestResponse()
 
         shouldThrow<Exception> {
-            httpCloudFunction.handleRequest<I, O>(googleRequest, googleResponseWrapper.googleResponse)
+            httpCloudFunction.handleRequest(googleRequest, googleResponseWrapper.googleResponse)
         }
 
         with(googleResponseWrapper) {
@@ -185,6 +185,6 @@ class HttpRequestHandlerTest<I : Any, O : Any> : DescribeSpec({
     }
 })
 
-fun <I : Any, O : Any> (HttpCloudFunctionConfig<I, O>.() -> Unit).build(): GoogleHttpCloudFunction<I, O> {
+inline fun <reified I : Any, O : Any> (HttpCloudFunctionConfig<I, O>.() -> Unit).build(): GoogleHttpCloudFunction<I, O> {
     return HttpCloudFunctionConfig<I, O>().apply(this).build()
 }

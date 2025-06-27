@@ -85,7 +85,7 @@ class AgentExecutorTest : DescribeSpec({
                         ).toModelResponse()
                 }
 
-            agent {
+            agent<Unit, Unit> {
                 model(modelMock)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")
@@ -94,8 +94,8 @@ class AgentExecutorTest : DescribeSpec({
                 addTool(newsEventTool)
             }.start().apply {
 
-                result.shouldBeInstanceOf<Finished<*>>()
-                (result as Finished<*>).description shouldBe "Finished the task"
+                result.shouldBeInstanceOf<Finished>()
+                (result as Finished).description shouldBe "Finished the task"
                 modelRequests.size shouldBe 2
 
                 coVerify(exactly = 1) { toolHandlerMock.invoke(expectedArguments) }
@@ -105,7 +105,7 @@ class AgentExecutorTest : DescribeSpec({
 
         it("should finish with Stuck result when model doesn't know what to do") {
 
-            agent {
+            agent<Unit, Unit> {
                 model(modelStuckDirectly)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")
@@ -126,7 +126,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val agent =
-                agent {
+                agent<Unit, Unit> {
                     model(modelFinishTaskDirectly)
                     systemPrompt(systemPromptMock)
                     task("Execute some task") {}
@@ -146,7 +146,7 @@ class AgentExecutorTest : DescribeSpec({
             val expectedImageContextMimeType = MimeType.PNG
 
             val agent =
-                agent {
+                agent<Unit, Unit> {
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     context {
@@ -191,7 +191,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val agent =
-                agent {
+                agent<Unit, Unit> {
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(testTool)
@@ -231,7 +231,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val agent =
-                agent {
+                agent<Unit, Unit> {
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(testTool)
@@ -275,7 +275,7 @@ class AgentExecutorTest : DescribeSpec({
                         ).toModelResponse()
                 }
             val agent =
-                agent {
+                agent<Unit, Unit> {
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
@@ -283,22 +283,22 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished<*>>()
-                (this.result as Finished<*>).response shouldBe response.encode()
+                result.shouldBeTypeOf<Finished>()
+                (this.result as Finished).response shouldBe response.encode()
             }
         }
 
         it("if finishedWith parameter is not configured, the finished response field should be null") {
             val agent =
-                agent {
+                agent<Unit, Unit> {
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished<*>>()
-                (this.result as Finished<*>).response shouldBe null
+                result.shouldBeTypeOf<Finished>()
+                (this.result as Finished).response shouldBe null
             }
         }
 
@@ -307,7 +307,7 @@ class AgentExecutorTest : DescribeSpec({
             val platform = mockk<Platform>(relaxed = true)
 
             val agent =
-                agent {
+                agent<Unit, Unit> {
                     platform(platform)
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
@@ -326,7 +326,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val agent =
-                agent {
+                agent<Unit, Unit> {
                     platform(platform)
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
@@ -348,7 +348,7 @@ class AgentExecutorTest : DescribeSpec({
                     coEvery { sendRequest(any(), any()) } throws AigenticException("Model exception")
                 }
 
-            agent {
+            agent<Unit, Unit> {
                 model(modelMock)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")

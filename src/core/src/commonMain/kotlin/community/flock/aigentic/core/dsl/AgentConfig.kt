@@ -17,10 +17,6 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.TypedTool
 import community.flock.aigentic.core.tool.getParameter
 import community.flock.aigentic.core.tool.toTool
-import kotlin.jvm.JvmName
-
-@JvmName("agentDefault")
-fun agent(agentConfig: AgentConfig<Unit, Unit>.() -> Unit): Agent<Unit, Unit> = AgentConfig<Unit, Unit>().apply(agentConfig).build()
 
 fun <I : Any, O : Any> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> = AgentConfig<I, O>().apply(agentConfig).build()
 
@@ -78,9 +74,11 @@ class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
         this.responseParameter = response
     }
 
-    inline fun <reified T : Any> AgentConfig<I, T>.finishResponse() {
-        this.responseParameter = getParameter<T>()
+    inline fun <reified O : Any> AgentConfig<I, O>.finishResponse() {
+        this.responseParameter = getParameter<O>()
     }
+
+    inline fun <reified I : Any> AgentConfig<I, O>.inputParameter() {}
 
     fun AgentConfig<I, O>.tags(tag: String) = tags.add(RunTag(tag))
 

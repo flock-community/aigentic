@@ -20,7 +20,7 @@ class AgentConfigTest : DescribeSpec({
 
         it("should build basic agent") {
             val model = mockk<Model>(relaxed = true)
-            agent {
+            agent<Unit, Unit> {
                 model(model)
                 task("Task description") {
                     addInstruction("Instruction description")
@@ -38,7 +38,7 @@ class AgentConfigTest : DescribeSpec({
             val tool1 = mockk<Tool>(relaxed = true)
             val tool2 = mockk<Tool>(relaxed = true)
 
-            agent {
+            agent<Unit, Unit> {
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 addTool(tool1)
@@ -50,7 +50,7 @@ class AgentConfigTest : DescribeSpec({
 
         it("should build agent with system prompt builder") {
             val systemPromptBuilder = mockk<SystemPromptBuilder>(relaxed = true)
-            agent {
+            agent<Unit, Unit> {
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 systemPrompt(systemPromptBuilder)
@@ -61,7 +61,7 @@ class AgentConfigTest : DescribeSpec({
         }
 
         it("should build agent with multiple contexts") {
-            agent {
+            agent<Unit, Unit> {
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 context {
@@ -139,7 +139,7 @@ class AgentConfigTest : DescribeSpec({
         }
 
         it("should add tool with Unit input type") {
-            agent {
+            agent<Unit, Unit> {
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 addTool<Unit, String>(
