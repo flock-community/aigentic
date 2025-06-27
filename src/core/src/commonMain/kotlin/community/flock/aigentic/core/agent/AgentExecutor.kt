@@ -56,7 +56,8 @@ suspend inline fun <reified I : Any, O : Any> Agent<I, O>.start(input: I? = null
         }
     }
 
-suspend fun <I : Any, O : Any> publishRun(
+@PublishedApi
+internal suspend fun <I : Any, O : Any> publishRun(
     agent: Agent<I, O>,
     run: Run<O>,
     state: State,

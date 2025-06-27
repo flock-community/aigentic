@@ -44,7 +44,7 @@ publishing {
     }
 }
 
-val isSigningEnabled: Boolean = System.getenv("ENABLE_GRADLE_SIGNING")?.toBoolean() ?: false
+val isSigningEnabled: Boolean = System.getenv("ENABLE_GRADLE_SIGNING")?.toBoolean() ?: true
 
 if(isSigningEnabled) {
     signing {

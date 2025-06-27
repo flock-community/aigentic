@@ -1,6 +1,7 @@
 package community.flock.aigentic.core.exception
 
-data class AigenticException(val msg: String, val throwable: Throwable? = null) : Exception(msg, throwable)
+@PublishedApi
+internal data class AigenticException(override val message: String, val throwable: Throwable? = null) : Exception(message, throwable)
 
 fun aigenticException(
     message: String,
