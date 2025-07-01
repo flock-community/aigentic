@@ -50,10 +50,3 @@ inline fun <reified O : Any> Run<String>.decode(): Run<O> {
         exampleRunIds = exampleRunIds,
     )
 }
-
-inline fun <reified O : Any> Run<O>.finishResponse(): O? =
-    when (result) {
-        is Result.Finished -> result.response
-        is Result.Fatal -> error("Cannot read finsh response from: Fatal")
-        is Result.Stuck -> error("Cannot read finsh response from: Stuck")
-    }
