@@ -17,6 +17,7 @@ import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.platform.Platform
+import community.flock.aigentic.core.platform.getRuns
 import community.flock.aigentic.core.tool.Parameter.Primitive
 import community.flock.aigentic.core.tool.ParameterType.Primitive.Integer
 import community.flock.aigentic.core.tool.Tool

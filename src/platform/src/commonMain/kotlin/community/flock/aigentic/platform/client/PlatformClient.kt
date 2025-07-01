@@ -7,6 +7,7 @@ import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.PlatformApiUrl
+import community.flock.aigentic.core.platform.PlatformClient
 import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.gateway.wirespec.GatewayEndpoint
 import community.flock.aigentic.gateway.wirespec.GetRunsEndpoint
@@ -50,9 +51,10 @@ const val defaultPlatformApiUrl = "https://aigentic-backend-kib53ypjwq-ez.a.run.
 class AigenticPlatformClient(
     basicAuth: Authentication.BasicAuth,
     apiUrl: PlatformApiUrl,
-    private val endpoints: PlatformEndpoints = AigenticPlatformEndpoints(basicAuth, apiUrl, null),
-) {
-    suspend fun <I : Any, O : Any> sendRun(
+    @PublishedApi
+    internal val endpoints: PlatformEndpoints = AigenticPlatformEndpoints(basicAuth, apiUrl, null),
+) : PlatformClient {
+    override suspend fun <I : Any, O : Any> sendRun(
         run: Run<O>,
         agent: Agent<I, O>,
     ): RunSentResult {
@@ -69,13 +71,13 @@ class AigenticPlatformClient(
         }
     }
 
-    suspend fun <O : Any> getRuns(tags: List<RunTag>): List<Pair<RunId, Run<O>>> =
+    override suspend fun getRuns(tags: List<RunTag>): List<Pair<RunId, Run<String>>> =
         when (val response = endpoints.getRuns(GetRunsEndpoint.RequestUnit(tags.joinToString(",") { it.value }))) {
             is GetRunsEndpoint.Response200ApplicationJson -> response.content.body
             is GetRunsEndpoint.Response401Unit -> aigenticException("Unauthorized to get runs")
             is GetRunsEndpoint.Response404Unit -> aigenticException("Runs not found")
             is GetRunsEndpoint.Response500ApplicationJson -> aigenticException("Internal server error")
-        }.map { RunId(it.runId) to it.toRun() }
+        }.map { RunId(it.runId) to it.toRun<String>() }
 }
 
 class AigenticPlatformEndpoints(

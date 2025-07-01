@@ -231,7 +231,7 @@ private fun MimeType.toDto(): MimeTypeDto =
         MimeType.PDF -> MimeTypeDto.APPLICATION_PDF
     }
 
-private fun Result.toDto() =
+private fun Result<*>.toDto() =
     when (this) {
         is Result.Fatal ->
             FatalResultDto(

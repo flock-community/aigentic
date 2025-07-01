@@ -15,7 +15,7 @@ import community.flock.aigentic.core.tool.ToolDescription
 import kotlinx.datetime.Clock
 
 fun createAgent() =
-    Agent<Unit, Unit>(
+    Agent<Unit, String>(
         platform = null,
         systemPromptBuilder = DefaultSystemPromptBuilder,
         model =
@@ -44,7 +44,7 @@ fun createAgent() =
     )
 
 fun createRun() =
-    Run<Unit>(
+    Run<String>(
         startedAt = Clock.System.now(),
         finishedAt = Clock.System.now(),
         messages = listOf(Message.SystemPrompt("You are a helpful agent")),

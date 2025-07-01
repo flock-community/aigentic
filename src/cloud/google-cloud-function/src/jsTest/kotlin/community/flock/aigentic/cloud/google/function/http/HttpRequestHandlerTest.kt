@@ -16,6 +16,8 @@ import community.flock.aigentic.core.tool.Parameter
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 class HttpRequestHandlerTest : DescribeSpec({
 
@@ -28,7 +30,7 @@ class HttpRequestHandlerTest : DescribeSpec({
         }
     }
 
-    val finishedTaskWithResponseConfig: HttpCloudFunctionConfig<Unit, Unit>.() -> Unit = {
+    val finishedTaskWithResponseConfig: HttpCloudFunctionConfig<Unit, JsonObject>.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
             model(modelFinishDirectly(finishedTaskWithResponseToolCall))
@@ -100,7 +102,7 @@ class HttpRequestHandlerTest : DescribeSpec({
 
         with(googleResponseWrapper) {
             statusCode shouldBe 200
-            response shouldBe "{\"message\":\"Agent response\"}"
+            (response as JsonObject)["message"] shouldBe JsonPrimitive("Agent response")
         }
     }
 

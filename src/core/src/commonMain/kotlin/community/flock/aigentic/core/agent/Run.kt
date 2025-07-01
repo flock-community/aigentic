@@ -11,7 +11,7 @@ data class Run<O : Any>(
     val startedAt: Instant,
     val finishedAt: Instant,
     val messages: List<Message>,
-    val result: Result,
+    val result: Result<O>,
     val modelRequests: List<ModelRequestInfo>,
     val exampleRunIds: List<RunId> = emptyList(),
 )
@@ -30,9 +30,30 @@ fun <O : Any> Run<O>.thinkingOutputTokens(): Int = modelRequests.sumOf { it.thin
 
 fun <O : Any> Run<O>.cachedInputTokens(): Int = modelRequests.sumOf { it.cachedInputTokenCount }
 
+inline fun <reified O : Any> Run<String>.decode(): Run<O> {
+    return Run(
+        startedAt = startedAt,
+        finishedAt = finishedAt,
+        messages = messages,
+        result =
+            when (result) {
+                is Result.Fatal -> result
+                is Result.Finished<String> ->
+                    Result.Finished(
+                        description = result.description,
+                        response = result.response?.let { Json.decodeFromString<O>(it) },
+                    )
+
+                is Result.Stuck -> result
+            },
+        modelRequests = modelRequests,
+        exampleRunIds = exampleRunIds,
+    )
+}
+
 inline fun <reified O : Any> Run<O>.finishResponse(): O? =
     when (result) {
-        is Result.Finished -> result.response?.let { Json.decodeFromString(it) }
+        is Result.Finished -> result.response
         is Result.Fatal -> error("Cannot read finsh response from: Fatal")
         is Result.Stuck -> error("Cannot read finsh response from: Stuck")
     }

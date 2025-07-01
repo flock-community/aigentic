@@ -29,16 +29,20 @@ internal fun State.getMessages() = messages.asSharedFlow()
 @PublishedApi
 internal fun State.getStatus() = merge(messages.flatMapConcat { it.toStatus().asFlow() }, events)
 
+@PublishedApi
 internal suspend fun State.addMessages(messages: List<Message>) = messages.forEach { addMessage(it) }
 
+@PublishedApi
 internal suspend fun State.addMessage(message: Message) = this.messages.emit(message)
 
+@PublishedApi
 internal suspend fun State.addModelRequestInfo(modelRequestInfo: ModelRequestInfo) = this.modelRequestInfos.emit(modelRequestInfo)
 
+@PublishedApi
 internal suspend fun State.addExampleRun(run: RunId) = this.exampleRunIds.emit(run)
 
 @PublishedApi
-internal fun <O : Any> Pair<State, Result>.toRun(): Run<O> =
+internal fun <O : Any> Pair<State, Result<O>>.toRun(): Run<O> =
     with(first) {
         Run(
             startedAt = startedAt,

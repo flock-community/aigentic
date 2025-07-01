@@ -13,18 +13,19 @@ import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.message.argumentsAsJson
 import community.flock.aigentic.core.tool.ToolName
 
-suspend fun <I : Any, O : Any> executeToolCalls(
+suspend inline fun <reified I : Any, reified O : Any> executeToolCalls(
     agent: Agent<I, O>,
     toolCalls: List<ToolCall>,
-): List<ToolExecutionResult> = toolCalls.map { executeTool(agent, it) }
+): List<ToolExecutionResult> = toolCalls.map { executeTool<I, O>(agent, it) }
 
-private suspend fun <I : Any, O : Any> executeTool(
+@PublishedApi
+internal suspend inline fun <I : Any, reified O : Any> executeTool(
     agent: Agent<I, O>,
     toolCall: ToolCall,
 ): ToolExecutionResult =
     when (toolCall.name) {
         FINISHED_TASK_TOOL_NAME -> {
-            val finishedResult = agent.finishedTaskTool.handler(toolCall.argumentsAsJson())
+            val finishedResult = agent.finishedTaskTool<O>().handler(toolCall.argumentsAsJson())
             FinishedToolResult(result = finishedResult)
         }
 
@@ -41,7 +42,7 @@ private suspend fun <I : Any, O : Any> executeTool(
     }
 
 sealed interface ToolExecutionResult {
-    data class FinishedToolResult(val result: Result) : ToolExecutionResult
+    data class FinishedToolResult<O : Any>(val result: Result<O>) : ToolExecutionResult
 
     data class ToolResult(val message: Message.ToolResult) : ToolExecutionResult
 }

@@ -17,6 +17,13 @@ import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.TypedTool
 import community.flock.aigentic.core.tool.getParameter
 import community.flock.aigentic.core.tool.toTool
+import kotlin.jvm.JvmName
+
+@JvmName("agentDefault")
+fun agent(agentConfig: AgentConfig<Unit, Unit>.() -> Unit): Agent<Unit, Unit> = AgentConfig<Unit, Unit>().apply(agentConfig).build()
+
+@JvmName("agentInput")
+fun <I : Any> agent(agentConfig: AgentConfig<I, Unit>.() -> Unit): Agent<I, Unit> = AgentConfig<I, Unit>().apply(agentConfig).build()
 
 fun <I : Any, O : Any> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> = AgentConfig<I, O>().apply(agentConfig).build()
 

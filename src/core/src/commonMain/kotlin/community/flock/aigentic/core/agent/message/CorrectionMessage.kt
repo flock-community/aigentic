@@ -4,6 +4,7 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.Sender
 
+@PublishedApi
 internal val correctionMessage =
     Message.Text(
         Sender.Agent,
