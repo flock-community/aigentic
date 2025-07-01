@@ -59,7 +59,7 @@ suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.execu
         when (result) {
             is Result.Finished -> {
                 val unInvokedMocks =
-                    toolMocks.filter { (name, mock) ->
+                    toolMocks.filter { (_, mock) ->
                         mock.invocations.size != mock.expectations.size
                     }.mapValues {
                         it.value.expectations
