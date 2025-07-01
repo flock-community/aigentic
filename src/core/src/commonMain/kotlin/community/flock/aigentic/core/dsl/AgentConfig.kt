@@ -25,7 +25,11 @@ fun agent(agentConfig: AgentConfig<Unit, Unit>.() -> Unit): Agent<Unit, Unit> = 
 @JvmName("agentInput")
 fun <I : Any> agent(agentConfig: AgentConfig<I, Unit>.() -> Unit): Agent<I, Unit> = AgentConfig<I, Unit>().apply(agentConfig).build()
 
-fun <I : Any, O : Any> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> = AgentConfig<I, O>().apply(agentConfig).build()
+inline fun <I : Any, reified O : Any> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> =
+    AgentConfig<I, O>()
+        .apply { finishResponse<O>() }
+        .apply(agentConfig)
+        .build()
 
 @AgentDSL
 class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
@@ -84,8 +88,6 @@ class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
     inline fun <reified O : Any> AgentConfig<I, O>.finishResponse() {
         this.responseParameter = getParameter<O>()
     }
-
-    inline fun <reified I : Any> AgentConfig<I, O>.inputParameter() {}
 
     fun AgentConfig<I, O>.tags(tag: String) = tags.add(RunTag(tag))
 

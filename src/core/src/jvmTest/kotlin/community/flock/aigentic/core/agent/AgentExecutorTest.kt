@@ -87,7 +87,7 @@ class AgentExecutorTest : DescribeSpec({
                         ).toModelResponse()
                 }
 
-            agent<Unit, Unit> {
+            agent {
                 model(modelMock)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")
@@ -107,7 +107,7 @@ class AgentExecutorTest : DescribeSpec({
 
         it("should finish with Stuck result when model doesn't know what to do") {
 
-            agent<Unit, Unit> {
+            agent {
                 model(modelStuckDirectly)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")
@@ -128,7 +128,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val agent =
-                agent<Unit, Unit> {
+                agent {
                     model(modelFinishTaskDirectly)
                     systemPrompt(systemPromptMock)
                     task("Execute some task") {}
@@ -148,7 +148,7 @@ class AgentExecutorTest : DescribeSpec({
             val expectedImageContextMimeType = MimeType.PNG
 
             val agent =
-                agent<Unit, Unit> {
+                agent {
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     context {
@@ -193,7 +193,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val agent =
-                agent<Unit, Unit> {
+                agent {
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(testTool)
@@ -233,7 +233,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val agent =
-                agent<Unit, Unit> {
+                agent {
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(testTool)
@@ -292,7 +292,7 @@ class AgentExecutorTest : DescribeSpec({
 
         it("if finishedWith parameter is not configured, the finished response field should be null") {
             val agent =
-                agent<Unit, Unit> {
+                agent {
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
@@ -309,7 +309,7 @@ class AgentExecutorTest : DescribeSpec({
             val platform = mockk<Platform>(relaxed = true)
 
             val agent =
-                agent<Unit, Unit> {
+                agent {
                     platform(platform)
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
@@ -328,7 +328,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val agent =
-                agent<Unit, Unit> {
+                agent {
                     platform(platform)
                     model(modelFinishTaskDirectly)
                     task("Execute some task") {}
@@ -350,7 +350,7 @@ class AgentExecutorTest : DescribeSpec({
                     coEvery { sendRequest(any(), any()) } throws AigenticException("Model exception")
                 }
 
-            agent<Unit, Unit> {
+            agent {
                 model(modelMock)
                 task("Summarize the retrieved news events") {
                     addInstruction("Fetch top 10 news events")
