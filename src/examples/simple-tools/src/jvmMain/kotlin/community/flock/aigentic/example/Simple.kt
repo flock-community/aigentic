@@ -6,10 +6,8 @@ import community.flock.aigentic.core.annotations.AigenticResponse
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
-import kotlinx.serialization.Serializable
 
 @AigenticResponse
-@Serializable
 data class Answer(val answer: String)
 
 suspend fun main() {
@@ -22,13 +20,13 @@ suspend fun main() {
             }
 
             // Configure the task for the agent
-            task("Answer questions about Kotlin Multiplatform") {
+            task("Answer questions about Kotlin") {
                 addInstruction("Provide concise and accurate answers")
             }
         }
 
     // Start the agent and get a run
-    val run = agent.start("What is cool about kotlin?")
+    val run = agent.start("Does kotlin have null safety in het language? If yes can you provide an example?")
 
     // Print the result
     when (val result = run.result) {
