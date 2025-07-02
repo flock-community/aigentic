@@ -32,7 +32,20 @@ object SerializerToParameter {
         StructureKind.LIST -> toArray()
         StructureKind.CLASS -> toObject()
         SerialKind.ENUM -> toEnum()
-        else -> toPrimitive()
+        PrimitiveKind.DOUBLE -> toPrimitive(ParameterType.Primitive.Number)
+        PrimitiveKind.FLOAT -> toPrimitive(ParameterType.Primitive.Number)
+        PrimitiveKind.BOOLEAN -> toPrimitive(ParameterType.Primitive.Boolean)
+        PrimitiveKind.INT -> toPrimitive(ParameterType.Primitive.Integer)
+        PrimitiveKind.LONG -> toPrimitive(ParameterType.Primitive.Integer)
+        PrimitiveKind.SHORT -> toPrimitive(ParameterType.Primitive.String)
+        PrimitiveKind.STRING -> toPrimitive(ParameterType.Primitive.String)
+        PrimitiveKind.CHAR -> toPrimitive(ParameterType.Primitive.String)
+        PolymorphicKind.OPEN -> TODO()
+        PolymorphicKind.SEALED -> TODO()
+        PrimitiveKind.BYTE -> TODO()
+        SerialKind.CONTEXTUAL -> TODO()
+        StructureKind.MAP -> TODO()
+        StructureKind.OBJECT -> TODO()
     }
 
     fun SerialDescriptor.parameters(): List<Parameter> {
@@ -55,11 +68,11 @@ object SerializerToParameter {
 
     fun SerialDescriptor.range() = 0..<elementsCount
 
-    fun Wrapper.toPrimitive() = Parameter.Primitive(
+    fun Wrapper.toPrimitive(type: ParameterType.Primitive) = Parameter.Primitive(
         name = name,
         description = annotations.getDescription(),
         isRequired = !descriptor.isNullable,
-        type = descriptor.kind.conver()
+        type = type
     )
 
     fun Wrapper.toEnum(): Parameter.Complex.Enum {
@@ -90,35 +103,12 @@ object SerializerToParameter {
         )
     }
 
-
     fun Wrapper.toObject() = Parameter.Complex.Object(
         name = name,
         description = annotations.getDescription(),
         isRequired = !descriptor.isNullable,
         parameters = descriptor.parameters()
     )
-
-
-    fun SerialKind.conver(): ParameterType.Primitive = when (this) {
-        PrimitiveKind.DOUBLE -> ParameterType.Primitive.Number
-        PrimitiveKind.FLOAT -> ParameterType.Primitive.Number
-        PrimitiveKind.BOOLEAN -> ParameterType.Primitive.Boolean
-        PrimitiveKind.INT -> ParameterType.Primitive.Integer
-        PrimitiveKind.LONG -> ParameterType.Primitive.Integer
-        PrimitiveKind.SHORT -> ParameterType.Primitive.String
-        PrimitiveKind.STRING -> ParameterType.Primitive.String
-        PrimitiveKind.CHAR -> ParameterType.Primitive.String
-
-        is SerialKind.ENUM -> TODO()
-        is SerialKind.CONTEXTUAL -> TODO()
-        PolymorphicKind.OPEN -> TODO()
-        PolymorphicKind.SEALED -> TODO()
-        PrimitiveKind.BYTE -> TODO()
-        StructureKind.CLASS -> TODO()
-        StructureKind.LIST -> TODO()
-        StructureKind.MAP -> TODO()
-        StructureKind.OBJECT -> TODO()
-    }
 
     fun List<Annotation>.getDescription(): String? =
         filterIsInstance<Description>().map { it.value }.firstOrNull()
