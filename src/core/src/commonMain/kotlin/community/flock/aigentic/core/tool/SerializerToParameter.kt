@@ -1,6 +1,7 @@
 package community.flock.aigentic.core.tool
 
 import community.flock.aigentic.core.annotations.Description
+import kotlinx.coroutines.NonCancellable.children
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -30,7 +31,10 @@ object SerializerToParameter {
         when (descriptor.kind) {
             StructureKind.LIST -> toArray()
             StructureKind.CLASS -> toObject()
+            StructureKind.OBJECT -> toObject()
+            PolymorphicKind.SEALED -> toObject()
             SerialKind.ENUM -> toEnum()
+            StructureKind.MAP -> toMap()
             PrimitiveKind.DOUBLE -> toPrimitive(ParameterType.Primitive.Number)
             PrimitiveKind.FLOAT -> toPrimitive(ParameterType.Primitive.Number)
             PrimitiveKind.BOOLEAN -> toPrimitive(ParameterType.Primitive.Boolean)
@@ -40,11 +44,8 @@ object SerializerToParameter {
             PrimitiveKind.STRING -> toPrimitive(ParameterType.Primitive.String)
             PrimitiveKind.CHAR -> toPrimitive(ParameterType.Primitive.String)
             PolymorphicKind.OPEN -> TODO()
-            PolymorphicKind.SEALED -> TODO()
             PrimitiveKind.BYTE -> TODO()
             SerialKind.CONTEXTUAL -> TODO()
-            StructureKind.MAP -> TODO()
-            StructureKind.OBJECT -> TODO()
         }
 
     fun SerialDescriptor.parameters(): List<Parameter> {
@@ -113,6 +114,17 @@ object SerializerToParameter {
             isRequired = !descriptor.isNullable,
             parameters = descriptor.parameters(),
         )
+
+    fun Element.toMap(): Parameter.Complex.Object {
+        val p = descriptor.range().map { descriptor.children(it) }
+        println(p)
+        return Parameter.Complex.Object(
+            name = name,
+            description = annotations.getDescription(),
+            isRequired = !descriptor.isNullable,
+            parameters = descriptor.parameters(),
+        )
+    }
 
     fun List<Annotation>.getDescription(): String? = filterIsInstance<Description>().map { it.value }.firstOrNull()
 }

@@ -4,7 +4,10 @@ import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
 inline fun <reified T : Any> getParameter(): Parameter.Complex.Object? {
-    return ParameterRegistry.getParameter(T::class)
+    return when (val param = SerializerToParameter.convert<T>()) {
+        is Parameter.Complex.Object -> param
+        else -> error("Cannot get param: ${T::class.simpleName}")
+    }
 }
 
 object ParameterRegistry {

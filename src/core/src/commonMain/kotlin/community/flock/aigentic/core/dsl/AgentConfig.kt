@@ -27,8 +27,8 @@ fun <I : Any> agent(agentConfig: AgentConfig<I, Unit>.() -> Unit): Agent<I, Unit
 
 inline fun <I : Any, reified O : Any> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> =
     AgentConfig<I, O>()
-        .apply { finishResponse<O>() }
         .apply(agentConfig)
+        .apply { if (responseParameter == null) finishResponse<O>() }
         .build()
 
 @AgentDSL

@@ -4,11 +4,11 @@ package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
-import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.annotations.AigenticResponse
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
+import kotlinx.serialization.Serializable
 
 suspend fun runAdministrativeAgentExample(apiKey: String) {
     val run =
@@ -109,18 +109,18 @@ private fun getEmployeeByName(input: EmployeeName): EmployeeDetailsResponse {
     return EmployeeDetailsResponse(details)
 }
 
-@AigenticParameter
+@Serializable
 data class EmployeeName(
     val name: String,
 )
 
-@AigenticParameter
+@Serializable
 data class UpdateEmployee(
     val name: String,
     val numberOfRemindersSent: Int,
 )
 
-@AigenticParameter
+@Serializable
 data class SignalMessage(
     val phoneNumber: String,
     val message: String,
@@ -141,7 +141,7 @@ data class SignalMessageResponse(val message: String)
 @AigenticResponse
 data class EmployeesOverviewResponse(val overview: String)
 
-@AigenticParameter
+@Serializable
 data class AgentAdministrativeResponse(
     val messagedPeople: List<String>,
     val completedPeople: List<String>,
