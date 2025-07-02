@@ -26,7 +26,7 @@ suspend fun main() {
         }
 
     // Start the agent and get a run
-    val run = agent.start("Does kotlin have null safety in het language? If yes can you provide an example?")
+    val run = agent.start("Does kotlin have null safety in het language?")
 
     // Print the result
     when (val result = run.result) {
