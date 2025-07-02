@@ -6,58 +6,67 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
-import kotlinx.serialization.descriptors.elementNames
+import kotlinx.serialization.descriptors.elementDescriptors
 import kotlinx.serialization.serializer
 
 object SerializerToParameter {
 
+    data class Wrapper(
+        val name: String,
+        val descriptor: SerialDescriptor,
+        val annotations: List<Annotation>,
+    )
+
     inline fun <reified T : Any> convert(): Parameter? {
         try {
             val serializer = serializer<T>()
-            return Parameter.Complex.Object(
-                name = T::class.simpleName ?: error("No name found"),
-                description = serializer.descriptor.annotations.getDescription(),
-                isRequired = true,
-                parameters = serializer.descriptor.parameters()
-            )
+            val name = T::class.simpleName ?: error("No name found")
+            return serializer.descriptor.wrap(name).toParameter()
         } catch (e: Exception) {
             e.printStackTrace()
             return null
         }
     }
 
+    fun Wrapper.toParameter() = when (descriptor.kind) {
+        StructureKind.LIST -> toArray()
+        StructureKind.CLASS -> toObject()
+        SerialKind.ENUM -> toEnum()
+        else -> toPrimitive()
+    }
+
     fun SerialDescriptor.parameters(): List<Parameter> {
-        val range = 0 ..< elementsCount
-        return range.map {
-            val descriptor = getElementDescriptor(it)
-            when(descriptor.kind) {
-                StructureKind.LIST -> parameterComplexArray(it)
-                StructureKind.CLASS -> parameterComplexObject(it)
-                SerialKind.ENUM -> parameterComplexEnum(it)
-                else -> parameterPrimitive(it)
-            }
-        }
+        return range()
+            .map { children(it) }
+            .map { it.toParameter() }
     }
 
-    fun SerialDescriptor.parameterPrimitive(idx:Int): Parameter.Primitive {
-        val annotations = getElementAnnotations(idx)
-        val descriptor = getElementDescriptor(idx)
-        val name = getElementName(idx)
-        return Parameter.Primitive(
-            name = name,
-            description = annotations.getDescription(),
-            isRequired = !descriptor.isNullable,
-            type = descriptor.kind.conver()
-        )
+    fun SerialDescriptor.wrap(name: String) = Wrapper(
+        name = name,
+        descriptor = this,
+        annotations = annotations,
+    )
 
-    }
+    fun SerialDescriptor.children(idx: Int) = Wrapper(
+        name = getElementName(idx),
+        descriptor = getElementDescriptor(idx),
+        annotations = getElementAnnotations(idx)
+    )
 
-    fun SerialDescriptor.parameterComplexEnum(idx:Int): Parameter.Complex.Enum {
-        val annotations = getElementAnnotations(idx)
-        val descriptor = getElementDescriptor(idx)
-        val name = getElementName(idx)
-        val range = 0 ..< descriptor.elementsCount
-        val values = range.map {descriptor.getElementName(it) }.map { PrimitiveValue.String(it) }
+    fun SerialDescriptor.range() = 0..<elementsCount
+
+    fun Wrapper.toPrimitive() = Parameter.Primitive(
+        name = name,
+        description = annotations.getDescription(),
+        isRequired = !descriptor.isNullable,
+        type = descriptor.kind.conver()
+    )
+
+    fun Wrapper.toEnum(): Parameter.Complex.Enum {
+        val values = descriptor
+            .range()
+            .map { descriptor.getElementName(it) }
+            .map { PrimitiveValue.String(it) }
         return Parameter.Complex.Enum(
             name = name,
             description = annotations.getDescription(),
@@ -68,38 +77,29 @@ object SerializerToParameter {
         )
 
     }
-    fun SerialDescriptor.parameterComplexArray(idx:Int): Parameter.Complex.Array {
-        val annotations = getElementAnnotations(idx)
-        val descriptor = getElementDescriptor(idx)
-        val name = getElementName(idx)
+
+    fun Wrapper.toArray(): Parameter.Complex.Array {
         return Parameter.Complex.Array(
             name = name,
             description = annotations.getDescription(),
             isRequired = !descriptor.isNullable,
-            itemDefinition = Parameter.Primitive(
-                name = name,
-                description = null,
-                isRequired = false,
-                type = ParameterType.Primitive.String,
-            )
+            itemDefinition = descriptor.parameters()
+                .firstOrNull()
+                ?.copy("Item")
+                ?: error("No item definition found")
         )
-
     }
 
-    fun SerialDescriptor.parameterComplexObject(idx:Int): Parameter.Complex.Object {
-        val annotations = getElementAnnotations(idx)
-        val descriptor = getElementDescriptor(idx)
-        val name = getElementName(idx)
-        return Parameter.Complex.Object(
-            name = name,
-            description = annotations.getDescription(),
-            isRequired = !descriptor.isNullable,
-            parameters = descriptor.parameters()
-        )
 
-    }
+    fun Wrapper.toObject() = Parameter.Complex.Object(
+        name = name,
+        description = annotations.getDescription(),
+        isRequired = !descriptor.isNullable,
+        parameters = descriptor.parameters()
+    )
 
-    fun SerialKind.conver(): ParameterType.Primitive = when(this) {
+
+    fun SerialKind.conver(): ParameterType.Primitive = when (this) {
         PrimitiveKind.DOUBLE -> ParameterType.Primitive.Number
         PrimitiveKind.FLOAT -> ParameterType.Primitive.Number
         PrimitiveKind.BOOLEAN -> ParameterType.Primitive.Boolean
@@ -124,3 +124,4 @@ object SerializerToParameter {
         filterIsInstance<Description>().map { it.value }.firstOrNull()
 
 }
+

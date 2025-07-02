@@ -13,9 +13,20 @@ enum class Status {
     PENDING
 }
 
-class SerializerToParameterTest : DescribeSpec( {
+class SerializerToParameterTest : DescribeSpec({
 
     describe("SerializerToParameter") {
+
+        it("should convert primitive") {
+
+            val expected = Parameter.Primitive(
+                name = "String",
+                description = null,
+                isRequired = true,
+                type = ParameterType.Primitive.String,
+            )
+            SerializerToParameter.convert<String>() shouldBe expected
+        }
 
         it("should convert basic data class") {
             @Serializable
@@ -267,7 +278,7 @@ class SerializerToParameterTest : DescribeSpec( {
                         isRequired = true,
                         itemDefinition = Parameter.Complex.Object(
                             name = "Item",
-                            description = "Item object",
+                            description = null,
                             isRequired = true,
                             parameters = listOf(
                                 Parameter.Primitive(

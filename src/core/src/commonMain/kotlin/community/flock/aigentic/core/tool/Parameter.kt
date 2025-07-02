@@ -29,6 +29,13 @@ sealed class Parameter(
     open val isRequired: Boolean,
     open val type: ParameterType,
 ) {
+    fun copy(name:String, description: String? = null) = when (this) {
+        is Primitive -> Primitive(name, description, isRequired, type)
+        is Complex.Enum -> Complex.Enum(name, description, isRequired, default, values, valueType)
+        is Complex.Object -> Complex.Object(name, description, isRequired, parameters)
+        is Complex.Array -> Complex.Array(name, description, isRequired, itemDefinition)
+    }
+
     data class Primitive(
         override val name: String,
         override val description: String?,
