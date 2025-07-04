@@ -37,12 +37,12 @@ data class Agent<I : Any, O : Any>(
     val tags: List<RunTag>,
 ) {
     @PublishedApi
-    internal inline fun <reified T : Any> finishedTaskTool() = finishedTaskTool<T>(responseParameter)
+    internal inline fun <reified TO : Any> finishedTaskTool() = finishedTaskTool<TO>(responseParameter)
 
     @PublishedApi
-    internal inline fun <reified T : Any> internalTools(): Map<ToolName, InternalTool<*>> =
+    internal inline fun <reified TO : Any> internalTools(): Map<ToolName, InternalTool<*>> =
         listOf(
-            finishedTaskTool<T>(),
+            finishedTaskTool<TO>(),
             stuckWithTaskTool,
         ).associateBy { it.name }
 }

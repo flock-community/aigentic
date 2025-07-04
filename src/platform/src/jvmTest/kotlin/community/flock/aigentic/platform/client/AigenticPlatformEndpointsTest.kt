@@ -13,6 +13,7 @@ import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.ByteReadChannel
+import kotlinx.serialization.serializer
 
 class AigenticPlatformEndpointsTest : DescribeSpec({
 
@@ -33,7 +34,7 @@ class AigenticPlatformEndpointsTest : DescribeSpec({
 
         val apiClient = AigenticPlatformEndpoints(Authentication.BasicAuth("", ""), PlatformApiUrl(""), mockEngine)
 
-        val req = GatewayEndpoint.RequestApplicationJson(run.toDto(agent))
+        val req = GatewayEndpoint.RequestApplicationJson(run.toDto(agent, serializer<String>()))
         val res = apiClient.gateway(req)
 
         res.status shouldBe HttpStatusCode.Created.value

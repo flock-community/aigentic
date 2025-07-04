@@ -1,16 +1,20 @@
 package community.flock.aigentic.initializr
 
+import community.flock.aigentic.core.Aigentic
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.annotations.AigenticResponse
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
+import community.flock.aigentic.generated.parameter.initialize
 
 @AigenticResponse
 data class Answer(val answer: String)
 
 suspend fun main() {
+    Aigentic.initialize()
+
     val agent =
         agent<String, Answer> {
             // Configure the model for the agent
@@ -20,13 +24,13 @@ suspend fun main() {
             }
 
             // Configure the task for the agent
-            task("Answer questions about Kotlin") {
+            task("Answer questions about Kotlin Multiplatform") {
                 addInstruction("Provide concise and accurate answers")
             }
         }
 
     // Start the agent and get a run
-    val run = agent.start("Does kotlin have null safety in het language?")
+    val run = agent.start("What is cool about kotlin?")
 
     // Print the result
     when (val result = run.result) {

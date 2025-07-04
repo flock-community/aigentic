@@ -4,6 +4,6 @@ import kotlinx.coroutines.runBlocking
 
 fun main() {
     runBlocking {
-        runKotlinMessageAgent(openAIAPIKey)
+        runKotlinMessageAgent(geminiKey)
     }
 }

@@ -42,36 +42,38 @@ import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
 import community.flock.aigentic.gateway.wirespec.ToolDto
 import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 
-fun <I : Any, O : Any> Run<O>.toDto(agent: Agent<I, O>) =
-    RunDto(
-        startedAt = startedAt.toString(),
-        finishedAt = finishedAt.toString(),
-        config =
-            ConfigDto(
-                task =
-                    TaskDto(
-                        description = agent.task.description,
-                        instructions = agent.task.instructions.map { it.text },
-                    ),
-                modelIdentifier = agent.model.modelIdentifier.stringValue,
-                systemPrompt = messages.filterIsInstance<Message.SystemPrompt>().first().prompt,
-                exampleRunIds = exampleRunIds.map { it.value },
-                tools =
-                    agent.tools.map { (name, tool) ->
-                        ToolDto(
-                            name = name.value,
-                            description = tool.description,
-                            parameters = tool.parameters.map { it.toDto() },
-                        )
-                    },
-            ),
-        messages = messages.mapNotNull { it.toDto() },
-        modelRequests = modelRequests.map { it.toDto() },
-        result = result.toDto(),
-    )
+fun <I : Any, O : Any> Run<O>.toDto(
+    agent: Agent<I, O>,
+    outputSerializer: KSerializer<O>,
+) = RunDto(
+    startedAt = startedAt.toString(),
+    finishedAt = finishedAt.toString(),
+    config =
+        ConfigDto(
+            task =
+                TaskDto(
+                    description = agent.task.description,
+                    instructions = agent.task.instructions.map { it.text },
+                ),
+            modelIdentifier = agent.model.modelIdentifier.stringValue,
+            systemPrompt = messages.filterIsInstance<Message.SystemPrompt>().first().prompt,
+            exampleRunIds = exampleRunIds.map { it.value },
+            tools =
+                agent.tools.map { (name, tool) ->
+                    ToolDto(
+                        name = name.value,
+                        description = tool.description,
+                        parameters = tool.parameters.map { it.toDto() },
+                    )
+                },
+        ),
+    messages = messages.mapNotNull { it.toDto() },
+    modelRequests = modelRequests.map { it.toDto() },
+    result = result.toDto(outputSerializer),
+)
 
 private fun Parameter.toDto(): ParameterDto =
     when (this) {
@@ -231,7 +233,7 @@ private fun MimeType.toDto(): MimeTypeDto =
         MimeType.PDF -> MimeTypeDto.APPLICATION_PDF
     }
 
-private fun Result<*>.toDto() =
+private fun <O : Any> Result<O>.toDto(outputSerializer: KSerializer<O>) =
     when (this) {
         is Result.Fatal ->
             FatalResultDto(
@@ -241,7 +243,7 @@ private fun Result<*>.toDto() =
         is Result.Finished ->
             FinishedResultDto(
                 description = description,
-                response = Json.encodeToString(response),
+                response = response?.let { Json.encodeToString(outputSerializer, it) },
             )
 
         is Result.Stuck ->

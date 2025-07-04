@@ -30,7 +30,8 @@ fun <O : Any> Run<O>.thinkingOutputTokens(): Int = modelRequests.sumOf { it.thin
 
 fun <O : Any> Run<O>.cachedInputTokens(): Int = modelRequests.sumOf { it.cachedInputTokenCount }
 
-inline fun <reified O : Any> Run<String>.decode(): Run<O> {
+@PublishedApi
+internal inline fun <reified O : Any> Run<String>.decode(): Run<O> {
     return Run(
         startedAt = startedAt,
         finishedAt = finishedAt,
