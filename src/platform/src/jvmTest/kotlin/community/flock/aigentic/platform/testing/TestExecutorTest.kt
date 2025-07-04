@@ -250,6 +250,7 @@ class TestExecutorTest : DescribeSpec({
     }
 })
 
+// TODO replace
 val newsEventTool =
     object : Tool {
         override val name = ToolName("getNewsEvents")

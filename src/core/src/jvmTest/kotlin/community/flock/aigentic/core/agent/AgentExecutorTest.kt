@@ -65,6 +65,7 @@ class AgentExecutorTest : DescribeSpec({
                         )
                 }
 
+            // TODO replace
             val newsEventTool =
                 object : Tool {
                     override val name = ToolName("getNewsEvents")
@@ -184,6 +185,7 @@ class AgentExecutorTest : DescribeSpec({
                         ).toModelResponse()
                 }
 
+            // TODO replace
             val testTool =
                 object : Tool {
                     override val name = ToolName(toolCall.name)
@@ -224,6 +226,7 @@ class AgentExecutorTest : DescribeSpec({
                         )
                 }
 
+            // TODO replace
             val testTool =
                 object : Tool {
                     override val name = ToolName(toolCall.name)
@@ -281,7 +284,7 @@ class AgentExecutorTest : DescribeSpec({
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
-                    finishResponse(finishParameter)
+                    setFinishResponse(finishParameter)
                 }
 
             agent.start().apply {

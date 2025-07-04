@@ -1,9 +1,9 @@
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.annotations.AigenticResponse
+import kotlinx.serialization.Serializable
 
-@AigenticParameter
+@Serializable
 data class WeatherRequest(
     val location: String,
     val date: String? = null,

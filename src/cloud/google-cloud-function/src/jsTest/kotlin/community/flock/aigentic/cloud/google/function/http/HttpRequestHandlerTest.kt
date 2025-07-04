@@ -36,7 +36,7 @@ class HttpRequestHandlerTest : DescribeSpec({
             model(modelFinishDirectly(finishedTaskWithResponseToolCall))
             task("Respond with a welcome message to the person") {}
             addTool(testTool)
-            finishResponse(
+            setFinishResponse(
                 Parameter.Complex.Object(
                     name = "response",
                     description = "some description",

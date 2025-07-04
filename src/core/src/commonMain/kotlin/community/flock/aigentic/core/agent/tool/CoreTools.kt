@@ -58,6 +58,7 @@ internal val stuckWithTaskTool =
         }
     }
 
+// TODO rename
 sealed interface Result<out O : Any> {
     data class Finished<O : Any>(val description: String, val response: O?) : Result<O>
 
