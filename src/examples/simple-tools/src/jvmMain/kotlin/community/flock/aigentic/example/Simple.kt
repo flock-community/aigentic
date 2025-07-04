@@ -3,7 +3,6 @@ package community.flock.aigentic.initializr
 import community.flock.aigentic.core.Aigentic
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
-import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.annotations.AigenticResponse
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.gemini.dsl.geminiModel
@@ -11,7 +10,6 @@ import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import community.flock.aigentic.generated.parameter.initialize
 
 @AigenticResponse
-@AigenticParameter
 data class Answer(val answer: String)
 
 suspend fun main() {

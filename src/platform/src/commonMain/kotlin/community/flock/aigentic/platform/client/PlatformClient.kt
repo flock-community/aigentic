@@ -51,7 +51,6 @@ const val defaultPlatformApiUrl = "https://aigentic-backend-kib53ypjwq-ez.a.run.
 class AigenticPlatformClient(
     basicAuth: Authentication.BasicAuth,
     apiUrl: PlatformApiUrl,
-    @PublishedApi
     internal val endpoints: PlatformEndpoints = AigenticPlatformEndpoints(basicAuth, apiUrl, null),
 ) : PlatformClient {
     override suspend fun <I : Any, O : Any> sendRun(
