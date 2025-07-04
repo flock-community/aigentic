@@ -22,11 +22,9 @@ import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
 import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
 import kotlinx.datetime.Instant
-import kotlinx.serialization.json.Json
 
-@PublishedApi
-internal inline fun <reified O : Any> RunDetailsDto.toRun() =
-    Run<O>(
+internal fun RunDetailsDto.toRun() =
+    Run<String>(
         startedAt = Instant.parse(startedAt),
         finishedAt = Instant.parse(finishedAt),
         messages =
@@ -59,13 +57,13 @@ internal inline fun <reified O : Any> RunDetailsDto.toRun() =
         result =
             when (result) {
                 is FatalResultDto -> Result.Fatal(result.message)
-                is FinishedResultDto -> Result.Finished<O>(result.description, result.response?.let { Json.decodeFromString<O>(it) })
+                is FinishedResultDto -> Result.Finished<String>(result.description, result.response)
                 is StuckResultDto -> Result.Stuck(result.reason)
             },
         modelRequests = listOf(),
     )
 
-fun MimeTypeDto.map() =
+private fun MimeTypeDto.map() =
     when (this) {
         MimeTypeDto.IMAGE_JPEG -> MimeType.JPEG
         MimeTypeDto.IMAGE_PNG -> MimeType.PNG
@@ -75,8 +73,7 @@ fun MimeTypeDto.map() =
         MimeTypeDto.APPLICATION_PDF -> MimeType.PDF
     }
 
-@PublishedApi
-internal fun SenderDto.map() =
+private fun SenderDto.map() =
     when (this) {
         SenderDto.Agent -> Sender.Agent
         SenderDto.Model -> Sender.Model

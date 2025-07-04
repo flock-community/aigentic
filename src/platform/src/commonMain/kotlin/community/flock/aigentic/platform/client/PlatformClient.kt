@@ -40,6 +40,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.toByteArray
 import io.ktor.util.toMap
 import io.ktor.utils.io.core.toByteArray
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.reflect.KType
@@ -56,8 +57,9 @@ class AigenticPlatformClient(
     override suspend fun <I : Any, O : Any> sendRun(
         run: Run<O>,
         agent: Agent<I, O>,
+        outputSerializer: KSerializer<O>,
     ): RunSentResult {
-        val runDto = run.toDto(agent)
+        val runDto = run.toDto(agent, outputSerializer)
         val request = GatewayEndpoint.RequestApplicationJson(runDto)
         return when (val response = endpoints.gateway(request)) {
             is GatewayEndpoint.Response201Unit -> RunSentResult.Success
@@ -76,7 +78,7 @@ class AigenticPlatformClient(
             is GetRunsEndpoint.Response401Unit -> aigenticException("Unauthorized to get runs")
             is GetRunsEndpoint.Response404Unit -> aigenticException("Runs not found")
             is GetRunsEndpoint.Response500ApplicationJson -> aigenticException("Internal server error")
-        }.map { RunId(it.runId) to it.toRun<String>() }
+        }.map { RunId(it.runId) to it.toRun() }
 }
 
 class AigenticPlatformEndpoints(
@@ -167,6 +169,7 @@ class AigenticPlatformEndpoints(
             val json =
                 Json {
                     prettyPrint = true
+                    ignoreUnknownKeys = true
                 }
 
             override fun <T> read(
