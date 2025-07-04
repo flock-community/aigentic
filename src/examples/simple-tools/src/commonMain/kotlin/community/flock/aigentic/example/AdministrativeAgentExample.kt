@@ -46,7 +46,7 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
         }.start()
 
     when (val result = run.result) {
-        is Result.Finished<*> ->
+        is Result.Finished ->
             result.response.let { response ->
                 "Hours inspected successfully: $response"
             }

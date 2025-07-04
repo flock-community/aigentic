@@ -7,15 +7,16 @@ import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getStringValue
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 
 const val FINISHED_TASK_TOOL_NAME = "finishedTask"
 const val STUCK_WITH_TASK_TOOL_NAME = "stuckWithTask"
 
-internal fun finishedTaskTool(responseParameter: Parameter? = null) =
-    object : InternalTool<Finished<String?>> {
+@PublishedApi
+internal inline fun <reified O : Any> finishedTaskTool(responseParameter: Parameter? = null) =
+    object : InternalTool<Finished<O>> {
         val descriptionParameter =
             Parameter.Primitive(
                 name = "description",
@@ -28,13 +29,14 @@ internal fun finishedTaskTool(responseParameter: Parameter? = null) =
         override val description: String = "When you've successfully finished the task call this function to indicate you're done."
         override val parameters = listOfNotNull(descriptionParameter, responseParameter)
 
-        override val handler: suspend (toolArguments: JsonObject) -> Finished<String?> = { arguments ->
+        override val handler: suspend (toolArguments: JsonObject) -> Finished<O> = { arguments ->
             val description = descriptionParameter.getStringValue(arguments)
-            val response = responseParameter?.let { Json.encodeToString(arguments.getValue(it.name)) }
-            Finished<String?>(description, response)
+            val response = responseParameter?.let { Json.decodeFromJsonElement<O>(arguments.getValue(it.name)) }
+            Finished(description, response)
         }
     }
 
+@PublishedApi
 internal val stuckWithTaskTool =
     object : InternalTool<Stuck> {
         val descriptionParameter =
@@ -56,10 +58,10 @@ internal val stuckWithTaskTool =
         }
     }
 
-sealed interface Result {
-    data class Finished<O>(val description: String, val response: O) : Result
+sealed interface Result<out O : Any> {
+    data class Finished<O : Any>(val description: String, val response: O?) : Result<O>
 
-    data class Stuck(val reason: String) : Result
+    data class Stuck(val reason: String) : Result<Nothing>
 
-    data class Fatal(val message: String) : Result
+    data class Fatal(val message: String) : Result<Nothing>
 }

@@ -11,9 +11,9 @@ data class ToolCallExpectation(
     val toolResult: Message.ToolResult,
 )
 
-fun createToolCallExpectations(
+fun <O : Any> createToolCallExpectations(
     toolCallOverrides: List<ToolCallOverride>,
-    run: Run,
+    run: Run<O>,
 ) = run.messages.filterIsInstance<Message.ToolCalls>().flatMap { toolCallsMessage ->
     toolCallsMessage.toolCalls.mapNotNull { toolCall ->
         when (toolCall.name) {
@@ -23,10 +23,10 @@ fun createToolCallExpectations(
     }
 }
 
-fun createToolCallExpectation(
+fun <O : Any> createToolCallExpectation(
     toolCallOverrides: List<ToolCallOverride>,
     originalToolCall: ToolCall,
-    run: Run,
+    run: Run<O>,
 ): ToolCallExpectation {
     val toolCall =
         toolCallOverrides.find { it.toolCallId == originalToolCall.id }?.let {

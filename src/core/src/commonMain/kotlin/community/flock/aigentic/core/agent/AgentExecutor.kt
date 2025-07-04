@@ -26,26 +26,31 @@ import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.mapToTextMessages
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.platform.RunSentResult
+import community.flock.aigentic.core.platform.getRuns
+import community.flock.aigentic.core.platform.sendRun
 import community.flock.aigentic.core.util.withStartFinishTiming
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-suspend fun <I : Any, O : Any> Agent<I, O>.start(): Run =
+suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(input: I? = null): Run<O> =
     coroutineScope {
+        val agent = this@start
         val state = State()
         state.events.emit(AgentStatus.Started)
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
         try {
-            val run = executeAction(Initialize(state, this@start)).toRun()
-            publishRun(this@start, run, state)
+            val run = executeAction(Initialize(state, agent, input)).toRun()
+            publishRun(agent, run, state)
             run
         } catch (e: AigenticException) {
             state.events.emit(AgentStatus.Fatal(e.message))
-            val run = (state to Result.Fatal(e.message)).toRun()
-            publishRun(this@start, run, state)
+            val run = (state to Result.Fatal(e.message)).toRun<O>()
+            publishRun(agent, run, state)
             run
         } finally {
             delay(10) // Allow some time for the logging to finish
@@ -53,9 +58,10 @@ suspend fun <I : Any, O : Any> Agent<I, O>.start(): Run =
         }
     }
 
-private suspend fun <I : Any, O : Any> publishRun(
+@PublishedApi
+internal suspend inline fun <reified I : Any, reified O : Any> publishRun(
     agent: Agent<I, O>,
-    run: Run,
+    run: Run<O>,
     state: State,
 ) {
     if (agent.platform != null) {
@@ -67,24 +73,31 @@ private suspend fun <I : Any, O : Any> publishRun(
     }
 }
 
-suspend fun <I : Any, O : Any> executeAction(action: Action<I, O>): Pair<State, Result> =
-    when (action) {
-        is Initialize -> executeAction<I, O>(action.process())
-        is SendModelRequest -> executeAction(action.process())
-        is ProcessModelResponse -> executeAction(action.process())
-        is ExecuteTools -> executeAction(action.process())
-        is Finished -> action.process()
+suspend inline fun <reified I : Any, reified O : Any> executeAction(action: Action<I, O>): Pair<State, Result<O>> {
+    var currentAction = action
+    while (true) {
+        currentAction =
+            when (val actionToProcess = currentAction) {
+                is Initialize -> actionToProcess.process()
+                is SendModelRequest -> actionToProcess.process()
+                is ProcessModelResponse -> actionToProcess.process()
+                is ExecuteTools -> actionToProcess.process()
+                is Finished -> return actionToProcess.process()
+            }
     }
+}
 
-private suspend fun <I : Any, O : Any> Initialize<I, O>.process(): Action<I, O> {
-    state.addMessages(initializeStartMessages(agent))
+@PublishedApi
+internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.process(): Action<I, O> {
+    state.addMessages(initializeStartMessages(agent, taskInput))
     if (agent.tags.isNotEmpty()) {
         state.addMessages(prependWithExampleMessages())
     }
     return SendModelRequest(state, agent)
 }
 
-private suspend fun <I : Any, O : Any> Initialize<I, O>.prependWithExampleMessages(): List<Message> {
+@PublishedApi
+internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.prependWithExampleMessages(): List<Message> {
     val runs = fetchRuns()
     state.addMessage(
         Message.ExampleToolMessage(
@@ -151,7 +164,8 @@ private suspend fun <I : Any, O : Any> Initialize<I, O>.prependWithExampleMessag
         .plus(finalExampleMessageDescription)
 }
 
-private fun ContextMessage.toExampleMessage(): Message =
+@PublishedApi
+internal fun ContextMessage.toExampleMessage(): Message =
     when (this) {
         is Message.Base64 ->
             Message.Base64(
@@ -184,16 +198,17 @@ private fun ContextMessage.toExampleMessage(): Message =
             )
     }
 
-private suspend fun <I : Any, O : Any> Initialize<I, O>.fetchRuns(): List<Pair<RunId, Run>> =
+@PublishedApi
+internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.fetchRuns(): List<Pair<RunId, Run<O>>> =
     runCatching {
-        agent.platform
-            ?.getRuns(agent.tags)
+        agent.platform?.getRuns<O>(agent.tags)
     }.onFailure {
-        state.addMessages(initializeStartMessages(agent))
+        state.addMessages(initializeStartMessages(agent, taskInput))
         aigenticException(it.message.toString())
     }.getOrNull() ?: emptyList()
 
-private suspend fun <I : Any, O : Any> ProcessModelResponse<I, O>.process(): Action<I, O> =
+@PublishedApi
+internal suspend inline fun <reified I : Any, reified O : Any> ProcessModelResponse<I, O>.process(): Action<I, O> =
     when (responseMessage) {
         is Message.ToolCalls -> ExecuteTools(state, agent, responseMessage.toolCalls)
         else -> {
@@ -202,7 +217,8 @@ private suspend fun <I : Any, O : Any> ProcessModelResponse<I, O>.process(): Act
         }
     }
 
-private suspend fun <I : Any, O : Any> SendModelRequest<I, O>.process(): ProcessModelResponse<I, O> {
+@PublishedApi
+internal suspend inline fun <reified I : Any, reified O : Any> SendModelRequest<I, O>.process(): ProcessModelResponse<I, O> {
     val (startedAt, finishedAt, response) =
         withStartFinishTiming {
             agent.sendModelRequest(state)
@@ -224,16 +240,18 @@ private suspend fun <I : Any, O : Any> SendModelRequest<I, O>.process(): Process
     return ProcessModelResponse(state, agent, message)
 }
 
-private fun <I : Any, O : Any> Finished<I, O>.process() = state to result
+@PublishedApi
+internal inline fun <reified I : Any, reified O : Any> Finished<I, O>.process() = state to result
 
-private suspend fun <I : Any, O : Any> ExecuteTools<I, O>.process(): Action<I, O> {
-    val toolExecutionResults = executeToolCalls(agent, toolCalls)
+@PublishedApi
+internal suspend inline fun <reified I : Any, reified O : Any> ExecuteTools<I, O>.process(): Action<I, O> {
+    val toolExecutionResults = executeToolCalls<I, O>(agent, toolCalls)
 
     toolExecutionResults.filterIsInstance<ToolExecutionResult.ToolResult>().forEach {
         state.addMessage(it.message)
     }
 
-    val finishedToolResult = toolExecutionResults.filterIsInstance<ToolExecutionResult.FinishedToolResult>().firstOrNull()
+    val finishedToolResult = toolExecutionResults.filterIsInstance<ToolExecutionResult.FinishedToolResult<O>>().firstOrNull()
 
     return if (finishedToolResult != null) {
         Finished(state, agent, finishedToolResult.result)
@@ -242,28 +260,61 @@ private suspend fun <I : Any, O : Any> ExecuteTools<I, O>.process(): Action<I, O
     }
 }
 
-private fun <I : Any, O : Any> initializeStartMessages(agent: Agent<I, O>): List<Message> =
-    listOf(agent.systemPromptBuilder.buildSystemPrompt(agent)) +
-        agent.contexts.map {
-            when (it) {
-                is Context.Url -> Message.Url(sender = Sender.Agent, url = it.url, mimeType = it.mimeType, messageType = MessageType.New)
-                is Context.Base64 ->
-                    Message.Base64(
-                        sender = Sender.Agent,
-                        base64Content = it.base64,
-                        mimeType = it.mimeType,
-                        messageType = MessageType.New,
-                    )
+@PublishedApi
+internal inline fun <reified I : Any, reified O : Any> initializeStartMessages(
+    agent: Agent<I, O>,
+    taskInput: I?,
+): List<Message> =
+    buildList {
+        add(agent.systemPromptBuilder.buildSystemPrompt(agent))
+        addAll(agent.contexts.map { context -> context.toMessage() })
+        taskInput?.let { createTaskInputMessage(it) }?.let(::add)
+    }
 
-                is Context.Text -> Message.Text(Sender.Agent, messageType = MessageType.New, it.text)
-            }
-        }
+@PublishedApi
+internal fun Context.toMessage(): Message =
+    when (this) {
+        is Context.Url ->
+            Message.Url(
+                sender = Sender.Agent,
+                url = url,
+                mimeType = mimeType,
+                messageType = MessageType.New,
+            )
 
-private suspend fun <I : Any, O : Any> Agent<I, O>.sendModelRequest(state: State): ModelResponse =
-    model.sendRequest(state.messages.replayCache, tools.values.toList() + internalTools.values.toList())
+        is Context.Base64 ->
+            Message.Base64(
+                sender = Sender.Agent,
+                base64Content = base64,
+                mimeType = mimeType,
+                messageType = MessageType.New,
+            )
+
+        is Context.Text ->
+            Message.Text(
+                sender = Sender.Agent,
+                messageType = MessageType.New,
+                text = text,
+            )
+    }
+
+@PublishedApi
+internal inline fun <reified I : Any> createTaskInputMessage(input: I): Message.Text =
+    Message.Text(
+        sender = Sender.Agent,
+        messageType = MessageType.New,
+        text = Json.encodeToString(input),
+    )
+
+@PublishedApi
+internal suspend inline fun <I : Any, reified O : Any> Agent<I, O>.sendModelRequest(state: State): ModelResponse =
+    model.sendRequest(
+        messages = state.messages.replayCache,
+        tools = tools.values.toList() + internalTools<O>().values.toList(),
+    )
 
 sealed interface Action<I : Any, O : Any> {
-    data class Initialize<I : Any, O : Any>(val state: State, val agent: Agent<I, O>) : Action<I, O>
+    data class Initialize<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val taskInput: I?) : Action<I, O>
 
     data class ExecuteTools<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val toolCalls: List<ToolCall>) : Action<I, O>
 
@@ -271,5 +322,5 @@ sealed interface Action<I : Any, O : Any> {
 
     data class ProcessModelResponse<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val responseMessage: Message) : Action<I, O>
 
-    data class Finished<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val result: Result) : Action<I, O>
+    data class Finished<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val result: Result<O>) : Action<I, O>
 }

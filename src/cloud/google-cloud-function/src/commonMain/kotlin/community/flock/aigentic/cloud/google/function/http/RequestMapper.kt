@@ -5,6 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
+@PublishedApi
 internal fun GoogleRequest.map(): Request =
     Request(
         method = method,

@@ -17,6 +17,7 @@ import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.platform.Platform
+import community.flock.aigentic.core.platform.getRuns
 import community.flock.aigentic.core.tool.Parameter.Primitive
 import community.flock.aigentic.core.tool.ParameterType.Primitive.Integer
 import community.flock.aigentic.core.tool.Tool
@@ -83,7 +84,7 @@ class TestExecutorTest : DescribeSpec({
             testReport.errors.size shouldBe 0
             testReport.failures.size shouldBe 0
 
-            coVerify(exactly = 1) { platformMock.getRuns(any()) }
+            coVerify(exactly = 1) { platformMock.getRuns<Unit>(any()) }
             coVerify(exactly = 4) { modelMock.sendRequest(any(), any()) }
         }
 
@@ -268,7 +269,7 @@ fun createMockModel(responses: List<ToolCall>): Model =
 
 fun createMockPlatform(messages: List<Message>): Platform =
     mockk {
-        coEvery { getRuns(any()) } returns
+        coEvery { getRuns<Unit>(any()) } returns
             listOf(
                 RunId("some-run-id") to
                     Run(

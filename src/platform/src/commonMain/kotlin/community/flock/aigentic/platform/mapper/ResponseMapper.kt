@@ -23,8 +23,8 @@ import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
 import kotlinx.datetime.Instant
 
-fun RunDetailsDto.toRun() =
-    Run(
+internal fun RunDetailsDto.toRun() =
+    Run<String>(
         startedAt = Instant.parse(startedAt),
         finishedAt = Instant.parse(finishedAt),
         messages =
@@ -57,13 +57,13 @@ fun RunDetailsDto.toRun() =
         result =
             when (result) {
                 is FatalResultDto -> Result.Fatal(result.message)
-                is FinishedResultDto -> Result.Finished(result.description, result.response)
+                is FinishedResultDto -> Result.Finished<String>(result.description, result.response)
                 is StuckResultDto -> Result.Stuck(result.reason)
             },
         modelRequests = listOf(),
     )
 
-fun MimeTypeDto.map() =
+private fun MimeTypeDto.map() =
     when (this) {
         MimeTypeDto.IMAGE_JPEG -> MimeType.JPEG
         MimeTypeDto.IMAGE_PNG -> MimeType.PNG

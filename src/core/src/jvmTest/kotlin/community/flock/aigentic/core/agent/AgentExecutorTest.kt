@@ -23,6 +23,7 @@ import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.model.Usage
 import community.flock.aigentic.core.platform.Platform
+import community.flock.aigentic.core.platform.sendRun
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Parameter.Primitive
 import community.flock.aigentic.core.tool.ParameterType.Primitive.Integer
@@ -41,6 +42,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.assertThrows
@@ -94,8 +96,8 @@ class AgentExecutorTest : DescribeSpec({
                 addTool(newsEventTool)
             }.start().apply {
 
-                result.shouldBeInstanceOf<Finished<*>>()
-                (result as Finished<*>).description shouldBe "Finished the task"
+                result.shouldBeInstanceOf<Finished<String>>()
+                (result as Finished).description shouldBe "Finished the task"
                 modelRequests.size shouldBe 2
 
                 coVerify(exactly = 1) { toolHandlerMock.invoke(expectedArguments) }
@@ -275,7 +277,7 @@ class AgentExecutorTest : DescribeSpec({
                         ).toModelResponse()
                 }
             val agent =
-                agent {
+                agent<Unit, JsonObject> {
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
@@ -283,8 +285,8 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished<*>>()
-                (this.result as Finished<*>).response shouldBe response.encode()
+                result.shouldBeTypeOf<Finished<JsonObject>>()
+                (this.result as Finished<JsonObject>).response!!["message"] shouldBe JsonPrimitive("Agent response")
             }
         }
 
@@ -297,8 +299,8 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished<*>>()
-                (this.result as Finished<*>).response shouldBe null
+                result.shouldBeTypeOf<Finished<Any>>()
+                (this.result as Finished).response shouldBe null
             }
         }
 

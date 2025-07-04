@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-fun <I : Any, O : Any> googleHttpCloudFunction(config: HttpCloudFunctionConfig<I, O>.() -> Unit) =
+inline fun <reified I : Any, reified O : Any> googleHttpCloudFunction(config: HttpCloudFunctionConfig<I, O>.() -> Unit) =
     HttpCloudFunctionConfig<I, O>().apply(config).build().run {
         registerHttpFunction(this)
     }
@@ -48,7 +48,8 @@ class HttpCloudFunctionConfig<I : Any, O : Any> : Config<GoogleHttpCloudFunction
     }
 }
 
-private fun <I : Any, O : Any> registerHttpFunction(function: GoogleHttpCloudFunction<I, O>) {
+@PublishedApi
+internal inline fun <reified I : Any, reified O : Any> registerHttpFunction(function: GoogleHttpCloudFunction<I, O>) {
     functions.http(function.entryPoint) { request, response ->
         CoroutineScope(Dispatchers.Default).launch {
             function.handleRequest(request, response)

@@ -7,7 +7,8 @@ import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.dsl.AgentConfig
 
-internal suspend fun <I : Any, O : Any> GoogleHttpCloudFunction<I, O>.handleRequest(
+@PublishedApi
+internal suspend inline fun <reified I : Any, reified O : Any> GoogleHttpCloudFunction<I, O>.handleRequest(
     googleRequest: GoogleRequest,
     response: dynamic,
 ) {
@@ -44,7 +45,7 @@ internal suspend fun <I : Any, O : Any> GoogleHttpCloudFunction<I, O>.handleRequ
         }
 
     when (val result = run.result) {
-        is Result.Finished<*> -> response.status(200).send(result.response ?: result.description)
+        is Result.Finished -> response.status(200).send(result.response ?: result.description)
         is Result.Stuck -> response.status(422).send(result.reason)
         is Result.Fatal -> {
             console.error("Fatal: ${result.message}")

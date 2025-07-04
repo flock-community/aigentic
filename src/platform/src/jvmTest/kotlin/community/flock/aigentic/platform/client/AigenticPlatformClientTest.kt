@@ -13,6 +13,7 @@ import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.serialization.serializer
 
 class AigenticPlatformClientTest : DescribeSpec({
 
@@ -48,7 +49,7 @@ class AigenticPlatformClientTest : DescribeSpec({
                 platformEndpoints,
             )
 
-        val result = client.sendRun(run, agent)
+        val result = client.sendRun(run, agent, serializer<String>())
 
         result shouldBe it.runSentResult
     }

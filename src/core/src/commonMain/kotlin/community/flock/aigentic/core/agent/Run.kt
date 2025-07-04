@@ -4,13 +4,14 @@ import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.message.Message
 import kotlinx.datetime.Instant
+import kotlinx.serialization.json.Json
 import kotlin.jvm.JvmInline
 
-data class Run(
+data class Run<O : Any>(
     val startedAt: Instant,
     val finishedAt: Instant,
     val messages: List<Message>,
-    val result: Result,
+    val result: Result<O>,
     val modelRequests: List<ModelRequestInfo>,
     val exampleRunIds: List<RunId> = emptyList(),
 )
@@ -21,10 +22,32 @@ value class RunTag(val value: String)
 @JvmInline
 value class RunId(val value: String)
 
-fun Run.inputTokens(): Int = modelRequests.sumOf { it.inputTokenCount }
+fun <O : Any> Run<O>.inputTokens(): Int = modelRequests.sumOf { it.inputTokenCount }
 
-fun Run.outputTokens(): Int = modelRequests.sumOf { it.outputTokenCount }
+fun <O : Any> Run<O>.outputTokens(): Int = modelRequests.sumOf { it.outputTokenCount }
 
-fun Run.thinkingOutputTokens(): Int = modelRequests.sumOf { it.thinkingOutputTokenCount }
+fun <O : Any> Run<O>.thinkingOutputTokens(): Int = modelRequests.sumOf { it.thinkingOutputTokenCount }
 
-fun Run.cachedInputTokens(): Int = modelRequests.sumOf { it.cachedInputTokenCount }
+fun <O : Any> Run<O>.cachedInputTokens(): Int = modelRequests.sumOf { it.cachedInputTokenCount }
+
+@PublishedApi
+internal inline fun <reified O : Any> Run<String>.decode(): Run<O> {
+    return Run(
+        startedAt = startedAt,
+        finishedAt = finishedAt,
+        messages = messages,
+        result =
+            when (result) {
+                is Result.Fatal -> result
+                is Result.Finished<String> ->
+                    Result.Finished(
+                        description = result.description,
+                        response = result.response?.let { Json.decodeFromString<O>(it) },
+                    )
+
+                is Result.Stuck -> result
+            },
+        modelRequests = modelRequests,
+        exampleRunIds = exampleRunIds,
+    )
+}

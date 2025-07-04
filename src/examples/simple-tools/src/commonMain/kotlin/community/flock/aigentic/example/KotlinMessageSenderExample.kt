@@ -1,6 +1,5 @@
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.annotations.AigenticParameter
@@ -16,7 +15,7 @@ data class KotlinMessage(val message: String)
 data class MessageSendResult(val result: String)
 
 suspend fun runKotlinMessageAgent(apiKey: String) {
-    val run: Run =
+    val run =
         agent {
             geminiModel {
                 apiKey(apiKey)
@@ -32,7 +31,7 @@ suspend fun runKotlinMessageAgent(apiKey: String) {
         }.start()
 
     when (val result = run.result) {
-        is Result.Finished<*> -> "Agent finished successfully"
+        is Result.Finished -> "Agent finished successfully"
         is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
         is Result.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)
