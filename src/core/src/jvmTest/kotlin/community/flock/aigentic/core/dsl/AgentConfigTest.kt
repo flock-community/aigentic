@@ -5,7 +5,6 @@ import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.tool.Parameter
-import community.flock.aigentic.core.tool.ParameterRegistry
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.Tool
 import io.kotest.assertions.throwables.shouldThrow
@@ -132,7 +131,7 @@ class AgentConfigTest : DescribeSpec({
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 addTool(mockk(relaxed = true))
-                finishResponse(testParameter)
+                setFinishResponse(testParameter)
             }.run {
                 responseParameter shouldBe testParameter
             }

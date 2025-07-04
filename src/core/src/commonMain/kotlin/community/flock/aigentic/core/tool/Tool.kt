@@ -29,9 +29,10 @@ interface TypedTool<I : Any, O : Any> : ToolDescription, ToolHandler<I, O>
 @PublishedApi
 internal interface InternalTool<T> : ToolDescription, ToolHandler<JsonObject, T>
 
-inline fun <reified I : Any, reified O : Any> TypedTool<I, O>.toTool(): Tool = createTool<I, O>(this.name, this.description) { this@toTool.handler(it) }
+inline fun <reified I : Any, reified O : Any> TypedTool<I, O>.createTool(): Tool =
+    createTool<I, O>(this.name, this.description) { this@createTool.handler(it) }
 
-inline fun <reified I : Any, reified O : Any> toTool(
+inline fun <reified I : Any, reified O : Any> createTool(
     name: String,
     description: String? = null,
     noinline handler: suspend (I) -> O,
@@ -45,16 +46,7 @@ inline fun <reified I : Any, reified O : Any> createTool(
     object : Tool {
         override val name: ToolName = name
         override val description: String? = description
-        override val parameters: List<Parameter>
-            get() {
-                val parameter =
-                    getParameter<I>()
-                        ?: error(
-                            "No parameter found for type ${I::class.simpleName}." +
-                                " Make sure the class has @AigenticParameter annotation and Aigentic.initialize() has been called.",
-                        )
-                return parameter.parameters
-            }
+        override val parameters: List<Parameter> = getParameter<I>().parameters
         override val handler: suspend (toolArguments: JsonObject) -> String = {
             val obj = Json.decodeFromJsonElement<I>(it)
             val res = handlerFn(obj)

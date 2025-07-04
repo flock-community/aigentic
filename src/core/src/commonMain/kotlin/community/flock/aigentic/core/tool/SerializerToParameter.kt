@@ -16,15 +16,10 @@ object SerializerToParameter {
         val annotations: List<Annotation>,
     )
 
-    inline fun <reified T : Any> convert(): Parameter? {
-        try {
-            val serializer = serializer<T>()
-            val name = T::class.simpleName ?: error("No name found")
-            return serializer.descriptor.element(name).toParameter()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return null
-        }
+    inline fun <reified T : Any> convert(): Parameter {
+        val serializer = serializer<T>()
+        val name = T::class.simpleName ?: error("No name found")
+        return serializer.descriptor.element(name).toParameter()
     }
 
     fun Element.toParameter() =
@@ -116,8 +111,6 @@ object SerializerToParameter {
         )
 
     fun Element.toMap(): Parameter.Complex.Object {
-        val p = descriptor.range().map { descriptor.children(it) }
-        println(p)
         return Parameter.Complex.Object(
             name = name,
             description = annotations.getDescription(),
