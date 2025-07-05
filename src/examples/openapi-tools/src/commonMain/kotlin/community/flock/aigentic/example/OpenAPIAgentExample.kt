@@ -1,72 +1,64 @@
+@file:Suppress("ktlint:standard:max-line-length")
+
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
+import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
-import community.flock.aigentic.core.tool.Parameter
-import community.flock.aigentic.core.tool.ParameterType.Primitive
-import community.flock.aigentic.core.tool.Tool
-import community.flock.aigentic.core.tool.ToolName
-import community.flock.aigentic.core.tool.getStringValue
 import community.flock.aigentic.openai.dsl.openAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import community.flock.aigentic.tools.openapi.dsl.openApiTools
-import kotlinx.serialization.json.JsonObject
 
 suspend fun runOpenAPIAgent(
     openAIAPIKey: String,
     hackerNewsOpenAPISpec: String,
 ) {
-    agent {
-        openAIModel {
-            apiKey(openAIAPIKey)
-            modelIdentifier(OpenAIModelIdentifier.GPT4O)
-        }
-        task("Send Hacker News stories about AI") {
-            addInstruction("Retrieve the top 10 Hacker News stories")
-            addInstruction("Send stories, if any, about AI to john@doe.com")
-        }
-        openApiTools(hackerNewsOpenAPISpec)
-        addTool(sendEmailTool)
-    }.start()
+    val run =
+        agent<Unit, HackerNewsAgentResponse> {
+            tags("validated")
+            openAIModel {
+                apiKey(openAIAPIKey)
+                modelIdentifier(OpenAIModelIdentifier.GPT4O)
+            }
+            task("Send Hacker News stories about AI") {
+                addInstruction("Retrieve the top 10 Hacker News stories")
+                addInstruction("Send stories, if any, about AI to john@doe.com")
+            }
+            addTool<SendEmailRequest, SendEmailResponse>("sendEmail") {
+                sendEmailHandler(it)
+            }
+            openApiTools(hackerNewsOpenAPISpec)
+        }.start()
+
+    when (val result = run.result) {
+        is Result.Finished ->
+            result.response.let { response ->
+                "Hacker News agent completed successfully: $response"
+            }
+
+        is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
+        is Result.Fatal -> "Agent crashed: ${result.message}"
+    }.also(::println)
 }
 
-// TODO replace
-val sendEmailTool =
-    object : Tool {
-        val emailAddressParam =
-            Parameter.Primitive(
-                "emailAddress",
-                "The recipient email address",
-                true,
-                Primitive.String,
-            )
+private fun sendEmailHandler(input: SendEmailRequest): SendEmailResponse {
+    return SendEmailResponse("✉️ Sending email: '${input.message}' with subject: '${input.subject}' to recipient: ${input.emailAddress}")
+}
 
-        val subjectParam =
-            Parameter.Primitive(
-                "subject",
-                "Email subject",
-                true,
-                Primitive.String,
-            )
+@AigenticParameter
+data class SendEmailRequest(
+    val emailAddress: String,
+    val subject: String,
+    val message: String,
+)
 
-        val messageParam =
-            Parameter.Primitive(
-                "message",
-                "Email message",
-                true,
-                Primitive.String,
-            )
+@AigenticParameter
+data class SendEmailResponse(val message: String)
 
-        override val name = ToolName("SendEmail")
-        override val description = "Sends a Email to the provided recipient"
-        override val parameters = listOf(emailAddressParam, subjectParam, messageParam)
-
-        override val handler: suspend (JsonObject) -> String = { arguments ->
-
-            val emailAddress = emailAddressParam.getStringValue(arguments)
-            val subject = subjectParam.getStringValue(arguments)
-            val message = messageParam.getStringValue(arguments)
-
-            "✉️ Sending email: '$message' with subject: '$subject' to recipient: $emailAddress"
-        }
-    }
+@AigenticParameter
+data class HackerNewsAgentResponse(
+    val storiesRetrieved: Int,
+    val aiStoriesFound: Int,
+    val emailsSent: List<String>,
+)

@@ -13,7 +13,6 @@ import kotlinx.serialization.json.jsonObject
 
 @AigenticParameter
 data class TaskResponse(
-
     @Description("this parameter should contain the message that was send")
     val message: String,
 )

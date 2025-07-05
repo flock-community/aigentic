@@ -1,27 +1,18 @@
 package community.flock.aigentic.core.tool
 
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmInline
 
-fun Parameter.getStringValue(arguments: JsonObject): String = arguments.getValue(name).jsonPrimitive.content
-
-fun Parameter.getIntValue(arguments: JsonObject): Int = arguments.getValue(name).jsonPrimitive.int
-
-inline fun <reified T : Any> Parameter.Complex.Object.getObject(arguments: JsonObject): T {
-    val arg = arguments.getValue(name)
-    return Json.decodeFromJsonElement(arg.jsonObject)
-}
-
-inline fun <reified T : Any> Parameter.Complex.Array.getItems(arguments: JsonObject): List<T> =
-    arguments.getValue(name).jsonArray.map {
-        Json.decodeFromJsonElement<T>(it)
+@PublishedApi
+internal inline fun <reified T : Any> getParameter(): Parameter.Complex.Object =
+    when (val param = SerializerToParameter.convert<T>()) {
+        is Parameter.Complex.Object -> param
+        else -> error("Cannot get param: ${T::class.simpleName}")
     }
+
+@PublishedApi
+internal fun Parameter.getStringValue(arguments: JsonObject): String = arguments.getValue(name).jsonPrimitive.content
 
 sealed class Parameter(
     open val name: String,

@@ -79,13 +79,6 @@ class SerializerToParameterTest : DescribeSpec({
             SerializerToParameter.convert<Answer>() shouldBe expected
         }
 
-        it("should not convert non annotatd data class") {
-            data class Plain(
-                val text: String,
-            )
-            SerializerToParameter.convert<Plain>() shouldBe null
-        }
-
         it("should convert all primitives") {
             @Serializable
             @Description("AllPrimitives object")

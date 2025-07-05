@@ -11,7 +11,6 @@ import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 data class Answer(val answer: String)
 
 suspend fun main() {
-
     val agent =
         agent<String, Answer> {
             // Configure the model for the agent

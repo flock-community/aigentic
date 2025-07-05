@@ -29,8 +29,7 @@ interface TypedTool<I : Any, O : Any> : ToolDescription, ToolHandler<I, O>
 @PublishedApi
 internal interface InternalTool<T> : ToolDescription, ToolHandler<JsonObject, T>
 
-inline fun <reified I : Any, reified O : Any> TypedTool<I, O>.createTool(): Tool =
-    createTool<I, O>(this.name, this.description) { this@createTool.handler(it) }
+inline fun <reified I : Any, reified O : Any> TypedTool<I, O>.createTool(): Tool = createTool<I, O>(this.name, this.description) { this@createTool.handler(it) }
 
 inline fun <reified I : Any, reified O : Any> createTool(
     name: String,

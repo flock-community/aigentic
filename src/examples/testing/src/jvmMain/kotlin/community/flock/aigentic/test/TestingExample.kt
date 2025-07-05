@@ -74,7 +74,7 @@ private val geminiKey by lazy {
 @AigenticParameter
 data class Explanation(
     @Description("Please explain the provided document as accurate as possible")
-    val explanation: String
+    val explanation: String,
 )
 
 val licencePlateExtractor =

@@ -31,7 +31,11 @@ internal inline fun <reified O : Any> finishedTaskTool(responseParameter: Parame
 
         override val handler: suspend (toolArguments: JsonObject) -> Finished<O> = { arguments ->
             val description = descriptionParameter.getStringValue(arguments)
-            val response = responseParameter?.let { Json.decodeFromJsonElement<O>(arguments.getValue(it.name)) }
+            val response =
+                responseParameter?.let {
+                    val json = arguments.getValue(it.name)
+                    Json.decodeFromJsonElement<O>(json)
+                }
             Finished(description, response)
         }
     }
@@ -52,7 +56,6 @@ internal val stuckWithTaskTool =
         override val parameters: List<Parameter> = listOf(descriptionParameter)
 
         override val handler: suspend (toolArguments: JsonObject) -> Stuck = { arguments ->
-
             val desc = descriptionParameter.getStringValue(arguments)
             Stuck(desc)
         }
@@ -60,6 +63,7 @@ internal val stuckWithTaskTool =
 
 // TODO rename
 sealed interface Result<out O : Any> {
+    // TODO should not be optional
     data class Finished<O : Any>(val description: String, val response: O?) : Result<O>
 
     data class Stuck(val reason: String) : Result<Nothing>

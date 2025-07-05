@@ -15,21 +15,23 @@ import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.TypedTool
-import community.flock.aigentic.core.tool.getParameter
 import community.flock.aigentic.core.tool.createTool
+import community.flock.aigentic.core.tool.getParameter
 import kotlin.jvm.JvmName
 
 @JvmName("agentDefault")
-fun agent(agentConfig: AgentConfig<Unit, Unit>.() -> Unit): Agent<Unit, Unit> =
-    AgentConfig<Unit, Unit>().apply(agentConfig).build()
+fun agent(agentConfig: AgentConfig<Unit, Unit>.() -> Unit): Agent<Unit, Unit> = AgentConfig<Unit, Unit>().apply(agentConfig).build()
 
 @JvmName("agentInput")
-fun <I : Any> agent(agentConfig: AgentConfig<I, Unit>.() -> Unit): Agent<I, Unit> =
-    AgentConfig<I, Unit>().apply(agentConfig).build()
+fun <I : Any> agent(agentConfig: AgentConfig<I, Unit>.() -> Unit): Agent<I, Unit> = AgentConfig<I, Unit>().apply(agentConfig).build()
 
 inline fun <I : Any, reified O : Any> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> =
     AgentConfig<I, O>()
-        .apply { setFinishResponse<O>() }
+        .apply {
+            if (O::class != Unit::class) {
+                setFinishResponse<O>()
+            }
+        }
         .apply(agentConfig)
         .build()
 

@@ -6,6 +6,7 @@ import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Result
 import community.flock.aigentic.core.annotations.AigenticResponse
 import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import kotlinx.serialization.Serializable
@@ -14,6 +15,7 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
     val run =
         agent<Unit, AgentAdministrativeResponse> {
             geminiModel {
+                logLevel(LogLevel.DEBUG)
                 apiKey(apiKey)
                 modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
             }

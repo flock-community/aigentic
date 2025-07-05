@@ -10,25 +10,16 @@ import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.model.Usage
-import community.flock.aigentic.core.tool.Parameter
-import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolDescription
-import community.flock.aigentic.core.tool.ToolName
+import community.flock.aigentic.core.tool.createTool
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-// TODO replace
-val testTool =
-    object : Tool {
-        override val name: ToolName = ToolName("TestTool")
-        override val description: String? = null
-        override val parameters: List<Parameter> = emptyList()
-        override val handler: suspend (toolArguments: JsonObject) -> String = {
-            "Hello from Google Cloud Function 👋"
-        }
+val helloWorldTool =
+    createTool<String, String>("testTool") { name ->
+        "Hello from Google Cloud Function. $name 👋"
     }
 
 fun modelFinishDirectly(finishToolCall: ToolCall = finishedTaskToolCall) =

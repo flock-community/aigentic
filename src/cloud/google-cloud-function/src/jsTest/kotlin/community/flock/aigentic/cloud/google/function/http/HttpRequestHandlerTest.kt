@@ -8,16 +8,19 @@ import community.flock.aigentic.cloud.google.function.http.dsl.HttpCloudFunction
 import community.flock.aigentic.cloud.google.function.util.createRequestResponse
 import community.flock.aigentic.cloud.google.function.util.finishedTaskToolCall
 import community.flock.aigentic.cloud.google.function.util.finishedTaskWithResponseToolCall
+import community.flock.aigentic.cloud.google.function.util.helloWorldTool
 import community.flock.aigentic.cloud.google.function.util.modelException
 import community.flock.aigentic.cloud.google.function.util.modelFinishDirectly
 import community.flock.aigentic.cloud.google.function.util.stuckWithTaskToolCall
-import community.flock.aigentic.cloud.google.function.util.testTool
-import community.flock.aigentic.core.tool.Parameter
+import community.flock.aigentic.core.annotations.AigenticParameter
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+
+@AigenticParameter
+data class Response(val message: String)
 
 class HttpRequestHandlerTest : DescribeSpec({
 
@@ -26,24 +29,16 @@ class HttpRequestHandlerTest : DescribeSpec({
         agent {
             model(modelFinishDirectly(finishedTaskToolCall))
             task("Respond with a welcome message to the person") {}
-            addTool(testTool)
+            addTool(helloWorldTool)
         }
     }
 
-    val finishedTaskWithResponseConfig: HttpCloudFunctionConfig<Unit, JsonObject>.() -> Unit = {
+    val finishedTaskWithResponseConfig: HttpCloudFunctionConfig<Unit, Response>.() -> Unit = {
         authentication(AuthorizationHeader("some-secret-key"))
         agent {
             model(modelFinishDirectly(finishedTaskWithResponseToolCall))
             task("Respond with a welcome message to the person") {}
-            addTool(testTool)
-            setFinishResponse(
-                Parameter.Complex.Object(
-                    name = "response",
-                    description = "some description",
-                    true,
-                    parameters = emptyList(),
-                ),
-            )
+            addTool(helloWorldTool)
         }
     }
 
@@ -52,7 +47,7 @@ class HttpRequestHandlerTest : DescribeSpec({
         agent {
             model(modelFinishDirectly(stuckWithTaskToolCall))
             task("Respond with a welcome message to the person") {}
-            addTool(testTool)
+            addTool(helloWorldTool)
         }
     }
 
@@ -61,7 +56,7 @@ class HttpRequestHandlerTest : DescribeSpec({
         agent {
             model(modelException())
             task("Respond with a welcome message to the person") {}
-            addTool(testTool)
+            addTool(helloWorldTool)
         }
     }
 
@@ -145,7 +140,7 @@ class HttpRequestHandlerTest : DescribeSpec({
                 it.headers shouldBe mapOf("intercepted" to "true")
                 model(modelFinishDirectly(finishedTaskToolCall))
                 task("Respond with a welcome message to the person") {}
-                addTool(testTool)
+                addTool(helloWorldTool)
             }
         }
 
@@ -170,7 +165,7 @@ class HttpRequestHandlerTest : DescribeSpec({
                 it.headers shouldBe mapOf("intercepted" to "true")
                 model(modelFinishDirectly(finishedTaskToolCall))
                 task("Respond with a welcome message to the person") {}
-                addTool(testTool)
+                addTool(helloWorldTool)
             }
         }
 
