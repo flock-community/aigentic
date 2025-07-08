@@ -1,3 +1,11 @@
+---
+title: "Leveraging Aigentic for EUDR Compliance: A Proof of Concept"
+description: A Proof of Concept using Aigentic to automate EUDR compliance for product catalogs
+authors: [nsmnds, wilmveel]
+tags: [AI, EUDR, Compliance, Aigentic, Product Classification]
+image: /img/blog/eudr.png
+---
+
 # Leveraging Aigentic for EUDR Compliance: A Proof of Concept
 
 ## The Challenge of EUDR Compliance for Product Catalogs
