@@ -1,5 +1,7 @@
 package community.flock.aigentic.test
 
+import community.flock.aigentic.core.annotations.AigenticParameter
+import community.flock.aigentic.core.annotations.Description
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType.Primitive
@@ -13,6 +15,7 @@ import community.flock.aigentic.platform.testing.start
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject
 
+// TODO replace
 val invoiceExtractTool =
     object : Tool {
         val invoiceNumber =
@@ -68,8 +71,14 @@ private val geminiKey by lazy {
     }
 }
 
+@AigenticParameter
+data class Explanation(
+    @Description("Please explain the provided document as accurate as possible")
+    val explanation: String
+)
+
 val licencePlateExtractor =
-    agent {
+    agent<Unit, Explanation> {
         task("Extract the invoice elements from the provided document") {}
         addTool(invoiceExtractTool)
         geminiModel {
@@ -81,14 +90,6 @@ val licencePlateExtractor =
             secret("ac5eff83-21bd-449d-9dc1-5817d5e1e8f8")
             apiUrl("http://localhost:8080")
         }
-        finishResponse(
-            Parameter.Primitive(
-                "Explanation",
-                "Please explain the provided document as accurate as possible",
-                true,
-                Primitive.String,
-            ),
-        )
     }
 
 fun main(): Unit =

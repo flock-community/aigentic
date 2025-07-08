@@ -1,14 +1,14 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.annotations.AigenticResponse
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.openai.dsl.openAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
+import kotlinx.serialization.Serializable
 
-@AigenticParameter
+@Serializable
 data class ItemName(
     val itemName: String,
 )

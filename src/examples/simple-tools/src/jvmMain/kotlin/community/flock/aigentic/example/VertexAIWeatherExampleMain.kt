@@ -1,9 +1,7 @@
 package community.flock.aigentic.example
 
-import community.flock.aigentic.core.Aigentic
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.dsl.agent
-import community.flock.aigentic.generated.parameter.initialize
 import community.flock.aigentic.vertexai.VertexAIModelIdentifier
 import community.flock.aigentic.vertexai.dsl.vertexAIModel
 import kotlinx.coroutines.runBlocking
@@ -21,7 +19,6 @@ val vertexAILocation: String by lazy {
 }
 
 fun main() {
-    Aigentic.initialize()
     runBlocking {
         runVertexAIWeatherExample(
             project = vertexAIProject,

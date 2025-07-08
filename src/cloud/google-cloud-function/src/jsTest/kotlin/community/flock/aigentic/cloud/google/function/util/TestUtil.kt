@@ -20,6 +20,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
+// TODO replace
 val testTool =
     object : Tool {
         override val name: ToolName = ToolName("TestTool")
