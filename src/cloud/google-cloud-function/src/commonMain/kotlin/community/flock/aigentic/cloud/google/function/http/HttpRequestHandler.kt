@@ -4,7 +4,7 @@ import community.flock.aigentic.cloud.google.function.declarations.GoogleRequest
 import community.flock.aigentic.cloud.google.function.http.dsl.Authentication
 import community.flock.aigentic.cloud.google.function.http.dsl.GoogleHttpCloudFunction
 import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.dsl.AgentConfig
 
 @PublishedApi
@@ -41,13 +41,13 @@ internal suspend inline fun <reified I : Any, reified O : Any> GoogleHttpCloudFu
     val agent = AgentConfig<I, O>().apply { agentBuilder(this, interceptedRequest) }.build()
     val run =
         agent.start().also {
-            console.log("Agent finished with result: ${it.result}")
+            console.log("Agent finished with result: ${it.outcome}")
         }
 
-    when (val result = run.result) {
-        is Result.Finished -> response.status(200).send(result.response ?: result.description)
-        is Result.Stuck -> response.status(422).send(result.reason)
-        is Result.Fatal -> {
+    when (val result = run.outcome) {
+        is Outcome.Finished -> response.status(200).send(result.response ?: result.description)
+        is Outcome.Stuck -> response.status(422).send(result.reason)
+        is Outcome.Fatal -> {
             console.error("Fatal: ${result.message}")
             response.status(500).send("Internal Server Error")
         }

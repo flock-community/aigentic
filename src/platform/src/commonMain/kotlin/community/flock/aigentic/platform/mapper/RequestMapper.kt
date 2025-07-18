@@ -3,7 +3,7 @@ package community.flock.aigentic.platform.mapper
 import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
@@ -72,7 +72,7 @@ fun <I : Any, O : Any> Run<O>.toDto(
         ),
     messages = messages.mapNotNull { it.toDto() },
     modelRequests = modelRequests.map { it.toDto() },
-    result = result.toDto(outputSerializer),
+    result = outcome.toDto(outputSerializer),
 )
 
 private fun Parameter.toDto(): ParameterDto =
@@ -233,20 +233,20 @@ private fun MimeType.toDto(): MimeTypeDto =
         MimeType.PDF -> MimeTypeDto.APPLICATION_PDF
     }
 
-private fun <O : Any> Result<O>.toDto(outputSerializer: KSerializer<O>) =
+private fun <O : Any> Outcome<O>.toDto(outputSerializer: KSerializer<O>) =
     when (this) {
-        is Result.Fatal ->
+        is Outcome.Fatal ->
             FatalResultDto(
                 message = message,
             )
 
-        is Result.Finished ->
+        is Outcome.Finished ->
             FinishedResultDto(
                 description = description,
                 response = response?.let { Json.encodeToString(outputSerializer, it) },
             )
 
-        is Result.Stuck ->
+        is Outcome.Stuck ->
             StuckResultDto(
                 reason = reason,
             )

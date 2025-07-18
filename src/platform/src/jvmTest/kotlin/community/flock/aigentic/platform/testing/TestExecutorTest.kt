@@ -6,7 +6,7 @@ import ToolCallExpectation
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.RunTag
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageType
@@ -277,7 +277,7 @@ fun createMockPlatform(messages: List<Message>): Platform =
                         startedAt = Clock.System.now(),
                         finishedAt = Clock.System.now(),
                         messages = messages,
-                        result = Result.Finished("Finished the task", null),
+                        outcome = Outcome.Finished("Finished the task", null),
                         modelRequests = emptyList(),
                     ),
             )

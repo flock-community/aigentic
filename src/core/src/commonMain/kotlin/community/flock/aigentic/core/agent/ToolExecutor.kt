@@ -3,7 +3,7 @@ package community.flock.aigentic.core.agent
 import community.flock.aigentic.core.agent.ToolExecutionResult.FinishedToolResult
 import community.flock.aigentic.core.agent.ToolExecutionResult.ToolResult
 import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.agent.tool.STUCK_WITH_TASK_TOOL_NAME
 import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
 import community.flock.aigentic.core.exception.aigenticException
@@ -26,12 +26,12 @@ internal suspend inline fun <I : Any, reified O : Any> executeTool(
     when (toolCall.name) {
         FINISHED_TASK_TOOL_NAME -> {
             val finishedResult = agent.finishedTaskTool<O>().handler(toolCall.argumentsAsJson())
-            FinishedToolResult(result = finishedResult)
+            FinishedToolResult(outcome = finishedResult)
         }
 
         STUCK_WITH_TASK_TOOL_NAME -> {
             val stuckResult = stuckWithTaskTool.handler(toolCall.argumentsAsJson())
-            FinishedToolResult(result = stuckResult)
+            FinishedToolResult(outcome = stuckResult)
         }
 
         else -> {
@@ -42,7 +42,7 @@ internal suspend inline fun <I : Any, reified O : Any> executeTool(
     }
 
 sealed interface ToolExecutionResult {
-    data class FinishedToolResult<O : Any>(val result: Result<O>) : ToolExecutionResult
+    data class FinishedToolResult<O : Any>(val outcome: Outcome<O>) : ToolExecutionResult
 
     data class ToolResult(val message: Message.ToolResult) : ToolExecutionResult
 }

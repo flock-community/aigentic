@@ -15,7 +15,7 @@ import community.flock.aigentic.core.agent.state.addModelRequestInfo
 import community.flock.aigentic.core.agent.state.getStatus
 import community.flock.aigentic.core.agent.state.toRun
 import community.flock.aigentic.core.agent.status.AgentStatus
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.ContextMessage
@@ -49,7 +49,7 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(input: I
             run
         } catch (e: AigenticException) {
             state.events.emit(AgentStatus.Fatal(e.message))
-            val run = (state to Result.Fatal(e.message)).toRun<O>()
+            val run = (state to Outcome.Fatal(e.message)).toRun<O>()
             publishRun(agent, run, state)
             run
         } finally {
@@ -73,7 +73,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> publishRun(
     }
 }
 
-suspend inline fun <reified I : Any, reified O : Any> executeAction(action: Action<I, O>): Pair<State, Result<O>> {
+suspend inline fun <reified I : Any, reified O : Any> executeAction(action: Action<I, O>): Pair<State, Outcome<O>> {
     var currentAction = action
     while (true) {
         currentAction =
@@ -241,7 +241,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> SendModelRequest<
 }
 
 @PublishedApi
-internal inline fun <reified I : Any, reified O : Any> Finished<I, O>.process() = state to result
+internal inline fun <reified I : Any, reified O : Any> Finished<I, O>.process() = state to outcome
 
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> ExecuteTools<I, O>.process(): Action<I, O> {
@@ -254,7 +254,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> ExecuteTools<I, O
     val finishedToolResult = toolExecutionResults.filterIsInstance<ToolExecutionResult.FinishedToolResult<O>>().firstOrNull()
 
     return if (finishedToolResult != null) {
-        Finished(state, agent, finishedToolResult.result)
+        Finished(state, agent, finishedToolResult.outcome)
     } else {
         SendModelRequest(state, agent)
     }
@@ -322,5 +322,5 @@ sealed interface Action<I : Any, O : Any> {
 
     data class ProcessModelResponse<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val responseMessage: Message) : Action<I, O>
 
-    data class Finished<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val result: Result<O>) : Action<I, O>
+    data class Finished<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val outcome: Outcome<O>) : Action<I, O>
 }

@@ -3,7 +3,7 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.annotations.AigenticResponse
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.model.LogLevel
@@ -47,13 +47,13 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
             }
         }.start()
 
-    when (val result = run.result) {
-        is Result.Finished ->
+    when (val result = run.outcome) {
+        is Outcome.Finished ->
             result.response.let { response ->
                 "Hours inspected successfully: $response"
             }
-        is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
-        is Result.Fatal -> "Agent crashed: ${result.message}"
+        is Outcome.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
+        is Outcome.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)
 }
 

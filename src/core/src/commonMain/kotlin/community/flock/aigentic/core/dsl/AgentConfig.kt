@@ -85,11 +85,6 @@ class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
         this.model = model
     }
 
-    // TODO Remove usages
-    fun AgentConfig<I, O>.setFinishResponse(response: Parameter) {
-        this.responseParameter = response
-    }
-
     @PublishedApi
     internal inline fun <reified O : Any> AgentConfig<I, O>.setFinishResponse() {
         this.responseParameter = getParameter<O>()

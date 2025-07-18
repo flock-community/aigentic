@@ -4,7 +4,7 @@ import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.status.toStatus
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageType
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,13 +42,13 @@ internal suspend fun State.addModelRequestInfo(modelRequestInfo: ModelRequestInf
 internal suspend fun State.addExampleRun(run: RunId) = this.exampleRunIds.emit(run)
 
 @PublishedApi
-internal fun <O : Any> Pair<State, Result<O>>.toRun(): Run<O> =
+internal fun <O : Any> Pair<State, Outcome<O>>.toRun(): Run<O> =
     with(first) {
         Run(
             startedAt = startedAt,
             finishedAt = finishedAt ?: Clock.System.now(),
             messages = messages.replayCache.filter { message -> message.messageType is MessageType.New },
-            result = second,
+            outcome = second,
             modelRequests = modelRequestInfos.replayCache,
             exampleRunIds = exampleRunIds.replayCache,
         )

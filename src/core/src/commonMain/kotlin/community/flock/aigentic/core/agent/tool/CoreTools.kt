@@ -1,7 +1,7 @@
 package community.flock.aigentic.core.agent.tool
 
-import community.flock.aigentic.core.agent.tool.Result.Finished
-import community.flock.aigentic.core.agent.tool.Result.Stuck
+import community.flock.aigentic.core.agent.tool.Outcome.Finished
+import community.flock.aigentic.core.agent.tool.Outcome.Stuck
 import community.flock.aigentic.core.tool.InternalTool
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
@@ -61,12 +61,11 @@ internal val stuckWithTaskTool =
         }
     }
 
-// TODO rename
-sealed interface Result<out O : Any> {
+sealed interface Outcome<out O : Any> {
     // TODO should not be optional
-    data class Finished<O : Any>(val description: String, val response: O?) : Result<O>
+    data class Finished<O : Any>(val description: String, val response: O?) : Outcome<O>
 
-    data class Stuck(val reason: String) : Result<Nothing>
+    data class Stuck(val reason: String) : Outcome<Nothing>
 
-    data class Fatal(val message: String) : Result<Nothing>
+    data class Fatal(val message: String) : Outcome<Nothing>
 }

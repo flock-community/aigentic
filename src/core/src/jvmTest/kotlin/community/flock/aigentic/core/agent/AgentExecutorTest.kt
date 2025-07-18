@@ -7,9 +7,9 @@ import community.flock.aigentic.core.agent.test.util.TestData.modelStuckDirectly
 import community.flock.aigentic.core.agent.test.util.encode
 import community.flock.aigentic.core.agent.test.util.toModelResponse
 import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
-import community.flock.aigentic.core.agent.tool.Result.Fatal
-import community.flock.aigentic.core.agent.tool.Result.Finished
-import community.flock.aigentic.core.agent.tool.Result.Stuck
+import community.flock.aigentic.core.agent.tool.Outcome.Fatal
+import community.flock.aigentic.core.agent.tool.Outcome.Finished
+import community.flock.aigentic.core.agent.tool.Outcome.Stuck
 import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.exception.AigenticException
@@ -96,8 +96,7 @@ class AgentExecutorTest : DescribeSpec({
                 addTool(newsEventTool)
             }.start().apply {
 
-                result.shouldBeInstanceOf<Finished<String>>()
-                (result as Finished).description shouldBe "Finished the task"
+                outcome.shouldBeInstanceOf<Finished<String>>().description shouldBe "Finished the task"
                 modelRequests.size shouldBe 2
 
                 coVerify(exactly = 1) { toolHandlerMock.invoke(expectedArguments) }
@@ -114,8 +113,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
                 addTool(mockk<Tool>(relaxed = true))
             }.start().apply {
-                result.shouldBeInstanceOf<Stuck>()
-                (result as Stuck).reason shouldBe "I don't know what to do"
+                outcome.shouldBeInstanceOf<Stuck>().reason shouldBe "I don't know what to do"
             }
         }
 
@@ -280,8 +278,8 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished<AgentResponse>>()
-                (this.result as Finished<AgentResponse>).response?.message shouldBe "Agent response"
+                outcome.shouldBeTypeOf<Finished<AgentResponse>>()
+                (this.outcome as Finished<AgentResponse>).response?.message shouldBe "Agent response"
             }
         }
 
@@ -294,8 +292,8 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished<Any>>()
-                (this.result as Finished).response shouldBe null
+                outcome.shouldBeTypeOf<Finished<Any>>()
+                (this.outcome as Finished).response shouldBe null
             }
         }
 
@@ -308,8 +306,8 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished<Any>>()
-                (this.result as Finished).response shouldBe null
+                outcome.shouldBeTypeOf<Finished<Any>>()
+                (this.outcome as Finished).response shouldBe null
             }
         }
 
@@ -366,8 +364,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
                 addTool(mockk<Tool>(relaxed = true))
             }.start().apply {
-                result.shouldBeInstanceOf<Fatal>()
-                (result as Fatal).message shouldBe "Model exception"
+                outcome.shouldBeInstanceOf<Fatal>().message shouldBe "Model exception"
             }
         }
 

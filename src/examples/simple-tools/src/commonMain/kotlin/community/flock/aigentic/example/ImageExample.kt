@@ -35,9 +35,9 @@ suspend fun runItemCategorizeExample(
             }
         }.start()
 
-    when (val result = run.result) {
-        is community.flock.aigentic.core.agent.tool.Result.Finished -> "Agent finished successfully"
-        is community.flock.aigentic.core.agent.tool.Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
-        is community.flock.aigentic.core.agent.tool.Result.Fatal -> "Agent crashed: ${result.message}"
+    when (val result = run.outcome) {
+        is community.flock.aigentic.core.agent.tool.Outcome.Finished -> "Agent finished successfully"
+        is community.flock.aigentic.core.agent.tool.Outcome.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
+        is community.flock.aigentic.core.agent.tool.Outcome.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)
 }

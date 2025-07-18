@@ -1,7 +1,7 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.annotations.AigenticResponse
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.gemini.dsl.geminiModel
@@ -29,9 +29,9 @@ suspend fun main() {
     val run = agent.start("What is cool about kotlin?")
 
     // Print the result
-    when (val result = run.result) {
-        is Result.Finished -> println(result.response?.answer)
-        is Result.Stuck -> println("Agent is stuck: ${result.reason}")
-        is Result.Fatal -> println("Error: ${result.message}")
+    when (val result = run.outcome) {
+        is Outcome.Finished -> println(result.response?.answer)
+        is Outcome.Stuck -> println("Agent is stuck: ${result.reason}")
+        is Outcome.Fatal -> println("Error: ${result.message}")
     }
 }

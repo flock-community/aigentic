@@ -5,7 +5,7 @@ import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
@@ -49,8 +49,8 @@ fun createRun() =
         finishedAt = Clock.System.now(),
         messages = listOf(Message.SystemPrompt("You are a helpful agent")),
         modelRequests = emptyList(),
-        result =
-            Result.Finished(
+        outcome =
+            Outcome.Finished(
                 description = "description",
                 response = "response",
             ),

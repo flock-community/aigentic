@@ -2,6 +2,7 @@ package community.flock.aigentic.core.tool
 
 import community.flock.aigentic.core.annotations.Description
 import kotlinx.coroutines.NonCancellable.children
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -9,6 +10,7 @@ import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.serializer
 
+@OptIn(ExperimentalSerializationApi::class)
 object SerializerToParameter {
     data class Element(
         val name: String,
