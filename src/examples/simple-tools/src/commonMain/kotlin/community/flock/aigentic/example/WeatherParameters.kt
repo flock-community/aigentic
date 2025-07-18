@@ -1,7 +1,6 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.annotations.AigenticParameter
-import community.flock.aigentic.core.annotations.AigenticResponse
 
 @AigenticParameter
 data class WeatherRequest(
@@ -9,7 +8,7 @@ data class WeatherRequest(
     val date: String? = null,
 )
 
-@AigenticResponse
+@AigenticParameter
 data class WeatherResponse(
     val temperature: String,
     val conditions: String,

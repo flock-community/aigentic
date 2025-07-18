@@ -2,17 +2,19 @@ package community.flock.aigentic.core.dsl
 
 import community.flock.aigentic.core.agent.Context
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
-import community.flock.aigentic.core.tool.Parameter
-import community.flock.aigentic.core.tool.ParameterRegistry
-import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.Tool
+import community.flock.aigentic.core.tool.getParameter
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
+
+@AigenticParameter("Test response parameter")
+data class TestResponse(val message: String)
 
 class AgentConfigTest : DescribeSpec({
 
@@ -106,35 +108,12 @@ class AgentConfigTest : DescribeSpec({
         }
 
         it("should build agent with finishResponse using type parameter") {
-            val testParameter =
-                Parameter.Complex.Object(
-                    name = "testResponse",
-                    parameters =
-                        listOf(
-                            Parameter.Primitive(
-                                name = "testResponse",
-                                description = "Test response parameter",
-                                isRequired = true,
-                                type = ParameterType.Primitive.String,
-                            ),
-                        ),
-                    isRequired = true,
-                    description = "Test response parameter",
-                )
-
-            ParameterRegistry.register(
-                packageName = "community.flock.aigentic.core.dsl",
-                simpleName = "TestResponse",
-                parameter = testParameter,
-            )
-
             agent<Unit, TestResponse> {
                 model(mockk(relaxed = true))
                 task("Task description") {}
                 addTool(mockk(relaxed = true))
-                finishResponse<TestResponse>()
             }.run {
-                responseParameter shouldBe testParameter
+                responseParameter shouldBe getParameter<TestResponse>()
             }
         }
 
@@ -154,7 +133,5 @@ class AgentConfigTest : DescribeSpec({
         }
     }
 })
-
-class TestResponse
 
 private data class MissingPropertyTestCase(val agentConfig: AgentConfig<Unit, Unit>.() -> Unit, val expectedMessage: String)

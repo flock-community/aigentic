@@ -6,7 +6,8 @@ import ToolCallExpectation
 import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.RunTag
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
+import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageType
@@ -18,10 +19,7 @@ import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.platform.getRuns
-import community.flock.aigentic.core.tool.Parameter.Primitive
-import community.flock.aigentic.core.tool.ParameterType.Primitive.Integer
-import community.flock.aigentic.core.tool.Tool
-import community.flock.aigentic.core.tool.ToolName
+import community.flock.aigentic.core.tool.createTool
 import community.flock.aigentic.platform.TestData.finishedTaskToolCall
 import community.flock.aigentic.platform.testing.model.FailureReason
 import community.flock.aigentic.platform.toModelResponse
@@ -34,7 +32,11 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
+
+@AigenticParameter
+data class NewsEventInput(
+    val count: Int,
+)
 
 class TestExecutorTest : DescribeSpec({
 
@@ -251,15 +253,11 @@ class TestExecutorTest : DescribeSpec({
 })
 
 val newsEventTool =
-    object : Tool {
-        override val name = ToolName("getNewsEvents")
-        override val description = null
-        override val parameters =
-            listOf(Primitive("count", "number of events", true, Integer))
-
-        override val handler: suspend (toolArguments: JsonObject) -> String = {
-            throw IllegalStateException("Tool should not be called in a regressionTest, this tool should be mocked!")
-        }
+    createTool<NewsEventInput, String>(
+        name = "getNewsEvents",
+        description = null,
+    ) {
+        throw IllegalStateException("Tool should not be called in a regressionTest, this tool should be mocked!")
     }
 
 fun createMockModel(responses: List<ToolCall>): Model =
@@ -276,7 +274,7 @@ fun createMockPlatform(messages: List<Message>): Platform =
                         startedAt = Clock.System.now(),
                         finishedAt = Clock.System.now(),
                         messages = messages,
-                        result = Result.Finished("Finished the task", null),
+                        outcome = Outcome.Finished("Finished the task", null),
                         modelRequests = emptyList(),
                     ),
             )

@@ -7,9 +7,10 @@ import community.flock.aigentic.core.agent.test.util.TestData.modelStuckDirectly
 import community.flock.aigentic.core.agent.test.util.encode
 import community.flock.aigentic.core.agent.test.util.toModelResponse
 import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
-import community.flock.aigentic.core.agent.tool.Result.Fatal
-import community.flock.aigentic.core.agent.tool.Result.Finished
-import community.flock.aigentic.core.agent.tool.Result.Stuck
+import community.flock.aigentic.core.agent.tool.Outcome.Fatal
+import community.flock.aigentic.core.agent.tool.Outcome.Finished
+import community.flock.aigentic.core.agent.tool.Outcome.Stuck
+import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
@@ -24,11 +25,8 @@ import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.model.Usage
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.platform.sendRun
-import community.flock.aigentic.core.tool.Parameter
-import community.flock.aigentic.core.tool.Parameter.Primitive
-import community.flock.aigentic.core.tool.ParameterType.Primitive.Integer
 import community.flock.aigentic.core.tool.Tool
-import community.flock.aigentic.core.tool.ToolName
+import community.flock.aigentic.core.tool.createTool
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -38,15 +36,17 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.assertThrows
 import java.io.IOException
+
+@AigenticParameter
+data class NewsEventInput(
+    val count: Int,
+)
 
 class AgentExecutorTest : DescribeSpec({
 
@@ -55,8 +55,8 @@ class AgentExecutorTest : DescribeSpec({
         it("should run agent successfully") {
 
             val toolHandlerMock =
-                mockk<suspend (toolArguments: JsonObject) -> String>().apply {
-                    coEvery { this@apply.invoke(any<JsonObject>()) } returns
+                mockk<suspend (toolArguments: NewsEventInput) -> String>().apply {
+                    coEvery { this@apply.invoke(any<NewsEventInput>()) } returns
                         Json.encodeToString(
                             listOf(
                                 NewsEvent(1, "News event about AI"),
@@ -66,23 +66,18 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val newsEventTool =
-                object : Tool {
-                    override val name = ToolName("getNewsEvents")
-                    override val description = null
-                    override val parameters =
-                        listOf(
-                            Primitive("count", "number of events", true, Integer),
-                        )
-                    override val handler: suspend (toolArguments: JsonObject) -> String = toolHandlerMock
-                }
+                createTool<NewsEventInput, String>(
+                    name = "getNewsEvents",
+                    description = null,
+                ) { input -> toolHandlerMock(input) }
 
-            val expectedArguments = buildJsonObject { put("count", 10) }
+            val expectedArguments = NewsEventInput(10)
 
             val modelMock =
                 mockk<Model>().apply {
                     coEvery { sendRequest(any(), any()) } returnsMany
                         listOf(
-                            ToolCall(ToolCallId("1"), newsEventTool.name.value, expectedArguments.encode()),
+                            ToolCall(ToolCallId("1"), newsEventTool.name.value, Json.encodeToString(expectedArguments)),
                             finishedTaskToolCall,
                         ).toModelResponse()
                 }
@@ -96,8 +91,7 @@ class AgentExecutorTest : DescribeSpec({
                 addTool(newsEventTool)
             }.start().apply {
 
-                result.shouldBeInstanceOf<Finished<String>>()
-                (result as Finished).description shouldBe "Finished the task"
+                outcome.shouldBeInstanceOf<Finished<String>>().description shouldBe "Finished the task"
                 modelRequests.size shouldBe 2
 
                 coVerify(exactly = 1) { toolHandlerMock.invoke(expectedArguments) }
@@ -114,8 +108,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
                 addTool(mockk<Tool>(relaxed = true))
             }.start().apply {
-                result.shouldBeInstanceOf<Stuck>()
-                (result as Stuck).reason shouldBe "I don't know what to do"
+                outcome.shouldBeInstanceOf<Stuck>().reason shouldBe "I don't know what to do"
             }
         }
 
@@ -185,11 +178,11 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val testTool =
-                object : Tool {
-                    override val name = ToolName(toolCall.name)
-                    override val description = null
-                    override val parameters = emptyList<Primitive>()
-                    override val handler: suspend (toolArguments: JsonObject) -> String = { "toolResult" }
+                createTool<Unit, String>(
+                    name = toolCall.name,
+                    description = null,
+                ) {
+                    "toolResult"
                 }
 
             val agent =
@@ -225,11 +218,11 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             val testTool =
-                object : Tool {
-                    override val name = ToolName(toolCall.name)
-                    override val description = null
-                    override val parameters = emptyList<Primitive>()
-                    override val handler: suspend (toolArguments: JsonObject) -> String = { "toolResult" }
+                createTool<Unit, String>(
+                    name = toolCall.name,
+                    description = null,
+                ) {
+                    "toolResult"
                 }
 
             val agent =
@@ -250,23 +243,17 @@ class AgentExecutorTest : DescribeSpec({
             }
         }
 
-        it("if finishedWith parameter is configured, its result should be in the finished response field") {
-            val parameterName = "response"
+        it("if agent return type is configured, its result should be in the Finished result") {
+
             val response = buildJsonObject { put("message", "Agent response") }
-            val finishParameter =
-                Parameter.Complex.Object(
-                    name = parameterName,
-                    description = "some description",
-                    true,
-                    parameters = emptyList(),
-                )
+
             val toolCall =
                 ToolCall(
                     ToolCallId("1"),
                     FINISHED_TASK_TOOL_NAME,
                     buildJsonObject {
                         put("description", "Finished the task")
-                        put(parameterName, response)
+                        put("AgentResponse", response)
                     }.encode(),
                 )
             val modelMock =
@@ -277,20 +264,19 @@ class AgentExecutorTest : DescribeSpec({
                         ).toModelResponse()
                 }
             val agent =
-                agent<Unit, JsonObject> {
+                agent<Unit, AgentResponse> {
                     model(modelMock)
                     task("Execute some task") {}
                     addTool(mockk(relaxed = true))
-                    finishResponse(finishParameter)
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished<JsonObject>>()
-                (this.result as Finished<JsonObject>).response!!["message"] shouldBe JsonPrimitive("Agent response")
+                outcome.shouldBeTypeOf<Finished<AgentResponse>>()
+                (this.outcome as Finished<AgentResponse>).response?.message shouldBe "Agent response"
             }
         }
 
-        it("if finishedWith parameter is not configured, the finished response field should be null") {
+        it("if agent return type is not configured, the finished response field should be null") {
             val agent =
                 agent {
                     model(modelFinishTaskDirectly)
@@ -299,8 +285,22 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start().apply {
-                result.shouldBeTypeOf<Finished<Any>>()
-                (this.result as Finished).response shouldBe null
+                outcome.shouldBeTypeOf<Finished<Any>>()
+                (this.outcome as Finished).response shouldBe null
+            }
+        }
+
+        it("if agent return type is set to Unit, the finished response field should be null") {
+            val agent =
+                agent<Unit, Unit> {
+                    model(modelFinishTaskDirectly)
+                    task("Execute some task") {}
+                    addTool(mockk(relaxed = true))
+                }
+
+            agent.start().apply {
+                outcome.shouldBeTypeOf<Finished<Any>>()
+                (this.outcome as Finished).response shouldBe null
             }
         }
 
@@ -357,8 +357,7 @@ class AgentExecutorTest : DescribeSpec({
                 }
                 addTool(mockk<Tool>(relaxed = true))
             }.start().apply {
-                result.shouldBeInstanceOf<Fatal>()
-                (result as Fatal).message shouldBe "Model exception"
+                outcome.shouldBeInstanceOf<Fatal>().message shouldBe "Model exception"
             }
         }
 
@@ -366,5 +365,8 @@ class AgentExecutorTest : DescribeSpec({
     }
 })
 
-@Serializable
+@AigenticParameter
 data class NewsEvent(val id: Int, val title: String)
+
+@AigenticParameter
+data class AgentResponse(val message: String)

@@ -1,7 +1,7 @@
 package community.flock.aigentic.core.agent
 
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
@@ -11,7 +11,7 @@ data class Run<O : Any>(
     val startedAt: Instant,
     val finishedAt: Instant,
     val messages: List<Message>,
-    val result: Result<O>,
+    val outcome: Outcome<O>,
     val modelRequests: List<ModelRequestInfo>,
     val exampleRunIds: List<RunId> = emptyList(),
 )
@@ -36,16 +36,16 @@ internal inline fun <reified O : Any> Run<String>.decode(): Run<O> {
         startedAt = startedAt,
         finishedAt = finishedAt,
         messages = messages,
-        result =
-            when (result) {
-                is Result.Fatal -> result
-                is Result.Finished<String> ->
-                    Result.Finished(
-                        description = result.description,
-                        response = result.response?.let { Json.decodeFromString<O>(it) },
+        outcome =
+            when (outcome) {
+                is Outcome.Fatal -> outcome
+                is Outcome.Finished<String> ->
+                    Outcome.Finished(
+                        description = outcome.description,
+                        response = outcome.response?.let { Json.decodeFromString<O>(it) },
                     )
 
-                is Result.Stuck -> result
+                is Outcome.Stuck -> outcome
             },
         modelRequests = modelRequests,
         exampleRunIds = exampleRunIds,

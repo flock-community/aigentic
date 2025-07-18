@@ -1,65 +1,30 @@
 package community.flock.aigentic.test
 
+import community.flock.aigentic.core.annotations.AigenticParameter
+import community.flock.aigentic.core.annotations.Description
 import community.flock.aigentic.core.dsl.agent
-import community.flock.aigentic.core.tool.Parameter
-import community.flock.aigentic.core.tool.ParameterType.Primitive
-import community.flock.aigentic.core.tool.Tool
-import community.flock.aigentic.core.tool.ToolName
+import community.flock.aigentic.core.tool.createTool
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import community.flock.aigentic.platform.dsl.platform
 import community.flock.aigentic.platform.dsl.regressionTest
 import community.flock.aigentic.platform.testing.start
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.JsonObject
+
+@AigenticParameter
+data class InvoiceExtractInput(
+    val invoiceNumber: String,
+    val debtorNumber: String,
+    val invoiceTotal: String,
+    val licencePlates: List<String>,
+)
 
 val invoiceExtractTool =
-    object : Tool {
-        val invoiceNumber =
-            Parameter.Primitive(
-                "invoiceNumber",
-                null,
-                true,
-                Primitive.String,
-            )
-
-        val customerNumber =
-            Parameter.Primitive(
-                "debtorNumber",
-                "The customer number",
-                true,
-                Primitive.String,
-            )
-
-        val invoiceTotal =
-            Parameter.Primitive(
-                "invoiceTotal",
-                "The total amount of the invoice",
-                true,
-                Primitive.String,
-            )
-
-        val licencePlates =
-            Parameter.Complex.Array(
-                "licencePlates",
-                "A list of the licenceplates in the invoice",
-                true,
-                itemDefinition =
-                    Parameter.Primitive(
-                        "licencePlate",
-                        "The licence plate",
-                        true,
-                        Primitive.String,
-                    ),
-            )
-
-        override val name = ToolName("saveInvoiceTool")
-        override val description = "Saves the invoice details"
-        override val parameters = listOf(invoiceNumber, customerNumber, licencePlates, invoiceTotal)
-
-        override val handler: suspend (JsonObject) -> String = {
-            error("I shouldn't be called")
-        }
+    createTool<InvoiceExtractInput, String>(
+        name = "saveInvoiceTool",
+        description = "Saves the invoice details",
+    ) {
+        error("I shouldn't be called")
     }
 
 private val geminiKey by lazy {
@@ -68,8 +33,14 @@ private val geminiKey by lazy {
     }
 }
 
+@AigenticParameter
+data class Explanation(
+    @Description("Please explain the provided document as accurate as possible")
+    val explanation: String,
+)
+
 val licencePlateExtractor =
-    agent {
+    agent<Unit, Explanation> {
         task("Extract the invoice elements from the provided document") {}
         addTool(invoiceExtractTool)
         geminiModel {
@@ -78,17 +49,8 @@ val licencePlateExtractor =
         }
         platform {
             name("licence-plate-extractor")
-            secret("ac5eff83-21bd-449d-9dc1-5817d5e1e8f8")
-            apiUrl("http://localhost:8080")
+            secret("<platform-agent-api-key>")
         }
-        finishResponse(
-            Parameter.Primitive(
-                "Explanation",
-                "Please explain the provided document as accurate as possible",
-                true,
-                Primitive.String,
-            ),
-        )
     }
 
 fun main(): Unit =

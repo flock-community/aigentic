@@ -1,27 +1,34 @@
 package community.flock.aigentic.core.tool
 
-import kotlinx.serialization.json.Json
+import community.flock.aigentic.core.exception.aigenticException
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmInline
 
-fun Parameter.getStringValue(arguments: JsonObject): String = arguments.getValue(name).jsonPrimitive.content
-
-fun Parameter.getIntValue(arguments: JsonObject): Int = arguments.getValue(name).jsonPrimitive.int
-
-inline fun <reified T : Any> Parameter.Complex.Object.getObject(arguments: JsonObject): T {
-    val arg = arguments.getValue(name)
-    return Json.decodeFromJsonElement(arg.jsonObject)
-}
-
-inline fun <reified T : Any> Parameter.Complex.Array.getItems(arguments: JsonObject): List<T> =
-    arguments.getValue(name).jsonArray.map {
-        Json.decodeFromJsonElement<T>(it)
+@PublishedApi
+internal inline fun <reified T : Any> getParameter(): Parameter =
+    when (val param = SerializerToParameter.convert<T>()) {
+        is Parameter.Complex.Object, is Parameter.Complex.Enum -> param
+        is Parameter.Complex.Array -> {
+            if (param.itemDefinition.type is ParameterType.Primitive) {
+                simpleTypeNotSupportedException("Collection<param.itemDefinition.type.toString()>")
+            } else {
+                param
+            }
+        }
+        is Parameter.Primitive -> simpleTypeNotSupportedException(param.type.toString())
     }
+
+@PublishedApi
+internal fun simpleTypeNotSupportedException(type: String): Nothing =
+    aigenticException(
+        """
+    Parameter of type $type is not supported. Please use a @AigenticParameter annotated class instead.
+""",
+    )
+
+@PublishedApi
+internal fun Parameter.getStringValue(arguments: JsonObject): String = arguments.getValue(name).jsonPrimitive.content
 
 sealed class Parameter(
     open val name: String,
@@ -29,6 +36,16 @@ sealed class Parameter(
     open val isRequired: Boolean,
     open val type: ParameterType,
 ) {
+    fun copy(
+        name: String,
+        description: String? = null,
+    ) = when (this) {
+        is Primitive -> Primitive(name, description, isRequired, type)
+        is Complex.Enum -> Complex.Enum(name, description, isRequired, default, values, valueType)
+        is Complex.Object -> Complex.Object(name, description, isRequired, parameters)
+        is Complex.Array -> Complex.Array(name, description, isRequired, itemDefinition)
+    }
+
     data class Primitive(
         override val name: String,
         override val description: String?,

@@ -15,8 +15,8 @@ import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.TypedTool
+import community.flock.aigentic.core.tool.createTool
 import community.flock.aigentic.core.tool.getParameter
-import community.flock.aigentic.core.tool.toTool
 import kotlin.jvm.JvmName
 
 @JvmName("agentDefault")
@@ -27,7 +27,11 @@ fun <I : Any> agent(agentConfig: AgentConfig<I, Unit>.() -> Unit): Agent<I, Unit
 
 inline fun <I : Any, reified O : Any> agent(agentConfig: AgentConfig<I, O>.() -> Unit): Agent<I, O> =
     AgentConfig<I, O>()
-        .apply { finishResponse<O>() }
+        .apply {
+            if (O::class != Unit::class) {
+                setFinishResponse<O>()
+            }
+        }
         .apply(agentConfig)
         .build()
 
@@ -51,7 +55,7 @@ class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
     }
 
     inline fun <reified TI : Any, reified TO : Any> AgentConfig<I, O>.addTool(tool: TypedTool<TI, TO>) {
-        tools += tool.toTool()
+        tools += tool.createTool()
     }
 
     inline fun <reified TI : Any, reified TO : Any> AgentConfig<I, O>.addTool(
@@ -59,7 +63,7 @@ class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
         description: String? = null,
         noinline handler: suspend (TI) -> TO,
     ) {
-        tools += toTool(name, description, handler)
+        tools += createTool(name, description, handler)
     }
 
     fun AgentConfig<I, O>.context(contextConfig: ContextConfig.() -> Unit) =
@@ -81,11 +85,8 @@ class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
         this.model = model
     }
 
-    fun AgentConfig<I, O>.finishResponse(response: Parameter) {
-        this.responseParameter = response
-    }
-
-    inline fun <reified O : Any> AgentConfig<I, O>.finishResponse() {
+    @PublishedApi
+    internal inline fun <reified O : Any> AgentConfig<I, O>.setFinishResponse() {
         this.responseParameter = getParameter<O>()
     }
 

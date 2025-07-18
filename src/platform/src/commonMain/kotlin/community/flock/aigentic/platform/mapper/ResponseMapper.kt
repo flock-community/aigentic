@@ -1,7 +1,7 @@
 package community.flock.aigentic.platform.mapper
 
 import community.flock.aigentic.core.agent.Run
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.MimeType
@@ -54,11 +54,11 @@ internal fun RunDetailsDto.toRun() =
                     is UrlMessageDto -> Message.Url(it.sender.map(), MessageType.New, it.url, it.mimeType.map())
                 }
             },
-        result =
+        outcome =
             when (result) {
-                is FatalResultDto -> Result.Fatal(result.message)
-                is FinishedResultDto -> Result.Finished<String>(result.description, result.response)
-                is StuckResultDto -> Result.Stuck(result.reason)
+                is FatalResultDto -> Outcome.Fatal(result.message)
+                is FinishedResultDto -> Outcome.Finished<String>(result.description, result.response)
+                is StuckResultDto -> Outcome.Stuck(result.reason)
             },
         modelRequests = listOf(),
     )

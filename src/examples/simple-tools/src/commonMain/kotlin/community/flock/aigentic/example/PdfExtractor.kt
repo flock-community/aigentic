@@ -1,8 +1,8 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.annotations.AigenticParameter
-import community.flock.aigentic.core.annotations.AigenticResponse
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.gemini.dsl.geminiModel
@@ -19,7 +19,7 @@ data class InvoiceComponent(
     val value: String,
 )
 
-@AigenticResponse
+@AigenticParameter
 data class SaveResult(val message: String)
 
 suspend fun invoiceExtractorAgent(
@@ -43,9 +43,9 @@ suspend fun invoiceExtractorAgent(
             }
         }.start()
 
-    when (val result = run.result) {
-        is community.flock.aigentic.core.agent.tool.Result.Finished -> "Agent finished successfully"
-        is community.flock.aigentic.core.agent.tool.Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
-        is community.flock.aigentic.core.agent.tool.Result.Fatal -> "Agent crashed: ${result.message}"
+    when (val result = run.outcome) {
+        is Outcome.Finished -> "Agent finished successfully"
+        is Outcome.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
+        is Outcome.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)
 }

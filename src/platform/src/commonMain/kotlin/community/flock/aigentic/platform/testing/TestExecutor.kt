@@ -5,7 +5,7 @@ import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.executeAction
 import community.flock.aigentic.core.agent.state.State
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.ContextMessage
 import community.flock.aigentic.core.platform.getRuns
@@ -57,7 +57,7 @@ suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.execu
         val initializedState = initializeTestState(run)
         val (resultState, result) = executeAction(SendModelRequest(initializedState, mockedAgent))
         when (result) {
-            is Result.Finished -> {
+            is Outcome.Finished -> {
                 val unInvokedMocks =
                     toolMocks.filter { (_, mock) ->
                         mock.invocations.size != mock.expectations.size
@@ -73,9 +73,9 @@ suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.execu
                 }
             }
 
-            is Result.Fatal -> TestResult.AgentError(runId, iteration, result.message)
+            is Outcome.Fatal -> TestResult.AgentError(runId, iteration, result.message)
 
-            is Result.Stuck -> TestResult.AgentError(runId, iteration, result.reason)
+            is Outcome.Stuck -> TestResult.AgentError(runId, iteration, result.reason)
         }.also {
             println(it.message())
         }

@@ -3,10 +3,10 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.agent.tool.Result
+import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.annotations.AigenticParameter
-import community.flock.aigentic.core.annotations.AigenticResponse
 import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
@@ -14,6 +14,7 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
     val run =
         agent<Unit, AgentAdministrativeResponse> {
             geminiModel {
+                logLevel(LogLevel.DEBUG)
                 apiKey(apiKey)
                 modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
             }
@@ -45,13 +46,13 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
             }
         }.start()
 
-    when (val result = run.result) {
-        is Result.Finished ->
+    when (val result = run.outcome) {
+        is Outcome.Finished ->
             result.response.let { response ->
                 "Hours inspected successfully: $response"
             }
-        is Result.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
-        is Result.Fatal -> "Agent crashed: ${result.message}"
+        is Outcome.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
+        is Outcome.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)
 }
 
@@ -126,19 +127,19 @@ data class SignalMessage(
     val message: String,
 )
 
-@AigenticResponse
+@AigenticParameter
 data class EmployeeDetailsResponse(val details: String)
 
-@AigenticResponse
+@AigenticParameter
 data class ManagerResponse(val response: String)
 
-@AigenticResponse
+@AigenticParameter
 data class UpdateEmployeeResponse(val message: String)
 
-@AigenticResponse
+@AigenticParameter
 data class SignalMessageResponse(val message: String)
 
-@AigenticResponse
+@AigenticParameter
 data class EmployeesOverviewResponse(val overview: String)
 
 @AigenticParameter
