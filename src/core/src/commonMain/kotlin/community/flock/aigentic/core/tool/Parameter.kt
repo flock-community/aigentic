@@ -1,15 +1,31 @@
 package community.flock.aigentic.core.tool
 
+import community.flock.aigentic.core.exception.aigenticException
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmInline
 
 @PublishedApi
-internal inline fun <reified T : Any> getParameter(): Parameter.Complex.Object =
+internal inline fun <reified T : Any> getParameter(): Parameter =
     when (val param = SerializerToParameter.convert<T>()) {
-        is Parameter.Complex.Object -> param
-        else -> error("Cannot get param: ${T::class.simpleName}")
+        is Parameter.Complex.Object, is Parameter.Complex.Enum -> param
+        is Parameter.Complex.Array -> {
+            if (param.itemDefinition.type is ParameterType.Primitive) {
+                simpleTypeNotSupportedException("Collection<param.itemDefinition.type.toString()>")
+            } else {
+                param
+            }
+        }
+        is Parameter.Primitive -> simpleTypeNotSupportedException(param.type.toString())
     }
+
+@PublishedApi
+internal fun simpleTypeNotSupportedException(type: String): Nothing =
+    aigenticException(
+        """
+    Parameter of type $type is not supported. Please use a @AigenticParameter annotated class instead.
+""",
+    )
 
 @PublishedApi
 internal fun Parameter.getStringValue(arguments: JsonObject): String = arguments.getValue(name).jsonPrimitive.content

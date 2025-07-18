@@ -36,7 +36,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
@@ -366,7 +365,7 @@ class AgentExecutorTest : DescribeSpec({
     }
 })
 
-@Serializable
+@AigenticParameter
 data class NewsEvent(val id: Int, val title: String)
 
 @AigenticParameter

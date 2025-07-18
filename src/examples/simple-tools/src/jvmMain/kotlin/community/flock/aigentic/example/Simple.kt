@@ -2,12 +2,12 @@ package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Outcome
-import community.flock.aigentic.core.annotations.AigenticResponse
+import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
-@AigenticResponse
+@AigenticParameter
 data class Answer(val answer: String)
 
 suspend fun main() {

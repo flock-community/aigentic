@@ -33,7 +33,7 @@ fun main() {
             }
             task("Greet the person with a warm and welcome message") {}
             addTool("greet") { message: String ->
-                println("Greeting message sent")
+                println("Greeting $message sent")
                 GreetResponse("Greeting message sent")
             }
             context {

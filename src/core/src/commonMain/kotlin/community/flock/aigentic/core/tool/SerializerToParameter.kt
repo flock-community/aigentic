@@ -1,8 +1,8 @@
 package community.flock.aigentic.core.tool
 
+import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.annotations.Description
 import community.flock.aigentic.core.exception.aigenticException
-import kotlinx.coroutines.NonCancellable.children
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -21,7 +21,7 @@ object SerializerToParameter {
 
     inline fun <reified T : Any> convert(): Parameter {
         val serializer = serializer<T>()
-        val name = T::class.simpleName ?: error("No name found")
+        val name = T::class.simpleName ?: aigenticException("No name found for type, cannot convert to parameter")
         return serializer.descriptor.element(name).toParameter()
     }
 
@@ -108,7 +108,7 @@ object SerializerToParameter {
     fun Element.toObject() =
         Parameter.Complex.Object(
             name = name,
-            description = annotations.getDescription(),
+            description = annotations.getAigenticParameterDescription() ?: annotations.getDescription(),
             isRequired = !descriptor.isNullable,
             parameters = descriptor.parameters(),
         )
@@ -116,11 +116,16 @@ object SerializerToParameter {
     fun Element.toMap(): Parameter.Complex.Object {
         return Parameter.Complex.Object(
             name = name,
-            description = annotations.getDescription(),
+            description = annotations.getAigenticParameterDescription(),
             isRequired = !descriptor.isNullable,
             parameters = descriptor.parameters(),
         )
     }
 
     fun List<Annotation>.getDescription(): String? = filterIsInstance<Description>().map { it.value }.firstOrNull()
+
+    fun List<Annotation>.getAigenticParameterDescription(): String? =
+        filterIsInstance<AigenticParameter>().map {
+            it.description
+        }.firstOrNull()?.takeIf { it.isNotEmpty() }
 }

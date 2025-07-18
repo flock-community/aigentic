@@ -1,19 +1,19 @@
 package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
-import community.flock.aigentic.core.annotations.AigenticResponse
+import community.flock.aigentic.core.agent.tool.Outcome
+import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.openai.dsl.openAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
-import kotlinx.serialization.Serializable
 
-@Serializable
+@AigenticParameter
 data class ItemName(
     val itemName: String,
 )
 
-@AigenticResponse
+@AigenticParameter
 data class SaveItemResult(val message: String)
 
 suspend fun runItemCategorizeExample(
@@ -36,8 +36,8 @@ suspend fun runItemCategorizeExample(
         }.start()
 
     when (val result = run.outcome) {
-        is community.flock.aigentic.core.agent.tool.Outcome.Finished -> "Agent finished successfully"
-        is community.flock.aigentic.core.agent.tool.Outcome.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
-        is community.flock.aigentic.core.agent.tool.Outcome.Fatal -> "Agent crashed: ${result.message}"
+        is Outcome.Finished -> "Agent finished successfully"
+        is Outcome.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
+        is Outcome.Fatal -> "Agent crashed: ${result.message}"
     }.also(::println)
 }

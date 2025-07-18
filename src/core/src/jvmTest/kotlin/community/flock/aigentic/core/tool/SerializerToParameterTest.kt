@@ -1,12 +1,11 @@
 package community.flock.aigentic.core.tool
 
+import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.annotations.Description
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.Serializable
 
-@Serializable
-@Description("Status enum")
+@AigenticParameter("Status enum")
 enum class Status {
     ACTIVE,
     INACTIVE,
@@ -30,7 +29,7 @@ class SerializerToParameterTest : DescribeSpec({
         }
 
         it("should convert basic data class") {
-            @Serializable
+            @AigenticParameter
             data class Answer(
                 val answer: String,
             )
@@ -54,8 +53,7 @@ class SerializerToParameterTest : DescribeSpec({
         }
 
         it("should convert basic data class with description") {
-            @Serializable
-            @Description("Answer object")
+            @AigenticParameter("Answer object")
             data class Answer(
                 @Description("Answer description")
                 val answer: String,
@@ -80,8 +78,7 @@ class SerializerToParameterTest : DescribeSpec({
         }
 
         it("should convert all primitives") {
-            @Serializable
-            @Description("AllPrimitives object")
+            @AigenticParameter("AllPrimitives object")
             data class AllPrimitives(
                 @Description("String description")
                 val string: String?,
@@ -131,8 +128,7 @@ class SerializerToParameterTest : DescribeSpec({
 
         it("should convert enum class") {
 
-            @Serializable
-            @Description("EnumContainer object")
+            @AigenticParameter("EnumContainer object")
             data class EnumContainer(
                 @Description("Status description")
                 val status: Status,
@@ -165,8 +161,7 @@ class SerializerToParameterTest : DescribeSpec({
         }
 
         it("should convert nested complex objects") {
-            @Serializable
-            @Description("Address object")
+            @AigenticParameter("Address object")
             data class Address(
                 @Description("Street name")
                 val street: String,
@@ -176,8 +171,7 @@ class SerializerToParameterTest : DescribeSpec({
                 val zipCode: String?,
             )
 
-            @Serializable
-            @Description("Person object")
+            @AigenticParameter("Person object")
             data class Person(
                 @Description("Person's name")
                 val name: String,
@@ -254,8 +248,7 @@ class SerializerToParameterTest : DescribeSpec({
         }
 
         it("should convert object with list of items") {
-            @Serializable
-            @Description("Item object")
+            @AigenticParameter("Item object")
             data class Item(
                 @Description("Item name")
                 val name: String,
@@ -263,8 +256,7 @@ class SerializerToParameterTest : DescribeSpec({
                 val quantity: Int,
             )
 
-            @Serializable
-            @Description("ItemList object")
+            @AigenticParameter("ItemList object")
             data class ItemList(
                 @Description("List of items")
                 val items: List<Item>,

@@ -2,16 +2,15 @@ package community.flock.aigentic.example
 
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Outcome
-import community.flock.aigentic.core.annotations.AigenticResponse
+import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
-import kotlinx.serialization.Serializable
 
-@Serializable
+@AigenticParameter
 data class KotlinMessage(val message: String)
 
-@AigenticResponse
+@AigenticParameter
 data class MessageSendResult(val result: String)
 
 suspend fun runKotlinMessageAgent(apiKey: String) {
