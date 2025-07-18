@@ -25,10 +25,8 @@ import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.model.Usage
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.platform.sendRun
-import community.flock.aigentic.core.tool.Parameter.Primitive
-import community.flock.aigentic.core.tool.ParameterType.Primitive.Integer
 import community.flock.aigentic.core.tool.Tool
-import community.flock.aigentic.core.tool.ToolName
+import community.flock.aigentic.core.tool.createTool
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -41,11 +39,15 @@ import io.mockk.verify
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.assertThrows
 import java.io.IOException
+
+@AigenticParameter
+data class NewsEventInput(
+    val count: Int,
+)
 
 class AgentExecutorTest : DescribeSpec({
 
@@ -54,8 +56,8 @@ class AgentExecutorTest : DescribeSpec({
         it("should run agent successfully") {
 
             val toolHandlerMock =
-                mockk<suspend (toolArguments: JsonObject) -> String>().apply {
-                    coEvery { this@apply.invoke(any<JsonObject>()) } returns
+                mockk<suspend (toolArguments: NewsEventInput) -> String>().apply {
+                    coEvery { this@apply.invoke(any<NewsEventInput>()) } returns
                         Json.encodeToString(
                             listOf(
                                 NewsEvent(1, "News event about AI"),
@@ -64,25 +66,19 @@ class AgentExecutorTest : DescribeSpec({
                         )
                 }
 
-            // TODO replace
             val newsEventTool =
-                object : Tool {
-                    override val name = ToolName("getNewsEvents")
-                    override val description = null
-                    override val parameters =
-                        listOf(
-                            Primitive("count", "number of events", true, Integer),
-                        )
-                    override val handler: suspend (toolArguments: JsonObject) -> String = toolHandlerMock
-                }
+                createTool<NewsEventInput, String>(
+                    name = "getNewsEvents",
+                    description = null,
+                ) { input -> toolHandlerMock(input) }
 
-            val expectedArguments = buildJsonObject { put("count", 10) }
+            val expectedArguments = NewsEventInput(10)
 
             val modelMock =
                 mockk<Model>().apply {
                     coEvery { sendRequest(any(), any()) } returnsMany
                         listOf(
-                            ToolCall(ToolCallId("1"), newsEventTool.name.value, expectedArguments.encode()),
+                            ToolCall(ToolCallId("1"), newsEventTool.name.value, Json.encodeToString(expectedArguments)),
                             finishedTaskToolCall,
                         ).toModelResponse()
                 }
@@ -182,13 +178,12 @@ class AgentExecutorTest : DescribeSpec({
                         ).toModelResponse()
                 }
 
-            // TODO replace
             val testTool =
-                object : Tool {
-                    override val name = ToolName(toolCall.name)
-                    override val description = null
-                    override val parameters = emptyList<Primitive>()
-                    override val handler: suspend (toolArguments: JsonObject) -> String = { "toolResult" }
+                createTool<Unit, String>(
+                    name = toolCall.name,
+                    description = null,
+                ) {
+                    "toolResult"
                 }
 
             val agent =
@@ -223,13 +218,12 @@ class AgentExecutorTest : DescribeSpec({
                         )
                 }
 
-            // TODO replace
             val testTool =
-                object : Tool {
-                    override val name = ToolName(toolCall.name)
-                    override val description = null
-                    override val parameters = emptyList<Primitive>()
-                    override val handler: suspend (toolArguments: JsonObject) -> String = { "toolResult" }
+                createTool<Unit, String>(
+                    name = toolCall.name,
+                    description = null,
+                ) {
+                    "toolResult"
                 }
 
             val agent =

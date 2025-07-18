@@ -1,6 +1,7 @@
 package community.flock.aigentic.core.tool
 
 import community.flock.aigentic.core.annotations.Description
+import community.flock.aigentic.core.exception.aigenticException
 import kotlinx.coroutines.NonCancellable.children
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
@@ -40,9 +41,9 @@ object SerializerToParameter {
             PrimitiveKind.SHORT -> toPrimitive(ParameterType.Primitive.String)
             PrimitiveKind.STRING -> toPrimitive(ParameterType.Primitive.String)
             PrimitiveKind.CHAR -> toPrimitive(ParameterType.Primitive.String)
-            PolymorphicKind.OPEN -> TODO()
-            PrimitiveKind.BYTE -> TODO()
-            SerialKind.CONTEXTUAL -> TODO()
+            PolymorphicKind.OPEN -> aigenticException("Cannot handle polymorphic kind OPEN: $descriptor to create parameter")
+            PrimitiveKind.BYTE -> aigenticException("Cannot handle primitive kind BYTE: $descriptor to create parameter")
+            SerialKind.CONTEXTUAL -> aigenticException("Cannot handle contextual kind: $descriptor to create parameter")
         }
 
     fun SerialDescriptor.parameters(): List<Parameter> {

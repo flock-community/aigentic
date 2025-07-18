@@ -49,6 +49,12 @@ inline fun <reified I : Any, reified O : Any> createTool(
         override val handler: suspend (toolArguments: JsonObject) -> String = {
             val obj = Json.decodeFromJsonElement<I>(it)
             val res = handlerFn(obj)
-            Json.encodeToString<O>(res)
+            when (res) {
+                is String -> res
+                is Number -> res.toString()
+                is Boolean -> res.toString()
+                is Char -> res.toString()
+                else -> Json.encodeToString<O>(res)
+            }
         }
     }
