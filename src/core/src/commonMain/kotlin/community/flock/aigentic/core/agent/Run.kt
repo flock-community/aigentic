@@ -29,9 +29,7 @@ data class TokenUsage(
     val outputTokens: Int,
     val thinkingOutputTokens: Int,
     val cachedInputTokens: Int,
-) {
-    val totalTokens: Int get() = inputTokens + outputTokens + thinkingOutputTokens
-}
+)
 
 fun <O : Any> Run<O>.tokenUsage(): TokenUsage =
     TokenUsage(
