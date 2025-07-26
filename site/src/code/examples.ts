@@ -34,10 +34,11 @@ when (val result = run.result) {
 
 println("""
      Token Usage:
-    - Input tokens: \${run.inputTokens()}
-    - Output tokens: \${run.outputTokens()}
-    - Thinking output tokens: \${run.thinkingOutputTokens()}
-    - Cached input tokens: \${run.cachedInputTokens()}
+    - Input tokens: \${run.tokenUsage().inputTokens}
+    - Output tokens: \${run.tokenUsage().outputTokens}
+    - Thinking output tokens: \${run.tokenUsage().thinkingOutputTokens}
+    - Cached input tokens: \${run.tokenUsage().cachedInputTokens}
+    - Total tokens: \${run.tokenUsage().totalTokens}
 """)
 
 `
