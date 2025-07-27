@@ -23,8 +23,10 @@ Add the following to your `build.gradle.kts` file:
 ```kotlin
 plugins {
     kotlin("jvm") version "2.1.21"
-    kotlin("plugin.serialization") version "1.9.23"
-    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
+
+    // Kotlinx serialization enables @AigenticParameter to convert Kotlin classes
+    // to LLM-compatible formats in order to provide a type safe DSL
+    kotlin("plugin.serialization") version "2.1.21"
 }
 
 dependencies {
@@ -41,9 +43,6 @@ dependencies {
     implementation("community.flock.aigentic:http:{{AIGENTIC_VERSION}}")
     implementation("community.flock.aigentic:openapi:{{AIGENTIC_VERSION}}")
 
-    // KSP processor
-    ksp("community.flock.aigentic:ksp-processor:{{AIGENTIC_VERSION}}")
-
 }
 
 ```
@@ -59,40 +58,40 @@ Let's create a simple AI agent using Aigentic that can answer questions and perf
 First, let's create a basic agent that can answer questions using OpenAI's GPT model:
 
 ```kotlin
-// Create a simple agent
-fun agent(question: String) = agent {
+// Define the agents response type
+@AigenticParameter
+data class Answer(val answer: String)
 
-    @AigenticParameter
-    data class Answer(val answer: String)
+// Create a simple agent, define it's in- and output type
+val agent = agent<String, Answer> {
 
     // Configure the Gemini model for the agent
     geminiModel {
         apiKey("YOUR_API_KEY")
-        modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
+        modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
     }
 
     // Configure the task for the agent
     task("Answer questions about Kotlin Multiplatform") {
         addInstruction("Provide concise and accurate answers")
     }
-
-    // Define context
-    context {
-        addText(question)
-    }
-
-    // Set the output
-    finishResponse<Answer>()
-
 }
 // Start the agent and get a run
-val run = agent("What is cool about kotlin?").start()
+val run = agent.start("What is cool about kotlin?")
 
-// Print the result
-when (val result = run.result) {
-    is Result.Finished -> println(result.response)
-    is Result.Stuck -> println("Agent is stuck: ${result.reason}")
-    is Result.Fatal -> println("Error: ${result.message}")
+// Evaluate the run outcome
+when (val outcome = run.outcome) {
+    // Finished: Contains the successful response from the agent
+    // It yields the O type from the agent: agent<String, Answer>. Access the response property to get the answer
+    is Outcome.Finished -> println(outcome.response?.answer)
+
+    // Stuck: Indicates the agent couldn't proceed with execution
+    // Access the reason property to understand why the agent got stuck
+    is Outcome.Stuck -> println("Agent is stuck: ${outcome.reason}")
+
+    // Fatal: Represents a critical technical error during execution
+    // Access the message property to get the error details
+    is Outcome.Fatal -> println("Error: ${outcome.message}")
 }
 ```
 
@@ -101,21 +100,27 @@ when (val result = run.result) {
 Now, let's enhance our agent by adding a tool that can fetch weather information:
 
 ```kotlin
-// Create a weather agent
+// Describe the agents response type
+@AigenticParameter
+data class WeatherResponse(
+    @Description("Current temperature in degrees Celsius")
+    val temperature: Double,
+    @Description("Current weather conditions description")
+    val conditions: String,
+    @Description("Name of the location for the weather data")
+    val location: String
+)
+
+// Describe the agents task input type
+@AigenticParameter
+data class WeatherQuestion(
+  val city: String,
+  val country: String
+)
+
 suspend fun main() {
 
-    Aigentic.initialize()
-
-    val httpClient = HttpClient{
-        install(ContentNegotiation) {
-            json(Json {ignoreUnknownKeys = true })
-        }
-    }
-
-    fun weatherUrl(location: String) = "https://weerlive.nl/api/json-data-10min.php?key=demo&locatie=${location}"
-
-    // Define a weather tool using the DSL
-    fun agent(location: String) = agent {
+    val agent = agent<WeatherQuestion, WeatherResponse> {
 
         // Configure the Gemini model for the agent
         geminiModel {
@@ -128,39 +133,25 @@ suspend fun main() {
             addInstruction("Respond to user queries about weather")
         }
 
-        // Set context
-        context {
-            addText("Weather Information for location: $location")
-        }
-
         // Add a weather tool
-        addTool("get_weather", "Get the current weather for a location") { req: WeatherRequest ->
-            // Make an API call to get weather data
-            weatherUrl(req.location).run{ httpClient.get(this).body<WeatherResponse>()}
+        addTool("getWeather", "Get the current weather for a location") { req: WeatherQuestion ->
+            WeatherClient.requestWeather(req.city, req.country)
         }
     }
 
-    val run = agent("Amsterdam").start()
+    val run = agent.start(WeatherQuestion("Amsterdam", "Netherlands"))
 
     // Print the result
-    when (val result = run.result) {
-        is Result.Finished -> println(result.getFinishResponse<WeatherResponse>()?.liveweer[0]?.verw)
-        is Result.Stuck -> println("Agent is stuck: ${result.reason}")
-        is Result.Fatal -> println("Error: ${result.message}")
+    when (val outcome = run.outcome) {
+        is Outcome.Finished -> println("Weather in ${outcome.response?.location}: ${outcome.response?.temperature}°C, ${outcome.response?.conditions}")
+        is Outcome.Stuck -> println("Agent is stuck: ${outcome.reason}")
+        is Outcome.Fatal -> println("Error: ${outcome.message}")
     }
-}
-
-@AigenticResponse
-data class WeatherResponse(
-    val liveweer: List<Weather>
-){
-    @Serializable
-    data class Weather(val verw: String)
 }
 ```
 
-:::caution Don't forget the KSP plugin
-To use the @AigenticParameter annotation, make sure you have the KSP plugin configured in your project. See the [Getting Started](/docs/getting-started) guide for setup instructions.
+:::caution Don't forget the Kotlinx serialization plugin
+To use the @AigenticParameter annotation, you must include the Kotlinx serialization plugin in your build configuration. This plugin generates the metadata Aigentic needs to process your custom types when communicating with LLMs.
 :::
 
 ## More Examples

@@ -7,6 +7,75 @@ Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for buil
 - Intuitive Kotlin DSL for agent creation and management
 - LLM model agnostic (supports OpenAI, Gemini, Ollama, and more)
 
+## DSL Usage
+Aigentic provides a powerful and intuitive DSL for creating and configuring AI agents. Here's an example of how to use it:
+
+Required imports:
+- community.flock.aigentic.core.agent.start
+- community.flock.aigentic.core.agent.tool.Outcome
+- community.flock.aigentic.core.annotations.AigenticParameter
+- community.flock.aigentic.core.dsl.agent
+- community.flock.aigentic.openai.dsl.openAIModel
+- community.flock.aigentic.openai.model.OpenAIModelIdentifier
+
+```kotlin
+suspend fun main() {
+    @AigenticParameter
+    data class Answer(
+        val answer: String,
+    )
+
+    // Define a question answering agent using the DSL.
+    // agent<I, O> where:
+    // - I (String): Input type the agent accepts in its start function (user questions as strings)
+    // - O (Answer): Output type the agent produces in its Finished Outcome (answer data)
+    val questionAgent =
+        agent<String, Answer> {
+            // Configure the model for the agent, other models are also available
+            openAIModel {
+                apiKey("YOUR_API_KEY")
+                modelIdentifier(OpenAIModelIdentifier.GPT4O)
+            }
+
+            // Configure the task for the agent
+            // This defines the agent's purpose and provides instructions for its behavior
+            task("Answer questions about Kotlin Multiplatform") {
+                addInstruction("Provide concise and accurate answers")
+            }
+        }
+
+    // The start function expects the I type from the agent: agent<String, Answer>
+    val run = questionAgent.start("What is cool about kotlin?")
+
+    // Evaluate the Runs outcome
+    when (val outcome = run.outcome) {
+        // Finished: Contains the successful response from the agent
+        // It yields the O type from the agent: agent<String, Answer>
+        // Access the response property to get the answer
+        is Outcome.Finished -> println(outcome.response?.answer)
+
+        // Stuck: Indicates the agent couldn't proceed with execution
+        // Access the reason property to understand why the agent got stuck
+        is Outcome.Stuck -> println("Agent is stuck: ${outcome.reason}")
+
+        // Fatal: Represents a critical error during execution
+        // Access the message property to get the error details
+        is Outcome.Fatal -> println("Error: ${outcome.message}")
+    }
+
+    // Print token usage summary to monitor resource consumption
+    println(run.getTokenUsageSummary())
+}
+```
+
+This example demonstrates:
+1. Creating an agent with specified input and output types
+2. Configuring the agent with an OpenAI model
+3. Defining the agent's task and instructions
+4. Starting the agent with an input question
+5. Handling different outcome types (Finished, Stuck, Fatal)
+6. Retrieving token usage information
+
 ## Project Structure
 The project is organized into several modules:
 

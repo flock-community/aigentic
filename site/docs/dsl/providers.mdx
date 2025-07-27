@@ -1,7 +1,7 @@
 ---
 id: providers
 title: Providers
-sidebar_position: 3
+sidebar_position: 2
 ---
 
 # Providers
@@ -17,7 +17,7 @@ Aigentic supports several LLM providers out of the box:
 ```kotlin
 val openAIModel = openAIModel {
     apiKey("your-api-key")
-    modelIdentifier(OpenAIModelIdentifier.GPT35Turbo)
+    modelIdentifier(OpenAIModelIdentifier.GPT4O)
     generationConfig {
         temperature(0.7f)
         topK(40)
@@ -31,7 +31,7 @@ val openAIModel = openAIModel {
 ```kotlin
 val geminiModel = geminiModel {
     apiKey("your-api-key")
-    modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
+    modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
     generationConfig {
         temperature(0.2f)
         topK(40)
@@ -58,7 +58,7 @@ val ollamaModel = ollamaModel {
 val vertexAIModel = vertexAIModel {
     project("your-project-id")
     location("your-location")
-    modelIdentifier(VertexAIModelIdentifier.Gemini2_0Flash)
+    modelIdentifier(VertexAIModelIdentifier.Gemini2_5Flash)
 }
 ```
 

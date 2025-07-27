@@ -36,7 +36,7 @@ The `AgentConfig` class provides several methods for configuring an agent:
 agent {
     model(openAIModel {
         apiKey("your-api-key")
-        modelIdentifier(OpenAIModelIdentifier.GPT3_5Turbo)
+        modelIdentifier(OpenAIModelIdentifier.GPT4O)
         generationConfig {
             temperature(0.5f)
         }
@@ -69,7 +69,7 @@ agent {
 
     // Add a tool with inline definition
     addTool<WeatherRequest, WeatherResponse>(
-        name = "get_weather",
+        name = "getWeather",
         description = "Get the current weather for a location",
     ) { request ->
         // Tool implementation
@@ -133,67 +133,48 @@ The `SystemPromptBuilder` interface has a single method `buildSystemPrompt(agent
 
 ### Configuring Response Format
 
-You can specify the format for the agent's final response:
+You can specify the format for the agent's final response using generic types:
 
 ```kotlin
 @AigenticParameter
 data class Answer(val answer: String)
 
-// Parameter configuration if you don't use KSP
-agent {
-    finishResponse(Parameter.Primitive(
-      name = "answer",
-      description = "The answer to the question",
-      isRequired = true,
-      type = ParameterType.Primitive.String
-    ))
+// Using generic types to specify the output type
+val myAgent = agent<Unit, Answer> {
+    // Agent configuration
 }
 
-// KSP provide
-agent {
-    finishResponse<Answer>()
+// If you need to specify both input and output types
+@AigenticParameter
+data class Question(val text: String)
+val myAgent = agent<Question, Answer> {
+    // Agent configuration
+}
+
+// If you don't specify types, the default is Agent<Unit, Unit>
+val myAgent = agent {
+    // Agent configuration
 }
 ```
+
+When using the generic types approach, the agent will automatically be configured to handle the specified input and output types.
 
 ### Processing Agent Responses
 
-When an agent finishes its task, you can extract the response in a type-safe way using the `getFinishResponse<T>()` extension function:
+When an agent finishes its task, you can access the response directly through the `result` property of `Outcome.Finished`:
 
 ```kotlin
-when (val result = run.result) {
-    is Result.Finished -> {
-        val answer = result.getFinishResponse<Answer>()
-        println("The agent's answer is: ${answer?.answer}")
+when (val outcome = run.outcome) {
+    is Outcome.Finished -> {
+        val answer = outcome.response?.answer
+        println("The agent's answer is: $answer")
     }
-    is Result.Stuck -> println("Agent is stuck: ${result.reason}")
-    is Result.Fatal -> println("Agent encountered an error: ${result.message}")
+    is Outcome.Stuck -> println("Agent is stuck: ${outcome.reason}")
+    is Outcome.Fatal -> println("Agent encountered an error: ${outcome.message}")
 }
 ```
 
-### Using @AigenticResponse Annotation
-
-While `@AigenticParameter` is used for agent inputs and final responses, the `@AigenticResponse` annotation is used to mark data classes that represent responses from tools:
-
-```kotlin
-// Tool response class
-@AigenticResponse
-data class WeatherResponse(val temperature: Float, val conditions: String)
-
-// Agent final response class
-@AigenticParameter
-data class Answer(val weatherSummary: String)
-
-// In your agent configuration
-agent {
-    addTool("getWeather") { location: Location ->
-        // Returns a WeatherResponse
-        weatherService.getWeather(location)
-    }
-    finishResponse<Answer>()
-}
-```
-
-This annotation helps the Aigentic framework properly handle and serialize tool responses.
+The `response` property of `Outcome.Finished` is of the type specified as the output generic parameter (`O`) when creating the agent.
 
 ## More Examples
 

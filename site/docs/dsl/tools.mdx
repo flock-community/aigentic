@@ -1,166 +1,85 @@
 ---
 id: tools
 title: Tools
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 # Tool Definition
 
-Tools extend an agent's capabilities by allowing it to perform specific actions or access external systems. Aigentic provides a flexible API for defining and using tools.
+Tools extend an agent's capabilities by allowing it to perform specific actions or access external systems. Aigentic provides a flexible DSL for defining and using tools.
 
-## Tool Interface
+## Tool Parameters
 
-All tools in Aigentic implement the `Tool` interface, which combines a description of the tool with its implementation:
+Tool parameters define the in- and output structure for a tool. Aigentic has capabilities to automatically derive parameters from data classes annotated with the @AigenticParameter annotation:
 
 ```kotlin
-interface Tool : ToolDescription, ToolHandler<JsonObject, String>
+@AigenticParameter
+data class MessageParameters(
+    @Description("The Slack channel to send the message to (e.g., '#general', '@username')")
+    val channel: String,
+    @Description("The message text content to send to the Slack channel")
+    val text: String,
+)
 
-interface ToolDescription {
-    val name: ToolName
-    val description: String?
-    val parameters: List<Parameter>
-}
-
-interface ToolHandler<A, T> {
-    val handler: suspend (toolArguments: A) -> T
-}
+@AigenticParameter
+data class SlackWebhookResponse(
+    @Description("Indicates whether the Slack webhook message was sent successfully")
+    val isSuccess: Boolean,
+)
 ```
+
+### @AigenticParameter
+
+The `@AigenticParameter` annotation marks data classes that serve as input or output parameters for tools or agents in the Aigentic framework. This annotation enables Aigentic to automatically derive parameter schemas for the LLM.
+
+Key features:
+- Applied at data classes
+- Has an optional `description` property that provides a high-level description of the parameter object
+
+### @Description
+
+The `@Description` annotation marks properties within parameter data classes with additional information about their meaning. These descriptions are used by Aigentic to generate accurate documentation and parameter schemas the LLM.
+
+Key features:
+- Applied at the property level
+- Requires a string value that describes the property's purpose
+- Helps LLMs understand the expected input and output formats
+- Improves tool usability by providing clear guidance on parameter usage
 
 ## Creating Tools
 
 Aigentic provides several ways to create tools:
 
-### Simple Tool Creation
+### Standalone Tool Creation
 
-The simplest way to create a tool is using the `toTool` function with type parameters:
+Use the `createTool` function with type parameters to create a standalone reusable tool:
 
 ```kotlin
-// Define input and output types
-data class WeatherRequest(val location: String)
-data class WeatherResponse(val temperature: Double, val conditions: String)
 
-// Create the tool
-val weatherTool = toTool<WeatherRequest, WeatherResponse>(
-    name = "get_weather",
-    description = "Get the current weather for a location"
-) { request ->
-    // Tool implementation
-    weatherService.getWeather(request.location)
+val slackWebhookTrigger = createTool<MessageParameters, SlackWebhookResponse>("slackWebhookTrigger", "Posts a webhook which sends a message in a channel") { parameters: MessageParameters ->
+    // Some code to call a Slack webhook with the MessageParameters provided by the LLM
+    SlackWebhookResponse(isSuccess = true)
+}
+```
+
+This tool can be added to agents:
+
+```kotlin
+agent {
+  addTool(slackWebhookTrigger)
 }
 ```
 
 ### Inline Tool Definition
 
-You can define tools inline when configuring an agent:
+You can define tools inline:
 
 ```kotlin
 agent {
-    addTool<SearchRequest, SearchResponse>(
-        name = "search",
-        description = "Search for information on the web"
-    ) { request ->
-        // Tool implementation
-        searchService.search(request.query)
-    }
-}
-```
-
-### TypedTool Implementation
-
-For more complex tools, you can implement the `TypedTool` interface:
-
-```kotlin
-class WeatherTool(
-    private val weatherService: WeatherService
-) : TypedTool<WeatherRequest, WeatherResponse> {
-    override val name = ToolName("get_weather")
-    override val description = "Get the current weather for a location"
-    override val parameters: List<Parameter>
-        get() = getParameter<WeatherRequest>()?.parameters ?: emptyList()
-    override val handler: suspend (WeatherRequest) -> WeatherResponse = { request ->
-        weatherService.getWeather(request.location)
-    }
-}
-
-// Convert to Tool when adding to an agent
-agent {
-    addTool(WeatherTool(weatherService))
-}
-```
-
-## Tool Parameters
-
-Tool parameters define the input structure for a tool. Aigentic uses Kotlin's reflection capabilities to automatically derive parameters from data classes:
-
-```kotlin
-@AigenticParameter
-data class CalculatorRequest(
-    val operation: String,
-    val a: Double,
-    val b: Double
-)
-
-val calculatorTool = toTool<CalculatorRequest, Double>(
-    name = "calculator",
-    description = "Perform basic arithmetic operations"
-) { request ->
-    when (request.operation) {
-        "add" -> request.a + request.b
-        "subtract" -> request.a - request.b
-        "multiply" -> request.a * request.b
-        "divide" -> request.a / request.b
-        else -> throw IllegalArgumentException("Unknown operation: ${request.operation}")
-    }
-}
-```
-
-The `@AigenticParameter` annotation is required for Aigentic to recognize the class as a parameter type.
-
-:::caution Don't forget the KSP plugin
-To use parameter annotations, make sure you have the KSP plugin configured in your project. See the [Getting Started](/docs/getting-started) guide for setup instructions.
-:::
-
-
-## Common Tool Patterns
-
-### HTTP Tools
-
-For tools that make HTTP requests:
-
-```kotlin
-val newsApiTool = toTool<NewsRequest, List<NewsItem>>(
-    name = "get_news",
-    description = "Get the latest news on a topic"
-) { request ->
-    val response = httpClient.get("https://newsapi.org/v2/everything") {
-        parameter("q", request.topic)
-        parameter("apiKey", apiKey)
-    }
-
-    response.body<NewsApiResponse>().articles.map { article ->
-        NewsItem(
-            title = article.title,
-            description = article.description,
-            url = article.url
-        )
-    }
-}
-```
-
-### Database Tools
-
-For tools that interact with databases:
-
-```kotlin
-val userLookupTool = toTool<UserLookupRequest, UserProfile>(
-    name = "lookup_user",
-    description = "Look up a user by ID or email"
-) { request ->
-    when {
-        request.id != null -> userRepository.findById(request.id)
-        request.email != null -> userRepository.findByEmail(request.email)
-        else -> throw IllegalArgumentException("Either id or email must be provided")
-    }
+    addTool<MessageParameters, SlackWebhookResponse>("slackWebhookTrigger", "Posts a webhook which sends a message in a channel") { parameters: MessageParameters ->
+                // Code to call a Slack webhook
+                SlackWebhookResponse(true)
+            }
 }
 ```
 
@@ -168,7 +87,7 @@ val userLookupTool = toTool<UserLookupRequest, UserProfile>(
 
 When creating tools for Aigentic agents, follow these best practices:
 
-1. **Clear Descriptions**: Provide clear and concise descriptions for your tools
+1. **Clear Descriptions**: Provide clear and concise descriptions for your tools using the `@AigenticParameter` and `@Description` annotations
 2. **Type Safety**: Use strongly typed input and output types
 3. **Error Handling**: Implement robust error handling
 4. **Idempotency**: Make tools idempotent when possible
@@ -176,8 +95,8 @@ When creating tools for Aigentic agents, follow these best practices:
 
 ```kotlin
 // Example of a well-designed tool
-val emailTool = toTool<EmailRequest, EmailResponse>(
-    name = "send_email",
+val emailTool = createTool<EmailRequest, EmailResponse>(
+    name = "sendEmail",
     description = "Send an email to a recipient"
 ) { request ->
     // Validate input
@@ -186,13 +105,13 @@ val emailTool = toTool<EmailRequest, EmailResponse>(
 
     // Execute with error handling
     runCatching {
-        emailService.sendEmail(
+        val result = emailService.sendEmail(
             to = request.to,
             subject = request.subject,
             body = request.body
         )
 
-        EmailResponse(success = true, messageId = generateMessageId())
+        EmailResponse(success = true, messageId = result.messageId)
     }.getOrElse { error ->
         EmailResponse(success = false, error = error.message)
     }

@@ -1,6 +1,6 @@
 ---
 id: dsl
-title: Kotlin DSL
+title: Agent DSL
 sidebar_position: 1
 ---
 
@@ -10,7 +10,7 @@ Aigentic provides a powerful and intuitive Kotlin DSL (Domain-Specific Language)
 
 ## Core Components
 
-The Aigentic DSL consists of several key components:
+The Aigentic `agent` DSL consists of several key components:
 
 - [Agents](/docs/dsl/agent) - Creating and configuring agents
 - [Providers](/docs/dsl/providers) - Connecting to LLM providers
@@ -25,10 +25,11 @@ The core of the Aigentic DSL is the agent function, which allows you to create a
 @AigenticParameter
 data class Answer(val message: String)
 
-@AigenticResponse
+@AigenticParameter
 data class AnswerSavedResult(val result: String)
 
-agent {
+// Using generic types to specify the output type
+agent<String, Answer> {
 
   // Configure your provider of choice
   openAIModel {
@@ -41,13 +42,13 @@ agent {
     addInstruction("Provide concise and accurate answers")
   }
 
-  // Define context
+  // Define more context
   context {
-    addText("Why is Kolin cool ?")
+    addText("<Additional information about Kotlin Multiplatform>")
   }
 
   // Add capabilities
-  addTool("saveAnswer") { input: Answer ->
+  addTool(name = "saveAnswer", description = "Saves the answer to the database") { input: Answer ->
     AnswerSavedResult("Answer saved successfully: ${input.message}")
   }
 }
@@ -81,15 +82,17 @@ val ollamaModel = ollamaModel {
 ## Tool Definition
 
 Aigentic provides functions for defining custom tools that extend your agent's capabilities.
-You can use `addTool` to inline a tool directly into the agent, or create a reusable tool using `toTool`.
+You can use `addTool` to inline a tool directly into the agent, or create a reusable tool using `createTool`.
 
 
 ```kotlin
+@AigenticParameter
 data class WeatherRequest(val location: String)
+@AigenticParameter
 data class WeatherResponse(val temperature: Double, val conditions: String)
 
-val weatherTool = toTool<WeatherRequest, WeatherResponse>(
-    name = "get_weather",
+val weatherTool = create<WeatherRequest, WeatherResponse>(
+    name = "getWeather",
     description = "Get the current weather for a location"
 ) { request ->
     weatherService.getWeather(request.location)
