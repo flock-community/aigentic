@@ -5,6 +5,8 @@ import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
+import kotlin.Deprecated
+import kotlin.ReplaceWith
 import kotlin.jvm.JvmInline
 
 data class Run<O : Any>(
@@ -22,12 +24,31 @@ value class RunTag(val value: String)
 @JvmInline
 value class RunId(val value: String)
 
+data class TokenUsage(
+    val inputTokens: Int,
+    val outputTokens: Int,
+    val thinkingOutputTokens: Int,
+    val cachedInputTokens: Int,
+)
+
+fun <O : Any> Run<O>.tokenUsage(): TokenUsage =
+    TokenUsage(
+        inputTokens = modelRequests.sumOf { it.inputTokenCount },
+        outputTokens = modelRequests.sumOf { it.outputTokenCount },
+        thinkingOutputTokens = modelRequests.sumOf { it.thinkingOutputTokenCount },
+        cachedInputTokens = modelRequests.sumOf { it.cachedInputTokenCount },
+    )
+
+@Deprecated("Use tokenUsage().inputTokens instead", ReplaceWith("tokenUsage().inputTokens"))
 fun <O : Any> Run<O>.inputTokens(): Int = modelRequests.sumOf { it.inputTokenCount }
 
+@Deprecated("Use tokenUsage().outputTokens instead", ReplaceWith("tokenUsage().outputTokens"))
 fun <O : Any> Run<O>.outputTokens(): Int = modelRequests.sumOf { it.outputTokenCount }
 
+@Deprecated("Use tokenUsage().thinkingOutputTokens instead", ReplaceWith("tokenUsage().thinkingOutputTokens"))
 fun <O : Any> Run<O>.thinkingOutputTokens(): Int = modelRequests.sumOf { it.thinkingOutputTokenCount }
 
+@Deprecated("Use tokenUsage().cachedInputTokens instead", ReplaceWith("tokenUsage().cachedInputTokens"))
 fun <O : Any> Run<O>.cachedInputTokens(): Int = modelRequests.sumOf { it.cachedInputTokenCount }
 
 @PublishedApi
