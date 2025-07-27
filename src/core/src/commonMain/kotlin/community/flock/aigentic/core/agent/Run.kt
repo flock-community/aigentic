@@ -3,11 +3,11 @@ package community.flock.aigentic.core.agent
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlin.Deprecated
 import kotlin.ReplaceWith
 import kotlin.jvm.JvmInline
+import kotlin.time.Instant
 
 data class Run<O : Any>(
     val startedAt: Instant,

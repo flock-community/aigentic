@@ -1,6 +1,5 @@
 pluginManagement {
     includeBuild("src/plugins/convention-plugins")
-    includeBuild("src/plugins/gradle-plugin")
     repositories {
         google()
         mavenCentral()

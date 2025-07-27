@@ -12,7 +12,7 @@ import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.tool.ToolDescription
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 fun createAgent() =
     Agent<Unit, String>(

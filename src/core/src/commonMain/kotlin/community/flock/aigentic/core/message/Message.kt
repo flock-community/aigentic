@@ -1,11 +1,11 @@
 package community.flock.aigentic.core.message
 
 import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmInline
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 sealed interface ContextMessage
 

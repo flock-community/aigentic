@@ -37,9 +37,9 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.toByteArray
 import io.ktor.util.toMap
 import io.ktor.utils.io.core.toByteArray
+import io.ktor.utils.io.toByteArray
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
@@ -81,6 +81,7 @@ class AigenticPlatformClient(
         }.map { RunId(it.runId) to it.toRun() }
 }
 
+@Suppress("UNCHECKED_CAST")
 class AigenticPlatformEndpoints(
     basicAuth: Authentication.BasicAuth,
     apiUrl: PlatformApiUrl,
