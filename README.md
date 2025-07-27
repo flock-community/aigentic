@@ -220,50 +220,7 @@ repositories {
 }
 ```
 
-## Code Generation with KSP
-
-Aigentic provides a Kotlin Symbol Processing (KSP) processor to automatically generate parameter classes for your data classes. This can be used to simplify the creation of tools and response parameters.
-
-### Setup
-
-To use the KSP processor, add the following to your project:
-
-```kotlin
-plugins {
-    id("com.google.devtools.ksp") version "<ksp-version>" // Must match your Kotlin version
-    kotlin("plugin.serialization") version "<kotlin-version>"
-}
-
-dependencies {
-    implementation("community.flock.aigentic:core:<version>")
-    ksp("community.flock.aigentic:ksp-processor:<version>")
-}
-```
-
-> **Note**: The KSP processor currently only works with Gradle. The KSP version must match your Kotlin version (e.g., for Kotlin 1.9.23, use KSP version 1.9.23-1.0.20).
-
-### Usage
-
-1. Annotate your data classes with `@AigenticParameter`:
-
-```kotlin
-import community.flock.aigentic.core.annotations.AigenticParameter
-
-@AigenticParameter("The person to create")
-data class Person(
-    val name: String,
-    val age: Int,
-    val address: Address
-)
-
-data class Address(
-    val street: String,
-    val city: String,
-    val zipCode: String
-)
-```
-
-2. The KSP processor will generate parameter classes for your annotated data classes, which you can use in your tools:
+# Usage
 
 ```kotlin
 import community.flock.aigentic.core.agent.Agent
