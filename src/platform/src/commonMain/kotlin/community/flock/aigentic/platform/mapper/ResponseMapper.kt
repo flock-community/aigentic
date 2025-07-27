@@ -21,7 +21,7 @@ import community.flock.aigentic.gateway.wirespec.TextMessageDto
 import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
 import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 internal fun RunDetailsDto.toRun() =
     Run<String>(

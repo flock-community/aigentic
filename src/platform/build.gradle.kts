@@ -34,6 +34,10 @@ kotlin {
     }
 
     sourceSets {
+        all {
+            languageSettings.optIn("kotlin.time.ExperimentalTime")
+        }
+
         val commonMain by getting {
             kotlin {
                 srcDir(wirespecKotlin.get().output)

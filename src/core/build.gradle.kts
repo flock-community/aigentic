@@ -17,12 +17,12 @@ kotlin {
 
         all {
             languageSettings.optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+            languageSettings.optIn("kotlin.time.ExperimentalTime")
         }
 
         val commonMain by getting {
             dependencies {
                 api(libs.coroutines.core)
-                api(libs.kotlinx.datetime)
                 api(libs.serialization.json)
             }
         }

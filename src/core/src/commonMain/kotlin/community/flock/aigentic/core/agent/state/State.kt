@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.merge
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 data class State(
     val startedAt: Instant = Clock.System.now(),

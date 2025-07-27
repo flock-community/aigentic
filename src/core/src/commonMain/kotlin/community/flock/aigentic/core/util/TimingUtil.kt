@@ -1,8 +1,10 @@
 package community.flock.aigentic.core.util
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
+@OptIn(ExperimentalTime::class)
 @PublishedApi
 internal suspend fun <T> withStartFinishTiming(block: suspend () -> T): Triple<Instant, Instant, T> {
     val startedAt = Clock.System.now()
