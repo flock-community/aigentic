@@ -36,6 +36,15 @@ Key features:
 - Applied at data classes
 - Has an optional `description` property that provides a high-level description of the parameter object
 
+#### Importance of Descriptions
+
+The `description` property in `@AigenticParameter` significantly improves LLM interactions. This description is included in the tool schemas sent to the LLM, giving it context about:
+- The overall purpose of the parameter object
+- How this object fits into the tool's functionality
+- Any special considerations for using this parameter type
+
+Good descriptions help the LLM better understand when and how to use your tools, resulting in improved agent performance.
+
 ### @Description
 
 The `@Description` annotation marks properties within parameter data classes with additional information about their meaning. These descriptions are used by Aigentic to generate accurate documentation and parameter schemas the LLM.
@@ -45,6 +54,16 @@ Key features:
 - Requires a string value that describes the property's purpose
 - Helps LLMs understand the expected input and output formats
 - Improves tool usability by providing clear guidance on parameter usage
+
+#### Importance of Property Descriptions
+
+Property descriptions greatly enhance LLM interactions. Each property description is included in the tool schemas sent to the LLM, providing details about:
+- The specific purpose of each property
+- Expected formats and valid values
+- Relationships between properties
+- Examples of proper usage (when included in the description)
+
+Clear property descriptions help the LLM create more accurate parameter objects, reducing errors and making your tools work better. Adding more context through descriptions helps the LLM understand how to use your tools properly.
 
 ## Creating Tools
 
