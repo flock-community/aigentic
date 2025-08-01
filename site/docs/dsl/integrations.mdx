@@ -1,0 +1,237 @@
+---
+id: integrations
+title: Integrations
+sidebar_position: 4
+---
+
+# Integrations
+
+Aigentic provides powerful integration capabilities that allow your agents to interact with external systems and APIs. This page covers the available integrations and how to use them.
+
+## OpenAPI Integration
+
+Aigentic offers seamless integration with OpenAPI specifications, allowing your agents to interact with any API that provides an OpenAPI (formerly Swagger) specification.
+
+### Overview
+
+The OpenAPI integration automatically converts API endpoints defined in an OpenAPI specification into tools that your agent can use. This enables your agent to:
+
+- Make HTTP requests to external APIs
+- Pass parameters to API endpoints
+- Process API responses
+
+### Importance of OpenAPI Descriptions
+
+When creating or using OpenAPI specifications with Aigentic, good descriptions and context information make a big difference. These descriptions (for endpoints, parameters, schemas, etc.) help the LLM understand how to use each API endpoint correctly.
+
+All descriptions from your OpenAPI specification are included in the tool schemas sent to the LLM, helping it understand:
+- The purpose of each endpoint
+- How parameters should be used
+- What the expected responses mean
+- Any constraints or special considerations
+
+Well-documented OpenAPI specifications help your agents use APIs more accurately and effectively.
+
+### Basic Usage
+
+To integrate an OpenAPI specification with your agent, use the `openApiTools` function:
+
+```kotlin
+agent<Input, Output> {
+    // Configure your model
+    openAIModel {
+        apiKey("your-api-key")
+        modelIdentifier(OpenAIModelIdentifier.GPT4O)
+    }
+
+    // Define your agent's task
+    task("Interact with the API") {
+        addInstruction("Use the API to retrieve information")
+    }
+
+    // Add the OpenAPI specification
+    openApiTools(openApiSpecificationJson)
+}
+```
+
+The `openApiTools` function takes an OpenAPI specification in JSON format and automatically creates tools for each endpoint defined in the specification. These tools are then added to your agent, allowing it to interact with the API.
+
+### Example: Hacker News API
+
+Here's a complete example that uses the Hacker News API:
+
+```kotlin
+suspend fun runOpenAPIAgent(
+    openAIAPIKey: String,
+    hackerNewsOpenAPISpec: String,
+) {
+    val run =
+        agent<Unit, HackerNewsAgentResponse> {
+            openAIModel {
+                apiKey(openAIAPIKey)
+                modelIdentifier(OpenAIModelIdentifier.GPT4O)
+            }
+            task("Send Hacker News stories about AI") {
+                addInstruction("Retrieve the top 10 Hacker News stories")
+                addInstruction("Send stories, if any, about AI to john@doe.com")
+            }
+            // Add a custom email tool
+            addTool<SendEmailRequest, SendEmailResponse>("sendEmail") {
+                sendEmailHandler(it)
+            }
+            // Add the Hacker News API tools
+            openApiTools(hackerNewsOpenAPISpec)
+        }.start()
+
+    when (val result = run.outcome) {
+        is Outcome.Finished ->
+            result.response.let { response ->
+                "Hacker News agent completed successfully: $response"
+            }
+        is Outcome.Stuck -> "Agent is stuck: ${result.reason}"
+        is Outcome.Fatal -> "Agent crashed: ${result.message}"
+    }.also(::println)
+}
+
+@AigenticParameter
+data class HackerNewsAgentResponse(
+    val storiesRetrieved: Int,
+    val aiStoriesFound: Int,
+    val emailsSent: List<String>,
+)
+```
+
+In this example, the agent uses the Hacker News API to retrieve stories and then uses a custom email tool to send AI-related stories to a specified email address.
+
+### Authentication
+
+Many APIs require authentication. Aigentic provides a flexible way to add authentication headers to your OpenAPI requests using the `oasHeaderConfig` parameter:
+
+```kotlin
+openApiTools(
+    oasJson = openApiSpecificationJson,
+    oasHeaderConfig = {
+        // Add a Bearer token for OAuth2/JWT authentication
+        addHeader(Header.Bearer("your-token"))
+
+        // Add custom headers for API keys or other authentication methods
+        addHeader(Header.CustomHeader("X-API-Key", "your-api-key"))
+        addHeader(Header.CustomHeader("User-Agent", "Aigentic/1.0"))
+    }
+)
+```
+
+#### Authentication Types
+
+Aigentic supports two types of headers:
+
+1. **Bearer Token Authentication**:
+   ```kotlin
+   addHeader(Header.Bearer("your-token"))
+   ```
+   This adds an `Authorization: Bearer your-token` header to all requests.
+
+2. **Custom Headers**:
+   ```kotlin
+   addHeader(Header.CustomHeader("X-API-Key", "your-api-key"))
+   ```
+   This allows you to add any custom header with a name and value.
+
+#### Example with Authentication
+
+Here's an example of using the OpenAPI integration with authentication:
+
+```kotlin
+agent<Unit, WeatherResponse> {
+    openAIModel {
+        apiKey("your-openai-api-key")
+        modelIdentifier(OpenAIModelIdentifier.GPT4O)
+    }
+
+    task("Get weather information") {
+        addInstruction("Retrieve weather information for the requested location")
+    }
+
+    openApiTools(
+        oasJson = weatherApiSpec,
+        oasHeaderConfig = {
+            // Add API key authentication
+            addHeader(Header.CustomHeader("X-API-Key", "your-weather-api-key"))
+        }
+    )
+}
+
+```
+
+### How It Works
+
+Under the hood, the OpenAPI integration performs the following steps:
+
+1. **Parsing**: The OpenAPI specification is parsed using the `OpenAPIv3Parser` to extract all the API endpoints and their parameters.
+
+2. **Tool Creation**: Each API endpoint is converted into a tool that the agent can use. The tool's name, description, and parameters are derived from the OpenAPI specification.
+
+3. **Request Handling**: When the agent calls a tool, the corresponding HTTP request is constructed, and Aigentic sends it to the API.
+
+4. **Authentication**: If authentication headers are provided, they are added to each HTTP request.
+
+5. **Response Processing**: The HTTP response is processed and returned to the agent which can act on it.
+
+This process allows your agent to interact with any API that provides an OpenAPI specification, without requiring you to manually define tools for each endpoint.
+
+## Use Cases
+
+The OpenAPI integration enables a wide range of use cases for your Aigentic agents. Here are some examples:
+
+### 1. Data Retrieval and Analysis
+
+Agents can retrieve data from APIs and perform analysis on the results. For example:
+
+- Fetch financial data from a stock API and generate investment recommendations
+- Retrieve weather data and provide forecasts or weather-related advice
+- Collect social media metrics and create engagement reports
+
+### 2. Content Creation
+
+Agents can use API data to create or enhance content:
+
+- Retrieve news articles and generate summaries or newsletters
+- Fetch product data and create product descriptions or marketing copy
+- Access image APIs to generate or modify visual content
+
+### 3. Workflow Automation
+
+Agents can automate complex workflows that involve multiple API calls:
+
+- Create a customer support agent that retrieves customer data, order history, and product information
+- Build a project management assistant that interacts with task tracking APIs
+- Develop a sales assistant that accesses CRM data and email systems
+
+### 4. Integration with Internal Systems
+
+For enterprise applications, agents can integrate with internal systems:
+
+- Connect to internal knowledge bases or documentation systems
+- Interact with custom business applications through their APIs
+- Access and update enterprise data warehouses or databases
+
+### 5. Multi-API Orchestration
+
+Agents can coordinate interactions across multiple APIs:
+
+- Retrieve data from one API and use it to make requests to another API
+- Compare results from multiple similar APIs (e.g., different weather services)
+- Create workflows that move data between different systems
+
+## TLDR
+
+The OpenAPI integration in Aigentic provides a powerful way to connect your agents to external APIs. By automatically converting OpenAPI specifications into tools, it enables your agents to interact with a wide range of services without requiring manual tool definitions.
+
+Key benefits of the OpenAPI integration include:
+
+- **Simplicity**: Add an entire API to your agent with just a line of code
+- **Flexibility**: Support for various authentication methods
+- **Maintainability**: When the API changes, just update the OpenAPI specification
+- **Scalability**: Easily integrate with multiple APIs in the same agent
+
+By leveraging the OpenAPI integration, you can create more capable and versatile agents that can access and manipulate data from virtually any API-enabled service.

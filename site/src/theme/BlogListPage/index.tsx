@@ -7,7 +7,7 @@ export default function BlogListPage({ metadata, items }) {
   return (
     <Layout
       title="Aigentic Blogs"
-      description="Simplify your API development workflows, accelerate implementation, and guarantee strict adherence to defined contract specifications"
+      description="A Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications"
     >
       <main className={styles.blogMain}>
         <h1 className={styles.heading}>Blog</h1>

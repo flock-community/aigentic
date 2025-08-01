@@ -2,6 +2,22 @@
   --ifm-heading-color: #fcde00;
 }
 
+/* Make the table of contents sticky when scrolling */
+.theme-doc-toc-desktop {
+  position: fixed !important;
+  top: 76px !important;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  width: 25%;
+  padding-right: 1rem;
+}
+
+/* Ensure parent container doesn't interfere with sticky positioning */
+.col.col--3 {
+  height: auto !important;
+  overflow: visible !important;
+}
+
 /* Control the order of items in the right navbar */
 
 .navbar__items--right {
