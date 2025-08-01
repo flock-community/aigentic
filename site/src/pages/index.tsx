@@ -8,7 +8,7 @@ import styles from "./index.module.css";
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { JSX } from "react";
-import {agent} from "../code/examples";
+import {weatherAgent} from "../code/examples";
 
 function HomepageHeader() {
   return (
@@ -289,10 +289,10 @@ export default function Home(): JSX.Element {
                   <div className="card card-border-bottom card-nospace">
                     <CodeBlock
                       language="kotlin"
-                      title="SimpleAgent.kt"
+                      title="WeatherAgent.kt"
                       className="custom-code-block"
                     >
-                      {agent}
+                      {weatherAgent}
                     </CodeBlock>
                   </div>
                 </div>

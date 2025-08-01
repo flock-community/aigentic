@@ -1,44 +1,52 @@
-export const agent = `fun agent(question: String) = agent {
+export const weatherAgent = `
+// Describe the agents response type
+@AigenticParameter
+data class WeatherResponse(
+    @Description("Current temperature in degrees Celsius")
+    val temperature: Double,
+    @Description("Current weather conditions description")
+    val conditions: String,
+    @Description("Name of the location for the weather data")
+    val location: String
+)
 
-  @AigenticResponse
-  data class Answer(val answer: String)
+// Describe the getWeather tool request type
+@AigenticParameter
+data class WeatherRequest(
+    @Description("Name of the location to get weather information for")
+    val location: String
+)
 
-  // Configure the model for the agent
-  openAIModel {
-      apiKey("YOUR_API_KEY")
-      modelIdentifier(OpenAIModelIdentifier.GPT4Turbo)
-  }
+// Configure the agent
+val weatherAgent =
+        agent<String, WeatherResponse> {
+            // Configure the model for the agent, other models are also available
+            geminiModel {
+                apiKey("YOUR_API_KEY")
+                modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+            }
 
-  // Configure the task for the agent
-  task("Answer questions about Kotlin Multiplatform") {
-      addInstruction("Provide concise and accurate answers")
-  }
+            // Configure the task for the agent
+            task("Provide weather information") {
+                addInstruction("Respond to user queries about weather")
+            }
 
-  // Set context
-  context {
-      addText(question)
-  }
-
-  finishResponse<Answer>()
-}
+            // Add a weather tool to give the agent live weather information capabilities
+            addTool("getWeather", "Get the current weather for a location") { req: WeatherRequest ->
+                WeatherClient.requestWeather(req.location)
+            }
+        }
 
 // Start the agent and get a run
-val run = agent("What is cool about kotlin?").start()
+val run = weatherAgent.start("What's the weather like in Amsterdam?")
 
 // Print the result
-when (val result = run.result) {
-  is Result.Finished -> println(result.getFinishResponse<Answer>()?.answer)
-  is Result.Stuck -> println("Agent is stuck: \${result.reason}")
-  is Result.Fatal -> println("Error: \${result.message}")
+when (val outcome = run.outcome) {
+  is Outcome.Finished -> println("Weather in \${outcome.response?.location}: \${outcome.response?.temperature}°C, \${outcome.response?.conditions}")
+  is Outcome.Stuck -> println("Agent is stuck: \${outcome.reason}")
+  is Outcome.Fatal -> println("Error: \${outcome.message}")
 }
 
-println("""
-     Token Usage:
-    - Input tokens: \${run.tokenUsage().inputTokens}
-    - Output tokens: \${run.tokenUsage().outputTokens}
-    - Thinking output tokens: \${run.tokenUsage().thinkingOutputTokens}
-    - Cached input tokens: \${run.tokenUsage().cachedInputTokens}
-    - Total tokens: \${run.tokenUsage().totalTokens}
-""")
-
+// Print token usage summary to monitor resource consumption
+println(run.getTokenUsageSummary())
 `
