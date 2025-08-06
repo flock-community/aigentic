@@ -56,8 +56,8 @@ class GeminiClient(
             exponentialDelay()
         }
         install(HttpTimeout) {
-            requestTimeoutMillis = 60_000
-            socketTimeoutMillis = 60_000
+            requestTimeoutMillis = config.requestTimeoutMillis
+            socketTimeoutMillis = config.socketTimeoutMillis
         }
     }
 
