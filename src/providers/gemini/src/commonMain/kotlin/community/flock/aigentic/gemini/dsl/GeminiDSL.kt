@@ -17,6 +17,8 @@ class GeminiModelConfig : Config<GeminiModel> {
     private var modelIdentifier: GeminiModelIdentifier? = null
     private var generationConfig: GenerationConfig = GenerationConfig()
     private var logLevel: LogLevel = LogLevel.NONE
+    private var requestTimeoutMillis: Long = 60_000
+    private var socketTimeoutMillis: Long = 60_000
 
     fun GeminiModelConfig.apiKey(apiKey: String) {
         this.apiKey = apiKey
@@ -34,15 +36,25 @@ class GeminiModelConfig : Config<GeminiModel> {
         this.logLevel = level
     }
 
-    override fun build(): GeminiModel =
-        GeminiModel(
-            authentication =
-                Authentication.APIKey(
-                    checkNotNull(
-                        apiKey,
-                        builderPropertyMissingErrorMessage("apiKey", "geminiModel { apiKey() }"),
-                    ),
+    fun GeminiModelConfig.requestTimeout(timeoutMillis: Long) {
+        this.requestTimeoutMillis = timeoutMillis
+    }
+
+    fun GeminiModelConfig.socketTimeout(timeoutMillis: Long) {
+        this.socketTimeoutMillis = timeoutMillis
+    }
+
+    override fun build(): GeminiModel {
+        val authentication =
+            Authentication.APIKey(
+                checkNotNull(
+                    apiKey,
+                    builderPropertyMissingErrorMessage("apiKey", "geminiModel { apiKey() }"),
                 ),
+            )
+
+        return GeminiModel(
+            authentication = authentication,
             modelIdentifier =
                 checkNotNull(
                     modelIdentifier,
@@ -50,5 +62,13 @@ class GeminiModelConfig : Config<GeminiModel> {
                 ),
             generationSettings = generationConfig.build(),
             logLevel = logLevel,
+            geminiClient =
+                GeminiModel.defaultGeminiClient(
+                    apiKeyAuthentication = authentication,
+                    logLevel = logLevel,
+                    requestTimeoutMillis = requestTimeoutMillis,
+                    socketTimeoutMillis = socketTimeoutMillis,
+                ),
         )
+    }
 }

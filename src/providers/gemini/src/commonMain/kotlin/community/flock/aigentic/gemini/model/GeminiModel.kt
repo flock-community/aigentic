@@ -51,9 +51,16 @@ class GeminiModel(
             apiKeyAuthentication: Authentication.APIKey,
             logLevel: LogLevel = LogLevel.NONE,
             requestsPerMinute: Int = 15,
+            requestTimeoutMillis: Long = 60_000,
+            socketTimeoutMillis: Long = 60_000,
         ): GeminiClient =
             GeminiClient(
-                config = GeminiApiConfig(apiKeyAuthentication),
+                config =
+                    GeminiApiConfig(
+                        apiKey = apiKeyAuthentication,
+                        requestTimeoutMillis = requestTimeoutMillis,
+                        socketTimeoutMillis = socketTimeoutMillis,
+                    ),
                 rateLimiter = RateLimitBucket(requestsPerMinute),
                 logLevel = logLevel,
             )
