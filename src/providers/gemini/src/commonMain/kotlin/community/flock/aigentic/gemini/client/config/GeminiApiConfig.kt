@@ -6,4 +6,6 @@ data class GeminiApiConfig(
     val apiKey: Authentication.APIKey,
     val baseUrl: String = "https://generativelanguage.googleapis.com/v1beta/models",
     val numberOfRetriesOnServerErrors: Int = 1,
+    val requestTimeoutMillis: Long = 60_000,
+    val socketTimeoutMillis: Long = 60_000,
 )

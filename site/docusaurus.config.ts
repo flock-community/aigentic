@@ -21,7 +21,7 @@ const config: Config = {
   },
   presets: [
     [
-      "classic",
+      '@docusaurus/preset-classic',
       {
         docs: {
           sidebarPath: "./sidebars.ts",
@@ -43,6 +43,10 @@ const config: Config = {
           changefreq: "weekly",
           priority: 0.5,
           filename: "sitemap.xml",
+        },
+        gtag: {
+          trackingID: 'G-7JT3PCCT46',
+          anonymizeIP: true,
         },
       } satisfies Preset.Options,
     ],
