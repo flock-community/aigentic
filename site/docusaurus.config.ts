@@ -62,6 +62,10 @@ const config: Config = {
         content:
           "A Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications",
       },
+      {
+        name: "algolia-site-verification",
+        content: "D90B1DEFD2B6FF6D",
+      },
       { property: "og:title", content: `Aigentic - AI Agents with Kotlin` },
       {
         property: "og:description",
@@ -156,11 +160,9 @@ const config: Config = {
       ],
     },
     algolia: {
-      appId: "8GJ5M7UPF1",
-      // apiKey: "ab006ab5e8aaea60cfcafc0dfa6e3a67",
-      apiKey: "36710561274c40b93985864373d1aadb",
-      // indexName: "wirespec_io_wijtzn3w54_pages",
-      indexName: "aigentic",
+      appId: "ZN82DIF236",
+      apiKey: "70c378a5c89253239a7707b3316becdd",
+      indexName: "Aigentic",
       contextualSearch: true,
       searchPagePath: "search",
       insights: false,
