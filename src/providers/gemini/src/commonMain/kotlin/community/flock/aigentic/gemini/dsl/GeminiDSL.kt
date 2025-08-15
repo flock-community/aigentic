@@ -18,6 +18,9 @@ class GeminiModelConfig : Config<GeminiModel> {
     private var generationConfig: GenerationConfig = GenerationConfig()
     private var logLevel: LogLevel = LogLevel.NONE
 
+    private var requestTimeoutMillis: Long? = null
+    private var socketTimeoutMillis: Long? = null
+
     fun GeminiModelConfig.apiKey(apiKey: String) {
         this.apiKey = apiKey
     }
@@ -34,21 +37,43 @@ class GeminiModelConfig : Config<GeminiModel> {
         this.logLevel = level
     }
 
-    override fun build(): GeminiModel =
-        GeminiModel(
-            authentication =
-                Authentication.APIKey(
-                    checkNotNull(
-                        apiKey,
-                        builderPropertyMissingErrorMessage("apiKey", "geminiModel { apiKey() }"),
-                    ),
-                ),
-            modelIdentifier =
-                checkNotNull(
-                    modelIdentifier,
-                    builderPropertyMissingErrorMessage("modelIdentifier", "geminiModel { modelIdentifier() }"),
-                ),
+    fun GeminiModelConfig.requestTimeout(timeoutMillis: Long) {
+        this.requestTimeoutMillis = timeoutMillis
+    }
+
+    fun GeminiModelConfig.socketTimeout(timeoutMillis: Long) {
+        this.socketTimeoutMillis = timeoutMillis
+    }
+
+    override fun build(): GeminiModel {
+        val authentication =
+            Authentication.APIKey(
+                checkNotNull(apiKey, builderPropertyMissingErrorMessage("apiKey", "geminiModel { apiKey() }")),
+            )
+
+        val geminiClient =
+            if (requestTimeoutMillis != null || socketTimeoutMillis != null) {
+                // Custom timeouts
+                GeminiModel.defaultGeminiClient(
+                    apiKeyAuthentication = authentication,
+                    logLevel = logLevel,
+                    requestTimeoutMillis = requestTimeoutMillis ?: 60_000,
+                    socketTimeoutMillis = socketTimeoutMillis ?: 60_000,
+                )
+            } else {
+                // Default timeouts van GeminiApiConfig
+                GeminiModel.defaultGeminiClient(
+                    apiKeyAuthentication = authentication,
+                    logLevel = logLevel,
+                )
+            }
+
+        return GeminiModel(
+            authentication = authentication,
+            modelIdentifier = checkNotNull(modelIdentifier, builderPropertyMissingErrorMessage("modelIdentifier", "geminiModel { modelIdentifier() }")),
             generationSettings = generationConfig.build(),
             logLevel = logLevel,
+            geminiClient = geminiClient,
         )
+    }
 }
