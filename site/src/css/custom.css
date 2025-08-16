@@ -1518,3 +1518,21 @@ table tr:nth-child(2n) {
   max-height: 400px;
   overflow-y: auto;
 }
+
+.DocSearch-Hit[aria-selected=true] a {
+  background-color: #2a2a2a !important;
+}
+
+.DocSearch-Hit[aria-selected=true] .DocSearch-Hit-Tree,
+.DocSearch-Hit[aria-selected=true] .DocSearch-Hit-action,
+.DocSearch-Hit[aria-selected=true] .DocSearch-Hit-icon,
+.DocSearch-Hit[aria-selected=true] .DocSearch-Hit-path,
+.DocSearch-Hit[aria-selected=true] .DocSearch-Hit-text,
+.DocSearch-Hit[aria-selected=true] .DocSearch-Hit-title,
+.DocSearch-Hit[aria-selected=true] mark {
+  color: #ffffff !important;
+}
+
+.DocSearch-Hit[aria-selected=true] mark {
+  color: #ffdf00 !important;
+}
