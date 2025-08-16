@@ -9,17 +9,19 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { JSX } from "react";
 import {weatherAgent} from "../code/examples";
+import TypeCursor from "../components/TypeCursor";
 
 function HomepageHeader() {
   return (
     <header className={clsx("hero hero--primary", styles.heroBanner)}>
       <div className="container">
-        <Heading
-          as="h1"
-          className={clsx("hero__title hero-heading", styles.heroHeading)}
-        >
-          Aigentic <br /> <span className="primary-text-color">AI agents with Kotlin</span>
-        </Heading>
+        <div className={clsx("hero__title hero-heading", styles.heroHeading)}>
+          <TypeCursor 
+            phrases={['production-ready', 'reliable', 'LLM-agnostic']}
+            prefix="Aigentic helps you build"
+            suffix="AI agents faster"
+          />
+        </div>
         <p className={clsx("hero__subtitle", styles.heroSubtitle)}>
           Streamline your LLM development journey with a powerful Kotlin DSL for building
           and integrating AI agents into applications
