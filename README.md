@@ -60,7 +60,7 @@ val run = agent.start("What's the weather like in Amsterdam?")
 
 For complete documentation, examples, and guides, visit **[aigentic.io](https://aigentic.io)**
 
-- [Getting Started](https://aigentic.io/getting-started)
+- [Getting Started](https://aigentic.io/docs/getting-started)
 - [Agent DSL](https://aigentic.io/docs/dsl/agent)
 - [Tools & Integrations](https://aigentic.io/docs/dsl/tools)
 - [Provider Configuration](https://aigentic.io/docs/dsl/providers)
