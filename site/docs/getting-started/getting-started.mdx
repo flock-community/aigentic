@@ -14,7 +14,10 @@ Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for buil
 
 ## Installation
 
-Aigentic can be added to your project using Gradle, the preferred build tool for Kotlin projects.
+Aigentic can be added to your project using either Gradle or Maven build tools.
+
+<Tabs>
+<TabItem value="gradle" label="Gradle">
 
 ### Kotlin Multiplatform
 
@@ -42,10 +45,103 @@ dependencies {
     // Tools modules (optional)
     implementation("community.flock.aigentic:http:{{AIGENTIC_VERSION}}")
     implementation("community.flock.aigentic:openapi:{{AIGENTIC_VERSION}}")
-
 }
-
 ```
+
+</TabItem>
+<TabItem value="maven" label="Maven">
+
+### JVM
+
+Add the following to your `pom.xml` file:
+
+```xml
+<properties>
+    <kotlin.version>2.1.21</kotlin.version>
+    <aigentic.version>{{AIGENTIC_VERSION}}</aigentic.version>
+</properties>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-plugin</artifactId>
+            <version>${kotlin.version}</version>
+            <configuration>
+                <compilerPlugins>
+                    <plugin>kotlinx-serialization</plugin>
+                </compilerPlugins>
+            </configuration>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                    <artifactId>kotlin-maven-serialization</artifactId>
+                    <version>${kotlin.version}</version>
+                </dependency>
+            </dependencies>
+            <executions>
+                <execution>
+                    <id>compile</id>
+                    <phase>compile</phase>
+                    <goals>
+                        <goal>compile</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+
+<dependencies>
+    <!-- Core module -->
+    <dependency>
+        <groupId>community.flock.aigentic</groupId>
+        <artifactId>core-jvm</artifactId>
+        <version>${aigentic.version}</version>
+    </dependency>
+
+    <!-- Provider modules (choose the ones you need) -->
+    <dependency>
+        <groupId>community.flock.aigentic</groupId>
+        <artifactId>openai-jvm</artifactId>
+        <version>${aigentic.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>community.flock.aigentic</groupId>
+        <artifactId>gemini-jvm</artifactId>
+        <version>${aigentic.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>community.flock.aigentic</groupId>
+        <artifactId>ollama-jvm</artifactId>
+        <version>${aigentic.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>community.flock.aigentic</groupId>
+        <artifactId>vertexai-jvm</artifactId>
+        <version>${aigentic.version}</version>
+    </dependency>
+
+    <!-- Tools modules (optional) -->
+    <dependency>
+        <groupId>community.flock.aigentic</groupId>
+        <artifactId>http-jvm</artifactId>
+        <version>${aigentic.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>community.flock.aigentic</groupId>
+        <artifactId>openapi-jvm</artifactId>
+        <version>${aigentic.version}</version>
+    </dependency>
+</dependencies>
+```
+
+:::caution Don't forget the -jvm suffix
+When using Maven, make sure to include the `-jvm` suffix in all Aigentic dependency artifact IDs. This ensures you're using the JVM-specific versions of the libraries that are compatible with Maven projects.
+:::
+
+</TabItem>
+</Tabs>
 
 ---
 

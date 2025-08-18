@@ -4,6 +4,10 @@ title: Providers
 sidebar_position: 2
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import CodeBlock from '@theme/CodeBlock';
+
 # Providers
 
 Aigentic provides a consistent interface for working with different Large Language Model (LLM) providers. This allows you to easily switch between models or use multiple models in your application.
@@ -12,10 +16,10 @@ Aigentic provides a consistent interface for working with different Large Langua
 
 Aigentic supports several LLM providers out of the box:
 
-### OpenAI
-
-```kotlin
-val openAIModel = openAIModel {
+<Tabs>
+  <TabItem value="OpenAI" label="OpenAI">
+    <CodeBlock language="kotlin">
+      {`val openAIModel = openAIModel {
     apiKey("your-api-key")
     modelIdentifier(OpenAIModelIdentifier.GPT4O)
     generationConfig {
@@ -23,13 +27,13 @@ val openAIModel = openAIModel {
         topK(40)
         topP(0.95f)
     }
-}
-```
+}`}
+    </CodeBlock>
+  </TabItem>
 
-### Gemini
-
-```kotlin
-val geminiModel = geminiModel {
+  <TabItem value="Gemini" label="Gemini">
+    <CodeBlock language="kotlin">
+      {`val geminiModel = geminiModel {
     apiKey("your-api-key")
     modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
     generationConfig {
@@ -37,30 +41,32 @@ val geminiModel = geminiModel {
         topK(40)
         topP(0.8f)
     }
-}
-```
+}`}
+    </CodeBlock>
+  </TabItem>
 
-### Ollama
-
-```kotlin
-val ollamaModel = ollamaModel {
+  <TabItem value="Ollama" label="Ollama">
+    <CodeBlock language="kotlin">
+      {`val ollamaModel = ollamaModel {
     apiUrl("http://localhost:11434/v1/")
     modelIdentifier(OllamaModelIdentifier.Llama2)
     generationConfig {
         // Use default settings
     }
-}
-```
+}`}
+    </CodeBlock>
+  </TabItem>
 
-### VertexAI
-
-```kotlin
-val vertexAIModel = vertexAIModel {
+  <TabItem value="VertexAI" label="VertexAI">
+    <CodeBlock language="kotlin">
+      {`val vertexAIModel = vertexAIModel {
     project("your-project-id")
     location("your-location")
     modelIdentifier(VertexAIModelIdentifier.Gemini2_5Flash)
-}
-```
+}`}
+    </CodeBlock>
+  </TabItem>
+</Tabs>
 
 ## Bring your own model
 
