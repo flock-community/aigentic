@@ -8,6 +8,8 @@
 
 Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications. It streamlines the process of creating, deploying, and managing LLM agents within your software ecosystem.
 
+Visit **[aigentic.io](https://aigentic.io)** for a complete overview.
+
 ## Features
 
 - **Intuitive Kotlin DSL** for agent creation and management
