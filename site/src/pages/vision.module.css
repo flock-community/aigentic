@@ -43,7 +43,7 @@
   margin: 0%;
   margin-bottom: 30px;
   span {
-    color: #ffdf00;
+    color: #f0bc42;
   }
   @media (max-width: 1024px) {
     font-size: 48px;
@@ -60,7 +60,7 @@
   line-height: 104%;
   letter-spacing: -0.03em;
   text-align: center;
-  color: #ffdf00;
+  color: #f0bc42;
 }
 
 .paragraph {

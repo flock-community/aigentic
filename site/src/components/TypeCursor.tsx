@@ -30,40 +30,40 @@ const TypeCursor: React.FC<TypeCursorProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [cursorVisible, setCursorVisible] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
-  
+
   // Cursor blinking effect
   useEffect(() => {
     const cursorInterval = setInterval(() => {
       setCursorVisible(prev => !prev);
     }, cursorBlinkSpeed);
-    
+
     return () => clearInterval(cursorInterval);
   }, [cursorBlinkSpeed]);
 
   // Helper function to get variable typing speed
   const getVariableSpeed = (baseSpeed: number, char: string) => {
     // Check if user prefers reduced motion
-    const prefersReducedMotion = typeof window !== 'undefined' && 
+    const prefersReducedMotion = typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
+
     if (prefersReducedMotion) {
       return baseSpeed;
     }
-    
+
     // Add slight variation for human feel
     const variation = Math.random() * 40 - 20; // ±20ms variation
-    
+
     // Slower for punctuation and spaces
     if ([' ', '-', '.', ','].includes(char)) {
       return baseSpeed + 30 + variation;
     }
-    
+
     return baseSpeed + variation;
   };
 
   useEffect(() => {
     if (isPaused) return;
-    
+
     const currentPhrase = phrases[phraseIndex];
     let timeout: NodeJS.Timeout;
 
@@ -76,19 +76,17 @@ const TypeCursor: React.FC<TypeCursorProps> = ({
         timeout = setTimeout(() => {}, delayAfterPhrase);
       } else {
         // Delete the next character
-        const currentChar = text[text.length - 1];
-        const speed = getVariableSpeed(deletingSpeed, currentChar);
+        const speed = deletingSpeed
         timeout = setTimeout(() => {
           setText(text.substring(0, text.length - 1));
         }, speed);
       }
-    } 
+    }
     // If we're typing
     else {
       if (text.length < currentPhrase.length) {
         // Type the next character
-        const nextChar = currentPhrase[text.length];
-        const speed = getVariableSpeed(typingSpeed, nextChar);
+        const speed = typingSpeed;
         timeout = setTimeout(() => {
           setText(currentPhrase.substring(0, text.length + 1));
         }, speed);
@@ -102,19 +100,19 @@ const TypeCursor: React.FC<TypeCursorProps> = ({
 
     return () => clearTimeout(timeout);
   }, [
-    text, 
-    isDeleting, 
-    phraseIndex, 
-    phrases, 
-    typingSpeed, 
-    deletingSpeed, 
-    delayAfterPhrase, 
+    text,
+    isDeleting,
+    phraseIndex,
+    phrases,
+    typingSpeed,
+    deletingSpeed,
+    delayAfterPhrase,
     delayBeforeDelete,
     isPaused
   ]);
 
   return (
-    <div 
+    <div
       className={clsx(styles.typeCursor, className)}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -124,7 +122,7 @@ const TypeCursor: React.FC<TypeCursorProps> = ({
         <div className={styles.dynamicContainer}>
           <span className={styles.highlightedText}>
             {text}
-            <span 
+            <span
               className={clsx(styles.cursor, {
                 [styles.cursorVisible]: cursorVisible
               })}

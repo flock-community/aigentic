@@ -10,6 +10,11 @@ Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for buil
 ## DSL Usage
 Aigentic provides a powerful and intuitive DSL for creating and configuring AI agents. Here's an example of how to use it:
 
+It provides 2 main dsl:
+
+- Agent DSL: dsl to compose an agent
+- Workflow DSL dsl to chain multiple agents into a workflow
+
 Required imports:
 - community.flock.aigentic.core.agent.start
 - community.flock.aigentic.core.agent.tool.Outcome
@@ -81,6 +86,7 @@ The project is organized into several modules:
 
 1. **Core Module** (`src/core/`): Contains the core interfaces and classes for the Aigentic library. Core doesn't depend on other modules:
    - Agent configuration and execution
+   - Workflow configuration and execution
    - Model interfaces and abstractions
    - Tool definitions and implementations
    - Message handling
@@ -107,7 +113,7 @@ The project is organized into several modules:
 When working with this project, Junie should:
 
 1. **Run tests for modified components**: After making changes to any file, run the relevant tests to ensure functionality is preserved.
-2**Consider edge cases**: When implementing new features or fixing bugs, consider edge cases and ensure they are properly handled.
+2. **Consider edge cases**: When implementing new features or fixing bugs, consider edge cases and ensure they are properly handled.
 
 ## Build Guidelines
 - The project uses Gradle for building

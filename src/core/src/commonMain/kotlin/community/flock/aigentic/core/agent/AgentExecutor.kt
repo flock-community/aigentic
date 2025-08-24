@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(input: I? = null): Run<O> =
+suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(input: I? = null): AgentRun<O> =
     coroutineScope {
         val agent = this@start
         val state = State()
@@ -61,7 +61,7 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(input: I
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> publishRun(
     agent: Agent<I, O>,
-    run: Run<O>,
+    run: AgentRun<O>,
     state: State,
 ) {
     if (agent.platform != null) {

@@ -1,0 +1,176 @@
+---
+id: workflow
+title: Workflow DSL
+sidebar_position: 1
+---
+
+# Workflow DSL
+
+Workflows help you chain multiple agents together to handle complex tasks that require multiple processing steps. Each agent in the workflow processes the output from the previous agent, creating a seamless pipeline of AI-powered operations.
+
+## Creating a Workflow
+
+The main way to create a workflow is using the `thenProcess` infix function to chain agents together:
+
+```kotlin
+// Creates a Workflow3<InputType, FirstAgentOutput, SecondAgentOutput, OutputType>
+val workflow = firstAgent thenProcess secondAgent thenProcess thirdAgent
+```
+
+This creates a workflow where:
+1. `firstAgent` processes the initial input
+2. `secondAgent` processes the output from `firstAgent`
+3. `thirdAgent` processes the output from `secondAgent`
+
+## Type Safety
+
+Workflows are fully type-safe. The output type of each agent must match the input type of the next agent in the workflow:
+
+```kotlin
+@AigenticParameter
+data class InitialInput(val text: String)
+
+@AigenticParameter
+data class ProcessedData(val result: String)
+
+@AigenticParameter
+data class FinalOutput(val summary: String)
+
+// This works - types align correctly
+val firstAgent = agent<InitialInput, ProcessedData> { /* config */ }
+val secondAgent = agent<ProcessedData, FinalOutput> { /* config */ }
+
+// Creates a Workflow2<InitialInput, FirstAgentOutput, FinalOutput>
+// Input flows: InitialInput -> FirstAgentOutput -> FinalOutput
+val workflow = firstAgent thenProcess secondAgent
+```
+
+## Starting a Workflow
+
+Once you've created a workflow, start it using the `start` function:
+
+```kotlin
+val workflowRun = workflow.start(initialInput)
+
+when (val outcome = workflowRun.outcome) {
+    is Outcome.Finished -> {
+        val result = outcome.response
+        println("Workflow completed: $result")
+    }
+    is Outcome.Stuck -> println("Workflow stuck: ${outcome.reason}")
+    is Outcome.Fatal -> println("Workflow failed: ${outcome.message}")
+}
+```
+
+## Working with WorkflowRun
+
+When you run a workflow, you get a `WorkflowRun` that works just like an `AgentRun` but also gives you access to each individual agent's results:
+
+```kotlin
+val workflowRun = workflow.start(input)
+
+// Handle the final result
+when (val outcome = workflowRun.outcome) {
+    is Outcome.Finished -> println("Final result: ${outcome.response}")
+    is Outcome.Stuck -> println("Workflow stuck: ${outcome.reason}")
+    is Outcome.Fatal -> println("Workflow failed: ${outcome.message}")
+}
+
+// Access individual agent runs if needed
+workflowRun.agentRuns.forEach { agentRun ->
+    println("Agent used ${agentRun.tokenUsage()} tokens")
+}
+```
+
+## Complete Example
+
+Here's a practical example that processes legal documents through multiple stages:
+
+```kotlin
+@AigenticParameter
+data class RedactedDocument(val redactedText: String)
+
+@AigenticParameter
+data class ComplianceReport(
+    val riskLevel: String,
+    val potentialIssues: List<String>,
+    val recommendations: List<String>
+)
+
+@AigenticParameter
+data class LegalSummary(val summary: String)
+
+suspend fun processLegalDocument(document: String, apiKey: String) {
+    // Create agents for each step
+    val documentRedactor = agent<String, RedactedDocument> {
+        geminiModel {
+            apiKey(apiKey)
+            modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+        }
+        task("Redact sensitive information from legal documents") {
+            addInstruction("Replace all personal names with [REDACTED NAME]")
+            addInstruction("Replace all addresses with [REDACTED ADDRESS]")
+            addInstruction("Replace all phone numbers with [REDACTED PHONE]")
+            addInstruction("Replace all social security numbers with [REDACTED SSN]")
+        }
+    }
+
+    val complianceChecker = agent<RedactedDocument, ComplianceReport> {
+        geminiModel {
+            apiKey(apiKey)
+            modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+        }
+        task("Analyze legal document for compliance issues") {
+            addInstruction("Evaluate the document for potential legal compliance issues")
+            addInstruction("Assess risk level as LOW, MEDIUM, or HIGH")
+            addInstruction("Identify potential issues and provide recommendations")
+        }
+    }
+
+    val summarizer = agent<ComplianceReport, LegalSummary> {
+        geminiModel {
+            apiKey(apiKey)
+            modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+        }
+        task("Create a comprehensive summary") {
+            addInstruction("Generate a summary including compliance findings")
+            addInstruction("Include risk level and main concerns")
+            addInstruction("Keep the summary under 100 words")
+        }
+    }
+
+    // Chain the agents into a workflow
+    // Creates a Workflow3<String, FirstAgentOutput, SecondAgentOutput, LegalSummary>
+    // Input flows: String -> FirstAgentOutput -> SecondAgentOutput -> LegalSummary
+    val workflow = documentRedactor thenProcess complianceChecker thenProcess summarizer
+
+    // Execute the workflow
+    val workflowRun = workflow.start(document)
+
+    when (val outcome = workflowRun.outcome) {
+        is Outcome.Finished -> {
+            outcome.response?.let { summary ->
+                println("Document processed successfully!")
+                println("Summary: ${summary.summary}")
+            }
+        }
+        is Outcome.Stuck -> println("Workflow got stuck: ${outcome.reason}")
+        is Outcome.Fatal -> println("Workflow failed: ${outcome.message}")
+    }
+}
+```
+
+## Error Handling
+
+If any agent in the workflow fails or gets stuck, the entire workflow stops at that point. The `WorkflowRun` will contain information about:
+- Which agent failed
+- The reason for failure
+- All successfully completed agent runs up to the failure point
+
+This gives you detailed information to debug and fix workflow issues.
+
+## Best Practices
+
+1. **Keep agents focused**: Each agent should handle one specific task well
+2. **Design clear data contracts**: Use well-defined data classes with `@AigenticParameter`
+3. **Test individual agents**: Verify each agent works correctly before chaining them together

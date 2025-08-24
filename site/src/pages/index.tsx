@@ -8,7 +8,7 @@ import styles from "./index.module.css";
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { JSX } from "react";
-import {weatherAgent} from "../code/examples";
+import {weatherAgent, workflowExample, invoiceExtractorExample} from "../code/examples";
 import TypeCursor from "../components/TypeCursor";
 
 function HomepageHeader() {
@@ -16,7 +16,7 @@ function HomepageHeader() {
     <header className={clsx("hero hero--primary", styles.heroBanner)}>
       <div className="container">
         <div className={clsx("hero__title hero-heading", styles.heroHeading)}>
-          <TypeCursor 
+          <TypeCursor
             phrases={['production-ready', 'reliable', 'LLM-agnostic']}
             prefix="Aigentic helps you build"
             suffix="AI agents faster"
@@ -105,10 +105,13 @@ export default function Home(): JSX.Element {
             <div className="row row--align-center">
               <div className="col col--7">
                 <div className="card card-border-bottom card-nospace">
-                  <img
-                    src="/img/agent-code.png"
-                    alt="aigentic-code-example"
-                  />
+                  <CodeBlock
+                    language="kotlin"
+                    title="InvoiceExtractor.kt"
+                    className="custom-code-block"
+                  >
+                    {invoiceExtractorExample}
+                  </CodeBlock>
                 </div>
               </div>
               <div className="col col--5">
@@ -129,7 +132,7 @@ export default function Home(): JSX.Element {
                   <p>
                     Additionally, Aigentic bridges the gap between proof of concept and production-ready
                     applications, enabling rapid iteration and improvement based on real-world feedback.
-                    In short, Aigentic accelerates AI development, reduces complexity, and improves
+                    In short, Aigentic accelerates AI development, reduces complexity, and enables
                     integration with existing systems.
                   </p>
                 </div>
@@ -397,6 +400,46 @@ export default function Home(): JSX.Element {
               </div>
             </div>
           </div>
+          <div className="inner-section" id="how-workflow">
+            <div className="container">
+              <div className="row row--align-center">
+                <div className="col col--6 code-block-col">
+                  <div className="card card-border-bottom card-nospace">
+                    <CodeBlock
+                      language="kotlin"
+                      title="DocumentWorkflow.kt"
+                      className="custom-code-block"
+                    >
+                      {workflowExample}
+                    </CodeBlock>
+                  </div>
+                </div>
+                <div className="col col--6">
+                  <div>
+                    <Heading as="h2" className={clsx(styles.heading2)}>
+                      Workflows
+                    </Heading>
+                    <p>
+                      For complex tasks that require multiple processing steps, Aigentic workflows help you chain agents together. Each agent processes the output from the previous agent, creating seamless workflows of AI-powered agents.
+                    </p>
+                    <p>
+                      Workflows are fully type-safe, ensuring that agent outputs match the inputs of the next agent in the chain. This approach helps you break down complex problems into focused, manageable steps.
+                    </p>
+                    <Link
+                      className={clsx(
+                        "button-link",
+                        styles.button,
+                        styles.buttonPrimary,
+                      )}
+                      to="/docs/workflow"
+                    >
+                      Explore Workflows
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
         <section className="other-capabilites other-capabilites-shadow ">
           <div className="container">
@@ -462,6 +505,17 @@ export default function Home(): JSX.Element {
                   <p>Comprehensive testing utilities for AI agent development.</p>
                   <p>
                     <span>Features:</span> Mock LLM responses, Test fixtures, Scenario testing
+                  </p>
+                </div>
+              </div>
+              <div className="col col--6">
+                <div className="card card-other card-border-bottom">
+                  <Heading as="h4" className={clsx(styles.heading2)}>
+                    Workflow Chaining
+                  </Heading>
+                  <p>Chain multiple agents together to create powerful multi-step processing pipelines.</p>
+                  <p>
+                    <span>Features:</span> Type-safe chaining, Multi-agent orchestration, Complex task decomposition
                   </p>
                 </div>
               </div>

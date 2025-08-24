@@ -1,8 +1,8 @@
 package community.flock.aigentic.platform.util
 
 import community.flock.aigentic.core.agent.Agent
+import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.Instruction
-import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
 import community.flock.aigentic.core.agent.tool.Outcome
@@ -43,8 +43,8 @@ fun createAgent() =
         tags = emptyList(),
     )
 
-fun createRun() =
-    Run<String>(
+fun createAgentRun() =
+    AgentRun<String>(
         startedAt = Clock.System.now(),
         finishedAt = Clock.System.now(),
         messages = listOf(Message.SystemPrompt("You are a helpful agent")),

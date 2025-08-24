@@ -11,7 +11,7 @@ class RunTest : DescribeSpec({
         describe("tokenUsage()") {
             it("should correctly calculate token usage from model requests") {
                 val run =
-                    Run(
+                    AgentRun(
                         startedAt = Instant.fromEpochMilliseconds(1000),
                         finishedAt = Instant.fromEpochMilliseconds(2000),
                         messages = emptyList(),

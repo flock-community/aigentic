@@ -19,8 +19,8 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-footer-color: #ffffff;
   --ifm-footer-link-color: #9f9f9f !important;
-  --ifm-navbar-link-hover-color: #ffdf00;
-  --ifm-footer-link-hover-color: #ffdf00;
+  --ifm-navbar-link-hover-color: #f0bc42;
+  --ifm-footer-link-hover-color: #f0bc42;
   --ifm-menu-color-active: #ffffff;
 }
 
@@ -36,8 +36,8 @@
   --ifm-color-primary-lightest: #4fddbf;
   --ifm-background-color: #101010 !important;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
-  --ifm-navbar-link-hover-color: #ffdf00;
-  --ifm-footer-link-hover-color: #ffdf00;
+  --ifm-navbar-link-hover-color: #f0bc42;
+  --ifm-footer-link-hover-color: #f0bc42;
   --ifm-menu-color-active: #ffffff;
 }
 
@@ -116,7 +116,7 @@ body {
   border: 1px solid;
   background:
     linear-gradient(#101010, #101010) padding-box,
-    linear-gradient(90deg, #ffdf00, #ffdf00) border-box;
+    linear-gradient(90deg, #f0bc42, #f0bc42) border-box;
   border: 1px solid transparent;
   border-radius: 12px;
   border-radius: 10px;
@@ -138,25 +138,25 @@ body {
 .card-border-top {
   background:
     linear-gradient(#101010, #101010) padding-box,
-    linear-gradient(180deg, #101010, #ffdf00) border-box;
+    linear-gradient(180deg, #101010, #f0bc42) border-box;
 }
 
 .card-border-bottom {
   background:
     linear-gradient(#101010, #101010) padding-box,
-    linear-gradient(0deg, #101010, #ffdf00) border-box;
+    linear-gradient(0deg, #101010, #f0bc42) border-box;
 }
 
 .card-border-left {
   background:
     linear-gradient(#101010, #101010) padding-box,
-    linear-gradient(90deg, #101010, #ffdf00) border-box;
+    linear-gradient(90deg, #101010, #f0bc42) border-box;
 }
 
 .card-border-right {
   background:
     linear-gradient(#101010, #101010) padding-box,
-    linear-gradient(90deg, #ffdf00, #101010) border-box;
+    linear-gradient(90deg, #f0bc42, #101010) border-box;
 }
 
 .card-nospace {
@@ -196,7 +196,7 @@ body {
 .icon-box {
   width: 46px;
   height: 46px;
-  background-color: #ffdf00;
+  background-color: #f0bc42;
   border-radius: 99999px;
   display: flex;
   align-items: center;
@@ -236,7 +236,7 @@ body {
   margin-bottom: 36px;
   background:
     linear-gradient(#141414, #141414) padding-box,
-    linear-gradient(0deg, #101010, #ffdf00) border-box;
+    linear-gradient(0deg, #101010, #f0bc42) border-box;
 }
 
 .card-other h4 {
@@ -304,7 +304,7 @@ table tr:nth-child(2n) {
   background-color: #1c1c1c4d;
   background:
     linear-gradient(#000000, #000000) padding-box,
-    linear-gradient(0deg, #101010, #ffdf00) border-box;
+    linear-gradient(0deg, #101010, #f0bc42) border-box;
 }
 
 .card-flock img {

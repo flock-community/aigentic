@@ -7,7 +7,7 @@ import community.flock.aigentic.gateway.wirespec.GatewayClientErrorDto
 import community.flock.aigentic.gateway.wirespec.GatewayEndpoint
 import community.flock.aigentic.gateway.wirespec.ServerErrorDto
 import community.flock.aigentic.platform.util.createAgent
-import community.flock.aigentic.platform.util.createRun
+import community.flock.aigentic.platform.util.createAgentRun
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
@@ -32,7 +32,7 @@ class AigenticPlatformClientTest : DescribeSpec({
     ) {
 
         val agent = createAgent()
-        val run = createRun()
+        val run = createAgentRun()
 
         val platformEndpoints =
             mockk<PlatformEndpoints>().apply {
