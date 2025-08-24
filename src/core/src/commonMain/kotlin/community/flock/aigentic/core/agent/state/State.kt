@@ -1,6 +1,6 @@
 package community.flock.aigentic.core.agent.state
 
-import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.status.toStatus
@@ -22,7 +22,20 @@ data class State(
     val events: MutableSharedFlow<AgentStatus> = MutableSharedFlow(replay = 1000),
     val modelRequestInfos: MutableSharedFlow<ModelRequestInfo> = MutableSharedFlow(replay = 1000),
     val exampleRunIds: MutableSharedFlow<RunId> = MutableSharedFlow(replay = 1000),
-)
+) {
+    companion object {
+        @PublishedApi
+        internal fun <O : Any> fromRun(run: AgentRun<O>): State =
+            State(
+                startedAt = run.startedAt,
+                finishedAt = run.finishedAt,
+            ).apply {
+                run.messages.forEach(messages::tryEmit)
+                run.modelRequests.forEach(modelRequestInfos::tryEmit)
+                run.exampleRunIds.forEach(exampleRunIds::tryEmit)
+            }
+    }
+}
 
 internal fun State.getMessages() = messages.asSharedFlow()
 
@@ -42,9 +55,9 @@ internal suspend fun State.addModelRequestInfo(modelRequestInfo: ModelRequestInf
 internal suspend fun State.addExampleRun(run: RunId) = this.exampleRunIds.emit(run)
 
 @PublishedApi
-internal fun <O : Any> Pair<State, Outcome<O>>.toRun(): Run<O> =
+internal fun <O : Any> Pair<State, Outcome<O>>.toRun(): AgentRun<O> =
     with(first) {
-        Run(
+        AgentRun(
             startedAt = startedAt,
             finishedAt = finishedAt ?: Clock.System.now(),
             messages = messages.replayCache.filter { message -> message.messageType is MessageType.New },

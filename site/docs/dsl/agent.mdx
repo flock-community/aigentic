@@ -159,9 +159,21 @@ val myAgent = agent {
 
 When using the generic types approach, the agent will automatically be configured to handle the specified input and output types.
 
-### Processing Agent Responses
+## Running an Agent
 
-When an agent finishes its task, you can access the response directly through the `result` property of `Outcome.Finished`:
+To run an agent, use the `start` function which returns an `AgentRun`:
+
+```kotlin
+val agent = agent<String, Answer> {
+    // Agent configuration
+}
+
+val run = agent.start("What is Kotlin?")
+```
+
+### Processing Agent Results
+
+The `AgentRun` contains everything you need to work with the agent's execution:
 
 ```kotlin
 when (val outcome = run.outcome) {
@@ -172,9 +184,13 @@ when (val outcome = run.outcome) {
     is Outcome.Stuck -> println("Agent is stuck: ${outcome.reason}")
     is Outcome.Fatal -> println("Agent encountered an error: ${outcome.message}")
 }
+
+// Access execution details
+println("Execution time: ${run.finishedAt - run.startedAt}")
+println("Token usage: ${run.tokenUsage()}")
 ```
 
-The `response` property of `Outcome.Finished` is of the type specified as the output generic parameter (`O`) when creating the agent.
+The `response` property contains the type you specified when creating the agent, and `AgentRun` gives you access to timing information, token usage, and the complete conversation history.
 
 ## More Examples
 

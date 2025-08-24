@@ -34,7 +34,8 @@ internal inline fun <reified O : Any> finishedTaskTool(responseParameter: Parame
             val response =
                 responseParameter?.let {
                     val json = arguments.getValue(it.name)
-                    Json.decodeFromJsonElement<O>(json)
+                    val bla = Json.decodeFromJsonElement<O>(json)
+                    bla
                 }
             Finished(description, response)
         }
@@ -62,7 +63,6 @@ internal val stuckWithTaskTool =
     }
 
 sealed interface Outcome<out O : Any> {
-    // TODO should not be optional
     data class Finished<O : Any>(val description: String, val response: O?) : Outcome<O>
 
     data class Stuck(val reason: String) : Outcome<Nothing>

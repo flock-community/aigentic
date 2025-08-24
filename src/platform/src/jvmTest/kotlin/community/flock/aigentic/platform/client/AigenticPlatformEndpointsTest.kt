@@ -5,7 +5,7 @@ import community.flock.aigentic.core.platform.PlatformApiUrl
 import community.flock.aigentic.gateway.wirespec.GatewayEndpoint
 import community.flock.aigentic.platform.mapper.toDto
 import community.flock.aigentic.platform.util.createAgent
-import community.flock.aigentic.platform.util.createRun
+import community.flock.aigentic.platform.util.createAgentRun
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.engine.mock.MockEngine
@@ -20,7 +20,7 @@ class AigenticPlatformEndpointsTest : DescribeSpec({
     it("should send http POST /gateway") {
 
         val agent = createAgent()
-        val run = createRun()
+        val run = createAgentRun()
 
         val mockEngine =
             MockEngine { request ->

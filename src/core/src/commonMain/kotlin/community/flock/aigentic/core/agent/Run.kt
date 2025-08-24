@@ -9,14 +9,31 @@ import kotlin.ReplaceWith
 import kotlin.jvm.JvmInline
 import kotlin.time.Instant
 
-data class Run<O : Any>(
-    val startedAt: Instant,
-    val finishedAt: Instant,
-    val messages: List<Message>,
-    val outcome: Outcome<O>,
-    val modelRequests: List<ModelRequestInfo>,
+sealed class Run<O : Any> {
+    abstract val startedAt: Instant
+    abstract val finishedAt: Instant
+    abstract val messages: List<Message>
+    abstract val outcome: Outcome<O>
+    abstract val modelRequests: List<ModelRequestInfo>
+}
+
+data class AgentRun<O : Any>(
+    override val startedAt: Instant,
+    override val finishedAt: Instant,
+    override val messages: List<Message>,
+    override val outcome: Outcome<O>,
+    override val modelRequests: List<ModelRequestInfo>,
     val exampleRunIds: List<RunId> = emptyList(),
-)
+) : Run<O>()
+
+data class WorkflowRun<O : Any>(
+    override val startedAt: Instant,
+    override val finishedAt: Instant,
+    override val messages: List<Message>,
+    override val outcome: Outcome<O>,
+    override val modelRequests: List<ModelRequestInfo>,
+    val agentRuns: List<AgentRun<*>>,
+) : Run<O>()
 
 @JvmInline
 value class RunTag(val value: String)
@@ -30,6 +47,26 @@ data class TokenUsage(
     val thinkingOutputTokens: Int,
     val cachedInputTokens: Int,
 )
+
+@PublishedApi
+internal fun <O : Any> createWorkflowRun(
+    agentRuns: List<AgentRun<*>>,
+    finalOutcome: Outcome<O>,
+): WorkflowRun<O> {
+    require(agentRuns.isNotEmpty()) { "Workflow must have at least one agent run" }
+
+    val firstRun = agentRuns.first()
+    val lastRun = agentRuns.last()
+
+    return WorkflowRun(
+        startedAt = firstRun.startedAt,
+        finishedAt = lastRun.finishedAt,
+        messages = agentRuns.flatMap { it.messages },
+        outcome = finalOutcome,
+        modelRequests = agentRuns.flatMap { it.modelRequests },
+        agentRuns = agentRuns,
+    )
+}
 
 fun <O : Any> Run<O>.tokenUsage(): TokenUsage =
     TokenUsage(
@@ -52,21 +89,22 @@ fun <O : Any> Run<O>.thinkingOutputTokens(): Int = modelRequests.sumOf { it.thin
 fun <O : Any> Run<O>.cachedInputTokens(): Int = modelRequests.sumOf { it.cachedInputTokenCount }
 
 @PublishedApi
-internal inline fun <reified O : Any> Run<String>.decode(): Run<O> {
-    return Run(
+internal inline fun <reified O : Any> AgentRun<String>.decode(): AgentRun<O> {
+    val currentOutcome = outcome
+    return AgentRun(
         startedAt = startedAt,
         finishedAt = finishedAt,
         messages = messages,
         outcome =
-            when (outcome) {
-                is Outcome.Fatal -> outcome
+            when (currentOutcome) {
+                is Outcome.Fatal -> currentOutcome
                 is Outcome.Finished<String> ->
                     Outcome.Finished(
-                        description = outcome.description,
-                        response = outcome.response?.let { Json.decodeFromString<O>(it) },
+                        description = currentOutcome.description,
+                        response = currentOutcome.response?.let { Json.decodeFromString<O>(it) },
                     )
 
-                is Outcome.Stuck -> outcome
+                is Outcome.Stuck -> currentOutcome
             },
         modelRequests = modelRequests,
         exampleRunIds = exampleRunIds,

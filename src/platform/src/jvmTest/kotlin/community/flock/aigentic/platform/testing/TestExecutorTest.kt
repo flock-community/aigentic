@@ -3,7 +3,7 @@
 package community.flock.aigentic.platform.testing
 
 import ToolCallExpectation
-import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.tool.Outcome
@@ -270,7 +270,7 @@ fun createMockPlatform(messages: List<Message>): Platform =
         coEvery { getRuns<Unit>(any()) } returns
             listOf(
                 RunId("some-run-id") to
-                    Run(
+                    AgentRun(
                         startedAt = Clock.System.now(),
                         finishedAt = Clock.System.now(),
                         messages = messages,

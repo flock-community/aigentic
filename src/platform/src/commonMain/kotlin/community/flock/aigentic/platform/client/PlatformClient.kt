@@ -1,7 +1,7 @@
 package community.flock.aigentic.platform.client
 
 import community.flock.aigentic.core.agent.Agent
-import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.exception.aigenticException
@@ -55,7 +55,7 @@ class AigenticPlatformClient(
     internal val endpoints: PlatformEndpoints = AigenticPlatformEndpoints(basicAuth, apiUrl, null),
 ) : PlatformClient {
     override suspend fun <I : Any, O : Any> sendRun(
-        run: Run<O>,
+        run: AgentRun<O>,
         agent: Agent<I, O>,
         outputSerializer: KSerializer<O>,
     ): RunSentResult {
@@ -72,7 +72,7 @@ class AigenticPlatformClient(
         }
     }
 
-    override suspend fun getRuns(tags: List<RunTag>): List<Pair<RunId, Run<String>>> =
+    override suspend fun getRuns(tags: List<RunTag>): List<Pair<RunId, AgentRun<String>>> =
         when (val response = endpoints.getRuns(GetRunsEndpoint.RequestUnit(tags.joinToString(",") { it.value }))) {
             is GetRunsEndpoint.Response200ApplicationJson -> response.content.body
             is GetRunsEndpoint.Response401Unit -> aigenticException("Unauthorized to get runs")

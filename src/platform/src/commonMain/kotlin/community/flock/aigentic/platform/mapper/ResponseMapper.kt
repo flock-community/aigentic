@@ -1,6 +1,6 @@
 package community.flock.aigentic.platform.mapper
 
-import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageType
@@ -24,7 +24,7 @@ import community.flock.aigentic.gateway.wirespec.UrlMessageDto
 import kotlin.time.Instant
 
 internal fun RunDetailsDto.toRun() =
-    Run<String>(
+    AgentRun<String>(
         startedAt = Instant.parse(startedAt),
         finishedAt = Instant.parse(finishedAt),
         messages =

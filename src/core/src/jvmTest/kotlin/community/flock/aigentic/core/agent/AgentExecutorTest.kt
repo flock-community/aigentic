@@ -36,7 +36,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -267,12 +266,11 @@ class AgentExecutorTest : DescribeSpec({
                 agent<Unit, AgentResponse> {
                     model(modelMock)
                     task("Execute some task") {}
-                    addTool(mockk(relaxed = true))
                 }
 
             agent.start().apply {
                 outcome.shouldBeTypeOf<Finished<AgentResponse>>()
-                (this.outcome as Finished<AgentResponse>).response?.message shouldBe "Agent response"
+                this.outcome.response?.message shouldBe "Agent response"
             }
         }
 

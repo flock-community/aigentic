@@ -11,7 +11,7 @@ body {
 }
 
 .primary-text-color {
-  color: #ffdf00;
+  color: #f0bc42;
 }
 
 .heroBanner {
@@ -46,7 +46,7 @@ body {
   color: white;
   font-family: "Funnel Display", sans-serif;
   span {
-    color: #ffdf00;
+    color: #f0bc42;
   }
 
   @media (max-width: 1440px) {
@@ -68,7 +68,7 @@ body {
   color: white;
   font-family: "Funnel Display", sans-serif;
   span {
-    color: #ffdf00;
+    color: #f0bc42;
   }
   @media (max-width: 996px) {
     font-size: 30px;
@@ -140,18 +140,18 @@ body {
 }
 
 .buttonPrimary {
-  background-color: #ffdf00;
+  background-color: #f0bc42;
   color: #101010;
   &:hover {
-    border-color: #ffdf00;
+    border-color: #f0bc42;
     background-color: transparent;
-    color: #ffdf00;
+    color: #f0bc42;
   }
 }
 
 .buttonDefault {
-  border-color: #ffdf00;
-  color: #ffdf00;
+  border-color: #f0bc42;
+  color: #f0bc42;
   &:hover {
     background-color: #d9be00;
     color: #101010;
@@ -167,5 +167,5 @@ body {
 }
 
 .listItem::marker {
-  color: #ffdf00;
+  color: #f0bc42;
 }

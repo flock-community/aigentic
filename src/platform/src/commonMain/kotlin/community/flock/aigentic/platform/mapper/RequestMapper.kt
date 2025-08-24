@@ -1,7 +1,7 @@
 package community.flock.aigentic.platform.mapper
 
 import community.flock.aigentic.core.agent.Agent
-import community.flock.aigentic.core.agent.Run
+import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
@@ -45,7 +45,7 @@ import community.flock.aigentic.gateway.wirespec.UrlMessageDto
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 
-fun <I : Any, O : Any> Run<O>.toDto(
+fun <I : Any, O : Any> AgentRun<O>.toDto(
     agent: Agent<I, O>,
     outputSerializer: KSerializer<O>,
 ) = RunDto(
