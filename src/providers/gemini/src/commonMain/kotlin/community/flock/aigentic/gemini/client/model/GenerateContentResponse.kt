@@ -35,6 +35,9 @@ enum class FinishReason {
     /** Model began looping. */
     RECITATION,
 
+    /** The model produced a malformed function call. */
+    MALFORMED_FUNCTION_CALL,
+
     /** Model stopped for another reason. */
     OTHER,
 }
