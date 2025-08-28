@@ -1,0 +1,9 @@
+{
+  "settings": {
+    "title": "Aigentic",
+    "project": "/flock-community/aigentic",
+    "type": "repo",
+    "description": "Aigentic is a Kotlin-based DSL client library designed to simplify the creation, deployment, and management of AI agents and LLM integrations.",
+    "docsRepoUrl": "https://github.com/flock-community/aigentic",
+  }
+}
