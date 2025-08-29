@@ -26,6 +26,40 @@ sealed interface Context {
     data class Base64(val base64: String, val mimeType: MimeType) : Context
 }
 
+sealed interface Attachment {
+    data class Base64(val base64Content: String, val mimeType: MimeType) : Attachment {
+        companion object {
+            fun pdf(base64Content: String) = Base64(base64Content, MimeType.PDF)
+
+            fun jpeg(base64Content: String) = Base64(base64Content, MimeType.JPEG)
+
+            fun png(base64Content: String) = Base64(base64Content, MimeType.PNG)
+
+            fun webp(base64Content: String) = Base64(base64Content, MimeType.WEBP)
+
+            fun heic(base64Content: String) = Base64(base64Content, MimeType.HEIC)
+
+            fun heif(base64Content: String) = Base64(base64Content, MimeType.HEIF)
+        }
+    }
+
+    data class Url(val url: String, val mimeType: MimeType) : Attachment {
+        companion object {
+            fun pdf(url: String) = Url(url, MimeType.PDF)
+
+            fun jpeg(url: String) = Url(url, MimeType.JPEG)
+
+            fun png(url: String) = Url(url, MimeType.PNG)
+
+            fun webp(url: String) = Url(url, MimeType.WEBP)
+
+            fun heic(url: String) = Url(url, MimeType.HEIC)
+
+            fun heif(url: String) = Url(url, MimeType.HEIF)
+        }
+    }
+}
+
 data class Agent<I : Any, O : Any>(
     val platform: Platform?,
     val systemPromptBuilder: SystemPromptBuilder,

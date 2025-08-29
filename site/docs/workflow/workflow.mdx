@@ -18,6 +18,7 @@ val workflow = firstAgent thenProcess secondAgent thenProcess thirdAgent
 ```
 
 This creates a workflow where:
+
 1. `firstAgent` processes the initial input
 2. `secondAgent` processes the output from `firstAgent`
 3. `thirdAgent` processes the output from `secondAgent`
@@ -62,6 +63,32 @@ when (val outcome = workflowRun.outcome) {
 }
 ```
 
+### Starting with Attachments
+
+Workflows also support attachments (PDFs, images, etc.) that are passed to the **first agent only**. Subsequent agents receive structured output from previous agents:
+
+```kotlin
+// With attachments
+val pdfAttachment = Attachment.pdf("base64-encoded-pdf-content")
+val imageAttachment = Attachment.jpeg("base64-encoded-image-content")
+
+val workflowRun = workflow.start(initialInput, pdfAttachment, imageAttachment)
+
+when (val outcome = workflowRun.outcome) {
+    is Outcome.Finished -> {
+        val result = outcome.response
+        println("Workflow completed: $result")
+    }
+    is Outcome.Stuck -> println("Workflow stuck: ${outcome.reason}")
+    is Outcome.Fatal -> println("Workflow failed: ${outcome.message}")
+}
+```
+
+:::note
+Attachments are only passed to the **first agent** in the workflow.
+This allows the first agent to process documents, images, or other media files, while subsequent agents work with the structured data output from previous agents.
+:::
+
 ## Working with WorkflowRun
 
 When you run a workflow, you get a `WorkflowRun` that works just like an `AgentRun` but also gives you access to each individual agent's results:
@@ -100,7 +127,7 @@ data class ComplianceReport(
 @AigenticParameter
 data class LegalSummary(val summary: String)
 
-suspend fun processLegalDocument(document: String, apiKey: String) {
+suspend fun processLegalDocument(apiKey: String) {
     // Create agents for each step
     val documentRedactor = agent<String, RedactedDocument> {
         geminiModel {
@@ -145,7 +172,7 @@ suspend fun processLegalDocument(document: String, apiKey: String) {
     val workflow = documentRedactor thenProcess complianceChecker thenProcess summarizer
 
     // Execute the workflow
-    val workflowRun = workflow.start(document)
+    val workflowRun = workflow.start(documentText, Attachment.pdf("base64-encoded-pdf-content"))
 
     when (val outcome = workflowRun.outcome) {
         is Outcome.Finished -> {
@@ -163,6 +190,7 @@ suspend fun processLegalDocument(document: String, apiKey: String) {
 ## Error Handling
 
 If any agent in the workflow fails or gets stuck, the entire workflow stops at that point. The `WorkflowRun` will contain information about:
+
 - Which agent failed
 - The reason for failure
 - All successfully completed agent runs up to the failure point
@@ -174,3 +202,4 @@ This gives you detailed information to debug and fix workflow issues.
 1. **Keep agents focused**: Each agent should handle one specific task well
 2. **Design clear data contracts**: Use well-defined data classes with `@AigenticParameter`
 3. **Test individual agents**: Verify each agent works correctly before chaining them together
+4. **Structure attachment workflows**: Design the first agent to extract and structure data from attachments, then pass structured data to subsequent agents
