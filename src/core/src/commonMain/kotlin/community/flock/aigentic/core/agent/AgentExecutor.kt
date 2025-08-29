@@ -25,7 +25,6 @@ import community.flock.aigentic.core.message.Message.ExampleToolMessage
 import community.flock.aigentic.core.message.Message.Text
 import community.flock.aigentic.core.message.Message.Url
 import community.flock.aigentic.core.message.MessageType
-import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.mapToTextMessages
