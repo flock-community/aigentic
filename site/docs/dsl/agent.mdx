@@ -80,17 +80,18 @@ agent {
 
 ### Adding Context
 
-Context provides additional information to the agent:
+Context provides additional information to the agent that applies to all runs of the agent:
 
 ```kotlin
 agent {
     context {
         addText("This is some background information the agent should know.")
-        addUrl("https://example.com/data.json", MimeType.JSON)
         addBase64(encodedImage, MimeType.PNG)
     }
 }
 ```
+
+**Note**: Context is built into the agent configuration and applies to every execution. For files that vary per request, use attachments in the `start()` function instead. This way you can reuse your agent for different requests.
 
 ### Overriding the System Prompt
 
@@ -169,6 +170,49 @@ val agent = agent<String, Answer> {
 }
 
 val run = agent.start("What is Kotlin?")
+```
+
+### Running an Agent with Attachments
+
+You can provide files and images to agents using the attachments parameter. Aigentic provides convenient factory functions for creating attachments:
+
+```kotlin
+val agent = agent {
+    geminiModel {
+        apiKey("your-api-key")
+        modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+    }
+    task("Extract information from the provided document") {
+        addInstruction("Read the document and extract key information")
+    }
+    addTool(extractionTool)
+}
+
+// Pass a PDF attachment
+val run = agent.start(Attachment.Base64.pdf(pdfBase64Content))
+
+// Pass multiple attachments
+val run = agent.start(
+    Attachment.Base64.pdf(invoiceBase64),
+    Attachment.Base64.jpeg(receiptBase64),
+    Attachment.Url.png("https://example.com/signature.png")
+)
+```
+
+Available attachment factory functions:
+- **Base64 attachments**: `Attachment.Base64.pdf()`, `jpeg()`, `png()`, `webp()`, `heic()`, `heif()`
+- **URL attachments**: `Attachment.Url.pdf()`, `jpeg()`, `png()`, `webp()`, `heic()`, `heif()`
+
+You can also specify input data along with attachments:
+
+```kotlin
+@AigenticParameter
+data class ProcessingRequest(val instruction: String)
+
+val run = agent.start(
+    ProcessingRequest("Please summarize this document"),
+    Attachment.Base64.pdf(documentBase64)
+)
 ```
 
 ### Processing Agent Results

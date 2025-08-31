@@ -1,10 +1,10 @@
 package community.flock.aigentic.example
 
+import community.flock.aigentic.core.agent.Attachment
 import community.flock.aigentic.core.agent.start
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
-import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
@@ -30,7 +30,7 @@ suspend fun invoiceExtractorAgent(
         agent {
             geminiModel {
                 apiKey(apiKey)
-                modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
+                modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
             }
             task("Extract the different invoice components") {
                 addInstruction("Please provide list of the invoice components")
@@ -38,10 +38,7 @@ suspend fun invoiceExtractorAgent(
             addTool("saveInvoiceComponents") { input: InvoiceComponents ->
                 SaveResult("Saved ${input.components.size} invoice components successfully")
             }
-            context {
-                addBase64(invoicePdfBase64, MimeType.PDF)
-            }
-        }.start()
+        }.start(Attachment.Base64.pdf(invoicePdfBase64))
 
     when (val result = run.outcome) {
         is Outcome.Finished -> "Agent finished successfully"
