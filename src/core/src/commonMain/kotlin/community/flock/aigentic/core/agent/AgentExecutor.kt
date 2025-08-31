@@ -20,6 +20,10 @@ import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.ContextMessage
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.Message.Base64
+import community.flock.aigentic.core.message.Message.ExampleToolMessage
+import community.flock.aigentic.core.message.Message.Text
+import community.flock.aigentic.core.message.Message.Url
 import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -34,17 +38,21 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(input: I? = null): AgentRun<O> =
+suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(vararg attachments: Attachment): AgentRun<O> = start(null, *attachments)
+
+suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(
+    input: I? = null,
+    vararg attachments: Attachment,
+): AgentRun<O> =
     coroutineScope {
         val agent = this@start
         val state = State()
         state.events.emit(AgentStatus.Started)
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
         try {
-            val run = executeAction(Initialize(state, agent, input)).toRun()
+            val run = executeAction(Initialize(state, agent, input, attachments.toList())).toRun()
             publishRun(agent, run, state)
             run
         } catch (e: AigenticException) {
@@ -89,7 +97,7 @@ suspend inline fun <reified I : Any, reified O : Any> executeAction(action: Acti
 
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.process(): Action<I, O> {
-    state.addMessages(initializeStartMessages(agent, taskInput))
+    state.addMessages(initializeStartMessages(agent, taskInput, attachments))
     if (agent.tags.isNotEmpty()) {
         state.addMessages(prependWithExampleMessages())
     }
@@ -100,7 +108,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
 internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.prependWithExampleMessages(): List<Message> {
     val runs = fetchRuns()
     state.addMessage(
-        Message.ExampleToolMessage(
+        ExampleToolMessage(
             sender = Sender.Agent,
             text =
                 """
@@ -116,7 +124,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
             val textMessages = messages.mapToTextMessages()
             val exampleMessageDescription =
                 listOf(
-                    Message.ExampleToolMessage(
+                    ExampleToolMessage(
                         sender = Sender.Agent,
                         text =
                             """
@@ -126,7 +134,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
                 )
             val exampleEndMessageDescription =
                 listOf(
-                    Message.ExampleToolMessage(
+                    ExampleToolMessage(
                         sender = Sender.Agent,
                         text =
                             """
@@ -139,9 +147,8 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
                     .plus(listOf(messages.filterIsInstance<ContextMessage>().first().toExampleMessage()))
                     .plus(textMessages)
                     .plus(exampleEndMessageDescription)
-                    .mapNotNull { it }
+                    .map { it }
             } catch (e: Exception) {
-                println("test" + e.message)
                 return emptyList()
             }
         }
@@ -167,35 +174,10 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
 @PublishedApi
 internal fun ContextMessage.toExampleMessage(): Message =
     when (this) {
-        is Message.Base64 ->
-            Message.Base64(
-                sender = sender,
-                messageType = MessageType.Example,
-                base64Content = base64Content,
-                mimeType = mimeType,
-            )
-
-        is Message.Text ->
-            Message.Text(
-                sender = sender,
-                messageType = MessageType.Example,
-                text = text,
-            )
-
-        is Message.Url ->
-            Message.Url(
-                sender = sender,
-                messageType = MessageType.Example,
-                url = url,
-                mimeType = mimeType,
-            )
-
-        is Message.ExampleToolMessage ->
-            Message.ExampleToolMessage(
-                sender = sender,
-                text = text,
-                id = id,
-            )
+        is Base64 -> copy(messageType = MessageType.Example)
+        is Text -> copy(messageType = MessageType.Example)
+        is Url -> copy(messageType = MessageType.Example)
+        is ExampleToolMessage -> copy()
     }
 
 @PublishedApi
@@ -203,7 +185,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
     runCatching {
         agent.platform?.getRuns<O>(agent.tags)
     }.onFailure {
-        state.addMessages(initializeStartMessages(agent, taskInput))
+        state.addMessages(initializeStartMessages(agent, taskInput, attachments))
         aigenticException(it.message.toString())
     }.getOrNull() ?: emptyList()
 
@@ -264,10 +246,12 @@ internal suspend inline fun <reified I : Any, reified O : Any> ExecuteTools<I, O
 internal inline fun <reified I : Any, reified O : Any> initializeStartMessages(
     agent: Agent<I, O>,
     taskInput: I?,
+    attachments: List<Attachment>,
 ): List<Message> =
     buildList {
         add(agent.systemPromptBuilder.buildSystemPrompt(agent))
-        addAll(agent.contexts.map { context -> context.toMessage() })
+        addAll(agent.contexts.map { it.toMessage() })
+        addAll(attachments.map { it.toMessage() })
         taskInput?.let { createTaskInputMessage(it) }?.let(::add)
     }
 
@@ -275,7 +259,7 @@ internal inline fun <reified I : Any, reified O : Any> initializeStartMessages(
 internal fun Context.toMessage(): Message =
     when (this) {
         is Context.Url ->
-            Message.Url(
+            Url(
                 sender = Sender.Agent,
                 url = url,
                 mimeType = mimeType,
@@ -283,7 +267,7 @@ internal fun Context.toMessage(): Message =
             )
 
         is Context.Base64 ->
-            Message.Base64(
+            Base64(
                 sender = Sender.Agent,
                 base64Content = base64,
                 mimeType = mimeType,
@@ -291,7 +275,7 @@ internal fun Context.toMessage(): Message =
             )
 
         is Context.Text ->
-            Message.Text(
+            Text(
                 sender = Sender.Agent,
                 messageType = MessageType.New,
                 text = text,
@@ -299,8 +283,28 @@ internal fun Context.toMessage(): Message =
     }
 
 @PublishedApi
-internal inline fun <reified I : Any> createTaskInputMessage(input: I): Message.Text =
-    Message.Text(
+internal fun Attachment.toMessage(): Message =
+    when (this) {
+        is Attachment.Base64 ->
+            Base64(
+                sender = Sender.Agent,
+                base64Content = base64Content,
+                mimeType = mimeType,
+                messageType = MessageType.New,
+            )
+
+        is Attachment.Url ->
+            Url(
+                sender = Sender.Agent,
+                url = url,
+                mimeType = mimeType,
+                messageType = MessageType.New,
+            )
+    }
+
+@PublishedApi
+internal inline fun <reified I : Any> createTaskInputMessage(input: I): Text =
+    Text(
         sender = Sender.Agent,
         messageType = MessageType.New,
         text = Json.encodeToString(input),
@@ -314,7 +318,12 @@ internal suspend inline fun <I : Any, reified O : Any> Agent<I, O>.sendModelRequ
     )
 
 sealed interface Action<I : Any, O : Any> {
-    data class Initialize<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val taskInput: I?) : Action<I, O>
+    data class Initialize<I : Any, O : Any>(
+        val state: State,
+        val agent: Agent<I, O>,
+        val taskInput: I?,
+        val attachments: List<Attachment>,
+    ) : Action<I, O>
 
     data class ExecuteTools<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val toolCalls: List<ToolCall>) : Action<I, O>
 
