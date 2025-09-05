@@ -11,19 +11,29 @@ import community.flock.aigentic.gemini.client.model.GenerateContentResponse
 import community.flock.aigentic.gemini.client.model.Part
 import community.flock.aigentic.gemini.client.model.UsageMetadata
 import generateRandomString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-fun GenerateContentResponse.toModelResponse(): ModelResponse {
+fun GenerateContentResponse.toModelResponse(isStructuredOutput: Boolean): ModelResponse {
     val candidate = candidates?.firstOrNull()
 
     return if (promptFeedback?.blockReason != null) {
         aigenticException("Gemini blocked the prompt because of reason: '${promptFeedback.blockReason}'")
     } else if (candidate != null) {
-        ModelResponse(
-            message = candidate.content.toMessages(),
-            usage = usageMetadata?.toUsage() ?: Usage.EMPTY,
-        )
+        if (isStructuredOutput) {
+            when (val part = candidate.content.parts.first()) {
+                is Part.Text ->
+                    ModelResponse(
+                        message = Message.StructuredOutput(part.text),
+                        usage = usageMetadata?.toUsage() ?: Usage.EMPTY,
+                    )
+                else -> aigenticException("")
+            }
+        } else {
+            ModelResponse(
+                message = candidate.content.toMessages(),
+                usage = usageMetadata?.toUsage() ?: Usage.EMPTY,
+            )
+        }
     } else {
         aigenticException("No candidate found in Gemini response: $this.")
     }
@@ -32,7 +42,11 @@ fun GenerateContentResponse.toModelResponse(): ModelResponse {
 internal fun Content.toMessages(): Message {
     val toolCalls =
         parts.filterIsInstance<Part.FunctionCall>().map {
-            ToolCall(ToolCallId(generateRandomString(20)), it.functionCall.name, Json.encodeToString(it.functionCall.args))
+            ToolCall(
+                id = ToolCallId(generateRandomString(20)),
+                name = it.functionCall.name,
+                arguments = Json.encodeToString(it.functionCall.args),
+            )
         }
     return Message.ToolCalls(toolCalls)
 }

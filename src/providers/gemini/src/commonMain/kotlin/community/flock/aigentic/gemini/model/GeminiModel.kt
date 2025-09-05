@@ -7,6 +7,7 @@ import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.gemini.client.GeminiClient
 import community.flock.aigentic.gemini.client.config.GeminiApiConfig
@@ -39,12 +40,14 @@ class GeminiModel(
     override suspend fun sendRequest(
         messages: List<Message>,
         tools: List<ToolDescription>,
-    ): ModelResponse {
-        val request = createGenerateContentRequest(messages, tools, generationSettings)
-        return geminiClient
-            .generateContent(request, modelIdentifier)
-            .toModelResponse()
-    }
+        structuredOutputParameter: Parameter?,
+    ): ModelResponse =
+        geminiClient
+            .generateContent(
+                request = createGenerateContentRequest(messages, tools, generationSettings, structuredOutputParameter),
+                modelIdentifier = modelIdentifier,
+            )
+            .toModelResponse(structuredOutputParameter != null)
 
     companion object {
         fun defaultGeminiClient(
@@ -53,7 +56,7 @@ class GeminiModel(
             requestsPerMinute: Int = 15,
         ): GeminiClient =
             GeminiClient(
-                config = GeminiApiConfig(apiKey = apiKeyAuthentication), // Gebruik defaults
+                config = GeminiApiConfig(apiKey = apiKeyAuthentication),
                 rateLimiter = RateLimitBucket(requestsPerMinute),
                 logLevel = logLevel,
             )

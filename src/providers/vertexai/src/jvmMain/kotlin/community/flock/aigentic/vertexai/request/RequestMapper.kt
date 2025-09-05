@@ -30,6 +30,7 @@ internal fun createRequestContents(messages: List<Message>): List<Content> =
                 is Message.ExampleToolMessage -> listOf(Part.fromText(message.text))
                 is Message.SystemPrompt -> listOf(Part.fromText("See system instruction for your task"))
                 is Message.Text -> listOf(Part.fromText(message.text))
+                is Message.StructuredOutput -> listOf(Part.fromText(message.response))
                 is Message.ToolCalls ->
                     message.toolCalls.map {
                         Part.fromFunctionCall(it.name, it.arguments.fromJson())

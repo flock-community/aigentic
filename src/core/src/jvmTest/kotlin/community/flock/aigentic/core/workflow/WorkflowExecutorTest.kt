@@ -170,7 +170,7 @@ class WorkflowExecutorTest : DescribeSpec({
 
 private fun createMockModel(result: FirstResult): Model =
     mockk<Model>().also { mock ->
-        coEvery { mock.sendRequest(any(), any()) } returnsMany
+        coEvery { mock.sendRequest(any(), any(), any()) } returnsMany
             listOf(
                 finishedTaskWithResponseToolCall(result),
             ).toModelResponse()
@@ -178,7 +178,7 @@ private fun createMockModel(result: FirstResult): Model =
 
 private fun createMockModel(result: SecondResult): Model =
     mockk<Model>().also { mock ->
-        coEvery { mock.sendRequest(any(), any()) } returnsMany
+        coEvery { mock.sendRequest(any(), any(), any()) } returnsMany
             listOf(
                 finishedTaskWithResponseToolCall(result),
             ).toModelResponse()
@@ -186,7 +186,7 @@ private fun createMockModel(result: SecondResult): Model =
 
 private fun createMockModel(result: FinalResult): Model =
     mockk<Model>().also { mock ->
-        coEvery { mock.sendRequest(any(), any()) } returnsMany
+        coEvery { mock.sendRequest(any(), any(), any()) } returnsMany
             listOf(
                 finishedTaskWithResponseToolCall(result),
             ).toModelResponse()
@@ -194,12 +194,12 @@ private fun createMockModel(result: FinalResult): Model =
 
 private fun createMockModelWithException(exception: Exception): Model =
     mockk<Model>().also { mock ->
-        coEvery { mock.sendRequest(any(), any()) } throws exception
+        coEvery { mock.sendRequest(any(), any(), any()) } throws exception
     }
 
 fun createMockModelWithStuck(): Model {
     return mockk<Model>().also { mock ->
-        coEvery { mock.sendRequest(any(), any()) } returnsMany
+        coEvery { mock.sendRequest(any(), any(), any()) } returnsMany
             listOf(
                 stuckWithTaskToolCall,
             ).toModelResponse()

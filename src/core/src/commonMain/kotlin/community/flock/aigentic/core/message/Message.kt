@@ -47,6 +47,10 @@ sealed class Message(
         val toolCalls: List<ToolCall>,
     ) : Message(Sender.Model, MessageType.New)
 
+    data class StructuredOutput(
+        val response: String,
+    ) : Message(Sender.Model, MessageType.New)
+
     data class ToolResult(
         val toolCallId: ToolCallId,
         val toolName: String,
@@ -87,6 +91,8 @@ sealed interface Sender {
 }
 
 fun ToolCall.argumentsAsJson(json: Json = Json): JsonObject = json.decodeFromString(arguments)
+
+fun Message.StructuredOutput.asJson(json: Json = Json): JsonObject = json.decodeFromString(response)
 
 fun List<Message>.mapToTextMessages(): List<Message.ExampleToolMessage> {
     val messageArguments: List<Message.ExampleToolMessage> =

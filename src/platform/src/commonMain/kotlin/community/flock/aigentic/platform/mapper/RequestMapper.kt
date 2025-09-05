@@ -33,6 +33,7 @@ import community.flock.aigentic.gateway.wirespec.PrimitiveValueStringDto
 import community.flock.aigentic.gateway.wirespec.PrimitiveValueTypeDto
 import community.flock.aigentic.gateway.wirespec.RunDto
 import community.flock.aigentic.gateway.wirespec.SenderDto
+import community.flock.aigentic.gateway.wirespec.StructuredOutputMessageDto
 import community.flock.aigentic.gateway.wirespec.StuckResultDto
 import community.flock.aigentic.gateway.wirespec.SystemPromptMessageDto
 import community.flock.aigentic.gateway.wirespec.TaskDto
@@ -214,6 +215,12 @@ private fun Message.toDto(): MessageDto? =
             )
 
         is Message.ExampleToolMessage -> null
+        is Message.StructuredOutput ->
+            StructuredOutputMessageDto(
+                createdAt = createdAt.toString(),
+                sender = sender.toDto(),
+                response = response,
+            )
     }
 
 private fun ToolCall.toDto(): ToolCallDto =

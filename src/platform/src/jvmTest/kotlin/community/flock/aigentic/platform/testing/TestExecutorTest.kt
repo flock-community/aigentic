@@ -87,7 +87,7 @@ class TestExecutorTest : DescribeSpec({
             testReport.failures.size shouldBe 0
 
             coVerify(exactly = 1) { platformMock.getRuns<Unit>(any()) }
-            coVerify(exactly = 4) { modelMock.sendRequest(any(), any()) }
+            coVerify(exactly = 4) { modelMock.sendRequest(any(), any(), any()) }
         }
 
         it("should fail when expected tool is not called") {
@@ -262,7 +262,7 @@ val newsEventTool =
 
 fun createMockModel(responses: List<ToolCall>): Model =
     mockk {
-        coEvery { sendRequest(any(), any()) } returnsMany responses.toModelResponse()
+        coEvery { sendRequest(any(), any(), any()) } returnsMany responses.toModelResponse()
     }
 
 fun createMockPlatform(messages: List<Message>): Platform =

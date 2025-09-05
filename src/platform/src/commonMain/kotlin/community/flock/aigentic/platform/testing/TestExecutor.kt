@@ -55,7 +55,7 @@ suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.execu
 
     return try {
         val initializedState = initializeTestState(run)
-        val (resultState, result) = executeAction(SendModelRequest(initializedState, mockedAgent))
+        val (resultState, result) = executeAction(SendModelRequest(initializedState, mockedAgent, null))
         when (result) {
             is Outcome.Finished -> {
                 val unInvokedMocks =

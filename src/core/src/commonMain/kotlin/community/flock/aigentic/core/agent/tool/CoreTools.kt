@@ -34,8 +34,7 @@ internal inline fun <reified O : Any> finishedTaskTool(responseParameter: Parame
             val response =
                 responseParameter?.let {
                     val json = arguments.getValue(it.name)
-                    val bla = Json.decodeFromJsonElement<O>(json)
-                    bla
+                    Json.decodeFromJsonElement<O>(json)
                 }
             Finished(description, response)
         }

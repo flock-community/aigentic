@@ -74,7 +74,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val modelMock =
                 mockk<Model>().apply {
-                    coEvery { sendRequest(any(), any()) } returnsMany
+                    coEvery { sendRequest(any(), any(), any()) } returnsMany
                         listOf(
                             ToolCall(ToolCallId("1"), newsEventTool.name.value, Json.encodeToString(expectedArguments)),
                             finishedTaskToolCall,
@@ -94,7 +94,7 @@ class AgentExecutorTest : DescribeSpec({
                 modelRequests.size shouldBe 2
 
                 coVerify(exactly = 1) { toolHandlerMock.invoke(expectedArguments) }
-                coVerify(exactly = 2) { modelMock.sendRequest(any(), any()) }
+                coVerify(exactly = 2) { modelMock.sendRequest(any(), any(), any()) }
             }
         }
 
@@ -169,7 +169,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val modelMock =
                 mockk<Model>().apply {
-                    coEvery { sendRequest(any(), any()) } returnsMany
+                    coEvery { sendRequest(any(), any(), any()) } returnsMany
                         listOf(
                             toolCall,
                             finishedTaskToolCall,
@@ -209,7 +209,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val modelMock =
                 mockk<Model>().apply {
-                    coEvery { sendRequest(any(), any()) } returns
+                    coEvery { sendRequest(any(), any(), any()) } returns
                         ModelResponse(
                             Message.ToolCalls(listOf(toolCall, finishedTaskToolCall)),
                             Usage.EMPTY,
@@ -257,7 +257,7 @@ class AgentExecutorTest : DescribeSpec({
                 )
             val modelMock =
                 mockk<Model>().apply {
-                    coEvery { sendRequest(any(), any()) } returnsMany
+                    coEvery { sendRequest(any(), any(), any()) } returnsMany
                         listOf(
                             toolCall,
                         ).toModelResponse()
@@ -345,7 +345,7 @@ class AgentExecutorTest : DescribeSpec({
 
             val modelMock =
                 mockk<Model>().apply {
-                    coEvery { sendRequest(any(), any()) } throws AigenticException("Model exception")
+                    coEvery { sendRequest(any(), any(), any()) } throws AigenticException("Model exception")
                 }
 
             agent {
