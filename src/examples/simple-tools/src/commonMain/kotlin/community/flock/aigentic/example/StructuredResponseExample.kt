@@ -7,7 +7,6 @@ import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
-import community.flock.aigentic.platform.dsl.platform
 
 @AigenticParameter
 data class Words(val words: List<String>)

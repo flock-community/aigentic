@@ -291,7 +291,7 @@ internal inline fun <reified I : Any, reified O : Any> initializeStartMessages(
     taskInput: I?,
 ): List<Message> =
     buildList {
-        add(agent.systemPromptBuilder.buildSystemPrompt(agent))
+        add(agent.getSystemPromptMessage())
         addAll(agent.contexts.map { context -> context.toMessage() })
         taskInput?.let { createTaskInputMessage(it) }?.let(::add)
     }

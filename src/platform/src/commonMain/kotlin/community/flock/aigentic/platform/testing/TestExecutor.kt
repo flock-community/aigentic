@@ -95,9 +95,8 @@ suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.execu
 
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.initializeTestState(run: Run<O>): State {
-    val systemPrompt = agent.systemPromptBuilder.buildSystemPrompt(agent)
     val contextMessages = run.messages.filter { it is ContextMessage }
-    val initialMessages = listOf(systemPrompt) + contextMessageInterceptor(contextMessages)
+    val initialMessages = listOf(agent.getSystemPromptMessage()) + contextMessageInterceptor(contextMessages)
     val state = State().apply { messages.emitAll(initialMessages.asFlow()) }
     return state
 }
