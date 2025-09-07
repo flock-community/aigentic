@@ -5,7 +5,7 @@ import community.flock.aigentic.core.agent.Context
 import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
-import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
+import community.flock.aigentic.core.agent.message.AgenticSystemPromptBuilder
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.GenerationSettings
@@ -41,7 +41,7 @@ class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
     internal var platform: Platform? = null
     internal var task: TaskConfig? = null
     internal var contexts: List<Context> = emptyList()
-    internal var systemPromptBuilder: SystemPromptBuilder = DefaultSystemPromptBuilder
+    internal var systemPromptBuilder: SystemPromptBuilder = AgenticSystemPromptBuilder
     var responseParameter: Parameter? = null
     val tools = mutableListOf<Tool>()
     internal val tags = mutableListOf<RunTag>()

@@ -4,7 +4,7 @@ import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.Task
-import community.flock.aigentic.core.agent.message.DefaultSystemPromptBuilder
+import community.flock.aigentic.core.agent.message.AgenticSystemPromptBuilder
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.GenerationSettings
@@ -18,7 +18,7 @@ import kotlin.time.Clock
 fun createAgent() =
     Agent<Unit, String>(
         platform = null,
-        systemPromptBuilder = DefaultSystemPromptBuilder,
+        systemPromptBuilder = AgenticSystemPromptBuilder,
         model =
             object : Model {
                 override val modelIdentifier: ModelIdentifier =

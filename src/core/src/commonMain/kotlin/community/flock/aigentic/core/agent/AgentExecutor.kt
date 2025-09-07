@@ -265,39 +265,6 @@ internal suspend inline fun <reified I : Any, reified O : Any> SendModelRequest<
     )
 }
 
-// @PublishedApi
-// internal suspend inline fun <reified I : Any, reified O : Any> SendStructuredOutputModelRequest<I, O>.process(): Action<I, O> {
-//    val (startedAt, finishedAt, response) =
-//        withStartFinishTiming {
-//            agent.sendStructuredOutputModelRequest(state, structuredOutputResponse)
-//        }
-//
-//    state.addModelRequestInfo(
-//        ModelRequestInfo(
-//            startedAt = startedAt,
-//            finishedAt = finishedAt,
-//            inputTokenCount = response.usage.inputTokenCount,
-//            outputTokenCount = response.usage.outputTokenCount,
-//            thinkingOutputTokenCount = response.usage.thinkingOutputTokenCount,
-//            cachedInputTokenCount = response.usage.cachedInputTokenCount,
-//        ),
-//    )
-//
-//    val message = response.message
-//    state.addMessage(message)
-//
-//    // TODO fix
-//    if(message is StructuredOutput) {
-//        return ProcessStructuredOutputModelResponse(
-//            state = state,
-//            agent = agent,
-//            structuredOutput = message,
-//        )
-//    } else aigenticException("Structured output message is not structured output")
-//
-//
-// }
-
 @PublishedApi
 internal inline fun <reified I : Any, reified O : Any> Finished<I, O>.process() = state to outcome
 
