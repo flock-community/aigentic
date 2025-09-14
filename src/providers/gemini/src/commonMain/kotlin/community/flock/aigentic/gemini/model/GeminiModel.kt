@@ -20,12 +20,9 @@ sealed class GeminiModelIdentifier(
     override val stringValue: String,
 ) : ModelIdentifier {
     data object Gemini2_5Flash : GeminiModelIdentifier("gemini-2.5-flash")
-    data object Gemini2_5Pro : GeminiModelIdentifier("gemini-2.5")
+    data object Gemini2_5Pro : GeminiModelIdentifier("gemini-2.5-pro")
     data object Gemini2_0Flash : GeminiModelIdentifier("gemini-2.0-flash")
     data object Gemini2_0FlashLite : GeminiModelIdentifier("gemini-2.0-flash-lite")
-    data object Gemini1_5Flash : GeminiModelIdentifier("gemini-1.5-flash")
-    data object Gemini1_5Flash8b : GeminiModelIdentifier("gemini-1.5-flash-8b")
-    data object Gemini1_5Pro : GeminiModelIdentifier("gemini-1.5-pro")
 
     data class Custom(val identifier: String) : GeminiModelIdentifier(identifier)
 }

@@ -14,7 +14,7 @@ import community.flock.aigentic.vertexai.toJson
 import generateRandomString
 import kotlin.jvm.optionals.getOrNull
 
-fun GenerateContentResponse.toModelResponse(): ModelResponse {
+fun GenerateContentResponse.toModelResponse(isStructuredOutput: Boolean): ModelResponse {
     promptFeedback().getOrNull()?.blockReason()?.let {
         aigenticException("VertexAI blocked the prompt because of reason: '$it'")
     }
@@ -23,8 +23,19 @@ fun GenerateContentResponse.toModelResponse(): ModelResponse {
         candidates().getOrNull()?.firstOrNull()
             ?: aigenticException("No candidate found in VertexAI response: $this.")
 
+    val content = candidate.content().getOrNull() ?: aigenticException("No message found in response.")
+
+    val message =
+        if (isStructuredOutput) {
+            val textPart = content.parts().getOrNull()?.firstOrNull { it.text().getOrNull() != null }
+            val text = textPart?.text()?.getOrNull() ?: aigenticException("Expected text JSON in VertexAI structured output response, but found none: $this")
+            Message.StructuredOutput(text)
+        } else {
+            content.toMessages()
+        }
+
     return ModelResponse(
-        message = candidate.content().getOrNull()?.toMessages() ?: aigenticException("No message found in response."),
+        message = message,
         usage = usageMetadata().getOrNull()?.toUsage() ?: Usage.EMPTY,
     )
 }
