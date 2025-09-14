@@ -14,29 +14,26 @@ import generateRandomString
 import kotlinx.serialization.json.Json
 
 fun GenerateContentResponse.toModelResponse(isStructuredOutput: Boolean): ModelResponse {
-    val candidate = candidates?.firstOrNull()
+    promptFeedback?.blockReason?.let {
+        aigenticException("Gemini blocked the prompt because of reason: '$it'")
+    }
 
-    return if (promptFeedback?.blockReason != null) {
-        aigenticException("Gemini blocked the prompt because of reason: '${promptFeedback.blockReason}'")
-    } else if (candidate != null) {
+    val candidate =
+        candidates?.firstOrNull()
+            ?: aigenticException("No candidate found in Gemini response: $this.")
+
+    val usage = usageMetadata?.toUsage() ?: Usage.EMPTY
+    val message =
         if (isStructuredOutput) {
             when (val part = candidate.content.parts.first()) {
-                is Part.Text ->
-                    ModelResponse(
-                        message = Message.StructuredOutput(part.text),
-                        usage = usageMetadata?.toUsage() ?: Usage.EMPTY,
-                    )
-                else -> aigenticException("")
+                is Part.Text -> Message.StructuredOutput(part.text)
+                else -> aigenticException("No text candidate found with structured output response: $this.")
             }
         } else {
-            ModelResponse(
-                message = candidate.content.toMessages(),
-                usage = usageMetadata?.toUsage() ?: Usage.EMPTY,
-            )
+            candidate.content.toMessages()
         }
-    } else {
-        aigenticException("No candidate found in Gemini response: $this.")
-    }
+
+    return ModelResponse(message = message, usage = usage)
 }
 
 internal fun Content.toMessages(): Message {

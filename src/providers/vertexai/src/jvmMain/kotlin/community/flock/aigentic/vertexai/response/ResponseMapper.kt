@@ -23,21 +23,24 @@ fun GenerateContentResponse.toModelResponse(isStructuredOutput: Boolean): ModelR
         candidates().getOrNull()?.firstOrNull()
             ?: aigenticException("No candidate found in VertexAI response: $this.")
 
-    val content = candidate.content().getOrNull() ?: aigenticException("No message found in response.")
+    val content =
+        candidate.content().getOrNull()
+            ?: aigenticException("No message found in response.")
+
+    val usage = usageMetadata().getOrNull()?.toUsage() ?: Usage.EMPTY
 
     val message =
         if (isStructuredOutput) {
             val textPart = content.parts().getOrNull()?.firstOrNull { it.text().getOrNull() != null }
-            val text = textPart?.text()?.getOrNull() ?: aigenticException("Expected text JSON in VertexAI structured output response, but found none: $this")
+            val text =
+                textPart?.text()?.getOrNull()
+                    ?: aigenticException("Expected a text part in VertexAI structured output response, but found none: $this")
             Message.StructuredOutput(text)
         } else {
             content.toMessages()
         }
 
-    return ModelResponse(
-        message = message,
-        usage = usageMetadata().getOrNull()?.toUsage() ?: Usage.EMPTY,
-    )
+    return ModelResponse(message = message, usage = usage)
 }
 
 internal fun Content.toMessages(): Message {

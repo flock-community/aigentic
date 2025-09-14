@@ -63,19 +63,3 @@ data class Usage(
         val EMPTY = Usage(inputTokenCount = 0, outputTokenCount = 0, thinkingOutputTokenCount = 0, cachedInputTokenCount = 0)
     }
 }
-
-sealed interface ModelCapability {
-    interface StructuredOutput : ModelCapability {
-        suspend fun sendRequest(
-            messages: List<Message>,
-            responseSchema: Parameter,
-        ): ModelResponse
-    }
-
-    interface Basic : ModelCapability {
-        suspend fun sendRequest(
-            messages: List<Message>,
-            tools: List<ToolDescription>,
-        ): ModelResponse
-    }
-}

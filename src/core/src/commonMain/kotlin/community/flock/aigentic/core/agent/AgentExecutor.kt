@@ -96,17 +96,10 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
         state.addMessages(prependWithExampleMessages())
     }
 
-    val structuredOutputParameter =
-        if (agent.tools.isEmpty() && agent.responseParameter != null) {
-            agent.responseParameter
-        } else {
-            null
-        }
-
     return SendModelRequest(
         state = state,
         agent = agent,
-        structuredResponseParameter = structuredOutputParameter,
+        structuredResponseParameter = agent.responseParameter.takeIf { agent.isStructuredOutputAgent() },
     )
 }
 
