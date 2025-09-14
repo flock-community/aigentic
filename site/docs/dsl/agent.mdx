@@ -159,6 +159,15 @@ val myAgent = agent {
 
 When using the generic types approach, the agent will automatically be configured to handle the specified input and output types.
 
+:::tip Structured output with Gemini/Vertex AI
+When you define an output type (e.g., `agent<Input, Output>`) and don’t add tools, Aigentic will use the provider’s structured output mode for Gemini and Vertex AI. This helps the model return more complex, nested JSON responses than the normal chat/tool-calling flow.
+
+- Add tools → normal tool-calling flow (no structured output)
+- No tools → structured output request (Gemini/Vertex AI only)
+
+If you hit Gemini errors like `MALFORMED_FUNCTION_CALL`, try removing tools and rely on structured output.
+:::
+
 ## Running an Agent
 
 To run an agent, use the `start` function which returns an `AgentRun`:
