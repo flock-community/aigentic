@@ -10,9 +10,9 @@ data class GenerateContentResponse(
 )
 
 @Serializable
-class Candidate(
-    val content: Content,
-    val finishReason: FinishReason?,
+data class Candidate(
+    val content: Content? = null,
+    val finishReason: FinishReason? = null,
 )
 
 @Serializable
