@@ -18,13 +18,12 @@ fun GenerateContentResponse.toModelResponse(): ModelResponse {
 
     return if (promptFeedback?.blockReason != null) {
         aigenticException("Gemini blocked the prompt because of reason: '${promptFeedback.blockReason}'")
-    } else if (candidate != null && candidate.content != null) {  // Check for null content
+    } else if (candidate != null && candidate.content != null) { // Check for null content
         ModelResponse(
             message = candidate.content.toMessages(),
             usage = usageMetadata?.toUsage() ?: Usage.EMPTY,
         )
     } else if (candidate != null && candidate.content == null) {
-        // Handle case where candidate exists but content is null
         aigenticException("Gemini returned candidate without content. Finish reason: ${candidate.finishReason}")
     } else {
         aigenticException("No candidate found in Gemini response: $this.")

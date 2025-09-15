@@ -13,7 +13,7 @@ data class GenerateContentResponse(
 data class Candidate(
     val content: Content? = null,
     val finishReason: FinishReason? = null,
-    )
+)
 
 @Serializable
 enum class FinishReason {
