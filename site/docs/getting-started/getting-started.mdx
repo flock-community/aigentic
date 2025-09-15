@@ -45,6 +45,14 @@ dependencies {
     // Tools modules (optional)
     implementation("community.flock.aigentic:http:{{AIGENTIC_VERSION}}")
     implementation("community.flock.aigentic:openapi:{{AIGENTIC_VERSION}}")
+
+    // Choose one of the following Ktor client engines depending on your platform
+    implementation("io.ktor:ktor-client-cio:3.2.2")         // Ktor's CIO engine
+    //implementation("io.ktor:ktor-client-okhttp:3.2.2")    // JVM (Android compatible)
+    // implementation("io.ktor:ktor-client-apache:3.2.2")   // Apache HttpClient
+    // implementation("io.ktor:ktor-client-java:3.2.2")     // Java 11+ HttpClient
+    // implementation("io.ktor:ktor-client-jetty:3.2.2")    // Jetty HttpClient
+    // implementation("io.ktor:ktor-client-js:3.2.2")       // Javascript/Node
 }
 ```
 
@@ -133,6 +141,35 @@ Add the following to your `pom.xml` file:
         <artifactId>openapi-jvm</artifactId>
         <version>${aigentic.version}</version>
     </dependency>
+
+    <!-- Ktor Client Engine (REQUIRED) - Choose one -->
+    <dependency>
+        <groupId>io.ktor</groupId>
+        <artifactId>ktor-client-cio</artifactId>
+        <version>3.2.2</version>
+    </dependency>
+    <!-- Alternative engines
+    <dependency>
+        <groupId>io.ktor</groupId>
+        <artifactId>ktor-client-okhttp-jvm</artifactId>
+        <version>3.2.2</version>
+    </dependency>
+    <dependency>
+        <groupId>io.ktor</groupId>
+        <artifactId>ktor-client-apache-jvm</artifactId>
+        <version>3.2.2</version>
+    </dependency>
+    <dependency>
+        <groupId>io.ktor</groupId>
+        <artifactId>ktor-client-cio-jvm</artifactId>
+        <version>3.2.2</version>
+    </dependency>
+    <dependency>
+        <groupId>io.ktor</groupId>
+        <artifactId>ktor-client-java-jvm</artifactId>
+        <version>3.2.2</version>
+    </dependency>
+    -->
 </dependencies>
 ```
 
@@ -142,6 +179,14 @@ When using Maven, make sure to include the `-jvm` suffix in all Aigentic depende
 
 </TabItem>
 </Tabs>
+
+---
+
+## Ktor Client Engine Selection
+
+Aigentic uses Ktor for HTTP communication, which requires a platform-specific client engine:
+
+For detailed information about engine features, which one to choose and alternatives, see the [Ktor Client Engines documentation](https://ktor.io/docs/client-engines.html).
 
 ---
 

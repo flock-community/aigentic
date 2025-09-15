@@ -76,7 +76,7 @@ data class SaveResult(
 
 // Configure the agent
 val invoiceExtractorAgent =
-        agent<Base64Image, InvoiceComponents> {
+        agent<Unit, InvoiceComponents> {
             // Configure the model for the agent, other models are also available
             geminiModel {
                 apiKey("YOUR_API_KEY")
@@ -95,8 +95,8 @@ val invoiceExtractorAgent =
             }
         }
 
-// Start the agent and get a run
-val run = invoiceExtractorAgent.start("base64Invoice")
+// Start the agent with a PDF attachment containing an invoice
+val run = invoiceExtractorAgent.start(Attachment.Base64.pdf(invoiceBase64))
 
 // Print the result
 when (val outcome = run.outcome) {
