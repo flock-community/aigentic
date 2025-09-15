@@ -41,5 +41,30 @@ class GeminiResponseMapperKtTest : DescribeSpec({
             modelResponse.usage.inputTokenCount shouldBe 10
             modelResponse.usage.outputTokenCount shouldBe 5
         }
+
+        // Nieuwe test voor candidate zonder content
+        it("should handle candidate without content gracefully") {
+            val json =
+                """
+                {
+                  "candidates": [
+                    {
+                      "finishReason": "SAFETY"
+                    }
+                  ],
+                  "usageMetadata": {
+                    "promptTokenCount": 10,
+                    "candidatesTokenCount": 0,
+                    "totalTokenCount": 10
+                  }
+                }
+                """.trimIndent()
+
+            val parsed = Json { ignoreUnknownKeys = true }.decodeFromString<GenerateContentResponse>(json)
+
+            // Should not throw during deserialization
+            parsed.candidates?.first()?.content shouldBe null
+            parsed.candidates?.first()?.finishReason shouldBe FinishReason.SAFETY
+        }
     }
 })
