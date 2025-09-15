@@ -7,6 +7,7 @@ import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.gemini.client.GeminiClient
 import community.flock.aigentic.gemini.client.config.GeminiApiConfig
@@ -19,12 +20,9 @@ sealed class GeminiModelIdentifier(
     override val stringValue: String,
 ) : ModelIdentifier {
     data object Gemini2_5Flash : GeminiModelIdentifier("gemini-2.5-flash")
-    data object Gemini2_5Pro : GeminiModelIdentifier("gemini-2.5")
+    data object Gemini2_5Pro : GeminiModelIdentifier("gemini-2.5-pro")
     data object Gemini2_0Flash : GeminiModelIdentifier("gemini-2.0-flash")
     data object Gemini2_0FlashLite : GeminiModelIdentifier("gemini-2.0-flash-lite")
-    data object Gemini1_5Flash : GeminiModelIdentifier("gemini-1.5-flash")
-    data object Gemini1_5Flash8b : GeminiModelIdentifier("gemini-1.5-flash-8b")
-    data object Gemini1_5Pro : GeminiModelIdentifier("gemini-1.5-pro")
 
     data class Custom(val identifier: String) : GeminiModelIdentifier(identifier)
 }
@@ -39,12 +37,14 @@ class GeminiModel(
     override suspend fun sendRequest(
         messages: List<Message>,
         tools: List<ToolDescription>,
-    ): ModelResponse {
-        val request = createGenerateContentRequest(messages, tools, generationSettings)
-        return geminiClient
-            .generateContent(request, modelIdentifier)
-            .toModelResponse()
-    }
+        structuredOutputParameter: Parameter?,
+    ): ModelResponse =
+        geminiClient
+            .generateContent(
+                request = createGenerateContentRequest(messages, tools, generationSettings, structuredOutputParameter),
+                modelIdentifier = modelIdentifier,
+            )
+            .toModelResponse(structuredOutputParameter != null)
 
     companion object {
         fun defaultGeminiClient(
@@ -53,7 +53,7 @@ class GeminiModel(
             requestsPerMinute: Int = 15,
         ): GeminiClient =
             GeminiClient(
-                config = GeminiApiConfig(apiKey = apiKeyAuthentication), // Gebruik defaults
+                config = GeminiApiConfig(apiKey = apiKeyAuthentication),
                 rateLimiter = RateLimitBucket(requestsPerMinute),
                 logLevel = logLevel,
             )

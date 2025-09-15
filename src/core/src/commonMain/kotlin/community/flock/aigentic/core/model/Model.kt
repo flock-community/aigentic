@@ -1,6 +1,7 @@
 package community.flock.aigentic.core.model
 
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 
 sealed interface Authentication {
@@ -18,6 +19,7 @@ interface Model {
     suspend fun sendRequest(
         messages: List<Message>,
         tools: List<ToolDescription>,
+        structuredOutputParameter: Parameter?,
     ): ModelResponse
 }
 

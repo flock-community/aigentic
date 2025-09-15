@@ -72,6 +72,7 @@ object OpenAIMapper {
         return when (this) {
             is Message.SystemPrompt -> ChatMessage(role, prompt)
             is Message.Text -> ChatMessage(role, text)
+            is Message.StructuredOutput -> ChatMessage(role, response)
             is Message.ExampleToolMessage -> ChatMessage(role = role, content = text, toolCallId = ToolId(id.toString()))
             is Message.Url -> ChatMessage(role = role, listOf(ImagePart(url)))
             is Message.Base64 -> ChatMessage(role = role, listOf(ImagePart(formatDataUrl())))
@@ -101,7 +102,7 @@ object OpenAIMapper {
             is Message.SystemPrompt -> ChatRole.System
             is Message.ToolCalls -> ChatRole.Assistant
             is Message.ToolResult -> ChatRole.Tool
-            is Message.Url, is Message.Base64, is Message.Text, is Message.ExampleToolMessage -> mapRole()
+            is Message.Url, is Message.Base64, is Message.Text, is Message.ExampleToolMessage, is Message.StructuredOutput -> mapRole()
         }
 
     private fun Message.mapRole() =

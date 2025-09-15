@@ -122,7 +122,6 @@ type FatalResultDto {
 
 type ResultDto = FinishedResultDto | StuckResultDto | FatalResultDto
 
-
 enum MimeTypeDto {
     IMAGE_JPEG,
     IMAGE_PNG,
@@ -167,7 +166,8 @@ type ToolCallsMessageDto {
 type ToolCallDto {
     id: String,
     name: String,
-    arguments: String
+    arguments: String,
+    expectedArguments: String?
 }
 
 type ToolResultMessageDto {
@@ -178,7 +178,13 @@ type ToolResultMessageDto {
     response: String
 }
 
-type MessageDto = SystemPromptMessageDto | TextMessageDto | UrlMessageDto | Base64MessageDto | ToolCallsMessageDto | ToolResultMessageDto
+type StructuredOutputMessageDto {
+  createdAt: String,
+  sender: SenderDto,
+  response: String
+}
+
+type MessageDto = SystemPromptMessageDto | TextMessageDto | UrlMessageDto | Base64MessageDto | ToolCallsMessageDto | ToolResultMessageDto | StructuredOutputMessageDto
 
 type GatewayClientErrorDto {
     message: String

@@ -43,7 +43,7 @@ object TestData {
 
     val modelFinishTaskDirectly =
         mockk<Model>().apply {
-            coEvery { sendRequest(any(), any()) } returnsMany
+            coEvery { sendRequest(any(), any(), any()) } returnsMany
                 listOf(
                     finishedTaskToolCall,
                 ).toModelResponse()
@@ -51,7 +51,7 @@ object TestData {
 
     val modelStuckDirectly =
         mockk<Model>().apply {
-            coEvery { sendRequest(any(), any()) } returnsMany
+            coEvery { sendRequest(any(), any(), any()) } returnsMany
                 listOf(
                     stuckWithTaskToolCall,
                 ).toModelResponse()

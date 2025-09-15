@@ -49,7 +49,7 @@ sealed interface AgentStatus {
 fun Message.toStatus(): List<AgentStatus> =
     when (this) {
         is Message.SystemPrompt -> emptyList()
-        is Message.Text, is Message.Url, is Message.Base64, is Message.ExampleToolMessage -> emptyList()
+        is Message.Text, is Message.Url, is Message.Base64, is Message.ExampleToolMessage, is Message.StructuredOutput -> emptyList()
         is Message.ToolCalls ->
             this.toolCalls.map {
                 when (it.name) {
