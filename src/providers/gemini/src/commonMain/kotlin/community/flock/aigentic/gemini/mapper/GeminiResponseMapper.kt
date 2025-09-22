@@ -22,31 +22,38 @@ fun GenerateContentResponse.toModelResponse(isStructuredOutput: Boolean): ModelR
         candidates?.firstOrNull()
             ?: aigenticException("No candidate found in Gemini response: $this.")
 
+    val content =
+        candidate.content
+            ?: aigenticException("Gemini returned candidate without content. Finish reason: ${candidate.finishReason}")
+
     val usage = usageMetadata?.toUsage() ?: Usage.EMPTY
-    val message =
-        if (isStructuredOutput) {
-            when (val part = candidate.content.parts.first()) {
-                is Part.Text -> Message.StructuredOutput(part.text)
-                else -> aigenticException("No text candidate found with structured output response: $this.")
-            }
-        } else {
-            candidate.content.toMessages()
-        }
+    val message = content.toMessage(isStructuredOutput)
 
     return ModelResponse(message = message, usage = usage)
 }
 
-internal fun Content.toMessages(): Message {
-    val toolCalls =
+private fun Content.toMessage(isStructuredOutput: Boolean): Message =
+    when {
+        isStructuredOutput -> toStructuredOutputMessage()
+        else -> toToolCallsMessage()
+    }
+
+private fun Content.toStructuredOutputMessage(): Message =
+    when (val part = parts.first()) {
+        is Part.Text -> Message.StructuredOutput(part.text)
+        else -> aigenticException("No text candidate found with structured output response.")
+    }
+
+private fun Content.toToolCallsMessage(): Message =
+    Message.ToolCalls(
         parts.filterIsInstance<Part.FunctionCall>().map {
             ToolCall(
                 id = ToolCallId(generateRandomString(20)),
                 name = it.functionCall.name,
                 arguments = Json.encodeToString(it.functionCall.args),
             )
-        }
-    return Message.ToolCalls(toolCalls)
-}
+        },
+    )
 
 private fun UsageMetadata.toUsage(): Usage =
     Usage(
