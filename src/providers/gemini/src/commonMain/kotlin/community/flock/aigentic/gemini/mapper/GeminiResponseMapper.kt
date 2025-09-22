@@ -27,20 +27,24 @@ fun GenerateContentResponse.toModelResponse(isStructuredOutput: Boolean): ModelR
             ?: aigenticException("Gemini returned candidate without content. Finish reason: ${candidate.finishReason}")
 
     val usage = usageMetadata?.toUsage() ?: Usage.EMPTY
-    val message =
-        if (isStructuredOutput) {
-            when (val part = content.parts.first()) {
-                is Part.Text -> Message.StructuredOutput(part.text)
-                else -> aigenticException("No text candidate found with structured output response: $this.")
-            }
-        } else {
-            content.toMessages()
-        }
+    val message = content.toMessage(isStructuredOutput)
 
     return ModelResponse(message = message, usage = usage)
 }
 
-internal fun Content.toMessages(): Message =
+private fun Content.toMessage(isStructuredOutput: Boolean): Message =
+    when {
+        isStructuredOutput -> toStructuredOutputMessage()
+        else -> toToolCallsMessage()
+    }
+
+private fun Content.toStructuredOutputMessage(): Message =
+    when (val part = parts.first()) {
+        is Part.Text -> Message.StructuredOutput(part.text)
+        else -> aigenticException("No text candidate found with structured output response.")
+    }
+
+private fun Content.toToolCallsMessage(): Message =
     Message.ToolCalls(
         parts.filterIsInstance<Part.FunctionCall>().map {
             ToolCall(

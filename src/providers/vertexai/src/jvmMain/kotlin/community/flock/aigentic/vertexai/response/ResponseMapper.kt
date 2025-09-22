@@ -28,22 +28,26 @@ fun GenerateContentResponse.toModelResponse(isStructuredOutput: Boolean): ModelR
             ?: aigenticException("No message found in response.")
 
     val usage = usageMetadata().getOrNull()?.toUsage() ?: Usage.EMPTY
-
-    val message =
-        if (isStructuredOutput) {
-            val textPart = content.parts().getOrNull()?.firstOrNull { it.text().getOrNull() != null }
-            val text =
-                textPart?.text()?.getOrNull()
-                    ?: aigenticException("Expected a text part in VertexAI structured output response, but found none: $this")
-            Message.StructuredOutput(text)
-        } else {
-            content.toMessages()
-        }
+    val message = content.toMessage(isStructuredOutput)
 
     return ModelResponse(message = message, usage = usage)
 }
 
-internal fun Content.toMessages(): Message {
+private fun Content.toMessage(isStructuredOutput: Boolean): Message =
+    when {
+        isStructuredOutput -> toStructuredOutputMessage()
+        else -> toToolCallsMessage()
+    }
+
+private fun Content.toStructuredOutputMessage(): Message {
+    val textPart = parts().getOrNull()?.firstOrNull { it.text().getOrNull() != null }
+    val text =
+        textPart?.text()?.getOrNull()
+            ?: aigenticException("Expected a text part in VertexAI structured output response, but found none.")
+    return Message.StructuredOutput(text)
+}
+
+private fun Content.toToolCallsMessage(): Message {
     val toolCalls =
         parts().getOrNull()
             ?.mapNotNull { it.functionCall().getOrNull() }
