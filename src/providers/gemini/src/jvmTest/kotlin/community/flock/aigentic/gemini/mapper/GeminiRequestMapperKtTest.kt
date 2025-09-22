@@ -20,7 +20,7 @@ class GeminiRequestMapperKtTest : DescribeSpec({
             val mimeType = MimeType.PNG
             val base64Message = Message.Base64(Sender.Model, MessageType.New, base64Content, mimeType)
 
-            createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT).contents[0].parts[0]
+            createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null).contents[0].parts[0]
                 .shouldBeInstanceOf<Part.Blob>().run {
                     this.inlineData shouldBe BlobContent(mimeType = mimeType.value, data = base64Content)
                 }
@@ -31,7 +31,7 @@ class GeminiRequestMapperKtTest : DescribeSpec({
             val mimeType = MimeType.PNG
             val base64Message = Message.Base64(Sender.Model, MessageType.New, base64Content, mimeType)
 
-            createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT).contents[0].parts[0]
+            createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null).contents[0].parts[0]
                 .shouldBeInstanceOf<Part.Blob>().run {
                     this.inlineData shouldBe BlobContent(mimeType = mimeType.value, data = "iVBORw0KGgoAAA==")
                 }

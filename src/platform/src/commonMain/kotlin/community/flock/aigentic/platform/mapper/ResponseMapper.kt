@@ -15,6 +15,7 @@ import community.flock.aigentic.gateway.wirespec.FinishedResultDto
 import community.flock.aigentic.gateway.wirespec.MimeTypeDto
 import community.flock.aigentic.gateway.wirespec.RunDetailsDto
 import community.flock.aigentic.gateway.wirespec.SenderDto
+import community.flock.aigentic.gateway.wirespec.StructuredOutputMessageDto
 import community.flock.aigentic.gateway.wirespec.StuckResultDto
 import community.flock.aigentic.gateway.wirespec.SystemPromptMessageDto
 import community.flock.aigentic.gateway.wirespec.TextMessageDto
@@ -33,6 +34,7 @@ internal fun RunDetailsDto.toRun() =
                     is Base64MessageDto -> Message.Base64(it.sender.map(), MessageType.New, it.base64Content, it.mimeType.map())
                     is SystemPromptMessageDto -> Message.SystemPrompt(it.prompt)
                     is TextMessageDto -> Message.Text(it.sender.map(), MessageType.New, it.text)
+                    is StructuredOutputMessageDto -> Message.StructuredOutput(it.response)
                     is ToolCallsMessageDto ->
                         Message.ToolCalls(
                             it.toolCalls.map { toolCallDto ->

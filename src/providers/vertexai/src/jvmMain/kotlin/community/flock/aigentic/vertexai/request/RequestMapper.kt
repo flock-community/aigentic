@@ -1,5 +1,7 @@
 package community.flock.aigentic.vertexai.request
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.google.genai.JsonSerializable
 import com.google.genai.types.Content
 import com.google.genai.types.FunctionDeclaration
 import com.google.genai.types.GenerateContentConfig
@@ -13,11 +15,12 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ThinkingConfig
+import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import community.flock.aigentic.vertexai.fromJson
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -30,6 +33,7 @@ internal fun createRequestContents(messages: List<Message>): List<Content> =
                 is Message.ExampleToolMessage -> listOf(Part.fromText(message.text))
                 is Message.SystemPrompt -> listOf(Part.fromText("See system instruction for your task"))
                 is Message.Text -> listOf(Part.fromText(message.text))
+                is Message.StructuredOutput -> listOf(Part.fromText(message.response))
                 is Message.ToolCalls ->
                     message.toolCalls.map {
                         Part.fromFunctionCall(it.name, it.arguments.fromJson())
@@ -55,6 +59,7 @@ internal fun createGenerateConfig(
     messages: List<Message>,
     tools: List<ToolDescription>,
     generationSettings: GenerationSettings,
+    structuredOutputParameter: Parameter?,
 ): GenerateContentConfig =
     GenerateContentConfig.builder()
         .systemInstruction(getSystemInstruction(messages))
@@ -62,9 +67,15 @@ internal fun createGenerateConfig(
         .topP(generationSettings.topP)
         .topK(generationSettings.topK.toFloat())
         .candidateCount(1)
-        .tools(tools.toVertexTools())
+        .tools(if (structuredOutputParameter == null) tools.toVertexTools() else emptyList())
         .safetySettings(createSafetySettings())
         .withThinkingConfig(generationSettings.thinkingConfig)
+        .apply {
+            structuredOutputParameter?.let { param ->
+                responseMimeType("application/json")
+                responseJsonSchema(param.getStructuredResponseSchema().toJsonNode())
+            }
+        }
         .build()
 
 private fun List<ToolDescription>.toVertexTools(): List<Tool> {
@@ -129,3 +140,18 @@ private fun Sender.toVertexRole(): String =
         Sender.Agent -> "user"
         Sender.Model -> "model"
     }
+
+private fun Parameter.getStructuredResponseSchema(): JsonObject =
+    this.let { responseParam ->
+        buildJsonObject {
+            put("type", "object")
+            emitPropertiesAndRequired(
+                when (responseParam) {
+                    is Parameter.Complex.Object -> responseParam.parameters
+                    else -> listOf(responseParam)
+                },
+            )
+        }
+    }
+
+inline fun <reified T> T.toJsonNode(): JsonNode = JsonSerializable.stringToJsonNode(Json.encodeToString(this))

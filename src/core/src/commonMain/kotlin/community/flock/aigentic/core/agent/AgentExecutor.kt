@@ -27,11 +27,13 @@ import community.flock.aigentic.core.message.Message.Url
 import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
+import community.flock.aigentic.core.message.asJson
 import community.flock.aigentic.core.message.mapToTextMessages
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.core.platform.getRuns
 import community.flock.aigentic.core.platform.sendRun
+import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.util.withStartFinishTiming
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
@@ -39,6 +41,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 
 suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(vararg attachments: Attachment): AgentRun<O> = start(null, *attachments)
 
@@ -101,7 +104,12 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
     if (agent.tags.isNotEmpty()) {
         state.addMessages(prependWithExampleMessages())
     }
-    return SendModelRequest(state, agent)
+
+    return SendModelRequest(
+        state = state,
+        agent = agent,
+        structuredResponseParameter = agent.responseParameter.takeIf { agent.isStructuredOutputAgent() },
+    )
 }
 
 @PublishedApi
@@ -193,9 +201,15 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
 internal suspend inline fun <reified I : Any, reified O : Any> ProcessModelResponse<I, O>.process(): Action<I, O> =
     when (responseMessage) {
         is Message.ToolCalls -> ExecuteTools(state, agent, responseMessage.toolCalls)
+        is Message.StructuredOutput -> {
+            val response = Json.decodeFromJsonElement<O>(responseMessage.asJson())
+            val outcome = Outcome.Finished("Finished", response)
+            Finished(state, agent, outcome)
+        }
+
         else -> {
             state.messages.emit(correctionMessage)
-            SendModelRequest(state, agent)
+            SendModelRequest(state, agent, null)
         }
     }
 
@@ -203,7 +217,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> ProcessModelRespo
 internal suspend inline fun <reified I : Any, reified O : Any> SendModelRequest<I, O>.process(): ProcessModelResponse<I, O> {
     val (startedAt, finishedAt, response) =
         withStartFinishTiming {
-            agent.sendModelRequest(state)
+            agent.sendModelRequest(state, structuredResponseParameter)
         }
 
     state.addModelRequestInfo(
@@ -219,7 +233,12 @@ internal suspend inline fun <reified I : Any, reified O : Any> SendModelRequest<
 
     val message = response.message
     state.addMessage(message)
-    return ProcessModelResponse(state, agent, message)
+
+    return ProcessModelResponse(
+        state = state,
+        agent = agent,
+        responseMessage = message,
+    )
 }
 
 @PublishedApi
@@ -238,7 +257,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> ExecuteTools<I, O
     return if (finishedToolResult != null) {
         Finished(state, agent, finishedToolResult.outcome)
     } else {
-        SendModelRequest(state, agent)
+        SendModelRequest(state, agent, null)
     }
 }
 
@@ -249,7 +268,7 @@ internal inline fun <reified I : Any, reified O : Any> initializeStartMessages(
     attachments: List<Attachment>,
 ): List<Message> =
     buildList {
-        add(agent.systemPromptBuilder.buildSystemPrompt(agent))
+        add(agent.getSystemPromptMessage())
         addAll(agent.contexts.map { it.toMessage() })
         addAll(attachments.map { it.toMessage() })
         taskInput?.let { createTaskInputMessage(it) }?.let(::add)
@@ -311,10 +330,14 @@ internal inline fun <reified I : Any> createTaskInputMessage(input: I): Text =
     )
 
 @PublishedApi
-internal suspend inline fun <I : Any, reified O : Any> Agent<I, O>.sendModelRequest(state: State): ModelResponse =
+internal suspend inline fun <I : Any, reified O : Any> Agent<I, O>.sendModelRequest(
+    state: State,
+    structuredResponseParameter: Parameter?,
+): ModelResponse =
     model.sendRequest(
         messages = state.messages.replayCache,
         tools = tools.values.toList() + internalTools<O>().values.toList(),
+        structuredOutputParameter = structuredResponseParameter,
     )
 
 sealed interface Action<I : Any, O : Any> {
@@ -325,11 +348,27 @@ sealed interface Action<I : Any, O : Any> {
         val attachments: List<Attachment>,
     ) : Action<I, O>
 
-    data class ExecuteTools<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val toolCalls: List<ToolCall>) : Action<I, O>
+    data class ExecuteTools<I : Any, O : Any>(
+        val state: State,
+        val agent: Agent<I, O>,
+        val toolCalls: List<ToolCall>,
+    ) : Action<I, O>
 
-    data class SendModelRequest<I : Any, O : Any>(val state: State, val agent: Agent<I, O>) : Action<I, O>
+    data class SendModelRequest<I : Any, O : Any>(
+        val state: State,
+        val agent: Agent<I, O>,
+        val structuredResponseParameter: Parameter?,
+    ) : Action<I, O>
 
-    data class ProcessModelResponse<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val responseMessage: Message) : Action<I, O>
+    data class ProcessModelResponse<I : Any, O : Any>(
+        val state: State,
+        val agent: Agent<I, O>,
+        val responseMessage: Message,
+    ) : Action<I, O>
 
-    data class Finished<I : Any, O : Any>(val state: State, val agent: Agent<I, O>, val outcome: Outcome<O>) : Action<I, O>
+    data class Finished<I : Any, O : Any>(
+        val state: State,
+        val agent: Agent<I, O>,
+        val outcome: Outcome<O>,
+    ) : Action<I, O>
 }

@@ -10,9 +10,9 @@ import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.model.Usage
+import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.core.tool.createTool
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -33,6 +33,7 @@ fun modelFinishDirectly(finishToolCall: ToolCall = finishedTaskToolCall) =
         override suspend fun sendRequest(
             messages: List<Message>,
             tools: List<ToolDescription>,
+            structuredOutputParameter: Parameter?,
         ): ModelResponse = ModelResponse(ToolCalls(listOf(finishToolCall)), Usage.EMPTY)
     }
 
@@ -47,6 +48,7 @@ fun modelException() =
         override suspend fun sendRequest(
             messages: List<Message>,
             tools: List<ToolDescription>,
+            structuredOutputParameter: Parameter?,
         ): ModelResponse = aigenticException("Model API exception")
     }
 

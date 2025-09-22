@@ -13,23 +13,32 @@ import community.flock.aigentic.gemini.client.model.UsageMetadata
 import generateRandomString
 import kotlinx.serialization.json.Json
 
-fun GenerateContentResponse.toModelResponse(): ModelResponse =
-    when {
-        promptFeedback?.blockReason != null ->
-            aigenticException("Gemini blocked the prompt because of reason: '${promptFeedback.blockReason}'")
-        else -> {
-            val candidate =
-                candidates?.firstOrNull()
-                    ?: aigenticException("No candidate found in Gemini response: $this.")
-            val content =
-                candidate.content
-                    ?: aigenticException("Gemini returned candidate without content. Finish reason: ${candidate.finishReason}")
-            ModelResponse(
-                message = content.toMessages(),
-                usage = usageMetadata?.toUsage() ?: Usage.EMPTY,
-            )
-        }
+fun GenerateContentResponse.toModelResponse(isStructuredOutput: Boolean): ModelResponse {
+    promptFeedback?.blockReason?.let {
+        aigenticException("Gemini blocked the prompt because of reason: '$it'")
     }
+
+    val candidate =
+        candidates?.firstOrNull()
+            ?: aigenticException("No candidate found in Gemini response: $this.")
+
+    val content =
+        candidate.content
+            ?: aigenticException("Gemini returned candidate without content. Finish reason: ${candidate.finishReason}")
+
+    val usage = usageMetadata?.toUsage() ?: Usage.EMPTY
+    val message =
+        if (isStructuredOutput) {
+            when (val part = content.parts.first()) {
+                is Part.Text -> Message.StructuredOutput(part.text)
+                else -> aigenticException("No text candidate found with structured output response: $this.")
+            }
+        } else {
+            content.toMessages()
+        }
+
+    return ModelResponse(message = message, usage = usage)
+}
 
 internal fun Content.toMessages(): Message =
     Message.ToolCalls(

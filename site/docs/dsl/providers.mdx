@@ -68,6 +68,40 @@ Aigentic supports several LLM providers out of the box:
   </TabItem>
 </Tabs>
 
+## Structured output (Gemini & Vertex AI)
+
+You don’t need structured output to use output types. With any provider you can define `agent<Input, Output>` and Aigentic will parse the model’s response into your `Output` type in the normal chat/tool‑calling flow.
+
+Structured output is an optional mode for Gemini and Vertex AI that uses the provider’s native JSON schema support. Aigentic will use it automatically when:
+
+- You specify an output type on your agent (e.g., `agent<Input, Output>`), and
+- You don’t add any tools to the agent
+
+Why use it
+- Handles complex, deeply nested objects more reliably
+
+When not to use it
+- You need tools (structured output can’t run tools as a Gemini limitation)
+- Your output is simple enough for the normal flow
+
+Troubleshooting
+- If you see Gemini errors like `MALFORMED_FUNCTION_CALL`, try removing tools and rely on structured output by specifying an output type.
+
+```kotlin
+@AigenticParameter
+data class Summary(val title: String, val bullets: List<String>)
+
+val vertexAgent = agent<String, Summary> {
+    vertexAIModel {
+        project("your-project-id")
+        location("your-location")
+        modelIdentifier(VertexAIModelIdentifier.Gemini2_5Flash)
+    }
+    task("Summarize the text as title + bullets")
+    // No tools added → structured output request
+}
+```
+
 ## Bring your own model
 
 All model implementations in Aigentic implement the `Model` interface, which defines the contract for interacting with LLM providers:

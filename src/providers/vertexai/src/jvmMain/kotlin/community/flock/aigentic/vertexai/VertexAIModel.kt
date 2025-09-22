@@ -6,6 +6,7 @@ import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.vertexai.request.createGenerateConfig
 import community.flock.aigentic.vertexai.request.createRequestContents
@@ -16,9 +17,10 @@ import kotlinx.coroutines.future.await
 sealed class VertexAIModelIdentifier(
     override val stringValue: String,
 ) : ModelIdentifier {
+    data object Gemini2_5Flash : VertexAIModelIdentifier("gemini-2.5-flash")
+    data object Gemini2_5Pro : VertexAIModelIdentifier("gemini-2.5-pro")
     data object Gemini2_0Flash : VertexAIModelIdentifier("gemini-2.0-flash")
-    data object Gemini2_5FlashPreview : VertexAIModelIdentifier("gemini-2.5-flash-preview-05-20")
-    data object Gemini2_5ProPreview : VertexAIModelIdentifier("gemini-2.5-pro-preview-05-06")
+    data object Gemini2_0FlashLite : VertexAIModelIdentifier("gemini-2.0-flash-lite")
 
     data class Custom(val identifier: String) : VertexAIModelIdentifier(identifier)
 }
@@ -40,12 +42,13 @@ class VertexAIModel(
     override suspend fun sendRequest(
         messages: List<Message>,
         tools: List<ToolDescription>,
+        structuredOutputParameter: Parameter?,
     ): ModelResponse =
         client.async.models.generateContent(
             modelIdentifier.stringValue,
             createRequestContents(messages),
-            createGenerateConfig(messages, tools, generationSettings),
-        ).await().toModelResponse()
+            createGenerateConfig(messages, tools, generationSettings, structuredOutputParameter),
+        ).await().toModelResponse(structuredOutputParameter != null)
 
     companion object {
         fun defaultVertexAIClient(

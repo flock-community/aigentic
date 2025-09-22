@@ -64,6 +64,7 @@ data class GenerationConfig(
     @SerialName("presence_penalty") val presencePenalty: Float? = null,
     @SerialName("frequency_penalty") val frequencyPenalty: Float? = null,
     val thinkingConfig: ThinkingConfig? = null,
+    val responseSchema: JsonObject? = null,
 )
 
 @Serializable

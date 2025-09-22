@@ -37,7 +37,7 @@ class GeminiResponseMapperKtTest : DescribeSpec({
             parsed.candidates?.first()?.finishReason shouldBe FinishReason.MALFORMED_FUNCTION_CALL
 
             // Ensure mapping does not throw and returns a ModelResponse
-            val modelResponse = parsed.toModelResponse()
+            val modelResponse = parsed.toModelResponse(false)
             modelResponse.usage.inputTokenCount shouldBe 10
             modelResponse.usage.outputTokenCount shouldBe 5
         }
