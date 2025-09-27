@@ -26,6 +26,13 @@ kotlin {
                 api(libs.serialization.json)
             }
         }
+        val jvmMain by getting {
+            dependencies {
+                implementation(libs.mcp.kotlin.sdk.jvm)
+                implementation(libs.ktor.client.cio)
+                implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.6.0")
+            }
+        }
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotest.framework.engine)

@@ -1,0 +1,169 @@
+package community.flock.aigentic.core.mcp
+
+import community.flock.aigentic.core.tool.Tool
+import community.flock.aigentic.core.tool.ToolName
+import community.flock.aigentic.core.tool.Parameter
+import kotlinx.serialization.json.JsonObject
+
+/**
+ * Simplified MCP Client implementation
+ * This is a placeholder implementation until the MCP SDK API is stabilized
+ */
+class McpClient internal constructor(
+    private val config: McpConfig
+) {
+    /**
+     * Get tools from the MCP server
+     * Currently returns empty list as a placeholder
+     */
+    suspend fun getTools(): List<Tool> {
+        // TODO: Implement actual MCP client when SDK API is stable
+        return emptyList()
+    }
+
+    /**
+     * Close the client connection
+     */
+    suspend fun close() {
+        // TODO: Implement actual close when SDK API is stable
+    }
+
+    companion object {
+        /**
+         * Create an MCP client from configuration
+         */
+        fun fromConfig(config: McpConfig): McpClient {
+            return McpClient(config)
+        }
+    }
+}
+
+/**
+ * Simplified MCP configuration
+ */
+sealed class McpConfig(
+    open val name: String = "aigentic-mcp-client",
+    open val version: String = "1.0.0"
+) {
+    data class Stdio(
+        val command: String,
+        val args: List<String> = emptyList(),
+        val env: Map<String, String> = emptyMap(),
+        override val name: String = "aigentic-mcp-client",
+        override val version: String = "1.0.0"
+    ) : McpConfig(name, version)
+
+    data class SSE(
+        val url: String,
+        val headers: Map<String, String> = emptyMap(),
+        override val name: String = "aigentic-mcp-client",
+        override val version: String = "1.0.0"
+    ) : McpConfig(name, version)
+
+    data class WebSocket(
+        val url: String,
+        val headers: Map<String, String> = emptyMap(),
+        override val name: String = "aigentic-mcp-client",
+        override val version: String = "1.0.0"
+    ) : McpConfig(name, version)
+
+    data class Custom(
+        val transport: Any,
+        override val name: String = "aigentic-mcp-client",
+        override val version: String = "1.0.0"
+    ) : McpConfig(name, version)
+}
+
+/**
+ * DSL builder for MCP configuration
+ */
+@DslMarker
+annotation class McpDSL
+
+@McpDSL
+class McpConfigBuilder {
+    private var config: McpConfig? = null
+
+    fun stdio(
+        command: String,
+        vararg args: String,
+        env: Map<String, String> = emptyMap(),
+        name: String = "aigentic-mcp-client",
+        version: String = "1.0.0"
+    ) {
+        config = McpConfig.Stdio(command, args.toList(), env, name, version)
+    }
+
+    fun sse(
+        url: String,
+        headers: Map<String, String> = emptyMap(),
+        name: String = "aigentic-mcp-client",
+        version: String = "1.0.0"
+    ) {
+        config = McpConfig.SSE(url, headers, name, version)
+    }
+
+    fun websocket(
+        url: String,
+        headers: Map<String, String> = emptyMap(),
+        name: String = "aigentic-mcp-client",
+        version: String = "1.0.0"
+    ) {
+        config = McpConfig.WebSocket(url, headers, name, version)
+    }
+
+    fun custom(
+        transport: Any,
+        name: String = "aigentic-mcp-client",
+        version: String = "1.0.0"
+    ) {
+        config = McpConfig.Custom(transport, name, version)
+    }
+
+    fun build(): McpConfig = requireNotNull(config) {
+        "MCP configuration not specified. Use stdio(), sse(), websocket(), or custom()"
+    }
+}
+
+/**
+ * DSL function to create MCP configuration
+ */
+fun mcp(block: McpConfigBuilder.() -> Unit): McpConfig {
+    return McpConfigBuilder().apply(block).build()
+}
+
+/**
+ * Convenient factory functions for common MCP server configurations
+ */
+object McpServers {
+    fun filesystem(
+        allowedDirectories: List<String> = listOf("/tmp"),
+        name: String = "filesystem-client"
+    ) = McpConfig.Stdio(
+        command = "npx",
+        args = listOf("-y", "@modelcontextprotocol/server-filesystem") + allowedDirectories,
+        name = name
+    )
+
+    fun github(
+        token: String? = null,
+        name: String = "github-client"
+    ) = McpConfig.Stdio(
+        command = "npx",
+        args = listOf("-y", "@modelcontextprotocol/server-github"),
+        env = token?.let { mapOf("GITHUB_TOKEN" to it) } ?: emptyMap(),
+        name = name
+    )
+
+    fun npx(
+        packageName: String,
+        args: List<String> = emptyList(),
+        env: Map<String, String> = emptyMap(),
+        name: String = "custom-client"
+    ) = McpConfig.Stdio(
+        command = "npx",
+        args = listOf("-y", packageName) + args,
+        env = env,
+        name = name
+    )
+}

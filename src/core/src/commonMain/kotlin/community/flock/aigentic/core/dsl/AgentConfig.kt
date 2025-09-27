@@ -6,6 +6,9 @@ import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.mcp.McpClientWrapper
+import community.flock.aigentic.core.mcp.createMcpClient
+import kotlinx.coroutines.runBlocking
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
@@ -63,6 +66,16 @@ class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
         noinline handler: suspend (TI) -> TO,
     ) {
         tools += createTool(name, description, handler)
+    }
+
+    fun AgentConfig<I, O>.addMcp(mcpClient: McpClientWrapper) {
+        // Get tools synchronously (they will be lazily initialized when used)
+        tools += runBlocking { mcpClient.getTools() }
+    }
+
+    fun AgentConfig<I, O>.addMcp(mcpConfig: Any) {
+        val mcpClient = createMcpClient(mcpConfig)
+        addMcp(mcpClient)
     }
 
     fun AgentConfig<I, O>.context(contextConfig: ContextConfig.() -> Unit) =
