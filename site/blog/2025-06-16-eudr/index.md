@@ -1,12 +1,12 @@
 ---
-title: "Leveraging Aigentic for EUDR Compliance: A Proof of Concept"
-description: A Proof of Concept using Aigentic to automate EUDR compliance for product catalogs
+title: "Leveraging Aigentic for EUDR Compliance"
+description: A solution using Aigentic to automate EUDR compliance for product catalogs
 authors: [nsmnds, wilmveel]
 tags: [AI, EUDR, Compliance, Aigentic, Product Classification]
 image: /img/blog/eudr.png
 ---
 
-# Leveraging Aigentic for EUDR Compliance: A Proof of Concept
+# Leveraging Aigentic for EUDR Compliance
 
 ## The Challenge of EUDR Compliance for Product Catalogs
 
@@ -35,18 +35,18 @@ They needed a solution that could:
 
 ## Building an AI Solution with Aigentic: The POC Approach
 
-To address this challenge, we developed a Proof of Concept (POC) using our Aigentic library. Aigentic provided the
+To address this challenge, we developed a solution using our Aigentic library. Aigentic provided the
 foundation for this POC, offering a powerful Kotlin Multiplatform DSL for building and integrating AI agents tailored to
 specific business needs.
 
 For this POC, our approach involved creating a specialized classification agent that could analyze product data and
-determine the HS-code with high accuracy. The proof of concept leveraged several key components of the Aigentic
+determine the HS-code with high accuracy. The solution leveraged several key components of the Aigentic
 ecosystem to demonstrate the potential of this approach.
 
 ## The Data Validation Challenge in the POC
 
 One of the most significant challenges in the POC was validating the data and ensuring the accuracy of the AI
-classifications. This is where Aigentic proved particularly valuable for our proof of concept. By manually validating
+classifications. This is where Aigentic proved particularly valuable for our solution. By manually validating
 the data, we were able to identify and correct errors that were introduced during the classification process.
 Aigentic allowed us to review and correct the output of the AI agent, providing a human-in-the-loop validation process
 that was essential for the POC.
@@ -60,7 +60,7 @@ We implemented a multi-stage validation process:
 - **Continuous Improvement**: The agent was continuously adapted based on feedback, improving its accuracy over time
 
 Aigentic's ability to combine human-in-the-loop validation with AI automation was crucial for building trust in the
-system. During the proof of concept, stakeholders could review classifications, provide feedback, and see how the system
+system. During the solution, stakeholders could review classifications, provide feedback, and see how the system
 improved over time, which was essential for validating the approach.
 
 ## Operational Observability: Monitoring Performance and Costs in the POC
@@ -79,7 +79,7 @@ factors for successful implementation.
 
 ## Results
 
-The proof of concept demonstrated promising results. The agent achieved 98% accuracy on the golden dataset. Statistical
+The solution demonstrated promising results. The agent achieved 98% accuracy on the golden dataset. Statistical
 analysis with a 95% confidence interval suggests that when applied to the complete product catalog, the real accuracy
 would likely fall between 96.77% and 99.23%, indicating robust performance suitable for large-scale EUDR compliance
 operations.
