@@ -9,7 +9,6 @@ import com.aallam.openai.api.chat.ToolId
 import com.aallam.openai.api.core.Role
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
@@ -31,7 +30,6 @@ object DomainMapper {
             isTextMessage() ->
                 Message.Text(
                     sender = role.mapToSender(),
-                    messageType = MessageType.New,
                     text = content!!,
                 )
 

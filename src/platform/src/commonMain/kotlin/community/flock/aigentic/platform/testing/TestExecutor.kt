@@ -5,9 +5,12 @@ import community.flock.aigentic.core.agent.Run
 import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.executeAction
 import community.flock.aigentic.core.agent.state.State
+import community.flock.aigentic.core.agent.state.addConfigContextMessage
+import community.flock.aigentic.core.agent.state.addSystemPromptMessage
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.ContextMessage
+import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.platform.getRuns
 import community.flock.aigentic.platform.testing.exception.ExpectationFailedException
 import community.flock.aigentic.platform.testing.mock.createToolMocks
@@ -17,8 +20,6 @@ import community.flock.aigentic.platform.testing.model.TestResult
 import community.flock.aigentic.platform.testing.model.message
 import community.flock.aigentic.platform.testing.model.prettyPrint
 import createToolCallExpectations
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.emitAll
 
 suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.start(): TestReport {
     return when (val configuredPlatform = agent.platform) {
@@ -95,8 +96,24 @@ suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.execu
 
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.initializeTestState(run: Run<O>): State {
-    val contextMessages = run.messages.filter { it is ContextMessage }
-    val initialMessages = listOf(agent.getSystemPromptMessage()) + contextMessageInterceptor(contextMessages)
-    val state = State().apply { messages.emitAll(initialMessages.asFlow()) }
+    val preferred: List<Message> =
+        when (run) {
+            is community.flock.aigentic.core.agent.AgentRun ->
+                (run.configContextMessages + run.runAttachmentMessages).map { it as Message }
+            else -> emptyList()
+        }
+    val contextMessages: List<Message> =
+        if (preferred.isNotEmpty()) {
+            preferred
+        } else {
+            run.messages
+                .filterIsInstance<ContextMessage>()
+                .map { it as Message }
+        }
+    val systemPrompt = agent.getSystemPromptMessage()
+    val interceptedContextMessages = contextMessageInterceptor(contextMessages)
+    val state = State()
+    state.addSystemPromptMessage(systemPrompt)
+    interceptedContextMessages.forEach { state.addConfigContextMessage(it) }
     return state
 }

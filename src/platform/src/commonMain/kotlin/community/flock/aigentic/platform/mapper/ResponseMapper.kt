@@ -3,7 +3,6 @@ package community.flock.aigentic.platform.mapper
 import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -31,9 +30,9 @@ internal fun RunDetailsDto.toRun() =
         messages =
             messages.map {
                 when (it) {
-                    is Base64MessageDto -> Message.Base64(it.sender.map(), MessageType.New, it.base64Content, it.mimeType.map())
+                    is Base64MessageDto -> Message.Base64(it.sender.map(), it.base64Content, it.mimeType.map())
                     is SystemPromptMessageDto -> Message.SystemPrompt(it.prompt)
-                    is TextMessageDto -> Message.Text(it.sender.map(), MessageType.New, it.text)
+                    is TextMessageDto -> Message.Text(it.sender.map(), it.text)
                     is StructuredOutputMessageDto -> Message.StructuredOutput(it.response)
                     is ToolCallsMessageDto ->
                         Message.ToolCalls(
@@ -53,7 +52,7 @@ internal fun RunDetailsDto.toRun() =
                             ToolResultContent(it.response),
                         )
 
-                    is UrlMessageDto -> Message.Url(it.sender.map(), MessageType.New, it.url, it.mimeType.map())
+                    is UrlMessageDto -> Message.Url(it.sender.map(), it.url, it.mimeType.map())
                 }
             },
         outcome =

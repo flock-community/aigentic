@@ -8,10 +8,13 @@ import community.flock.aigentic.core.agent.Action.SendModelRequest
 import community.flock.aigentic.core.agent.message.correctionMessage
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.state.State
-import community.flock.aigentic.core.agent.state.addExampleRun
-import community.flock.aigentic.core.agent.state.addMessage
-import community.flock.aigentic.core.agent.state.addMessages
+import community.flock.aigentic.core.agent.state.addConfigContextMessage
+import community.flock.aigentic.core.agent.state.addExampleMessage
+import community.flock.aigentic.core.agent.state.addExampleRunId
 import community.flock.aigentic.core.agent.state.addModelRequestInfo
+import community.flock.aigentic.core.agent.state.addRunContextMessage
+import community.flock.aigentic.core.agent.state.addRunExecutionMessage
+import community.flock.aigentic.core.agent.state.addSystemPromptMessage
 import community.flock.aigentic.core.agent.state.getStatus
 import community.flock.aigentic.core.agent.state.toRun
 import community.flock.aigentic.core.agent.status.AgentStatus
@@ -24,7 +27,6 @@ import community.flock.aigentic.core.message.Message.Base64
 import community.flock.aigentic.core.message.Message.ExampleToolMessage
 import community.flock.aigentic.core.message.Message.Text
 import community.flock.aigentic.core.message.Message.Url
-import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.asJson
@@ -100,9 +102,12 @@ suspend inline fun <reified I : Any, reified O : Any> executeAction(action: Acti
 
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.process(): Action<I, O> {
-    state.addMessages(initializeStartMessages(agent, taskInput, attachments))
+    seedInitialMessages()
+
     if (agent.tags.isNotEmpty()) {
-        state.addMessages(prependWithExampleMessages())
+        val (messages, runIds) = fetchExampleRunMessages()
+        messages.forEach { state.addExampleMessage(it) }
+        runIds.forEach { state.addExampleRunId(it) }
     }
 
     return SendModelRequest(
@@ -113,89 +118,70 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
 }
 
 @PublishedApi
-internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.prependWithExampleMessages(): List<Message> {
+internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.fetchExampleRunMessages(): Pair<List<Message>, List<RunId>> {
     val runs = fetchRuns()
-    state.addMessage(
-        ExampleToolMessage(
-            sender = Sender.Agent,
-            text =
-                """
-        |The messages below are example run messages. Each example run has a clearly marked start and end.
-        |The example messages continue until you encounter: <END_OF_ALL_EXAMPLES>
-                """.trimMargin(),
-        ),
-    )
-    val runMessages: List<List<Message>> =
-        runs.mapIndexed { index, run ->
-            val messages = run.second.messages
-            state.addExampleRun(run.first)
-            val textMessages = messages.mapToTextMessages()
-            val exampleMessageDescription =
-                listOf(
+    if (runs.isEmpty()) return emptyList<Message>() to emptyList()
+
+    val messages =
+        buildList {
+            add(
+                ExampleToolMessage(
+                    sender = Sender.Agent,
+                    text =
+                        """
+                |The messages below are example run messages. Each example run has a clearly marked start and end.
+                |The example messages continue until you encounter: <END_OF_ALL_EXAMPLES>
+                        """.trimMargin(),
+                ),
+            )
+
+            runs.forEachIndexed { index, (_, run) ->
+                add(
                     ExampleToolMessage(
                         sender = Sender.Agent,
-                        text =
-                            """
-        |The messages below are part of example $index. The example ends when you encounter: <END_EXAMPLE_$index>
-                            """.trimMargin(),
+                        text = "The messages below are part of example $index. The example ends when you encounter: <END_EXAMPLE_$index>",
                     ),
                 )
-            val exampleEndMessageDescription =
-                listOf(
+                run.messages.filterIsInstance<ContextMessage>().firstOrNull()?.toExampleMessage()?.let { add(it) }
+                addAll(run.messages.mapToTextMessages())
+                add(
                     ExampleToolMessage(
                         sender = Sender.Agent,
-                        text =
-                            """
-        |<END_EXAMPLE_$index>.
-                            """.trimMargin(),
+                        text = "<END_EXAMPLE_$index>.",
                     ),
                 )
-            try {
-                exampleMessageDescription
-                    .plus(listOf(messages.filterIsInstance<ContextMessage>().first().toExampleMessage()))
-                    .plus(textMessages)
-                    .plus(exampleEndMessageDescription)
-                    .map { it }
-            } catch (e: Exception) {
-                return emptyList()
             }
+
+            add(
+                ExampleToolMessage(
+                    sender = Sender.Agent,
+                    text =
+                        """
+                |<END_OF_ALL_EXAMPLES>
+                |All of the previous example messages are to be considered as the results of a desired run.
+                |Carefully analyze the relationship between the input (instructions, tool calls and arguments) and the output (responses).
+                |Use these relations in the current task and make sure to apply the instructions below to come to the same relationships.
+                |All messages following are the input for the current task.
+                        """.trimMargin(),
+                ),
+            )
         }
-    val finalExampleMessageDescription =
-        listOf(
-            Message.ExampleToolMessage(
-                sender = Sender.Agent,
-                text =
-                    """
-        |<END_OF_ALL_EXAMPLES>
-        |All of the previous example messages are to be considered as the results of a desired run.
-        |Carefully analyze the relationship between the input (instructions, tool calls and arguments) and the output (responses).
-        |Use these relations in the current task and make sure to apply the instructions below to come to the same relationships.
-        |All messages following are the input for the current task.
-                    """.trimMargin(),
-            ),
-        )
-    val allMessages = runMessages.flatMap { it }
-    return allMessages
-        .plus(finalExampleMessageDescription)
+
+    return messages to runs.map { it.first }
 }
 
 @PublishedApi
-internal fun ContextMessage.toExampleMessage(): Message =
-    when (this) {
-        is Base64 -> copy(messageType = MessageType.Example)
-        is Text -> copy(messageType = MessageType.Example)
-        is Url -> copy(messageType = MessageType.Example)
-        is ExampleToolMessage -> copy()
-    }
+internal fun ContextMessage.toExampleMessage(): Message = this as Message
 
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.fetchRuns(): List<Pair<RunId, Run<O>>> =
-    runCatching {
-        agent.platform?.getRuns<O>(agent.tags)
-    }.onFailure {
-        state.addMessages(initializeStartMessages(agent, taskInput, attachments))
-        aigenticException(it.message.toString())
-    }.getOrNull() ?: emptyList()
+    agent.platform?.let { platform ->
+        runCatching {
+            platform.getRuns<O>(agent.tags)
+        }.getOrElse { error ->
+            aigenticException("Failed to fetch example runs: ${error.message}")
+        }
+    } ?: aigenticException("Platform must be configured when using agent tags for example runs")
 
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> ProcessModelResponse<I, O>.process(): Action<I, O> =
@@ -208,7 +194,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> ProcessModelRespo
         }
 
         else -> {
-            state.messages.emit(correctionMessage)
+            state.addRunExecutionMessage(correctionMessage)
             SendModelRequest(state, agent, null)
         }
     }
@@ -232,7 +218,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> SendModelRequest<
     )
 
     val message = response.message
-    state.addMessage(message)
+    state.addRunExecutionMessage(message)
 
     return ProcessModelResponse(
         state = state,
@@ -249,7 +235,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> ExecuteTools<I, O
     val toolExecutionResults = executeToolCalls<I, O>(agent, toolCalls)
 
     toolExecutionResults.filterIsInstance<ToolExecutionResult.ToolResult>().forEach {
-        state.addMessage(it.message)
+        state.addRunExecutionMessage(it.message)
     }
 
     val finishedToolResult = toolExecutionResults.filterIsInstance<ToolExecutionResult.FinishedToolResult<O>>().firstOrNull()
@@ -262,17 +248,12 @@ internal suspend inline fun <reified I : Any, reified O : Any> ExecuteTools<I, O
 }
 
 @PublishedApi
-internal inline fun <reified I : Any, reified O : Any> initializeStartMessages(
-    agent: Agent<I, O>,
-    taskInput: I?,
-    attachments: List<Attachment>,
-): List<Message> =
-    buildList {
-        add(agent.getSystemPromptMessage())
-        addAll(agent.contexts.map { it.toMessage() })
-        addAll(attachments.map { it.toMessage() })
-        taskInput?.let { createTaskInputMessage(it) }?.let(::add)
-    }
+internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.seedInitialMessages() {
+    state.addSystemPromptMessage(agent.getSystemPromptMessage())
+    agent.contexts.map { it.toMessage() }.forEach { state.addConfigContextMessage(it) }
+    runAttachments.map { it.toMessage() }.forEach { state.addRunContextMessage(it) }
+    taskInput?.let { createTaskInputMessage(it) }?.let { state.addRunContextMessage(it) }
+}
 
 @PublishedApi
 internal fun Context.toMessage(): Message =
@@ -282,7 +263,6 @@ internal fun Context.toMessage(): Message =
                 sender = Sender.Agent,
                 url = url,
                 mimeType = mimeType,
-                messageType = MessageType.New,
             )
 
         is Context.Base64 ->
@@ -290,13 +270,11 @@ internal fun Context.toMessage(): Message =
                 sender = Sender.Agent,
                 base64Content = base64,
                 mimeType = mimeType,
-                messageType = MessageType.New,
             )
 
         is Context.Text ->
             Text(
                 sender = Sender.Agent,
-                messageType = MessageType.New,
                 text = text,
             )
     }
@@ -309,7 +287,6 @@ internal fun Attachment.toMessage(): Message =
                 sender = Sender.Agent,
                 base64Content = base64Content,
                 mimeType = mimeType,
-                messageType = MessageType.New,
             )
 
         is Attachment.Url ->
@@ -317,7 +294,6 @@ internal fun Attachment.toMessage(): Message =
                 sender = Sender.Agent,
                 url = url,
                 mimeType = mimeType,
-                messageType = MessageType.New,
             )
     }
 
@@ -325,7 +301,6 @@ internal fun Attachment.toMessage(): Message =
 internal inline fun <reified I : Any> createTaskInputMessage(input: I): Text =
     Text(
         sender = Sender.Agent,
-        messageType = MessageType.New,
         text = Json.encodeToString(input),
     )
 
@@ -335,7 +310,7 @@ internal suspend inline fun <I : Any, reified O : Any> Agent<I, O>.sendModelRequ
     structuredResponseParameter: Parameter?,
 ): ModelResponse =
     model.sendRequest(
-        messages = state.messages.replayCache,
+        messages = state.messages.snapshot(),
         tools = tools.values.toList() + internalTools<O>().values.toList(),
         structuredOutputParameter = structuredResponseParameter,
     )
@@ -345,7 +320,7 @@ sealed interface Action<I : Any, O : Any> {
         val state: State,
         val agent: Agent<I, O>,
         val taskInput: I?,
-        val attachments: List<Attachment>,
+        val runAttachments: List<Attachment>,
     ) : Action<I, O>
 
     data class ExecuteTools<I : Any, O : Any>(

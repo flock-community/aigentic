@@ -9,59 +9,50 @@ import kotlin.time.Instant
 
 sealed interface ContextMessage
 
-sealed interface MessageType {
-    data object New : MessageType
-    data object Example : MessageType
-}
-
 sealed class Message(
     open val sender: Sender,
-    open val messageType: MessageType,
     open val createdAt: Instant = Clock.System.now(),
 ) {
     data class SystemPrompt(
         val prompt: String,
-    ) : Message(Sender.Agent, MessageType.New)
+    ) : Message(Sender.Agent)
 
     data class Text(
         override val sender: Sender,
-        override val messageType: MessageType,
         val text: String,
-    ) : Message(sender, messageType), ContextMessage
+    ) : Message(sender), ContextMessage
 
     data class Url(
         override val sender: Sender,
-        override val messageType: MessageType,
         val url: String,
         val mimeType: MimeType,
-    ) : Message(Sender.Agent, messageType), ContextMessage
+    ) : Message(Sender.Agent), ContextMessage
 
     data class Base64(
         override val sender: Sender,
-        override val messageType: MessageType,
         val base64Content: String,
         val mimeType: MimeType,
-    ) : Message(Sender.Agent, messageType), ContextMessage
+    ) : Message(Sender.Agent), ContextMessage
 
     data class ToolCalls(
         val toolCalls: List<ToolCall>,
-    ) : Message(Sender.Model, MessageType.New)
+    ) : Message(Sender.Model)
 
     data class StructuredOutput(
         val response: String,
-    ) : Message(Sender.Model, MessageType.New)
+    ) : Message(Sender.Model)
 
     data class ToolResult(
         val toolCallId: ToolCallId,
         val toolName: String,
         val response: ToolResultContent,
-    ) : Message(Sender.Agent, MessageType.New)
+    ) : Message(Sender.Agent)
 
     data class ExampleToolMessage(
         override val sender: Sender,
         val text: String,
         val id: ToolCallId? = null,
-    ) : Message(sender, MessageType.Example), ContextMessage
+    ) : Message(sender), ContextMessage
 }
 
 data class ToolCall(

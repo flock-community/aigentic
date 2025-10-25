@@ -49,32 +49,40 @@ import kotlinx.serialization.json.Json
 fun <I : Any, O : Any> AgentRun<O>.toDto(
     agent: Agent<I, O>,
     outputSerializer: KSerializer<O>,
-) = RunDto(
-    startedAt = startedAt.toString(),
-    finishedAt = finishedAt.toString(),
-    config =
-        ConfigDto(
-            task =
-                TaskDto(
-                    description = agent.task.description,
-                    instructions = agent.task.instructions.map { it.text },
-                ),
-            modelIdentifier = agent.model.modelIdentifier.stringValue,
-            systemPrompt = messages.filterIsInstance<Message.SystemPrompt>().first().prompt,
-            exampleRunIds = exampleRunIds.map { it.value },
-            tools =
-                agent.tools.map { (name, tool) ->
-                    ToolDto(
-                        name = name.value,
-                        description = tool.description,
-                        parameters = tool.parameters.map { it.toDto() },
-                    )
-                },
-        ),
-    messages = messages.mapNotNull { it.toDto() },
-    modelRequests = modelRequests.map { it.toDto() },
-    result = outcome.toDto(outputSerializer),
-)
+): RunDto {
+    val initialMessagesSet = (configContextMessages + runAttachmentMessages).toSet()
+    return RunDto(
+        startedAt = startedAt.toString(),
+        finishedAt = finishedAt.toString(),
+        config =
+            ConfigDto(
+                task =
+                    TaskDto(
+                        description = agent.task.description,
+                        instructions = agent.task.instructions.map { it.text },
+                    ),
+                modelIdentifier = agent.model.modelIdentifier.stringValue,
+                systemPrompt = agent.getSystemPromptMessage().prompt,
+                tools =
+                    agent.tools.map { (name, tool) ->
+                        ToolDto(
+                            name = name.value,
+                            description = tool.description,
+                            parameters = tool.parameters.map { it.toDto() },
+                        )
+                    },
+                exampleRunIds = exampleRunIds.map { it.value },
+                contextMessages = configContextMessages.mapNotNull { it.toDto() },
+            ),
+        runAttachmentMessages = runAttachmentMessages.mapNotNull { it.toDto() },
+        messages =
+            messages
+                .filterNot { it is Message.SystemPrompt || it in initialMessagesSet }
+                .mapNotNull { it.toDto() },
+        modelRequests = modelRequests.map { it.toDto() },
+        result = outcome.toDto(outputSerializer),
+    )
+}
 
 private fun Parameter.toDto(): ParameterDto =
     when (this) {

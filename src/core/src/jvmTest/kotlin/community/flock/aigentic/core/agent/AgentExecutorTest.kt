@@ -14,7 +14,6 @@ import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -153,10 +152,9 @@ class AgentExecutorTest : DescribeSpec({
             agent.start().apply {
                 messages.drop(1).take(2) shouldBe
                     listOf(
-                        Message.Text(Sender.Agent, MessageType.New, expectedTextContext),
+                        Message.Text(Sender.Agent, expectedTextContext),
                         Message.Base64(
                             sender = Sender.Agent,
-                            messageType = MessageType.New,
                             base64Content = expectedImageContextBase64,
                             mimeType = expectedImageContextMimeType,
                         ),

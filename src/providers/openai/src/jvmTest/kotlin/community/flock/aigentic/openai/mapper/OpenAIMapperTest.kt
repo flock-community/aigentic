@@ -5,7 +5,6 @@ import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.ImagePart
 import com.aallam.openai.api.chat.ListContent
 import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.message.MessageType
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessage
@@ -22,7 +21,7 @@ class OpenAIMapperTest : DescribeSpec({
         it("Should format data url when raw base64 content is provided") {
             val base64Content = "iVBORw0KGgoAAA=="
             val mimeType = MimeType.PNG
-            val base64Message = Message.Base64(Sender.Model, MessageType.New, base64Content, mimeType)
+            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType)
 
             val chatMessage = base64Message.toOpenAIMessage()
 
@@ -39,7 +38,7 @@ class OpenAIMapperTest : DescribeSpec({
 
             val base64Content = "data:image/png;base64,iVBORw0KGgoAAA=="
             val mimeType = MimeType.PNG
-            val base64Message = Message.Base64(Sender.Model, MessageType.New, base64Content, mimeType)
+            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType)
 
             val chatMessage = base64Message.toOpenAIMessage()
 

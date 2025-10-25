@@ -3,6 +3,7 @@ type RunDto {
     finishedAt: String,
     config: ConfigDto,
     result: ResultDto,
+    runAttachmentMessages: MessageDto[]?,
     messages: MessageDto[],
     modelRequests: ModelRequestInfoDto[]
 }
@@ -21,7 +22,8 @@ type ConfigDto {
     modelIdentifier: String,
     systemPrompt: String,
     tools: ToolDto[],
-    exampleRunIds: String[]
+    exampleRunIds: String[],
+    contextMessages: MessageDto[]
 }
 
 type TaskDto {

@@ -37,6 +37,8 @@ internal suspend inline fun <reified I : Any, reified M : Any, reified O : Any> 
                                 response = null,
                             ),
                         modelRequests = run.modelRequests,
+                        configContextMessages = run.configContextMessages,
+                        runAttachmentMessages = run.runAttachmentMessages,
                     )
                 createWorkflowRun(runs, syntheticFinalRun.outcome)
             }

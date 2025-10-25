@@ -1,4 +1,4 @@
-# Aigentic Project Guidelines for Junie
+# Aigentic Project Guidelines
 
 ## Project Overview
 Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications. It streamlines the process of creating, deploying, and managing LLM agents within the Aigentic ecosystem.
@@ -114,6 +114,43 @@ When working with this project, Junie should:
 
 1. **Run tests for modified components**: After making changes to any file, run the relevant tests to ensure functionality is preserved.
 2. **Consider edge cases**: When implementing new features or fixing bugs, consider edge cases and ensure they are properly handled.
+
+### Running Tests
+
+**IMPORTANT**: Always use `--no-build-cache` when running tests after making changes to inline functions or internal APIs. Gradle's build cache can cause tests to use stale cached builds, leading to `NoSuchMethodError` or other cryptic failures.
+
+#### Test Commands
+
+Run core and platform tests (most common after core changes):
+```bash
+./gradlew --no-build-cache clean :src:core:jvmTest :src:platform:jvmTest
+```
+
+Run tests for specific modules:
+```bash
+# Core module only
+./gradlew --no-build-cache clean :src:core:jvmTest
+
+# Platform module only
+./gradlew --no-build-cache clean :src:platform:jvmTest
+
+# Specific provider (e.g., OpenAI)
+./gradlew --no-build-cache clean :src:providers:openai:jvmTest
+```
+
+Run all tests:
+```bash
+./gradlew --no-build-cache clean allTests
+```
+
+#### Why `--no-build-cache`?
+
+Kotlin inline functions are compiled directly into call sites. When you modify an inline function:
+1. The function definition changes
+2. But Gradle may serve cached bytecode for test files that call this function
+3. This causes runtime errors because the inlined code is outdated
+
+Using `--no-build-cache clean` ensures everything is recompiled from scratch.
 
 ## Build Guidelines
 - The project uses Gradle for building
