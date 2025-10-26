@@ -275,6 +275,7 @@ fun createMockPlatform(messages: List<Message>): Platform =
                         messages = messages,
                         outcome = Outcome.Finished("Finished the task", null),
                         modelRequests = emptyList(),
+                        systemPromptMessage = Message.SystemPrompt("Test system prompt"),
                     ),
             )
     }

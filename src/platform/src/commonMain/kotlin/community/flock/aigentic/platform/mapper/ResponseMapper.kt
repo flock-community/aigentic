@@ -23,46 +23,58 @@ import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
 import kotlin.time.Instant
 
-internal fun RunDetailsDto.toRun() =
-    AgentRun<String>(
+internal fun RunDetailsDto.toRun(): AgentRun<String> {
+    val mappedMessages =
+        messages.map {
+            when (it) {
+                is Base64MessageDto -> Message.Base64(it.sender.map(), it.base64Content, it.mimeType.map())
+                is SystemPromptMessageDto -> Message.SystemPrompt(it.prompt)
+                is TextMessageDto -> Message.Text(it.sender.map(), it.text)
+                is StructuredOutputMessageDto -> Message.StructuredOutput(it.response)
+                is ToolCallsMessageDto ->
+                    Message.ToolCalls(
+                        it.toolCalls.map { toolCallDto ->
+                            ToolCall(
+                                ToolCallId(toolCallDto.id),
+                                toolCallDto.name,
+                                toolCallDto.arguments,
+                            )
+                        },
+                    )
+
+                is ToolResultMessageDto ->
+                    Message.ToolResult(
+                        ToolCallId(it.toolCallId),
+                        it.toolName,
+                        ToolResultContent(it.response),
+                    )
+
+                is UrlMessageDto -> Message.Url(it.sender.map(), it.url, it.mimeType.map())
+            }
+        }
+
+    val systemPrompt =
+        mappedMessages.filterIsInstance<Message.SystemPrompt>().firstOrNull()
+            ?: Message.SystemPrompt("You are a helpful AI assistant")
+    val execution = mappedMessages.filterNot { it is Message.SystemPrompt }
+
+    return AgentRun(
         startedAt = Instant.parse(startedAt),
         finishedAt = Instant.parse(finishedAt),
-        messages =
-            messages.map {
-                when (it) {
-                    is Base64MessageDto -> Message.Base64(it.sender.map(), it.base64Content, it.mimeType.map())
-                    is SystemPromptMessageDto -> Message.SystemPrompt(it.prompt)
-                    is TextMessageDto -> Message.Text(it.sender.map(), it.text)
-                    is StructuredOutputMessageDto -> Message.StructuredOutput(it.response)
-                    is ToolCallsMessageDto ->
-                        Message.ToolCalls(
-                            it.toolCalls.map { toolCallDto ->
-                                ToolCall(
-                                    ToolCallId(toolCallDto.id),
-                                    toolCallDto.name,
-                                    toolCallDto.arguments,
-                                )
-                            },
-                        )
-
-                    is ToolResultMessageDto ->
-                        Message.ToolResult(
-                            ToolCallId(it.toolCallId),
-                            it.toolName,
-                            ToolResultContent(it.response),
-                        )
-
-                    is UrlMessageDto -> Message.Url(it.sender.map(), it.url, it.mimeType.map())
-                }
-            },
+        messages = mappedMessages,
         outcome =
             when (result) {
                 is FatalResultDto -> Outcome.Fatal(result.message)
-                is FinishedResultDto -> Outcome.Finished<String>(result.description, result.response)
+                is FinishedResultDto -> Outcome.Finished(result.description, result.response)
                 is StuckResultDto -> Outcome.Stuck(result.reason)
             },
         modelRequests = listOf(),
+        systemPromptMessage = systemPrompt,
+        configContextMessages = emptyList(),
+        runAttachmentMessages = emptyList(),
+        executionMessages = execution,
     )
+}
 
 private fun MimeTypeDto.map() =
     when (this) {

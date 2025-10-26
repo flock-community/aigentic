@@ -5,6 +5,7 @@ import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.status.toStatus
 import community.flock.aigentic.core.agent.tool.Outcome
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asFlow
@@ -19,7 +20,7 @@ data class State(
     val events: MutableSharedFlow<AgentStatus> = MutableSharedFlow(replay = 1000),
     val modelRequestInfos: MutableSharedFlow<ModelRequestInfo> = MutableSharedFlow(replay = 1000),
     val exampleRunIds: MutableSharedFlow<RunId> = MutableSharedFlow(replay = 1000),
-    internal val systemPromptMessages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1),
+    internal var systemPromptMessage: Message.SystemPrompt? = null,
     internal val configContextMessages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
     internal val runContextMessages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
     internal val exampleMessages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
@@ -27,52 +28,30 @@ data class State(
 ) {
     val messages =
         Messages(
-            systemPromptMessages = systemPromptMessages,
+            state = this,
             configContextMessages = configContextMessages,
             runContextMessages = runContextMessages,
             exampleMessages = exampleMessages,
             runExecutionMessages = runExecutionMessages,
         )
-
-    companion object {
-        @PublishedApi
-        internal fun <O : Any> fromRun(run: AgentRun<O>): State =
-            State(
-                startedAt = run.startedAt,
-                finishedAt = run.finishedAt,
-            ).apply {
-                run.configContextMessages.forEach(configContextMessages::tryEmit)
-                run.runAttachmentMessages.forEach(runContextMessages::tryEmit)
-                run.messages.forEach(runExecutionMessages::tryEmit)
-                run.modelRequests.forEach(modelRequestInfos::tryEmit)
-                run.exampleRunIds.forEach(exampleRunIds::tryEmit)
-            }
-    }
 }
 
 class Messages(
-    private val systemPromptMessages: MutableSharedFlow<Message>,
+    private val state: State,
     private val configContextMessages: MutableSharedFlow<Message>,
     private val runContextMessages: MutableSharedFlow<Message>,
     private val exampleMessages: MutableSharedFlow<Message>,
     private val runExecutionMessages: MutableSharedFlow<Message>,
 ) {
     fun snapshot(): List<Message> =
-        systemPromptMessages.replayCache +
+        listOfNotNull(state.systemPromptMessage) +
             configContextMessages.replayCache +
             runContextMessages.replayCache +
             exampleMessages.replayCache +
             runExecutionMessages.replayCache
 
-    fun snapshotForRun(): List<Message> =
-        systemPromptMessages.replayCache +
-            configContextMessages.replayCache +
-            runContextMessages.replayCache +
-            runExecutionMessages.replayCache
-
     fun asFlow() =
         merge(
-            systemPromptMessages,
             configContextMessages,
             runContextMessages,
             exampleMessages,
@@ -97,7 +76,9 @@ internal suspend fun State.addRunContextMessage(message: Message) = this.runCont
 @PublishedApi
 internal suspend fun State.addExampleMessage(message: Message) = this.exampleMessages.emit(message)
 
-suspend fun State.addSystemPromptMessage(message: Message.SystemPrompt) = this.systemPromptMessages.emit(message)
+suspend fun State.addSystemPromptMessage(message: Message.SystemPrompt) {
+    this.systemPromptMessage = message
+}
 
 @PublishedApi
 internal suspend fun State.addModelRequestInfo(modelRequestInfo: ModelRequestInfo) = this.modelRequestInfos.emit(modelRequestInfo)
@@ -108,15 +89,22 @@ internal suspend fun State.addExampleRunId(run: RunId) = this.exampleRunIds.emit
 @PublishedApi
 internal fun <O : Any> Pair<State, Outcome<O>>.toRun(): AgentRun<O> =
     with(first) {
+        val systemPromptMessage = this.systemPromptMessage ?: aigenticException("System prompt message must be present in agent run")
+        val configContextMessages = this.configContextMessages.replayCache
+        val runAttachmentMessages = runContextMessages.replayCache
+        val executionMessages = runExecutionMessages.replayCache
+
         AgentRun(
             startedAt = startedAt,
             finishedAt = finishedAt ?: Clock.System.now(),
-            messages = messages.snapshotForRun(),
+            messages = messages.snapshot().filterNot { it is Message.ExampleToolMessage },
             outcome = second,
             modelRequests = modelRequestInfos.replayCache,
             exampleRunIds = exampleRunIds.replayCache,
-            configContextMessages = configContextMessages.replayCache,
-            runAttachmentMessages = runContextMessages.replayCache,
+            systemPromptMessage = systemPromptMessage,
+            configContextMessages = configContextMessages,
+            runAttachmentMessages = runAttachmentMessages,
+            executionMessages = executionMessages,
         )
     }
 

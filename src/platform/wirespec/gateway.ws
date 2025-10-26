@@ -4,7 +4,7 @@ type RunDto {
     config: ConfigDto,
     result: ResultDto,
     runAttachmentMessages: MessageDto[]?,
-    messages: MessageDto[],
+    executionMessages: MessageDto[],
     modelRequests: ModelRequestInfoDto[]
 }
 

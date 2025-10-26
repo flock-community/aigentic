@@ -63,9 +63,8 @@ private fun Parameter.toJsonSchemaString(): String =
 fun <I : Any, O : Any> AgentRun<O>.toDto(
     agent: Agent<I, O>,
     outputSerializer: KSerializer<O>,
-): RunDto {
-    val initialMessagesSet = (configContextMessages + runAttachmentMessages).toSet()
-    return RunDto(
+): RunDto =
+    RunDto(
         startedAt = startedAt.toString(),
         finishedAt = finishedAt.toString(),
         config =
@@ -76,7 +75,7 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                         instructions = agent.task.instructions.map { it.text },
                     ),
                 modelIdentifier = agent.model.modelIdentifier.stringValue,
-                systemPrompt = agent.getSystemPromptMessage().prompt,
+                systemPrompt = systemPromptMessage.prompt,
                 tools =
                     agent.tools.map { (name, tool) ->
                         ToolDto(
@@ -90,14 +89,10 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                 responseJsonSchema = agent.responseParameter?.toJsonSchemaString(),
             ),
         runAttachmentMessages = runAttachmentMessages.mapNotNull { it.toDto() },
-        messages =
-            messages
-                .filterNot { it is Message.SystemPrompt || it in initialMessagesSet }
-                .mapNotNull { it.toDto() },
+        executionMessages = executionMessages.mapNotNull { it.toDto() },
         modelRequests = modelRequests.map { it.toDto() },
         result = outcome.toDto(outputSerializer),
     )
-}
 
 private fun Parameter.toDto(): ParameterDto =
     when (this) {

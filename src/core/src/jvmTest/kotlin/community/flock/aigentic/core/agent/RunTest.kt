@@ -35,7 +35,7 @@ class RunTest : DescribeSpec({
                                     cachedInputTokenCount = 3,
                                 ),
                             ),
-                        exampleRunIds = emptyList(),
+                        systemPromptMessage = community.flock.aigentic.core.message.Message.SystemPrompt("Test system prompt"),
                     )
 
                 val tokenUsage = run.tokenUsage()
