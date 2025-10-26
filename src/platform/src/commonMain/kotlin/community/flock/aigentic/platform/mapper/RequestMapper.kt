@@ -43,8 +43,22 @@ import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
 import community.flock.aigentic.gateway.wirespec.ToolDto
 import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
+import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+
+private fun Parameter.toJsonSchemaString(): String =
+    buildJsonObject {
+        put("type", "object")
+        emitPropertiesAndRequired(
+            when (this@toJsonSchemaString) {
+                is Parameter.Complex.Object -> this@toJsonSchemaString.parameters
+                else -> listOf(this@toJsonSchemaString)
+            },
+        )
+    }.toString()
 
 fun <I : Any, O : Any> AgentRun<O>.toDto(
     agent: Agent<I, O>,
@@ -73,6 +87,7 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                     },
                 exampleRunIds = exampleRunIds.map { it.value },
                 contextMessages = configContextMessages.mapNotNull { it.toDto() },
+                responseJsonSchema = agent.responseParameter?.toJsonSchemaString(),
             ),
         runAttachmentMessages = runAttachmentMessages.mapNotNull { it.toDto() },
         messages =

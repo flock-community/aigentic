@@ -23,7 +23,8 @@ type ConfigDto {
     systemPrompt: String,
     tools: ToolDto[],
     exampleRunIds: String[],
-    contextMessages: MessageDto[]
+    contextMessages: MessageDto[],
+    responseJsonSchema: String?
 }
 
 type TaskDto {

@@ -109,6 +109,28 @@ The project is organized into several modules:
 
 5. **Platform Module** (`src/platform/`): Platform-specific implementations and utilities
 
+## API Design Pattern with Wirespec
+
+The project uses **Wirespec** for contract-first development to maintain type safety in the platform module.
+
+### Wirespec Overview
+- **Source of Truth**: `src/platform/wirespec/gateway.ws` - all platform DTOs and API contracts are defined here
+- **Generated Code**: Kotlin data classes and API types in the platform module
+- **Type Safety**: Changes to DTOs automatically propagate through the platform module
+
+### Working with Wirespec
+
+**When you need to add or modify DTOs:**
+1. Update `src/platform/wirespec/gateway.ws` with your changes
+2. Run code generation to regenerate the Kotlin types
+3. The generated Kotlin types will be available in the platform module
+4. Use the generated types in your platform implementations
+
+**Important Notes:**
+- Never manually edit generated Wirespec files - they are auto-generated and will be overwritten
+- Always start by updating `gateway.ws` when you need new or modified DTOs
+- Run the code generation after any changes to `.ws` files to regenerate types
+
 ## Testing Guidelines
 When working with this project, Junie should:
 
