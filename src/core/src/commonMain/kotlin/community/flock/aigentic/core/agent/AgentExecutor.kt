@@ -301,7 +301,7 @@ internal fun Attachment.toMessage(): Message =
 internal inline fun <reified I : Any> createTaskInputMessage(input: I): Text =
     Text(
         sender = Sender.Agent,
-        text = Json.encodeToString(input),
+        text = if (input is String) input else Json.encodeToString(input),
     )
 
 @PublishedApi

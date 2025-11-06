@@ -34,6 +34,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
@@ -297,6 +298,157 @@ class AgentExecutorTest : DescribeSpec({
             agent.start().apply {
                 outcome.shouldBeTypeOf<Finished<Any>>()
                 (this.outcome as Finished).response shouldBe null
+            }
+        }
+
+        it("should categorize and order messages correctly in AgentRun") {
+
+            val expectedTextContext = "Config context text"
+            val expectedBase64Attachment = "base64-attachment-content"
+            val expectedUrlAttachment = "https://example.com/image.png"
+            val expectedStartRunText = "This text is run specific context text"
+
+            val toolCall = ToolCall(ToolCallId("1"), "toolName", "{}")
+
+            val messagesSlot = slot<List<Message>>()
+            val capturedMessages = mutableListOf<List<Message>>()
+
+            val modelMock =
+                mockk<Model>().apply {
+                    coEvery { sendRequest(capture(messagesSlot), any(), any()) } answers {
+                        capturedMessages.add(messagesSlot.captured)
+                        listOf(
+                            toolCall,
+                            finishedTaskToolCall,
+                        ).toModelResponse()[capturedMessages.size - 1]
+                    }
+                }
+
+            val testTool =
+                createTool<Unit, String>(
+                    name = toolCall.name,
+                    description = null,
+                ) {
+                    "toolResult"
+                }
+
+            val agent =
+                agent<String, Unit> {
+                    model(modelMock)
+                    task("Execute some task") {}
+                    context {
+                        addText(expectedTextContext)
+                    }
+                    addTool(testTool)
+                }
+
+            agent.start(
+                expectedStartRunText,
+                Attachment.Base64.png(expectedBase64Attachment),
+                Attachment.Url.png(expectedUrlAttachment),
+            ).apply {
+                systemPromptMessage shouldBe messages[0]
+
+                configContextMessages.size shouldBe 1
+                configContextMessages[0] shouldBe Message.Text(Sender.Agent, expectedTextContext)
+
+                runAttachmentMessages.size shouldBe 3
+                runAttachmentMessages[0] shouldBe
+                    Message.Base64(
+                        Sender.Agent,
+                        expectedBase64Attachment,
+                        MimeType.PNG,
+                    )
+                runAttachmentMessages[1] shouldBe
+                    Message.Url(
+                        Sender.Agent,
+                        expectedUrlAttachment,
+                        MimeType.PNG,
+                    )
+                runAttachmentMessages[2] shouldBe
+                    Message.Text(
+                        Sender.Agent,
+                        expectedStartRunText,
+                    )
+
+                executionMessages.size shouldBe 3
+                executionMessages[0] shouldBe Message.ToolCalls(listOf(toolCall))
+                executionMessages[1].shouldBeTypeOf<Message.ToolResult>()
+                executionMessages[2] shouldBe Message.ToolCalls(listOf(finishedTaskToolCall))
+
+                capturedMessages.size shouldBe 2
+
+                val firstRequestMessages = capturedMessages[0]
+                val secondRequestMessages = capturedMessages[1]
+
+                firstRequestMessages.run {
+                    size shouldBe 5
+                    this[0].shouldBeTypeOf<Message.SystemPrompt>()
+                    this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext)
+                    this[2] shouldBe
+                        Message.Base64(
+                            Sender.Agent,
+                            expectedBase64Attachment,
+                            MimeType.PNG,
+                        )
+                    this[3] shouldBe
+                        Message.Url(
+                            Sender.Agent,
+                            expectedUrlAttachment,
+                            MimeType.PNG,
+                        )
+                    this[4] shouldBe
+                        Message.Text(
+                            Sender.Agent,
+                            expectedStartRunText,
+                        )
+                }
+
+                secondRequestMessages.run {
+                    size shouldBe 7
+                    this[0].shouldBeTypeOf<Message.SystemPrompt>()
+                    this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext)
+                    this[2] shouldBe
+                        Message.Base64(
+                            Sender.Agent,
+                            expectedBase64Attachment,
+                            MimeType.PNG,
+                        )
+                    this[3] shouldBe
+                        Message.Url(
+                            Sender.Agent,
+                            expectedUrlAttachment,
+                            MimeType.PNG,
+                        )
+                    this[4] shouldBe
+                        Message.Text(
+                            Sender.Agent,
+                            expectedStartRunText,
+                        )
+                    this[5] shouldBe Message.ToolCalls(listOf(toolCall))
+                    this[6].shouldBeTypeOf<Message.ToolResult>()
+                }
+            }
+        }
+
+        it("should JSON-encode data class input as Text message") {
+
+            val inputDataClass = NewsEventInput(count = 5)
+
+            val agent =
+                agent<NewsEventInput, Unit> {
+                    model(modelFinishTaskDirectly)
+                    task("Execute some task") {}
+                    addTool(mockk(relaxed = true))
+                }
+
+            agent.start(inputDataClass).apply {
+                runAttachmentMessages.size shouldBe 1
+                runAttachmentMessages[0] shouldBe
+                    Message.Text(
+                        Sender.Agent,
+                        """{"count":5}""",
+                    )
             }
         }
 
