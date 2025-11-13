@@ -9,59 +9,91 @@ import kotlin.time.Instant
 
 sealed interface ContextMessage
 
-sealed interface MessageType {
-    data object New : MessageType
-    data object Example : MessageType
-}
-
+/**
+ * Base class for all messages in the agent system.
+ *
+ * @property sender Who created this message (Agent or Model)
+ * @property category What purpose this message serves
+ * @property createdAt When this message was created
+ */
 sealed class Message(
     open val sender: Sender,
-    open val messageType: MessageType,
+    open val category: MessageCategory,
     open val createdAt: Instant = Clock.System.now(),
 ) {
+    /**
+     * Creates a copy of this message with a different category.
+     * Useful for recategorizing messages.
+     */
+    abstract fun withCategory(newCategory: MessageCategory): Message
+
     data class SystemPrompt(
         val prompt: String,
-    ) : Message(Sender.Agent, MessageType.New)
+        override val createdAt: Instant = Clock.System.now(),
+    ) : Message(Sender.Agent, MessageCategory.SYSTEM_PROMPT, createdAt) {
+        override fun withCategory(newCategory: MessageCategory) = copy() // System prompts can't change category
+    }
 
     data class Text(
         override val sender: Sender,
-        override val messageType: MessageType,
+        override val category: MessageCategory = MessageCategory.EXECUTION,
         val text: String,
-    ) : Message(sender, messageType), ContextMessage
+        override val createdAt: Instant = Clock.System.now(),
+    ) : Message(sender, category, createdAt), ContextMessage {
+        override fun withCategory(newCategory: MessageCategory) = copy(category = newCategory)
+    }
 
     data class Url(
         override val sender: Sender,
-        override val messageType: MessageType,
+        override val category: MessageCategory = MessageCategory.EXECUTION,
         val url: String,
         val mimeType: MimeType,
-    ) : Message(Sender.Agent, messageType), ContextMessage
+        override val createdAt: Instant = Clock.System.now(),
+    ) : Message(sender, category, createdAt), ContextMessage {
+        override fun withCategory(newCategory: MessageCategory) = copy(category = newCategory)
+    }
 
     data class Base64(
         override val sender: Sender,
-        override val messageType: MessageType,
+        override val category: MessageCategory = MessageCategory.EXECUTION,
         val base64Content: String,
         val mimeType: MimeType,
-    ) : Message(Sender.Agent, messageType), ContextMessage
+        override val createdAt: Instant = Clock.System.now(),
+    ) : Message(sender, category, createdAt), ContextMessage {
+        override fun withCategory(newCategory: MessageCategory) = copy(category = newCategory)
+    }
 
     data class ToolCalls(
         val toolCalls: List<ToolCall>,
-    ) : Message(Sender.Model, MessageType.New)
+        override val createdAt: Instant = Clock.System.now(),
+    ) : Message(Sender.Model, MessageCategory.EXECUTION, createdAt) {
+        override fun withCategory(newCategory: MessageCategory) = copy() // Tool calls are always EXECUTION
+    }
 
     data class StructuredOutput(
         val response: String,
-    ) : Message(Sender.Model, MessageType.New)
+        override val createdAt: Instant = Clock.System.now(),
+    ) : Message(Sender.Model, MessageCategory.EXECUTION, createdAt) {
+        override fun withCategory(newCategory: MessageCategory) = copy() // Structured outputs are always EXECUTION
+    }
 
     data class ToolResult(
         val toolCallId: ToolCallId,
         val toolName: String,
         val response: ToolResultContent,
-    ) : Message(Sender.Agent, MessageType.New)
+        override val createdAt: Instant = Clock.System.now(),
+    ) : Message(Sender.Agent, MessageCategory.EXECUTION, createdAt) {
+        override fun withCategory(newCategory: MessageCategory) = copy() // Tool results are always EXECUTION
+    }
 
     data class ExampleToolMessage(
         override val sender: Sender,
         val text: String,
         val id: ToolCallId? = null,
-    ) : Message(sender, MessageType.Example), ContextMessage
+        override val createdAt: Instant = Clock.System.now(),
+    ) : Message(sender, MessageCategory.EXAMPLE, createdAt), ContextMessage {
+        override fun withCategory(newCategory: MessageCategory) = copy() // Example messages are always EXAMPLE
+    }
 }
 
 data class ToolCall(

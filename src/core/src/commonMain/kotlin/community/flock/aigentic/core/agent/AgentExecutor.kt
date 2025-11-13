@@ -24,7 +24,7 @@ import community.flock.aigentic.core.message.Message.Base64
 import community.flock.aigentic.core.message.Message.ExampleToolMessage
 import community.flock.aigentic.core.message.Message.Text
 import community.flock.aigentic.core.message.Message.Url
-import community.flock.aigentic.core.message.MessageType
+import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.asJson
@@ -182,9 +182,9 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
 @PublishedApi
 internal fun ContextMessage.toExampleMessage(): Message =
     when (this) {
-        is Base64 -> copy(messageType = MessageType.Example)
-        is Text -> copy(messageType = MessageType.Example)
-        is Url -> copy(messageType = MessageType.Example)
+        is Base64 -> copy(category = MessageCategory.EXAMPLE)
+        is Text -> copy(category = MessageCategory.EXAMPLE)
+        is Url -> copy(category = MessageCategory.EXAMPLE)
         is ExampleToolMessage -> copy()
     }
 
@@ -280,23 +280,23 @@ internal fun Context.toMessage(): Message =
         is Context.Url ->
             Url(
                 sender = Sender.Agent,
+                category = MessageCategory.CONFIG_CONTEXT,
                 url = url,
                 mimeType = mimeType,
-                messageType = MessageType.New,
             )
 
         is Context.Base64 ->
             Base64(
                 sender = Sender.Agent,
+                category = MessageCategory.CONFIG_CONTEXT,
                 base64Content = base64,
                 mimeType = mimeType,
-                messageType = MessageType.New,
             )
 
         is Context.Text ->
             Text(
                 sender = Sender.Agent,
-                messageType = MessageType.New,
+                category = MessageCategory.CONFIG_CONTEXT,
                 text = text,
             )
     }
@@ -307,17 +307,17 @@ internal fun Attachment.toMessage(): Message =
         is Attachment.Base64 ->
             Base64(
                 sender = Sender.Agent,
+                category = MessageCategory.RUN_CONTEXT,
                 base64Content = base64Content,
                 mimeType = mimeType,
-                messageType = MessageType.New,
             )
 
         is Attachment.Url ->
             Url(
                 sender = Sender.Agent,
+                category = MessageCategory.RUN_CONTEXT,
                 url = url,
                 mimeType = mimeType,
-                messageType = MessageType.New,
             )
     }
 
@@ -325,8 +325,8 @@ internal fun Attachment.toMessage(): Message =
 internal inline fun <reified I : Any> createTaskInputMessage(input: I): Text =
     Text(
         sender = Sender.Agent,
-        messageType = MessageType.New,
-        text = Json.encodeToString(input),
+        category = MessageCategory.RUN_CONTEXT,
+        text = if (input is String) input else Json.encodeToString(input),
     )
 
 @PublishedApi

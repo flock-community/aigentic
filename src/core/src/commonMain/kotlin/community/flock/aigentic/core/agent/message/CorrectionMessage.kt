@@ -1,13 +1,13 @@
 package community.flock.aigentic.core.agent.message
 
 import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.message.MessageType
+import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.Sender
 
 @PublishedApi
 internal val correctionMessage =
     Message.Text(
-        Sender.Agent,
-        MessageType.New,
+        sender = Sender.Agent,
+        category = MessageCategory.EXECUTION,
         text = "Please only reply with tool calls.",
     )
