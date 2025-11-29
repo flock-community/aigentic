@@ -27,6 +27,7 @@ import community.flock.aigentic.core.message.Message.Base64
 import community.flock.aigentic.core.message.Message.ExampleToolMessage
 import community.flock.aigentic.core.message.Message.Text
 import community.flock.aigentic.core.message.Message.Url
+import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.asJson
@@ -263,6 +264,7 @@ internal fun Context.toMessage(): Message =
                 sender = Sender.Agent,
                 url = url,
                 mimeType = mimeType,
+                category = MessageCategory.CONFIG_CONTEXT,
             )
 
         is Context.Base64 ->
@@ -270,12 +272,14 @@ internal fun Context.toMessage(): Message =
                 sender = Sender.Agent,
                 base64Content = base64,
                 mimeType = mimeType,
+                category = MessageCategory.CONFIG_CONTEXT,
             )
 
         is Context.Text ->
             Text(
                 sender = Sender.Agent,
                 text = text,
+                category = MessageCategory.CONFIG_CONTEXT,
             )
     }
 
@@ -287,6 +291,7 @@ internal fun Attachment.toMessage(): Message =
                 sender = Sender.Agent,
                 base64Content = base64Content,
                 mimeType = mimeType,
+                category = MessageCategory.RUN_CONTEXT,
             )
 
         is Attachment.Url ->
@@ -294,6 +299,7 @@ internal fun Attachment.toMessage(): Message =
                 sender = Sender.Agent,
                 url = url,
                 mimeType = mimeType,
+                category = MessageCategory.RUN_CONTEXT,
             )
     }
 
@@ -302,6 +308,7 @@ internal inline fun <reified I : Any> createTaskInputMessage(input: I): Text =
     Text(
         sender = Sender.Agent,
         text = if (input is String) input else Json.encodeToString(input),
+        category = MessageCategory.RUN_CONTEXT,
     )
 
 @PublishedApi
@@ -310,7 +317,7 @@ internal suspend inline fun <I : Any, reified O : Any> Agent<I, O>.sendModelRequ
     structuredResponseParameter: Parameter?,
 ): ModelResponse =
     model.sendRequest(
-        messages = state.messages.snapshot(),
+        messages = state.messagesAccessor.snapshot(),
         tools = tools.values.toList() + internalTools<O>().values.toList(),
         structuredOutputParameter = structuredResponseParameter,
     )

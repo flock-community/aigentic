@@ -14,6 +14,7 @@ import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -153,11 +154,12 @@ class AgentExecutorTest : DescribeSpec({
             agent.start().apply {
                 messages.drop(1).take(2) shouldBe
                     listOf(
-                        Message.Text(Sender.Agent, expectedTextContext),
+                        Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT),
                         Message.Base64(
                             sender = Sender.Agent,
                             base64Content = expectedImageContextBase64,
                             mimeType = expectedImageContextMimeType,
+                            category = MessageCategory.CONFIG_CONTEXT,
                         ),
                     )
             }
@@ -349,28 +351,34 @@ class AgentExecutorTest : DescribeSpec({
             ).apply {
                 systemPromptMessage shouldBe messages[0]
 
+                val configContextMessages = messages.filter { it.category == MessageCategory.CONFIG_CONTEXT }
                 configContextMessages.size shouldBe 1
-                configContextMessages[0] shouldBe Message.Text(Sender.Agent, expectedTextContext)
+                configContextMessages[0] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
 
-                runAttachmentMessages.size shouldBe 3
-                runAttachmentMessages[0] shouldBe
+                val runContextMessages = messages.filter { it.category == MessageCategory.RUN_CONTEXT }
+                runContextMessages.size shouldBe 3
+                runContextMessages[0] shouldBe
                     Message.Base64(
                         Sender.Agent,
                         expectedBase64Attachment,
                         MimeType.PNG,
+                        MessageCategory.RUN_CONTEXT,
                     )
-                runAttachmentMessages[1] shouldBe
+                runContextMessages[1] shouldBe
                     Message.Url(
                         Sender.Agent,
                         expectedUrlAttachment,
                         MimeType.PNG,
+                        MessageCategory.RUN_CONTEXT,
                     )
-                runAttachmentMessages[2] shouldBe
+                runContextMessages[2] shouldBe
                     Message.Text(
                         Sender.Agent,
                         expectedStartRunText,
+                        MessageCategory.RUN_CONTEXT,
                     )
 
+                val executionMessages = messages.filter { it.category == MessageCategory.EXECUTION }
                 executionMessages.size shouldBe 3
                 executionMessages[0] shouldBe Message.ToolCalls(listOf(toolCall))
                 executionMessages[1].shouldBeTypeOf<Message.ToolResult>()
@@ -384,46 +392,52 @@ class AgentExecutorTest : DescribeSpec({
                 firstRequestMessages.run {
                     size shouldBe 5
                     this[0].shouldBeTypeOf<Message.SystemPrompt>()
-                    this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext)
+                    this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
                     this[2] shouldBe
                         Message.Base64(
                             Sender.Agent,
                             expectedBase64Attachment,
                             MimeType.PNG,
+                            MessageCategory.RUN_CONTEXT,
                         )
                     this[3] shouldBe
                         Message.Url(
                             Sender.Agent,
                             expectedUrlAttachment,
                             MimeType.PNG,
+                            MessageCategory.RUN_CONTEXT,
                         )
                     this[4] shouldBe
                         Message.Text(
                             Sender.Agent,
                             expectedStartRunText,
+                            MessageCategory.RUN_CONTEXT,
                         )
                 }
 
                 secondRequestMessages.run {
                     size shouldBe 7
                     this[0].shouldBeTypeOf<Message.SystemPrompt>()
-                    this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext)
+                    this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
                     this[2] shouldBe
                         Message.Base64(
                             Sender.Agent,
                             expectedBase64Attachment,
                             MimeType.PNG,
+                            MessageCategory.RUN_CONTEXT,
                         )
                     this[3] shouldBe
                         Message.Url(
                             Sender.Agent,
                             expectedUrlAttachment,
                             MimeType.PNG,
+                            MessageCategory.RUN_CONTEXT,
                         )
                     this[4] shouldBe
                         Message.Text(
                             Sender.Agent,
                             expectedStartRunText,
+                            MessageCategory.RUN_CONTEXT,
                         )
                     this[5] shouldBe Message.ToolCalls(listOf(toolCall))
                     this[6].shouldBeTypeOf<Message.ToolResult>()
@@ -443,11 +457,13 @@ class AgentExecutorTest : DescribeSpec({
                 }
 
             agent.start(inputDataClass).apply {
-                runAttachmentMessages.size shouldBe 1
-                runAttachmentMessages[0] shouldBe
+                val runContextMessages = messages.filter { it.category == MessageCategory.RUN_CONTEXT }
+                runContextMessages.size shouldBe 1
+                runContextMessages[0] shouldBe
                     Message.Text(
                         Sender.Agent,
                         """{"count":5}""",
+                        MessageCategory.RUN_CONTEXT,
                     )
             }
         }

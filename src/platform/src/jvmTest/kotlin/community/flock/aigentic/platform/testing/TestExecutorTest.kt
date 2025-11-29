@@ -10,6 +10,7 @@ import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -170,8 +171,8 @@ class TestExecutorTest : DescribeSpec({
 
         it("should use context of run to initialize test agent") {
 
-            val textContextMessage = Message.Text(Sender.Agent, "Some context message")
-            val base64ContextMessage = Message.Base64(Sender.Agent, "base64content", MimeType.PDF)
+            val textContextMessage = Message.Text(Sender.Agent, "Some context message", MessageCategory.CONFIG_CONTEXT)
+            val base64ContextMessage = Message.Base64(Sender.Agent, "base64content", MimeType.PDF, MessageCategory.CONFIG_CONTEXT)
 
             val platformMock =
                 createMockPlatform(
@@ -204,7 +205,7 @@ class TestExecutorTest : DescribeSpec({
             testReport.failures.size shouldBe 0
             testReport.errors.size shouldBe 0
 
-            testReport.successes.first().state.messages.snapshot() shouldContainAll
+            testReport.successes.first().state.messagesAccessor.snapshot() shouldContainAll
                 listOf(
                     textContextMessage,
                     base64ContextMessage,
@@ -245,7 +246,7 @@ class TestExecutorTest : DescribeSpec({
             testReport.failures.size shouldBe 0
             testReport.errors.size shouldBe 0
 
-            val systemPrompt = testReport.successes.first().state.messages.snapshot().filterIsInstance<Message.SystemPrompt>().first()
+            val systemPrompt = testReport.successes.first().state.messagesAccessor.snapshot().filterIsInstance<Message.SystemPrompt>().first()
             systemPrompt.prompt shouldContain "Some task description"
         }
     }

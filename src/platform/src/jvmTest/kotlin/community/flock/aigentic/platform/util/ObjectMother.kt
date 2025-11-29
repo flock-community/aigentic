@@ -57,6 +57,5 @@ fun createAgentRun(): AgentRun<String> {
                 response = "response",
             ),
         systemPromptMessage = systemPrompt,
-        executionMessages = emptyList(),
     )
 }

@@ -25,9 +25,6 @@ data class AgentRun<O : Any>(
     override val modelRequests: List<ModelRequestInfo>,
     val systemPromptMessage: Message.SystemPrompt,
     val exampleRunIds: List<RunId> = emptyList(),
-    val configContextMessages: List<Message> = emptyList(),
-    val runAttachmentMessages: List<Message> = emptyList(),
-    val executionMessages: List<Message> = emptyList(),
 ) : Run<O>()
 
 data class WorkflowRun<O : Any>(
@@ -113,8 +110,5 @@ internal inline fun <reified O : Any> AgentRun<String>.decode(): AgentRun<O> {
         modelRequests = modelRequests,
         exampleRunIds = exampleRunIds,
         systemPromptMessage = systemPromptMessage,
-        configContextMessages = configContextMessages,
-        runAttachmentMessages = runAttachmentMessages,
-        executionMessages = executionMessages,
     )
 }

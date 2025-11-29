@@ -5,6 +5,7 @@ import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -16,6 +17,7 @@ import community.flock.aigentic.gateway.wirespec.Base64MessageDto
 import community.flock.aigentic.gateway.wirespec.ConfigDto
 import community.flock.aigentic.gateway.wirespec.FatalResultDto
 import community.flock.aigentic.gateway.wirespec.FinishedResultDto
+import community.flock.aigentic.gateway.wirespec.MessageCategoryDto
 import community.flock.aigentic.gateway.wirespec.MessageDto
 import community.flock.aigentic.gateway.wirespec.MimeTypeDto
 import community.flock.aigentic.gateway.wirespec.ModelRequestInfoDto
@@ -85,11 +87,9 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                         )
                     },
                 exampleRunIds = exampleRunIds.map { it.value },
-                contextMessages = configContextMessages.mapNotNull { it.toDto() },
                 responseJsonSchema = agent.responseParameter?.toJsonSchemaString(),
             ),
-        runAttachmentMessages = runAttachmentMessages.mapNotNull { it.toDto() },
-        executionMessages = executionMessages.mapNotNull { it.toDto() },
+        messages = messages.mapNotNull { it.toDto() },
         modelRequests = modelRequests.map { it.toDto() },
         result = outcome.toDto(outputSerializer),
     )
@@ -192,6 +192,7 @@ private fun Message.toDto(): MessageDto? =
                 sender = sender.toDto(),
                 base64Content = base64Content,
                 mimeType = mimeType.toDto(),
+                category = category.toDto(),
             )
 
         is Message.Url ->
@@ -200,6 +201,7 @@ private fun Message.toDto(): MessageDto? =
                 sender = sender.toDto(),
                 url = url,
                 mimeType = mimeType.toDto(),
+                category = category.toDto(),
             )
 
         is Message.SystemPrompt ->
@@ -207,6 +209,7 @@ private fun Message.toDto(): MessageDto? =
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 prompt = prompt,
+                category = category.toDto(),
             )
 
         is Message.Text ->
@@ -214,6 +217,7 @@ private fun Message.toDto(): MessageDto? =
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 text = text,
+                category = category.toDto(),
             )
 
         is Message.ToolCalls ->
@@ -221,6 +225,7 @@ private fun Message.toDto(): MessageDto? =
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 toolCalls = toolCalls.map { it.toDto() },
+                category = category.toDto(),
             )
 
         is Message.ToolResult ->
@@ -230,6 +235,7 @@ private fun Message.toDto(): MessageDto? =
                 toolCallId = toolCallId.id,
                 response = response.result,
                 toolName = toolName,
+                category = category.toDto(),
             )
 
         is Message.ExampleToolMessage -> null
@@ -238,7 +244,17 @@ private fun Message.toDto(): MessageDto? =
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 response = response,
+                category = category.toDto(),
             )
+    }
+
+private fun MessageCategory.toDto(): MessageCategoryDto =
+    when (this) {
+        MessageCategory.SYSTEM_PROMPT -> MessageCategoryDto.SYSTEM_PROMPT
+        MessageCategory.CONFIG_CONTEXT -> MessageCategoryDto.CONFIG_CONTEXT
+        MessageCategory.RUN_CONTEXT -> MessageCategoryDto.RUN_CONTEXT
+        MessageCategory.EXAMPLE -> MessageCategoryDto.EXAMPLE
+        MessageCategory.EXECUTION -> MessageCategoryDto.EXECUTION
     }
 
 private fun ToolCall.toDto(): ToolCallDto =

@@ -7,6 +7,7 @@ import community.flock.aigentic.core.agent.status.toStatus
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageCategory
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapConcat
@@ -21,60 +22,46 @@ data class State(
     val modelRequestInfos: MutableSharedFlow<ModelRequestInfo> = MutableSharedFlow(replay = 1000),
     val exampleRunIds: MutableSharedFlow<RunId> = MutableSharedFlow(replay = 1000),
     internal var systemPromptMessage: Message.SystemPrompt? = null,
-    internal val configContextMessages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
-    internal val runContextMessages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
-    internal val exampleMessages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
-    internal val runExecutionMessages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
+    internal val messages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
 ) {
-    val messages =
-        Messages(
-            state = this,
-            configContextMessages = configContextMessages,
-            runContextMessages = runContextMessages,
-            exampleMessages = exampleMessages,
-            runExecutionMessages = runExecutionMessages,
-        )
+    val messagesAccessor = Messages(state = this)
 }
 
 class Messages(
     private val state: State,
-    private val configContextMessages: MutableSharedFlow<Message>,
-    private val runContextMessages: MutableSharedFlow<Message>,
-    private val exampleMessages: MutableSharedFlow<Message>,
-    private val runExecutionMessages: MutableSharedFlow<Message>,
 ) {
-    fun snapshot(): List<Message> =
-        listOfNotNull(state.systemPromptMessage) +
-            configContextMessages.replayCache +
-            runContextMessages.replayCache +
-            exampleMessages.replayCache +
-            runExecutionMessages.replayCache
+    private fun categoryOrder(category: MessageCategory): Int =
+        when (category) {
+            MessageCategory.SYSTEM_PROMPT -> 0
+            MessageCategory.CONFIG_CONTEXT -> 1
+            MessageCategory.EXAMPLE -> 2
+            MessageCategory.RUN_CONTEXT -> 3
+            MessageCategory.EXECUTION -> 4
+        }
 
-    fun asFlow() =
-        merge(
-            configContextMessages,
-            runContextMessages,
-            exampleMessages,
-            runExecutionMessages,
-        )
+    fun snapshot(): List<Message> =
+        (listOfNotNull(state.systemPromptMessage) + state.messages.replayCache)
+            .sortedBy { categoryOrder(it.category) }
+
+    fun asFlow() = state.messages
 }
 
 @PublishedApi
-internal fun State.getStatus() = merge(messages.asFlow().flatMapConcat { it.toStatus().asFlow() }, events)
+internal fun State.getStatus() = merge(messagesAccessor.asFlow().flatMapConcat { it.toStatus().asFlow() }, events)
 
 @PublishedApi
-internal suspend fun State.addMessages(messages: List<Message>) = messages.forEach { addRunExecutionMessage(it) }
+internal suspend fun State.addMessages(messages: List<Message>) = messages.forEach { this.messages.emit(it) }
 
 @PublishedApi
-internal suspend fun State.addRunExecutionMessage(message: Message) = this.runExecutionMessages.emit(message)
+internal suspend fun State.addRunExecutionMessage(message: Message) = this.messages.emit(message)
 
-suspend fun State.addConfigContextMessage(message: Message) = this.configContextMessages.emit(message)
-
-@PublishedApi
-internal suspend fun State.addRunContextMessage(message: Message) = this.runContextMessages.emit(message)
+suspend fun State.addConfigContextMessage(message: Message) = this.messages.emit(message)
 
 @PublishedApi
-internal suspend fun State.addExampleMessage(message: Message) = this.exampleMessages.emit(message)
+internal suspend fun State.addRunContextMessage(message: Message) = this.messages.emit(message)
+
+@PublishedApi
+internal suspend fun State.addExampleMessage(message: Message) = this.messages.emit(message)
 
 suspend fun State.addSystemPromptMessage(message: Message.SystemPrompt) {
     this.systemPromptMessage = message
@@ -90,21 +77,15 @@ internal suspend fun State.addExampleRunId(run: RunId) = this.exampleRunIds.emit
 internal fun <O : Any> Pair<State, Outcome<O>>.toRun(): AgentRun<O> =
     with(first) {
         val systemPromptMessage = this.systemPromptMessage ?: aigenticException("System prompt message must be present in agent run")
-        val configContextMessages = this.configContextMessages.replayCache
-        val runAttachmentMessages = runContextMessages.replayCache
-        val executionMessages = runExecutionMessages.replayCache
 
         AgentRun(
             startedAt = startedAt,
             finishedAt = finishedAt ?: Clock.System.now(),
-            messages = messages.snapshot().filterNot { it is Message.ExampleToolMessage },
+            messages = messagesAccessor.snapshot().filterNot { it is Message.ExampleToolMessage },
             outcome = second,
             modelRequests = modelRequestInfos.replayCache,
             exampleRunIds = exampleRunIds.replayCache,
             systemPromptMessage = systemPromptMessage,
-            configContextMessages = configContextMessages,
-            runAttachmentMessages = runAttachmentMessages,
-            executionMessages = executionMessages,
         )
     }
 

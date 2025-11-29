@@ -3,8 +3,7 @@ type RunDto {
     finishedAt: String,
     config: ConfigDto,
     result: ResultDto,
-    runAttachmentMessages: MessageDto[]?,
-    executionMessages: MessageDto[],
+    messages: MessageDto[],
     modelRequests: ModelRequestInfoDto[]
 }
 
@@ -22,8 +21,7 @@ type ConfigDto {
     modelIdentifier: String,
     systemPrompt: String,
     tools: ToolDto[],
-    exampleRunIds: String[],
-    contextMessages: MessageDto[],
+    exampleRunIds: String[]?,
     responseJsonSchema: String?
 }
 
@@ -43,6 +41,13 @@ enum SenderDto {
     Model
 }
 
+enum MessageCategoryDto {
+    SYSTEM_PROMPT,
+    CONFIG_CONTEXT,
+    RUN_CONTEXT,
+    EXAMPLE,
+    EXECUTION
+}
 
 enum ParameterTypeDto {
     STRING,
@@ -53,7 +58,7 @@ enum ParameterTypeDto {
     ENUM,
     OBJECT
 }
-type ParameterDto = ParameterPrimitiveDto | ParameterObjectDto | ParameterArrayDto |ParameterEnumDto
+type ParameterDto = ParameterPrimitiveDto | ParameterObjectDto | ParameterArrayDto | ParameterEnumDto
 
 type ParameterPrimitiveDto {
     name: String,
@@ -89,6 +94,7 @@ type ParameterEnumDto {
     valueType: ParameterTypeDto
 }
 type PrimitiveValueDto = PrimitiveValueStringDto | PrimitiveValueNumberDto | PrimitiveValueIntegerDto | PrimitiveValueBooleanDto
+
 type PrimitiveValueStringDto {
     value: String
 }
@@ -137,33 +143,38 @@ enum MimeTypeDto {
 type SystemPromptMessageDto {
     createdAt: String,
     sender: SenderDto,
-    prompt: String
+    prompt: String,
+    category: MessageCategoryDto
 }
 
 type TextMessageDto {
     createdAt: String,
     sender: SenderDto,
-    text: String
+    text: String,
+    category: MessageCategoryDto
 }
 
 type UrlMessageDto {
     createdAt: String,
     sender: SenderDto,
     url: String,
-    mimeType: MimeTypeDto
+    mimeType: MimeTypeDto,
+    category: MessageCategoryDto
 }
 
 type Base64MessageDto {
     createdAt: String,
     sender: SenderDto,
     base64Content: String,
-    mimeType: MimeTypeDto
+    mimeType: MimeTypeDto,
+    category: MessageCategoryDto
 }
 
 type ToolCallsMessageDto {
     createdAt: String,
     sender: SenderDto,
-    toolCalls: ToolCallDto[]
+    toolCalls: ToolCallDto[],
+    category: MessageCategoryDto
 }
 
 type ToolCallDto {
@@ -178,13 +189,15 @@ type ToolResultMessageDto {
     sender: SenderDto,
     toolCallId: String,
     toolName: String,
-    response: String
+    response: String,
+    category: MessageCategoryDto
 }
 
 type StructuredOutputMessageDto {
   createdAt: String,
   sender: SenderDto,
-  response: String
+  response: String,
+  category: MessageCategoryDto
 }
 
 type MessageDto = SystemPromptMessageDto | TextMessageDto | UrlMessageDto | Base64MessageDto | ToolCallsMessageDto | ToolResultMessageDto | StructuredOutputMessageDto

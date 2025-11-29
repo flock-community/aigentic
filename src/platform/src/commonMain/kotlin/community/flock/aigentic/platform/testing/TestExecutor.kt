@@ -96,20 +96,10 @@ suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.execu
 
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> RegressionTest<I, O>.initializeTestState(run: Run<O>): State {
-    val preferred: List<Message> =
-        when (run) {
-            is community.flock.aigentic.core.agent.AgentRun ->
-                (run.configContextMessages + run.runAttachmentMessages).map { it as Message }
-            else -> emptyList()
-        }
     val contextMessages: List<Message> =
-        if (preferred.isNotEmpty()) {
-            preferred
-        } else {
-            run.messages
-                .filterIsInstance<ContextMessage>()
-                .map { it as Message }
-        }
+        run.messages
+            .filterIsInstance<ContextMessage>()
+            .map { it as Message }
     val systemPrompt = agent.getSystemPromptMessage()
     val interceptedContextMessages = contextMessageInterceptor(contextMessages)
     val state = State()
