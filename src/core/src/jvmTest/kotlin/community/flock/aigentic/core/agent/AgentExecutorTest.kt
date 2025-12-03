@@ -14,7 +14,7 @@ import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.Message
-import community.flock.aigentic.core.message.MessageType
+import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -35,6 +35,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
@@ -153,12 +154,12 @@ class AgentExecutorTest : DescribeSpec({
             agent.start().apply {
                 messages.drop(1).take(2) shouldBe
                     listOf(
-                        Message.Text(Sender.Agent, MessageType.New, expectedTextContext),
+                        Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT),
                         Message.Base64(
                             sender = Sender.Agent,
-                            messageType = MessageType.New,
                             base64Content = expectedImageContextBase64,
                             mimeType = expectedImageContextMimeType,
+                            category = MessageCategory.CONFIG_CONTEXT,
                         ),
                     )
             }
@@ -299,6 +300,171 @@ class AgentExecutorTest : DescribeSpec({
             agent.start().apply {
                 outcome.shouldBeTypeOf<Finished<Any>>()
                 (this.outcome as Finished).response shouldBe null
+            }
+        }
+
+        it("should categorize and order messages correctly in AgentRun") {
+
+            val expectedTextContext = "Config context text"
+            val expectedBase64Attachment = "base64-attachment-content"
+            val expectedUrlAttachment = "https://example.com/image.png"
+            val expectedStartRunText = "This text is run specific context text"
+
+            val toolCall = ToolCall(ToolCallId("1"), "toolName", "{}")
+
+            val messagesSlot = slot<List<Message>>()
+            val capturedMessages = mutableListOf<List<Message>>()
+
+            val modelMock =
+                mockk<Model>().apply {
+                    coEvery { sendRequest(capture(messagesSlot), any(), any()) } answers {
+                        capturedMessages.add(messagesSlot.captured)
+                        listOf(
+                            toolCall,
+                            finishedTaskToolCall,
+                        ).toModelResponse()[capturedMessages.size - 1]
+                    }
+                }
+
+            val testTool =
+                createTool<Unit, String>(
+                    name = toolCall.name,
+                    description = null,
+                ) {
+                    "toolResult"
+                }
+
+            val agent =
+                agent<String, Unit> {
+                    model(modelMock)
+                    task("Execute some task") {}
+                    context {
+                        addText(expectedTextContext)
+                    }
+                    addTool(testTool)
+                }
+
+            agent.start(
+                expectedStartRunText,
+                Attachment.Base64.png(expectedBase64Attachment),
+                Attachment.Url.png(expectedUrlAttachment),
+            ).apply {
+                systemPromptMessage shouldBe messages[0]
+
+                val configContextMessages = messages.filter { it.category == MessageCategory.CONFIG_CONTEXT }
+                configContextMessages.size shouldBe 1
+                configContextMessages[0] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
+
+                val runContextMessages = messages.filter { it.category == MessageCategory.RUN_CONTEXT }
+                runContextMessages.size shouldBe 3
+                runContextMessages[0] shouldBe
+                    Message.Base64(
+                        Sender.Agent,
+                        expectedBase64Attachment,
+                        MimeType.PNG,
+                        MessageCategory.RUN_CONTEXT,
+                    )
+                runContextMessages[1] shouldBe
+                    Message.Url(
+                        Sender.Agent,
+                        expectedUrlAttachment,
+                        MimeType.PNG,
+                        MessageCategory.RUN_CONTEXT,
+                    )
+                runContextMessages[2] shouldBe
+                    Message.Text(
+                        Sender.Agent,
+                        expectedStartRunText,
+                        MessageCategory.RUN_CONTEXT,
+                    )
+
+                val executionMessages = messages.filter { it.category == MessageCategory.EXECUTION }
+                executionMessages.size shouldBe 3
+                executionMessages[0] shouldBe Message.ToolCalls(listOf(toolCall))
+                executionMessages[1].shouldBeTypeOf<Message.ToolResult>()
+                executionMessages[2] shouldBe Message.ToolCalls(listOf(finishedTaskToolCall))
+
+                capturedMessages.size shouldBe 2
+
+                val firstRequestMessages = capturedMessages[0]
+                val secondRequestMessages = capturedMessages[1]
+
+                firstRequestMessages.run {
+                    size shouldBe 5
+                    this[0].shouldBeTypeOf<Message.SystemPrompt>()
+                    this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
+                    this[2] shouldBe
+                        Message.Base64(
+                            Sender.Agent,
+                            expectedBase64Attachment,
+                            MimeType.PNG,
+                            MessageCategory.RUN_CONTEXT,
+                        )
+                    this[3] shouldBe
+                        Message.Url(
+                            Sender.Agent,
+                            expectedUrlAttachment,
+                            MimeType.PNG,
+                            MessageCategory.RUN_CONTEXT,
+                        )
+                    this[4] shouldBe
+                        Message.Text(
+                            Sender.Agent,
+                            expectedStartRunText,
+                            MessageCategory.RUN_CONTEXT,
+                        )
+                }
+
+                secondRequestMessages.run {
+                    size shouldBe 7
+                    this[0].shouldBeTypeOf<Message.SystemPrompt>()
+                    this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
+                    this[2] shouldBe
+                        Message.Base64(
+                            Sender.Agent,
+                            expectedBase64Attachment,
+                            MimeType.PNG,
+                            MessageCategory.RUN_CONTEXT,
+                        )
+                    this[3] shouldBe
+                        Message.Url(
+                            Sender.Agent,
+                            expectedUrlAttachment,
+                            MimeType.PNG,
+                            MessageCategory.RUN_CONTEXT,
+                        )
+                    this[4] shouldBe
+                        Message.Text(
+                            Sender.Agent,
+                            expectedStartRunText,
+                            MessageCategory.RUN_CONTEXT,
+                        )
+                    this[5] shouldBe Message.ToolCalls(listOf(toolCall))
+                    this[6].shouldBeTypeOf<Message.ToolResult>()
+                }
+            }
+        }
+
+        it("should JSON-encode data class input as Text message") {
+
+            val inputDataClass = NewsEventInput(count = 5)
+
+            val agent =
+                agent<NewsEventInput, Unit> {
+                    model(modelFinishTaskDirectly)
+                    task("Execute some task") {}
+                    addTool(mockk(relaxed = true))
+                }
+
+            agent.start(inputDataClass).apply {
+                val runContextMessages = messages.filter { it.category == MessageCategory.RUN_CONTEXT }
+                runContextMessages.size shouldBe 1
+                runContextMessages[0] shouldBe
+                    Message.Text(
+                        Sender.Agent,
+                        """{"count":5}""",
+                        MessageCategory.RUN_CONTEXT,
+                    )
             }
         }
 

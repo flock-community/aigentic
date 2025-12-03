@@ -44,15 +44,18 @@ fun createAgent() =
         tags = emptyList(),
     )
 
-fun createAgentRun() =
-    AgentRun<String>(
+fun createAgentRun(): AgentRun<String> {
+    val systemPrompt = Message.SystemPrompt("You are a helpful agent")
+    return AgentRun(
         startedAt = Clock.System.now(),
         finishedAt = Clock.System.now(),
-        messages = listOf(Message.SystemPrompt("You are a helpful agent")),
+        messages = listOf(systemPrompt),
         modelRequests = emptyList(),
         outcome =
             Outcome.Finished(
                 description = "description",
                 response = "response",
             ),
+        systemPromptMessage = systemPrompt,
     )
+}

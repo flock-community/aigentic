@@ -1,4 +1,4 @@
-# Aigentic Project Guidelines for Junie
+# Aigentic Project Guidelines
 
 ## Project Overview
 Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications. It streamlines the process of creating, deploying, and managing LLM agents within the Aigentic ecosystem.
@@ -109,11 +109,70 @@ The project is organized into several modules:
 
 5. **Platform Module** (`src/platform/`): Platform-specific implementations and utilities
 
+## API Design Pattern with Wirespec
+
+The project uses **Wirespec** for contract-first development to maintain type safety in the platform module.
+
+### Wirespec Overview
+- **Source of Truth**: `src/platform/wirespec/gateway.ws` - all platform DTOs and API contracts are defined here
+- **Generated Code**: Kotlin data classes and API types in the platform module
+- **Type Safety**: Changes to DTOs automatically propagate through the platform module
+
+### Working with Wirespec
+
+**When you need to add or modify DTOs:**
+1. Update `src/platform/wirespec/gateway.ws` with your changes
+2. Run code generation to regenerate the Kotlin types
+3. The generated Kotlin types will be available in the platform module
+4. Use the generated types in your platform implementations
+
+**Important Notes:**
+- Never manually edit generated Wirespec files - they are auto-generated and will be overwritten
+- Always start by updating `gateway.ws` when you need new or modified DTOs
+- Run the code generation after any changes to `.ws` files to regenerate types
+
 ## Testing Guidelines
 When working with this project, Junie should:
 
 1. **Run tests for modified components**: After making changes to any file, run the relevant tests to ensure functionality is preserved.
 2. **Consider edge cases**: When implementing new features or fixing bugs, consider edge cases and ensure they are properly handled.
+
+### Running Tests
+
+**IMPORTANT**: Always use `--no-build-cache` when running tests after making changes to inline functions or internal APIs. Gradle's build cache can cause tests to use stale cached builds, leading to `NoSuchMethodError` or other cryptic failures.
+
+#### Test Commands
+
+Run core and platform tests (most common after core changes):
+```bash
+./gradlew --no-build-cache clean :src:core:jvmTest :src:platform:jvmTest
+```
+
+Run tests for specific modules:
+```bash
+# Core module only
+./gradlew --no-build-cache clean :src:core:jvmTest
+
+# Platform module only
+./gradlew --no-build-cache clean :src:platform:jvmTest
+
+# Specific provider (e.g., OpenAI)
+./gradlew --no-build-cache clean :src:providers:openai:jvmTest
+```
+
+Run all tests:
+```bash
+./gradlew --no-build-cache clean allTests
+```
+
+#### Why `--no-build-cache`?
+
+Kotlin inline functions are compiled directly into call sites. When you modify an inline function:
+1. The function definition changes
+2. But Gradle may serve cached bytecode for test files that call this function
+3. This causes runtime errors because the inlined code is outdated
+
+Using `--no-build-cache clean` ensures everything is recompiled from scratch.
 
 ## Build Guidelines
 - The project uses Gradle for building

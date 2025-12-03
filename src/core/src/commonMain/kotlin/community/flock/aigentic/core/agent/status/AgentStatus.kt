@@ -25,6 +25,10 @@ sealed interface AgentStatus {
         override val text: String = "💥 Agent crashed: $reason"
     }
 
+    data class Warning(val message: String) : AgentStatus {
+        override val text: String = "⚠️ Warning: $message"
+    }
+
     data class ExecuteTool(val tool: ToolCall) : AgentStatus {
         override val text = "🏗 Executing tool: ${tool.name} arguments: ${tool.arguments}"
     }

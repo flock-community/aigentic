@@ -5,6 +5,7 @@ import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
@@ -16,6 +17,7 @@ import community.flock.aigentic.gateway.wirespec.Base64MessageDto
 import community.flock.aigentic.gateway.wirespec.ConfigDto
 import community.flock.aigentic.gateway.wirespec.FatalResultDto
 import community.flock.aigentic.gateway.wirespec.FinishedResultDto
+import community.flock.aigentic.gateway.wirespec.MessageCategoryDto
 import community.flock.aigentic.gateway.wirespec.MessageDto
 import community.flock.aigentic.gateway.wirespec.MimeTypeDto
 import community.flock.aigentic.gateway.wirespec.ModelRequestInfoDto
@@ -43,38 +45,54 @@ import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
 import community.flock.aigentic.gateway.wirespec.ToolDto
 import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.UrlMessageDto
+import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+
+private fun Parameter.toJsonSchemaString(): String =
+    buildJsonObject {
+        put("type", "object")
+        emitPropertiesAndRequired(
+            when (this@toJsonSchemaString) {
+                is Parameter.Complex.Object -> this@toJsonSchemaString.parameters
+                else -> listOf(this@toJsonSchemaString)
+            },
+        )
+    }.toString()
 
 fun <I : Any, O : Any> AgentRun<O>.toDto(
     agent: Agent<I, O>,
     outputSerializer: KSerializer<O>,
-) = RunDto(
-    startedAt = startedAt.toString(),
-    finishedAt = finishedAt.toString(),
-    config =
-        ConfigDto(
-            task =
-                TaskDto(
-                    description = agent.task.description,
-                    instructions = agent.task.instructions.map { it.text },
-                ),
-            modelIdentifier = agent.model.modelIdentifier.stringValue,
-            systemPrompt = messages.filterIsInstance<Message.SystemPrompt>().first().prompt,
-            exampleRunIds = exampleRunIds.map { it.value },
-            tools =
-                agent.tools.map { (name, tool) ->
-                    ToolDto(
-                        name = name.value,
-                        description = tool.description,
-                        parameters = tool.parameters.map { it.toDto() },
-                    )
-                },
-        ),
-    messages = messages.mapNotNull { it.toDto() },
-    modelRequests = modelRequests.map { it.toDto() },
-    result = outcome.toDto(outputSerializer),
-)
+): RunDto =
+    RunDto(
+        startedAt = startedAt.toString(),
+        finishedAt = finishedAt.toString(),
+        config =
+            ConfigDto(
+                task =
+                    TaskDto(
+                        description = agent.task.description,
+                        instructions = agent.task.instructions.map { it.text },
+                    ),
+                modelIdentifier = agent.model.modelIdentifier.stringValue,
+                systemPrompt = systemPromptMessage.prompt,
+                tools =
+                    agent.tools.map { (name, tool) ->
+                        ToolDto(
+                            name = name.value,
+                            description = tool.description,
+                            parameters = tool.parameters.map { it.toDto() },
+                        )
+                    },
+                exampleRunIds = exampleRunIds.map { it.value },
+                responseJsonSchema = agent.responseParameter?.toJsonSchemaString(),
+            ),
+        messages = messages.mapNotNull { it.toDto() },
+        modelRequests = modelRequests.map { it.toDto() },
+        result = outcome.toDto(outputSerializer),
+    )
 
 private fun Parameter.toDto(): ParameterDto =
     when (this) {
@@ -174,6 +192,7 @@ private fun Message.toDto(): MessageDto? =
                 sender = sender.toDto(),
                 base64Content = base64Content,
                 mimeType = mimeType.toDto(),
+                category = category.toDto(),
             )
 
         is Message.Url ->
@@ -182,6 +201,7 @@ private fun Message.toDto(): MessageDto? =
                 sender = sender.toDto(),
                 url = url,
                 mimeType = mimeType.toDto(),
+                category = category.toDto(),
             )
 
         is Message.SystemPrompt ->
@@ -189,6 +209,7 @@ private fun Message.toDto(): MessageDto? =
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 prompt = prompt,
+                category = category.toDto(),
             )
 
         is Message.Text ->
@@ -196,6 +217,7 @@ private fun Message.toDto(): MessageDto? =
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 text = text,
+                category = category.toDto(),
             )
 
         is Message.ToolCalls ->
@@ -203,6 +225,7 @@ private fun Message.toDto(): MessageDto? =
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 toolCalls = toolCalls.map { it.toDto() },
+                category = category.toDto(),
             )
 
         is Message.ToolResult ->
@@ -212,6 +235,7 @@ private fun Message.toDto(): MessageDto? =
                 toolCallId = toolCallId.id,
                 response = response.result,
                 toolName = toolName,
+                category = category.toDto(),
             )
 
         is Message.ExampleToolMessage -> null
@@ -220,7 +244,17 @@ private fun Message.toDto(): MessageDto? =
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 response = response,
+                category = category.toDto(),
             )
+    }
+
+private fun MessageCategory.toDto(): MessageCategoryDto =
+    when (this) {
+        MessageCategory.SYSTEM_PROMPT -> MessageCategoryDto.SYSTEM_PROMPT
+        MessageCategory.CONFIG_CONTEXT -> MessageCategoryDto.CONFIG_CONTEXT
+        MessageCategory.RUN_CONTEXT -> MessageCategoryDto.RUN_CONTEXT
+        MessageCategory.EXAMPLE -> MessageCategoryDto.EXAMPLE
+        MessageCategory.EXECUTION -> MessageCategoryDto.EXECUTION
     }
 
 private fun ToolCall.toDto(): ToolCallDto =

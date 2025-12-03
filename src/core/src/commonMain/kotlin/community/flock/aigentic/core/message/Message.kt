@@ -9,59 +9,59 @@ import kotlin.time.Instant
 
 sealed interface ContextMessage
 
-sealed interface MessageType {
-    data object New : MessageType
-    data object Example : MessageType
-}
-
 sealed class Message(
     open val sender: Sender,
-    open val messageType: MessageType,
+    open val category: MessageCategory,
     open val createdAt: Instant = Clock.System.now(),
 ) {
     data class SystemPrompt(
         val prompt: String,
-    ) : Message(Sender.Agent, MessageType.New)
+        override val category: MessageCategory = MessageCategory.SYSTEM_PROMPT,
+    ) : Message(Sender.Agent, category)
 
     data class Text(
         override val sender: Sender,
-        override val messageType: MessageType,
         val text: String,
-    ) : Message(sender, messageType), ContextMessage
+        override val category: MessageCategory,
+    ) : Message(sender, category), ContextMessage
 
     data class Url(
         override val sender: Sender,
-        override val messageType: MessageType,
         val url: String,
         val mimeType: MimeType,
-    ) : Message(Sender.Agent, messageType), ContextMessage
+        override val category: MessageCategory,
+    ) : Message(Sender.Agent, category), ContextMessage
 
     data class Base64(
         override val sender: Sender,
-        override val messageType: MessageType,
         val base64Content: String,
         val mimeType: MimeType,
-    ) : Message(Sender.Agent, messageType), ContextMessage
+        override val category: MessageCategory,
+    ) : Message(Sender.Agent, category), ContextMessage
 
     data class ToolCalls(
         val toolCalls: List<ToolCall>,
-    ) : Message(Sender.Model, MessageType.New)
+        override val category: MessageCategory = MessageCategory.EXECUTION,
+    ) : Message(Sender.Model, category)
 
     data class StructuredOutput(
         val response: String,
-    ) : Message(Sender.Model, MessageType.New)
+        override val category: MessageCategory = MessageCategory.EXECUTION,
+    ) : Message(Sender.Model, category)
 
     data class ToolResult(
         val toolCallId: ToolCallId,
         val toolName: String,
         val response: ToolResultContent,
-    ) : Message(Sender.Agent, MessageType.New)
+        override val category: MessageCategory = MessageCategory.EXECUTION,
+    ) : Message(Sender.Agent, category)
 
     data class ExampleToolMessage(
         override val sender: Sender,
         val text: String,
         val id: ToolCallId? = null,
-    ) : Message(sender, MessageType.Example), ContextMessage
+        override val category: MessageCategory = MessageCategory.EXAMPLE,
+    ) : Message(sender, category), ContextMessage
 }
 
 data class ToolCall(
