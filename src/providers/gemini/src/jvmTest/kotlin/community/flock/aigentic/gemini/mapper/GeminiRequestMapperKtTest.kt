@@ -1,6 +1,7 @@
 package community.flock.aigentic.gemini.mapper
 
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.GenerationSettings
@@ -17,7 +18,7 @@ class GeminiRequestMapperKtTest : DescribeSpec({
         it("Should not format when raw base64 content is provided") {
             val base64Content = "iVBORw0KGgoAAA=="
             val mimeType = MimeType.PNG
-            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType)
+            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
 
             createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null).contents[0].parts[0]
                 .shouldBeInstanceOf<Part.Blob>().run {
@@ -28,7 +29,7 @@ class GeminiRequestMapperKtTest : DescribeSpec({
         it("should format when base64 data url is provided") {
             val base64Content = "data:image/png;base64,iVBORw0KGgoAAA=="
             val mimeType = MimeType.PNG
-            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType)
+            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
 
             createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null).contents[0].parts[0]
                 .shouldBeInstanceOf<Part.Blob>().run {

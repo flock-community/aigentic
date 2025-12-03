@@ -50,9 +50,6 @@ class Messages(
 internal fun State.getStatus() = merge(messagesAccessor.asFlow().flatMapConcat { it.toStatus().asFlow() }, events)
 
 @PublishedApi
-internal suspend fun State.addMessages(messages: List<Message>) = messages.forEach { this.messages.emit(it) }
-
-@PublishedApi
 internal suspend fun State.addRunExecutionMessage(message: Message) = this.messages.emit(message)
 
 suspend fun State.addConfigContextMessage(message: Message) = this.messages.emit(message)
@@ -63,7 +60,7 @@ internal suspend fun State.addRunContextMessage(message: Message) = this.message
 @PublishedApi
 internal suspend fun State.addExampleMessage(message: Message) = this.messages.emit(message)
 
-suspend fun State.addSystemPromptMessage(message: Message.SystemPrompt) {
+fun State.addSystemPromptMessage(message: Message.SystemPrompt) {
     this.systemPromptMessage = message
 }
 

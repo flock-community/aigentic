@@ -144,14 +144,14 @@ type SystemPromptMessageDto {
     createdAt: String,
     sender: SenderDto,
     prompt: String,
-    category: MessageCategoryDto
+    category: MessageCategoryDto?
 }
 
 type TextMessageDto {
     createdAt: String,
     sender: SenderDto,
     text: String,
-    category: MessageCategoryDto
+    category: MessageCategoryDto?
 }
 
 type UrlMessageDto {
@@ -159,7 +159,7 @@ type UrlMessageDto {
     sender: SenderDto,
     url: String,
     mimeType: MimeTypeDto,
-    category: MessageCategoryDto
+    category: MessageCategoryDto?
 }
 
 type Base64MessageDto {
@@ -167,14 +167,14 @@ type Base64MessageDto {
     sender: SenderDto,
     base64Content: String,
     mimeType: MimeTypeDto,
-    category: MessageCategoryDto
+    category: MessageCategoryDto?
 }
 
 type ToolCallsMessageDto {
     createdAt: String,
     sender: SenderDto,
     toolCalls: ToolCallDto[],
-    category: MessageCategoryDto
+    category: MessageCategoryDto?
 }
 
 type ToolCallDto {
@@ -190,14 +190,14 @@ type ToolResultMessageDto {
     toolCallId: String,
     toolName: String,
     response: String,
-    category: MessageCategoryDto
+    category: MessageCategoryDto?
 }
 
 type StructuredOutputMessageDto {
   createdAt: String,
   sender: SenderDto,
   response: String,
-  category: MessageCategoryDto
+  category: MessageCategoryDto?
 }
 
 type MessageDto = SystemPromptMessageDto | TextMessageDto | UrlMessageDto | Base64MessageDto | ToolCallsMessageDto | ToolResultMessageDto | StructuredOutputMessageDto

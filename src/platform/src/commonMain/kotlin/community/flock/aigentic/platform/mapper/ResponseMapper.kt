@@ -74,8 +74,9 @@ internal fun RunDetailsDto.toRun(): AgentRun<String> {
     )
 }
 
-private fun MessageCategoryDto.map(): MessageCategory =
+private fun MessageCategoryDto?.map(): MessageCategory =
     when (this) {
+        null -> MessageCategory.EXECUTION
         MessageCategoryDto.SYSTEM_PROMPT -> MessageCategory.SYSTEM_PROMPT
         MessageCategoryDto.CONFIG_CONTEXT -> MessageCategory.CONFIG_CONTEXT
         MessageCategoryDto.RUN_CONTEXT -> MessageCategory.RUN_CONTEXT

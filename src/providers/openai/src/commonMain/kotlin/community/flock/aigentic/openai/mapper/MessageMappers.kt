@@ -9,6 +9,7 @@ import com.aallam.openai.api.chat.ToolId
 import com.aallam.openai.api.core.Role
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
@@ -31,6 +32,7 @@ object DomainMapper {
                 Message.Text(
                     sender = role.mapToSender(),
                     text = content!!,
+                    category = MessageCategory.EXECUTION,
                 )
 
             else -> aigenticException("Cannot map OpenAI ChatMessage, unknown type: $this")
