@@ -134,10 +134,6 @@ private fun createSafetySettings(): List<SafetySetting> =
                 .build()
         }
 
-private fun Message.Base64.formatDataUrl(): String =
-    base64Content.takeIf { it.startsWith("data:") }
-        ?: "data:${mimeType.value};base64,$base64Content"
-
 private fun Sender.toVertexRole(): String =
     when (this) {
         Sender.Agent -> "user"
