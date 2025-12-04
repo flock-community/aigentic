@@ -1,0 +1,278 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Agent</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+<a href="../../../../index.html">
+<span>aigentic</span>            </a>    </div>
+    <div>0.6.0-SNAPSHOT
+    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":src:core:dokkaHtmlPartial/commonMain">common</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="core::community.flock.aigentic.core.agent/Agent///PointingToDeclaration//-1442068738">
+  <div class="breadcrumbs"><a href="../../index.html">core</a><span class="delimiter">/</span><a href="../index.html">community.flock.aigentic.core.agent</a><span class="delimiter">/</span><span class="current">Agent</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Agent</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">Agent</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html">I</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="index.html">O</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>platform<span class="token operator">: </span><a href="../../community.flock.aigentic.core.platform/-platform/index.html">Platform</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>customSystemPromptBuilder<span class="token operator">: </span><a href="../../community.flock.aigentic.core.agent.message/-system-prompt-builder/index.html">SystemPromptBuilder</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>model<span class="token operator">: </span><a href="../../community.flock.aigentic.core.model/-model/index.html">Model</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>task<span class="token operator">: </span><a href="../-task/index.html">Task</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>contexts<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-context/index.html">Context</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tools<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.tool/-tool-name/index.html">ToolName</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.tool/-tool/index.html">Tool</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>responseParameter<span class="token operator">: </span><a href="../../community.flock.aigentic.core.tool/-parameter/index.html">Parameter</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tags<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-run-tag/index.html">RunTag</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="44730276%2FConstructors%2F-1442068738" anchor-label="Agent" id="44730276%2FConstructors%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-agent.html"><span><span>Agent</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="44730276%2FConstructors%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">platform<span class="token operator">: </span><a href="../../community.flock.aigentic.core.platform/-platform/index.html">Platform</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">customSystemPromptBuilder<span class="token operator">: </span><a href="../../community.flock.aigentic.core.agent.message/-system-prompt-builder/index.html">SystemPromptBuilder</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">model<span class="token operator">: </span><a href="../../community.flock.aigentic.core.model/-model/index.html">Model</a><span class="token punctuation">, </span></span><span class="parameter ">task<span class="token operator">: </span><a href="../-task/index.html">Task</a><span class="token punctuation">, </span></span><span class="parameter ">contexts<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-context/index.html">Context</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">tools<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.tool/-tool-name/index.html">ToolName</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.tool/-tool/index.html">Tool</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">responseParameter<span class="token operator">: </span><a href="../../community.flock.aigentic.core.tool/-parameter/index.html">Parameter</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">tags<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-run-tag/index.html">RunTag</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="952635580%2FProperties%2F-1442068738" anchor-label="contexts" id="952635580%2FProperties%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="contexts.html"><span><span>contexts</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="952635580%2FProperties%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="contexts.html">contexts</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-context/index.html">Context</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1735585693%2FProperties%2F-1442068738" anchor-label="customSystemPromptBuilder" id="-1735585693%2FProperties%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="custom-system-prompt-builder.html"><span>custom</span><wbr><span>System</span><wbr><span>Prompt</span><wbr><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1735585693%2FProperties%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="custom-system-prompt-builder.html">customSystemPromptBuilder</a><span class="token operator">: </span><a href="../../community.flock.aigentic.core.agent.message/-system-prompt-builder/index.html">SystemPromptBuilder</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="346060401%2FProperties%2F-1442068738" anchor-label="model" id="346060401%2FProperties%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="model.html"><span><span>model</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="346060401%2FProperties%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="model.html">model</a><span class="token operator">: </span><a href="../../community.flock.aigentic.core.model/-model/index.html">Model</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="680935373%2FProperties%2F-1442068738" anchor-label="platform" id="680935373%2FProperties%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="platform.html"><span><span>platform</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="680935373%2FProperties%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="platform.html">platform</a><span class="token operator">: </span><a href="../../community.flock.aigentic.core.platform/-platform/index.html">Platform</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1653024110%2FProperties%2F-1442068738" anchor-label="responseParameter" id="-1653024110%2FProperties%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="response-parameter.html"><span>response</span><wbr><span><span>Parameter</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1653024110%2FProperties%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="response-parameter.html">responseParameter</a><span class="token operator">: </span><a href="../../community.flock.aigentic.core.tool/-parameter/index.html">Parameter</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="759546983%2FProperties%2F-1442068738" anchor-label="tags" id="759546983%2FProperties%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tags.html"><span><span>tags</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="759546983%2FProperties%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="tags.html">tags</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-run-tag/index.html">RunTag</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-834145157%2FProperties%2F-1442068738" anchor-label="task" id="-834145157%2FProperties%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="task.html"><span><span>task</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-834145157%2FProperties%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="task.html">task</a><span class="token operator">: </span><a href="../-task/index.html">Task</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="276640767%2FProperties%2F-1442068738" anchor-label="tools" id="276640767%2FProperties%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tools.html"><span><span>tools</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="276640767%2FProperties%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="tools.html">tools</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.tool/-tool-name/index.html">ToolName</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.tool/-tool/index.html">Tool</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1340090498%2FFunctions%2F-1442068738" anchor-label="getSystemPromptMessage" id="1340090498%2FFunctions%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-system-prompt-message.html"><span>get</span><wbr><span>System</span><wbr><span>Prompt</span><wbr><span><span>Message</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1340090498%2FFunctions%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-system-prompt-message.html"><span class="token function">getSystemPromptMessage</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../community.flock.aigentic.core.message/-message/-system-prompt/index.html">Message.SystemPrompt</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="449636265%2FFunctions%2F-1442068738" anchor-label="isStructuredOutputAgent" id="449636265%2FFunctions%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../is-structured-output-agent.html"><span>is</span><wbr><span>Structured</span><wbr><span>Output</span><wbr><span><span>Agent</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="449636265%2FFunctions%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../is-structured-output-agent.html">I</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../is-structured-output-agent.html">O</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html">Agent</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../is-structured-output-agent.html">I</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../is-structured-output-agent.html">O</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../is-structured-output-agent.html"><span class="token function">isStructuredOutputAgent</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="294868195%2FFunctions%2F-1442068738" anchor-label="start" id="294868195%2FFunctions%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../start.html"><span><span>start</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="294868195%2FFunctions%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">inline suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../start.html">I</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../start.html">O</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html">Agent</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../start.html">I</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../start.html">O</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../start.html"><span class="token function">start</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">vararg </span>attachments<span class="token operator">: </span><a href="../-attachment/index.html">Attachment</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-agent-run/index.html">AgentRun</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../start.html">O</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">inline suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../start.html">I</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../start.html">O</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html">Agent</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../start.html">I</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../start.html">O</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../start.html"><span class="token function">start</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="../start.html">I</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">vararg </span>attachments<span class="token operator">: </span><a href="../-attachment/index.html">Attachment</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-agent-run/index.html">AgentRun</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../start.html">O</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="110676863%2FFunctions%2F-1442068738" anchor-label="thenProcess" id="110676863%2FFunctions%2F-1442068738" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":src:core:dokkaHtmlPartial/commonMain" data-filterable-set=":src:core:dokkaHtmlPartial/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../community.flock.aigentic.core.dsl/then-process.html"><span>then</span><wbr><span><span>Process</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="110676863%2FFunctions%2F-1442068738"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":src:core:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">infix </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.dsl/then-process.html">I</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.dsl/then-process.html">M</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.dsl/then-process.html">O</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html">Agent</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.dsl/then-process.html">I</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.dsl/then-process.html">M</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../community.flock.aigentic.core.dsl/then-process.html"><span class="token function">thenProcess</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">next<span class="token operator">: </span><a href="index.html">Agent</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.dsl/then-process.html">M</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.dsl/then-process.html">O</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../community.flock.aigentic.core.workflow/-workflow2/index.html">Workflow2</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.dsl/then-process.html">I</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.dsl/then-process.html">M</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="../../community.flock.aigentic.core.dsl/then-process.html">O</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2025 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>
+
