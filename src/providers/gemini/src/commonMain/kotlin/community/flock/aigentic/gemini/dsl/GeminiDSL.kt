@@ -57,8 +57,8 @@ class GeminiModelConfig : Config<GeminiModel> {
                 GeminiModel.defaultGeminiClient(
                     apiKeyAuthentication = authentication,
                     logLevel = logLevel,
-                    requestTimeoutMillis = requestTimeoutMillis ?: 60_000,
-                    socketTimeoutMillis = socketTimeoutMillis ?: 60_000,
+                    requestTimeoutMillis = requestTimeoutMillis ?: (60_000 * 5),
+                    socketTimeoutMillis = socketTimeoutMillis ?: (60_000 + 5),
                 )
             } else {
                 // Default timeouts van GeminiApiConfig

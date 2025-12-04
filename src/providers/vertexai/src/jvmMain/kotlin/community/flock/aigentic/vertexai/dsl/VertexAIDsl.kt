@@ -21,6 +21,7 @@ class VertexAIModelConfig : Config<VertexAIModel> {
     private var location: String? = null
     private var modelIdentifier: VertexAIModelIdentifier? = null
     private var generationConfig: GenerationConfig = GenerationConfig()
+    private var requestTimeoutMillis: Long? = null
 
     fun VertexAIModelConfig.project(project: String) {
         this.project = project
@@ -36,6 +37,10 @@ class VertexAIModelConfig : Config<VertexAIModel> {
 
     fun VertexAIModelConfig.generationConfig(generationConfig: GenerationConfig.() -> Unit) {
         this.generationConfig = GenerationConfig().apply(generationConfig)
+    }
+
+    fun VertexAIModelConfig.requestTimeout(timeoutMillis: Long) {
+        this.requestTimeoutMillis = timeoutMillis
     }
 
     override fun build(): VertexAIModel =
@@ -56,5 +61,6 @@ class VertexAIModelConfig : Config<VertexAIModel> {
                     builderPropertyMissingErrorMessage("modelIdentifier", "vertexAIModel { modelIdentifier() }"),
                 ),
             generationSettings = generationConfig.build(),
+            requestTimeoutMillis = requestTimeoutMillis ?: (60_000 * 5),
         )
 }

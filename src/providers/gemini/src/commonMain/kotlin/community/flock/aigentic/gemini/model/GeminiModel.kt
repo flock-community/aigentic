@@ -50,7 +50,7 @@ class GeminiModel(
         fun defaultGeminiClient(
             apiKeyAuthentication: Authentication.APIKey,
             logLevel: LogLevel = LogLevel.NONE,
-            requestsPerMinute: Int = 15,
+            requestsPerMinute: Int = 50,
         ): GeminiClient =
             GeminiClient(
                 config = GeminiApiConfig(apiKey = apiKeyAuthentication),
@@ -61,7 +61,7 @@ class GeminiModel(
         fun defaultGeminiClient(
             apiKeyAuthentication: Authentication.APIKey,
             logLevel: LogLevel = LogLevel.NONE,
-            requestsPerMinute: Int = 15,
+            requestsPerMinute: Int = 50,
             requestTimeoutMillis: Long,
             socketTimeoutMillis: Long,
         ): GeminiClient =
