@@ -23,13 +23,14 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.util.Base64
 
 internal fun createRequestContents(messages: List<Message>): List<Content> =
     messages.map { message ->
 
         val parts: List<Part> =
             when (message) {
-                is Message.Base64 -> listOf(Part.fromUri(formatBase64Content(message), message.mimeType.value))
+                is Message.Base64 -> listOf(Part.fromBytes(Base64.getDecoder().decode(message.base64Content), message.mimeType.value))
                 is Message.ExampleToolMessage -> listOf(Part.fromText(message.text))
                 is Message.SystemPrompt -> listOf(Part.fromText("See system instruction for your task"))
                 is Message.Text -> listOf(Part.fromText(message.text))
@@ -132,8 +133,6 @@ private fun createSafetySettings(): List<SafetySetting> =
                 .threshold(HarmBlockThreshold.Known.BLOCK_NONE)
                 .build()
         }
-
-private fun formatBase64Content(message: Message.Base64) = message.base64Content.substringAfter("base64,")
 
 private fun Sender.toVertexRole(): String =
     when (this) {

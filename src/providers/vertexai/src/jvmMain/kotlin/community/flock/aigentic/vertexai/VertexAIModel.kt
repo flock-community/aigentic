@@ -1,6 +1,7 @@
 package community.flock.aigentic.vertexai
 
 import com.google.genai.Client
+import com.google.genai.types.HttpOptions
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
@@ -36,8 +37,9 @@ class VertexAIModel(
     override val generationSettings: GenerationSettings,
     project: Project,
     location: Location,
+    requestTimeoutMillis: Long,
 ) : Model {
-    private val client: Client = defaultVertexAIClient(project, location)
+    private val client: Client = defaultVertexAIClient(project, location, requestTimeoutMillis)
 
     override suspend fun sendRequest(
         messages: List<Message>,
@@ -54,12 +56,13 @@ class VertexAIModel(
         fun defaultVertexAIClient(
             project: Project,
             location: Location,
-        ): Client {
-            return Client.Builder()
+            requestTimeoutMillis: Long,
+        ): Client =
+            Client.Builder()
                 .vertexAI(true)
+                .httpOptions(HttpOptions.builder().timeout(requestTimeoutMillis.toInt()).build())
                 .project(project.value)
                 .location(location.value)
                 .build()
-        }
     }
 }
