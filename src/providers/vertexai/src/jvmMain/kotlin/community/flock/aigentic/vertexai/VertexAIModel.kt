@@ -1,7 +1,6 @@
 package community.flock.aigentic.vertexai
 
 import com.google.genai.Client
-import com.google.genai.types.ClientOptions
 import com.google.genai.types.HttpOptions
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.GenerationSettings
