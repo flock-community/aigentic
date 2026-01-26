@@ -40,7 +40,6 @@ import io.mockk.verify
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import org.junit.jupiter.api.assertThrows
 import java.io.IOException
 
 @AigenticParameter
@@ -484,7 +483,7 @@ class AgentExecutorTest : DescribeSpec({
             coVerify { platform.sendRun(run, agent) }
         }
 
-        it("should crash when platform throws exception") {
+        it("should succeed when platform throws exception (best effort publish)") {
 
             val platform =
                 mockk<Platform>().apply {
@@ -499,8 +498,8 @@ class AgentExecutorTest : DescribeSpec({
                     addTool(mockk(relaxed = true))
                 }
 
-            assertThrows<IOException> {
-                agent.start()
+            agent.start().apply {
+                outcome.shouldBeInstanceOf<Finished<Unit>>()
             }
         }
     }
