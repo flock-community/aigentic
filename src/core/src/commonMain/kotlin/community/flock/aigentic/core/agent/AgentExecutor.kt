@@ -79,10 +79,16 @@ internal suspend inline fun <reified I : Any, reified O : Any> publishRun(
     state: State,
 ) {
     if (agent.platform != null) {
-        when (val result = agent.platform.sendRun(run, agent)) {
-            RunSentResult.Success -> state.events.emit(AgentStatus.PublishedRunSuccess)
-            RunSentResult.Unauthorized -> state.events.emit(AgentStatus.PublishedRunUnauthorized)
-            is RunSentResult.Error -> state.events.emit(AgentStatus.PublishedRunError(result.message))
+        runCatching {
+            agent.platform.sendRun(run, agent)
+        }.onSuccess { result ->
+            when (result) {
+                RunSentResult.Success -> state.events.emit(AgentStatus.PublishedRunSuccess)
+                RunSentResult.Unauthorized -> state.events.emit(AgentStatus.PublishedRunUnauthorized)
+                is RunSentResult.Error -> state.events.emit(AgentStatus.PublishedRunError(result.message))
+            }
+        }.onFailure { exception ->
+            state.events.emit(AgentStatus.PublishedRunError(exception.message ?: "Unknown error"))
         }
     }
 }
