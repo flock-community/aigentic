@@ -84,11 +84,13 @@ class KotlinSerializableEmitter : KotlinEmitter("community.flock.aigentic.gatewa
 
     override fun Type.emit(ast: AST) = """
     |@kotlinx.serialization.Serializable
+    |@kotlinx.serialization.SerialName("${identifier.value}")
     |${transform(ast).emit()}
     """.trimMargin()
 
     override fun Refined.emit() = """
     |@kotlinx.serialization.Serializable
+    |@kotlinx.serialization.SerialName("${identifier.value}")
     |${transform().emit()}
     """.trimMargin()
 
