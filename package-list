@@ -1,0 +1,65 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:////PointingToDeclaration/platform/[root]/index.html
+$dokka.location://createToolCallExpectation/#kotlin.collections.List[community.flock.aigentic.platform.testing.ToolCallOverride]#community.flock.aigentic.core.message.ToolCall#community.flock.aigentic.core.agent.Run[TypeParam(bounds=[kotlin.Any])]/PointingToDeclaration/platform/[root]/create-tool-call-expectation.html
+$dokka.location://createToolCallExpectations/#kotlin.collections.List[community.flock.aigentic.platform.testing.ToolCallOverride]#community.flock.aigentic.core.agent.Run[TypeParam(bounds=[kotlin.Any])]/PointingToDeclaration/platform/[root]/create-tool-call-expectations.html
+$dokka.location://generateRandomString/#kotlin.Int/PointingToDeclaration/core/[root]/generate-random-string.html
+$dokka.location:/ToolCallExpectation///PointingToDeclaration/platform/[root]/-tool-call-expectation/index.html
+$dokka.location:/ToolCallExpectation/ToolCallExpectation/#community.flock.aigentic.core.message.ToolCall#community.flock.aigentic.core.message.Message.ToolResult/PointingToDeclaration/platform/[root]/-tool-call-expectation/-tool-call-expectation.html
+$dokka.location:/ToolCallExpectation/toolCall/#/PointingToDeclaration/platform/[root]/-tool-call-expectation/tool-call.html
+$dokka.location:/ToolCallExpectation/toolResult/#/PointingToDeclaration/platform/[root]/-tool-call-expectation/tool-result.html
+module:core
+community.flock.aigentic.core
+community.flock.aigentic.core.agent
+community.flock.aigentic.core.agent.message
+community.flock.aigentic.core.agent.state
+community.flock.aigentic.core.agent.status
+community.flock.aigentic.core.agent.tool
+community.flock.aigentic.core.annotations
+community.flock.aigentic.core.dsl
+community.flock.aigentic.core.exception
+community.flock.aigentic.core.logging
+community.flock.aigentic.core.message
+community.flock.aigentic.core.model
+community.flock.aigentic.core.platform
+community.flock.aigentic.core.tool
+community.flock.aigentic.core.workflow
+module:platform
+community.flock.aigentic.platform
+community.flock.aigentic.platform.client
+community.flock.aigentic.platform.dsl
+community.flock.aigentic.platform.mapper
+community.flock.aigentic.platform.testing
+community.flock.aigentic.platform.testing.exception
+community.flock.aigentic.platform.testing.mock
+community.flock.aigentic.platform.testing.model
+community.flock.aigentic.platform.testing.util
+module:google-cloud-function
+community.flock.aigentic.cloud.google.function.declarations
+community.flock.aigentic.cloud.google.function.http
+community.flock.aigentic.cloud.google.function.http.dsl
+community.flock.aigentic.cloud.google.function.util
+module:gemini
+community.flock.aigentic.gemini.client
+community.flock.aigentic.gemini.client.config
+community.flock.aigentic.gemini.client.model
+community.flock.aigentic.gemini.client.ratelimit
+community.flock.aigentic.gemini.dsl
+community.flock.aigentic.gemini.mapper
+community.flock.aigentic.gemini.model
+module:ollama
+community.flock.aigentic.ollama.dsl
+module:openai
+community.flock.aigentic.openai.dsl
+community.flock.aigentic.openai.mapper
+community.flock.aigentic.openai.model
+module:vertexai
+community.flock.aigentic.vertexai
+community.flock.aigentic.vertexai.dsl
+community.flock.aigentic.vertexai.request
+community.flock.aigentic.vertexai.response
+module:http
+community.flock.aigentic.tools.http
+module:openapi
+community.flock.aigentic.tools.openapi
+community.flock.aigentic.tools.openapi.dsl
