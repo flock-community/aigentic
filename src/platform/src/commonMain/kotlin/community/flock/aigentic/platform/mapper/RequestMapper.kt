@@ -88,6 +88,7 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                     },
                 exampleRunIds = exampleRunIds.map { it.value },
                 responseJsonSchema = agent.responseParameter?.toJsonSchemaString(),
+                temperature = agent.model.generationSettings.temperature.toDouble(),
             ),
         messages = messages.mapNotNull { it.toDto() },
         modelRequests = modelRequests.map { it.toDto() },
