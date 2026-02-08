@@ -1,3 +1,8 @@
+---
+name: update-site
+description: Audit and update the documentation site against the current codebase
+---
+
 # Update Site Documentation
 
 Perform a full audit of the Aigentic documentation site against the current codebase.
