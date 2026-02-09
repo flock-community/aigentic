@@ -23,7 +23,8 @@ type ConfigDto {
     tools: ToolDto[],
     exampleRunIds: String[]?,
     responseJsonSchema: String?,
-    temperature: Number
+    temperature: Number,
+    thinkingBudget: Integer?
 }
 
 type TaskDto {
