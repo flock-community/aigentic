@@ -1,5 +1,6 @@
 [versions]
 kotlin = "2.3.10"
+ksp = "2.3.5"
 coroutines = "1.10.2"
 serialization = "1.10.0"
 ktor = "3.4.0"
@@ -43,7 +44,6 @@ openai-client = { group = "com.aallam.openai", name = "openai-client", version.r
 #Test
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
-kotest-framework-datatest = { module = "io.kotest:kotest-framework-datatest", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
@@ -57,7 +57,8 @@ google-gen-ai = { module = "com.google.genai:google-genai", version.ref = "googl
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-spotless = { id = "com.diffplug.gradle.spotless", version = "8.2.1" }
+spotless = { id = "com.diffplug.spotless", version = "8.2.1" }
 dokka = { id = "org.jetbrains.dokka", version = "2.1.0" }
-kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotest" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotest-multiplatform = { id = "io.kotest", version.ref = "kotest" }
 wirespec = { id = "community.flock.wirespec.plugin.gradle", version.ref = "wirespec" }

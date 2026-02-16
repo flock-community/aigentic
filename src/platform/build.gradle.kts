@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.kotest.multiplatform)
     alias(libs.plugins.wirespec)
     id("module.publication")
@@ -57,7 +58,6 @@ kotlin {
             dependencies {
                 implementation(libs.kotest.framework.engine)
                 implementation(libs.kotest.assertions.core)
-                implementation(libs.kotest.framework.datatest)
                 implementation(libs.kotest.property)
                 implementation(libs.ktor.client.mock)
             }

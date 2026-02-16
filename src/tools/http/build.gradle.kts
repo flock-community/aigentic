@@ -3,6 +3,7 @@ plugins {
     id("module.publication")
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.kotest.multiplatform)
 }
 
@@ -34,7 +35,6 @@ kotlin {
             dependencies {
                 implementation(libs.kotest.framework.engine)
                 implementation(libs.kotest.assertions.core)
-                implementation(libs.kotest.framework.datatest)
                 implementation(libs.kotest.property)
             }
         }
