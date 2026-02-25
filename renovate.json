@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "labels": ["dependencies"],
+  "schedule": ["every weekend"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "matchPackagePatterns": ["org.jetbrains.kotlin.*"],
+      "groupName": "Kotlin",
+      "automerge": false
+    },
+    {
+      "matchPackagePatterns": ["io.ktor.*"],
+      "groupName": "Ktor"
+    },
+    {
+      "matchPackagePatterns": ["io.kotest.*"],
+      "groupName": "Kotest"
+    },
+    {
+      "matchPackagePatterns": ["org.jetbrains.kotlinx:kotlinx-coroutines.*"],
+      "groupName": "Kotlin Coroutines"
+    },
+    {
+      "matchPackagePatterns": ["org.jetbrains.kotlinx:kotlinx-serialization.*"],
+      "groupName": "Kotlin Serialization"
+    }
+  ]
+}
