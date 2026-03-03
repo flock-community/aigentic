@@ -22,7 +22,9 @@ type ConfigDto {
     systemPrompt: String,
     tools: ToolDto[],
     exampleRunIds: String[]?,
-    responseJsonSchema: String?
+    responseJsonSchema: String?,
+    temperature: Number,
+    thinkingBudget: Integer?
 }
 
 type TaskDto {
