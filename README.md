@@ -85,7 +85,7 @@ repositories {
 ### Building
 
 ```bash
-./gradlew build
+./gradlew -q build
 ```
 
 ## License

@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
@@ -41,10 +41,65 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-    - name: Gradle publish
+
+    - name: Check if snapshot
+      id: check-snapshot
+      run: |
+        VERSION_FILE="src/plugins/convention-plugins/src/main/kotlin/root.publication.gradle.kts"
+        VERSION=$(grep -oP 'version = "\K[^"]+' "$VERSION_FILE" | head -1)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        if [[ "$VERSION" == *"-SNAPSHOT"* ]]; then
+          echo "is_snapshot=true" >> $GITHUB_OUTPUT
+          echo "Detected SNAPSHOT version: $VERSION"
+        else
+          echo "is_snapshot=false" >> $GITHUB_OUTPUT
+          echo "Detected release version: $VERSION"
+        fi
+
+    - name: Publish to Snapshot Repository
+      if: steps.check-snapshot.outputs.is_snapshot == 'true'
+      uses: gradle/gradle-build-action@ce999babab2de1c4b649dc15f0ee67e6246c994f
+      with:
+        arguments: |
+          publishToSonatype
+          --no-configuration-cache
+
+    - name: Publish to Maven Central
+      if: steps.check-snapshot.outputs.is_snapshot == 'false'
       uses: gradle/gradle-build-action@ce999babab2de1c4b649dc15f0ee67e6246c994f
       with:
         arguments: |
           publishToSonatype
           closeAndReleaseSonatypeStagingRepository
           --no-configuration-cache
+
+    - name: Create GitHub Release
+      if: steps.check-snapshot.outputs.is_snapshot == 'false'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release create "v${{ steps.check-snapshot.outputs.version }}" \
+          --title "Release ${{ steps.check-snapshot.outputs.version }}" \
+          --generate-notes
+
+    - name: Bump to next minor snapshot
+      if: steps.check-snapshot.outputs.is_snapshot == 'false'
+      run: |
+        VERSION="${{ steps.check-snapshot.outputs.version }}"
+        VERSION_FILE="src/plugins/convention-plugins/src/main/kotlin/root.publication.gradle.kts"
+        # Parse version components (e.g., 0.8.0 -> major=0, minor=8, patch=0)
+        IFS='.' read -r major minor patch <<< "$VERSION"
+        # Increment minor, reset patch
+        NEXT_VERSION="${major}.$((minor + 1)).0-SNAPSHOT"
+        # Update version file
+        sed -i "s/version = \"$VERSION\"/version = \"$NEXT_VERSION\"/" "$VERSION_FILE"
+        echo "Bumped version from $VERSION to $NEXT_VERSION"
+
+    - name: Commit and push version bump
+      if: steps.check-snapshot.outputs.is_snapshot == 'false'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add src/plugins/convention-plugins/src/main/kotlin/root.publication.gradle.kts
+        git commit -m "Bump version to ${{ steps.check-snapshot.outputs.version }} -> next minor snapshot"
+        git push

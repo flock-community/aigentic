@@ -145,24 +145,24 @@ When working with this project, Junie should:
 
 Run core and platform tests (most common after core changes):
 ```bash
-./gradlew --no-build-cache clean :src:core:jvmTest :src:platform:jvmTest
+./gradlew -q --no-build-cache clean :src:core:jvmTest :src:platform:jvmTest
 ```
 
 Run tests for specific modules:
 ```bash
 # Core module only
-./gradlew --no-build-cache clean :src:core:jvmTest
+./gradlew -q --no-build-cache clean :src:core:jvmTest
 
 # Platform module only
-./gradlew --no-build-cache clean :src:platform:jvmTest
+./gradlew -q --no-build-cache clean :src:platform:jvmTest
 
 # Specific provider (e.g., OpenAI)
-./gradlew --no-build-cache clean :src:providers:openai:jvmTest
+./gradlew -q --no-build-cache clean :src:providers:openai:jvmTest
 ```
 
 Run all tests:
 ```bash
-./gradlew --no-build-cache clean allTests
+./gradlew -q --no-build-cache clean allTests
 ```
 
 #### Why `--no-build-cache`?
@@ -176,8 +176,8 @@ Using `--no-build-cache clean` ensures everything is recompiled from scratch.
 
 ## Build Guidelines
 - The project uses Gradle for building
-- Before submitting changes, ensure the project is formatted correctly using the `spotlessApply` command
-- Before submitting changes, ensure the project builds successfully using the `build` command
+- Before submitting changes, ensure the project is formatted correctly using the `./gradlew -q spotlessApply` command
+- Before submitting changes, ensure the project builds successfully using the `./gradlew -q build` command
 - Pay attention to any compiler warnings or errors
 
 ## Code Style Guidelines
