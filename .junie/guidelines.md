@@ -237,3 +237,15 @@ The Aigentic documentation website in `/site` follows specific tone guidelines t
 
 **Conversational/Natural:**
 "The description property in @AigenticParameter helps improves LLM interactions. This description gives the LLM context about how and when to use your tools."
+
+## Git Conventions
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/). All commit messages must use the format:
+
+```
+<type>: <description>
+```
+
+Common types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `ci`, `style`, `perf`, `build`.
+
+**Do NOT add `Co-Authored-By` trailers or any other metadata to commit messages.** Keep commits strictly to the conventional commits format.
