@@ -32,26 +32,31 @@ jobs:
       run: npm run build
 
     - name: Set up Docker Buildx
+      if: github.actor != 'dependabot[bot]'
       uses: docker/setup-buildx-action@v2
 
     - name: GCP auth
+      if: github.actor != 'dependabot[bot]'
       uses: google-github-actions/auth@v2
       with:
         credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
     - name: Set up Cloud SDK
+      if: github.actor != 'dependabot[bot]'
       uses: google-github-actions/setup-gcloud@v2
 
     - name: Configure Docker for GCP
+      if: github.actor != 'dependabot[bot]'
       run: gcloud auth configure-docker europe-docker.pkg.dev
 
     - name: Build and push Docker image
+      if: github.actor != 'dependabot[bot]'
       working-directory: ./site
       run: |
         docker buildx build --platform linux/amd64 --push -t europe-docker.pkg.dev/aigentic-458115/aigentic-docker/aigentic-docs .
 
     - name: Deploy to Google Cloud Run
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && github.actor != 'dependabot[bot]'
       run: |
         gcloud run deploy aigentic-docs \
           --image=europe-docker.pkg.dev/aigentic-458115/aigentic-docker/aigentic-docs \
