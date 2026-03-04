@@ -1,0 +1,33 @@
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    labels:
+      - "dependencies"
+    groups:
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin*"
+      ktor:
+        patterns:
+          - "io.ktor*"
+      kotest:
+        patterns:
+          - "io.kotest*"
+      kotlin-coroutines:
+        patterns:
+          - "org.jetbrains.kotlinx:kotlinx-coroutines*"
+      kotlin-serialization:
+        patterns:
+          - "org.jetbrains.kotlinx:kotlinx-serialization*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    labels:
+      - "dependencies"
