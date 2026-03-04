@@ -13,7 +13,7 @@ Workflows help you chain multiple agents together to handle complex tasks that r
 The main way to create a workflow is using the `thenProcess` infix function to chain agents together:
 
 ```kotlin
-// Creates a Workflow3<InputType, FirstAgentOutput, SecondAgentOutput, OutputType>
+// Creates a Workflow3<InputType, FirstOutput, SecondOutput, OutputType>
 val workflow = firstAgent thenProcess secondAgent thenProcess thirdAgent
 ```
 
@@ -41,8 +41,8 @@ data class FinalOutput(val summary: String)
 val firstAgent = agent<InitialInput, ProcessedData> { /* config */ }
 val secondAgent = agent<ProcessedData, FinalOutput> { /* config */ }
 
-// Creates a Workflow2<InitialInput, FirstAgentOutput, FinalOutput>
-// Input flows: InitialInput -> FirstAgentOutput -> FinalOutput
+// Creates a Workflow2<InitialInput, ProcessedData, FinalOutput>
+// Input flows: InitialInput -> ProcessedData -> FinalOutput
 val workflow = firstAgent thenProcess secondAgent
 ```
 
@@ -69,8 +69,8 @@ Workflows also support attachments (PDFs, images, etc.) that are passed to the *
 
 ```kotlin
 // With attachments
-val pdfAttachment = Attachment.pdf("base64-encoded-pdf-content")
-val imageAttachment = Attachment.jpeg("base64-encoded-image-content")
+val pdfAttachment = Attachment.Base64.pdf("base64-encoded-pdf-content")
+val imageAttachment = Attachment.Base64.jpeg("base64-encoded-image-content")
 
 val workflowRun = workflow.start(initialInput, pdfAttachment, imageAttachment)
 
@@ -167,12 +167,12 @@ suspend fun processLegalDocument(apiKey: String) {
     }
 
     // Chain the agents into a workflow
-    // Creates a Workflow3<String, FirstAgentOutput, SecondAgentOutput, LegalSummary>
-    // Input flows: String -> FirstAgentOutput -> SecondAgentOutput -> LegalSummary
+    // Creates a Workflow3<String, RedactedDocument, ComplianceReport, LegalSummary>
+    // Input flows: String -> RedactedDocument -> ComplianceReport -> LegalSummary
     val workflow = documentRedactor thenProcess complianceChecker thenProcess summarizer
 
     // Execute the workflow
-    val workflowRun = workflow.start(documentText, Attachment.pdf("base64-encoded-pdf-content"))
+    val workflowRun = workflow.start(documentText, Attachment.Base64.pdf("base64-encoded-pdf-content"))
 
     when (val outcome = workflowRun.outcome) {
         is Outcome.Finished -> {
