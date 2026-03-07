@@ -33,7 +33,7 @@ jobs:
 
     - name: Set up Docker Buildx
       if: github.ref == 'refs/heads/main'
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v4
 
     - name: GCP auth
       if: github.ref == 'refs/heads/main'
