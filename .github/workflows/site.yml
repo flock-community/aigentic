@@ -43,7 +43,7 @@ jobs:
 
     - name: Set up Cloud SDK
       if: github.ref == 'refs/heads/main'
-      uses: google-github-actions/setup-gcloud@v2
+      uses: google-github-actions/setup-gcloud@v3
 
     - name: Configure Docker for GCP
       if: github.ref == 'refs/heads/main'
