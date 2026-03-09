@@ -1,6 +1,6 @@
 import siteConfig from "@generated/docusaurus.config";
 import type * as PrismNamespace from "prismjs";
-import type { Optional } from "utility-types";
+
 
 /**
  * Add syntax highlighting for code blocks for additional languages, in this case wirespec
@@ -39,7 +39,7 @@ export default function prismIncludeLanguages(
   require("./prism-wirespec.js");
 
   // Clean up and eventually restore former globalThis.Prism object (if any)
-  delete (globalThis as Optional<typeof globalThis, "Prism">).Prism;
+  delete (globalThis as Record<string, unknown>).Prism;
   if (typeof PrismBefore !== "undefined") {
     globalThis.Prism = PrismObject;
   }
