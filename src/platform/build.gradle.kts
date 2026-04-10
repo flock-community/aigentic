@@ -50,6 +50,7 @@ kotlin {
                 implementation(project(":src:providers:jsonschema"))
                 implementation(libs.coroutines.core)
                 implementation(libs.serialization.json)
+                implementation(libs.wirespec.integration)
                 implementation(libs.ktor.client.logging)
                 implementation(libs.ktor.client.auth)
                 implementation(libs.ktor.client.content.negotiation)

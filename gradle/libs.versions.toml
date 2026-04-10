@@ -51,6 +51,7 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 wirespec-core = { group = "community.flock.wirespec.compiler", name = "core-jvm", version.ref = "wirespec" }
 wirespec-compiler = { group = "community.flock.wirespec.compiler", name = "core-jvm", version.ref = "wirespec" }
 wirespec-emitters-kotlin = { group = "community.flock.wirespec.compiler.emitters", name = "kotlin-jvm", version.ref = "wirespec" }
+wirespec-integration = { group = "community.flock.wirespec.integration", name = "wirespec", version.ref = "wirespec" }
 # Logging
 logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
 # Google GenAI
