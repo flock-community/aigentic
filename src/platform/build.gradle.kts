@@ -1,11 +1,18 @@
-import community.flock.wirespec.compiler.core.emit.KotlinEmitter
-import community.flock.wirespec.compiler.core.emit.shared.KotlinShared
-import community.flock.wirespec.compiler.core.emit.transformer.ClassModelTransformer.transform
-import community.flock.wirespec.compiler.core.parse.AST
-import community.flock.wirespec.compiler.core.parse.Refined
-import community.flock.wirespec.compiler.core.parse.Type
-import community.flock.wirespec.compiler.core.parse.Union
-import community.flock.wirespec.plugin.gradle.CustomWirespecTask
+import community.flock.wirespec.compiler.core.emit.EmitShared
+import community.flock.wirespec.compiler.core.emit.PackageName
+import community.flock.wirespec.compiler.core.parse.ast.Module
+import community.flock.wirespec.compiler.core.parse.ast.Refined
+import community.flock.wirespec.compiler.core.parse.ast.Type
+import community.flock.wirespec.compiler.core.parse.ast.Union
+import community.flock.wirespec.emitters.kotlin.KotlinEmitter
+import community.flock.wirespec.plugin.gradle.CompileWirespecTask
+
+buildscript {
+    dependencies {
+        classpath(libs.wirespec.core)
+        classpath(libs.wirespec.emitters.kotlin)
+    }
+}
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -17,13 +24,12 @@ plugins {
 }
 
 
-val wirespecKotlin = tasks.register<CustomWirespecTask>("wirespec-kotlin") {
+val wirespecKotlin = tasks.register<CompileWirespecTask>("wirespec-kotlin") {
     input = layout.projectDirectory.dir("./wirespec")
     output = layout.buildDirectory.dir("generated")
     packageName = "community.flock.aigentic.gateway.wirespec"
-    emitter = KotlinSerializableEmitter::class.java
-    shared = KotlinShared.source
-    extension = "kt"
+    emitterClass = KotlinSerializableEmitter::class.java
+    shared = true
 }
 
 kotlin {
@@ -80,23 +86,23 @@ kotlin {
     }
 }
 
-class KotlinSerializableEmitter : KotlinEmitter("community.flock.aigentic.gateway.wirespec") {
+class KotlinSerializableEmitter(packageName: PackageName, emitShared: EmitShared) : KotlinEmitter(packageName, emitShared) {
 
-    override fun Type.emit(ast: AST) = """
+    override fun emit(type: Type, module: Module): String = """
     |@kotlinx.serialization.Serializable
-    |@kotlinx.serialization.SerialName("${identifier.value}")
-    |${transform(ast).emit()}
+    |@kotlinx.serialization.SerialName("${type.identifier.value}")
+    |${super.emit(type, module)}
     """.trimMargin()
 
-    override fun Refined.emit() = """
+    override fun emit(refined: Refined): String = """
     |@kotlinx.serialization.Serializable
-    |@kotlinx.serialization.SerialName("${identifier.value}")
-    |${transform().emit()}
+    |@kotlinx.serialization.SerialName("${refined.identifier.value}")
+    |${super.emit(refined)}
     """.trimMargin()
 
-    override fun Union.emit() = """
+    override fun emit(union: Union): String = """
     |@kotlinx.serialization.Serializable
-    |${transform().emit()}
+    |${super.emit(union)}
     """.trimMargin()
 
 }
