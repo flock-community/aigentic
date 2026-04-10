@@ -30,7 +30,7 @@ kotlin {
                 implementation(libs.ktor.client.cio)
 
                 implementation(libs.logback.classic)
-                implementation("org.slf4j:slf4j-api:2.0.9")
+                implementation("org.slf4j:slf4j-api:2.0.17")
             }
         }
     }
