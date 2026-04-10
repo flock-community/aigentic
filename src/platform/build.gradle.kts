@@ -1,9 +1,11 @@
-import community.flock.wirespec.compiler.core.emit.PackageName
-import community.flock.wirespec.compiler.core.parse.ast.Module
-import community.flock.wirespec.compiler.core.parse.ast.Refined
-import community.flock.wirespec.compiler.core.parse.ast.Type
-import community.flock.wirespec.emitters.kotlin.KotlinEmitter
-import community.flock.wirespec.plugin.gradle.CompileWirespecTask
+import community.flock.wirespec.compiler.core.emit.KotlinEmitter
+import community.flock.wirespec.compiler.core.emit.shared.KotlinShared
+import community.flock.wirespec.compiler.core.emit.transformer.ClassModelTransformer.transform
+import community.flock.wirespec.compiler.core.parse.AST
+import community.flock.wirespec.compiler.core.parse.Refined
+import community.flock.wirespec.compiler.core.parse.Type
+import community.flock.wirespec.compiler.core.parse.Union
+import community.flock.wirespec.plugin.gradle.CustomWirespecTask
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -14,19 +16,14 @@ plugins {
     id("module.publication")
 }
 
-buildscript {
-    dependencies {
-        classpath(libs.wirespec.compiler)
-        classpath(libs.wirespec.emitters.kotlin)
-    }
-}
 
-
-val wirespecKotlin = tasks.register<CompileWirespecTask>("wirespec-kotlin") {
+val wirespecKotlin = tasks.register<CustomWirespecTask>("wirespec-kotlin") {
     input = layout.projectDirectory.dir("./wirespec")
     output = layout.buildDirectory.dir("generated")
     packageName = "community.flock.aigentic.gateway.wirespec"
-    emitterClass = KotlinSerializableEmitter::class.java
+    emitter = KotlinSerializableEmitter::class.java
+    shared = KotlinShared.source
+    extension = "kt"
 }
 
 kotlin {
@@ -50,7 +47,6 @@ kotlin {
                 implementation(project(":src:providers:jsonschema"))
                 implementation(libs.coroutines.core)
                 implementation(libs.serialization.json)
-                implementation(libs.wirespec.integration)
                 implementation(libs.ktor.client.logging)
                 implementation(libs.ktor.client.auth)
                 implementation(libs.ktor.client.content.negotiation)
@@ -84,15 +80,23 @@ kotlin {
     }
 }
 
-class KotlinSerializableEmitter : KotlinEmitter(PackageName("community.flock.aigentic.gateway.wirespec")) {
+class KotlinSerializableEmitter : KotlinEmitter("community.flock.aigentic.gateway.wirespec") {
 
-    override fun emit(type: Type, module: Module): String = """
-        |@kotlinx.serialization.Serializable
-        |${super.emit(type, module)}
+    override fun Type.emit(ast: AST) = """
+    |@kotlinx.serialization.Serializable
+    |@kotlinx.serialization.SerialName("${identifier.value}")
+    |${transform(ast).emit()}
     """.trimMargin()
 
-    override fun emit(refined: Refined): String = """
-        |@kotlinx.serialization.Serializable
-        |${super.emit(refined)}
+    override fun Refined.emit() = """
+    |@kotlinx.serialization.Serializable
+    |@kotlinx.serialization.SerialName("${identifier.value}")
+    |${transform().emit()}
     """.trimMargin()
+
+    override fun Union.emit() = """
+    |@kotlinx.serialization.Serializable
+    |${transform().emit()}
+    """.trimMargin()
+
 }
