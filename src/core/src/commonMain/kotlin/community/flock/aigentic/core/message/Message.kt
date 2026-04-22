@@ -1,6 +1,7 @@
 package community.flock.aigentic.core.message
 
 import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmInline
@@ -90,9 +91,12 @@ sealed interface Sender {
     data object Model : Sender
 }
 
-fun ToolCall.argumentsAsJson(json: Json = Json): JsonObject = json.decodeFromString(arguments)
+@OptIn(ExperimentalSerializationApi::class)
+private val tolerantJson = Json { allowTrailingComma = true }
 
-fun Message.StructuredOutput.asJson(json: Json = Json): JsonObject = json.decodeFromString(response)
+fun ToolCall.argumentsAsJson(json: Json = tolerantJson): JsonObject = json.decodeFromString(arguments)
+
+fun Message.StructuredOutput.asJson(json: Json = tolerantJson): JsonObject = json.decodeFromString(response)
 
 fun List<Message>.mapToTextMessages(): List<Message.ExampleToolMessage> {
     val messageArguments: List<Message.ExampleToolMessage> =
