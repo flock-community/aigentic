@@ -17,7 +17,7 @@ const config: Config = {
     locales: ["en"],
   },
   customFields: {
-    version: "0.0.0-SNAPSHOT",
+    version: "0.9.1-SNAPSHOT",
   },
   presets: [
     [
