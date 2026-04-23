@@ -76,7 +76,7 @@ body {
 }
 
 .heroSubtitle {
-  margin: 0 auto;
+  margin: 24px auto 0;
   max-width: 520px;
   color: #9f9f9f;
   font-weight: 400;

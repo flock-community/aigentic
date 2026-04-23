@@ -9,14 +9,14 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { JSX } from "react";
 import {weatherAgent, workflowExample, invoiceExtractorExample} from "../code/examples";
-import TypeCursor from "../components/TypeCursor";
+import CyclingBlurText from "../components/CyclingBlurText";
 
 function HomepageHeader() {
   return (
     <header className={clsx("hero hero--primary", styles.heroBanner)}>
       <div className="container">
         <div className={clsx("hero__title hero-heading", styles.heroHeading)}>
-          <TypeCursor
+          <CyclingBlurText
             phrases={['production-ready', 'reliable', 'LLM-agnostic']}
             prefix="Aigentic helps you build"
             suffix="AI agents faster"
