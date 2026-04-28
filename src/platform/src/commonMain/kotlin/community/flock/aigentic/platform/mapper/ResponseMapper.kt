@@ -9,20 +9,20 @@ import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.gateway.wirespec.Base64MessageDto
-import community.flock.aigentic.gateway.wirespec.FatalResultDto
-import community.flock.aigentic.gateway.wirespec.FinishedResultDto
-import community.flock.aigentic.gateway.wirespec.MessageCategoryDto
-import community.flock.aigentic.gateway.wirespec.MimeTypeDto
-import community.flock.aigentic.gateway.wirespec.RunDetailsDto
-import community.flock.aigentic.gateway.wirespec.SenderDto
-import community.flock.aigentic.gateway.wirespec.StructuredOutputMessageDto
-import community.flock.aigentic.gateway.wirespec.StuckResultDto
-import community.flock.aigentic.gateway.wirespec.SystemPromptMessageDto
-import community.flock.aigentic.gateway.wirespec.TextMessageDto
-import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
-import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
-import community.flock.aigentic.gateway.wirespec.UrlMessageDto
+import community.flock.aigentic.gateway.wirespec.model.Base64MessageDto
+import community.flock.aigentic.gateway.wirespec.model.FatalResultDto
+import community.flock.aigentic.gateway.wirespec.model.FinishedResultDto
+import community.flock.aigentic.gateway.wirespec.model.MessageCategoryDto
+import community.flock.aigentic.gateway.wirespec.model.MimeTypeDto
+import community.flock.aigentic.gateway.wirespec.model.RunDetailsDto
+import community.flock.aigentic.gateway.wirespec.model.SenderDto
+import community.flock.aigentic.gateway.wirespec.model.StructuredOutputMessageDto
+import community.flock.aigentic.gateway.wirespec.model.StuckResultDto
+import community.flock.aigentic.gateway.wirespec.model.SystemPromptMessageDto
+import community.flock.aigentic.gateway.wirespec.model.TextMessageDto
+import community.flock.aigentic.gateway.wirespec.model.ToolCallsMessageDto
+import community.flock.aigentic.gateway.wirespec.model.ToolResultMessageDto
+import community.flock.aigentic.gateway.wirespec.model.UrlMessageDto
 import kotlin.time.Instant
 
 internal fun RunDetailsDto.toRun(): AgentRun<String> {

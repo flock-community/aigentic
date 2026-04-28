@@ -2,7 +2,7 @@ package community.flock.aigentic.platform.client
 
 import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.PlatformApiUrl
-import community.flock.aigentic.gateway.wirespec.GatewayEndpoint
+import community.flock.aigentic.gateway.wirespec.endpoint.Gateway
 import community.flock.aigentic.platform.mapper.toDto
 import community.flock.aigentic.platform.util.createAgent
 import community.flock.aigentic.platform.util.createAgentRun
@@ -25,7 +25,7 @@ class AigenticPlatformEndpointsTest : DescribeSpec({
         val mockEngine =
             MockEngine { request ->
                 when (request.method to request.url.encodedPath) {
-                    (HttpMethod.Post to "/gateway") ->
+                    (HttpMethod.Post to "/gateway/runs") ->
                         respond(content = ByteReadChannel.Empty, status = HttpStatusCode.Created)
                     else ->
                         error("Unexpected endpoint called! ${request.url.encodedPath}")
@@ -34,7 +34,7 @@ class AigenticPlatformEndpointsTest : DescribeSpec({
 
         val apiClient = AigenticPlatformEndpoints(Authentication.BasicAuth("", ""), PlatformApiUrl(""), mockEngine)
 
-        val req = GatewayEndpoint.RequestApplicationJson(run.toDto(agent, serializer<String>()))
+        val req = Gateway.Request(body = run.toDto(agent, serializer<String>()))
         val res = apiClient.gateway(req)
 
         res.status shouldBe HttpStatusCode.Created.value

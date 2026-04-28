@@ -13,38 +13,38 @@ import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
 import community.flock.aigentic.core.tool.PrimitiveValue
-import community.flock.aigentic.gateway.wirespec.Base64MessageDto
-import community.flock.aigentic.gateway.wirespec.ConfigDto
-import community.flock.aigentic.gateway.wirespec.FatalResultDto
-import community.flock.aigentic.gateway.wirespec.FinishedResultDto
-import community.flock.aigentic.gateway.wirespec.MessageCategoryDto
-import community.flock.aigentic.gateway.wirespec.MessageDto
-import community.flock.aigentic.gateway.wirespec.MimeTypeDto
-import community.flock.aigentic.gateway.wirespec.ModelRequestInfoDto
-import community.flock.aigentic.gateway.wirespec.ParameterArrayDto
-import community.flock.aigentic.gateway.wirespec.ParameterDto
-import community.flock.aigentic.gateway.wirespec.ParameterEnumDto
-import community.flock.aigentic.gateway.wirespec.ParameterObjectDto
-import community.flock.aigentic.gateway.wirespec.ParameterPrimitiveDto
-import community.flock.aigentic.gateway.wirespec.ParameterTypeDto
-import community.flock.aigentic.gateway.wirespec.PrimitiveValueBooleanDto
-import community.flock.aigentic.gateway.wirespec.PrimitiveValueDto
-import community.flock.aigentic.gateway.wirespec.PrimitiveValueIntegerDto
-import community.flock.aigentic.gateway.wirespec.PrimitiveValueNumberDto
-import community.flock.aigentic.gateway.wirespec.PrimitiveValueStringDto
-import community.flock.aigentic.gateway.wirespec.PrimitiveValueTypeDto
-import community.flock.aigentic.gateway.wirespec.RunDto
-import community.flock.aigentic.gateway.wirespec.SenderDto
-import community.flock.aigentic.gateway.wirespec.StructuredOutputMessageDto
-import community.flock.aigentic.gateway.wirespec.StuckResultDto
-import community.flock.aigentic.gateway.wirespec.SystemPromptMessageDto
-import community.flock.aigentic.gateway.wirespec.TaskDto
-import community.flock.aigentic.gateway.wirespec.TextMessageDto
-import community.flock.aigentic.gateway.wirespec.ToolCallDto
-import community.flock.aigentic.gateway.wirespec.ToolCallsMessageDto
-import community.flock.aigentic.gateway.wirespec.ToolDto
-import community.flock.aigentic.gateway.wirespec.ToolResultMessageDto
-import community.flock.aigentic.gateway.wirespec.UrlMessageDto
+import community.flock.aigentic.gateway.wirespec.model.Base64MessageDto
+import community.flock.aigentic.gateway.wirespec.model.ConfigDto
+import community.flock.aigentic.gateway.wirespec.model.FatalResultDto
+import community.flock.aigentic.gateway.wirespec.model.FinishedResultDto
+import community.flock.aigentic.gateway.wirespec.model.MessageCategoryDto
+import community.flock.aigentic.gateway.wirespec.model.MessageDto
+import community.flock.aigentic.gateway.wirespec.model.MimeTypeDto
+import community.flock.aigentic.gateway.wirespec.model.ModelRequestInfoDto
+import community.flock.aigentic.gateway.wirespec.model.ParameterArrayDto
+import community.flock.aigentic.gateway.wirespec.model.ParameterDto
+import community.flock.aigentic.gateway.wirespec.model.ParameterEnumDto
+import community.flock.aigentic.gateway.wirespec.model.ParameterObjectDto
+import community.flock.aigentic.gateway.wirespec.model.ParameterPrimitiveDto
+import community.flock.aigentic.gateway.wirespec.model.ParameterTypeDto
+import community.flock.aigentic.gateway.wirespec.model.PrimitiveValueBooleanDto
+import community.flock.aigentic.gateway.wirespec.model.PrimitiveValueDto
+import community.flock.aigentic.gateway.wirespec.model.PrimitiveValueIntegerDto
+import community.flock.aigentic.gateway.wirespec.model.PrimitiveValueNumberDto
+import community.flock.aigentic.gateway.wirespec.model.PrimitiveValueStringDto
+import community.flock.aigentic.gateway.wirespec.model.PrimitiveValueTypeDto
+import community.flock.aigentic.gateway.wirespec.model.RunDto
+import community.flock.aigentic.gateway.wirespec.model.SenderDto
+import community.flock.aigentic.gateway.wirespec.model.StructuredOutputMessageDto
+import community.flock.aigentic.gateway.wirespec.model.StuckResultDto
+import community.flock.aigentic.gateway.wirespec.model.SystemPromptMessageDto
+import community.flock.aigentic.gateway.wirespec.model.TaskDto
+import community.flock.aigentic.gateway.wirespec.model.TextMessageDto
+import community.flock.aigentic.gateway.wirespec.model.ToolCallDto
+import community.flock.aigentic.gateway.wirespec.model.ToolCallsMessageDto
+import community.flock.aigentic.gateway.wirespec.model.ToolDto
+import community.flock.aigentic.gateway.wirespec.model.ToolResultMessageDto
+import community.flock.aigentic.gateway.wirespec.model.UrlMessageDto
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -131,6 +131,7 @@ private fun Parameter.toDto(): ParameterDto =
                 description = description,
                 isRequired = isRequired,
                 paramType = type.toDto(),
+                default = null,
                 values =
                     values.map { value ->
                         val parameterType = determineType(value)
@@ -264,6 +265,7 @@ private fun ToolCall.toDto(): ToolCallDto =
         id = id.id,
         name = name,
         arguments = arguments,
+        expectedArguments = null,
     )
 
 private fun MimeType.toDto(): MimeTypeDto =
