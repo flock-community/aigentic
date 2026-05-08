@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 env:
   SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
@@ -83,23 +84,28 @@ jobs:
           --generate-notes
 
     - name: Bump to next minor snapshot
+      id: bump
       if: steps.check-snapshot.outputs.is_snapshot == 'false'
       run: |
         VERSION="${{ steps.check-snapshot.outputs.version }}"
         VERSION_FILE="src/plugins/convention-plugins/src/main/kotlin/root.publication.gradle.kts"
-        # Parse version components (e.g., 0.8.0 -> major=0, minor=8, patch=0)
         IFS='.' read -r major minor patch <<< "$VERSION"
-        # Increment minor, reset patch
         NEXT_VERSION="${major}.$((minor + 1)).0-SNAPSHOT"
-        # Update version file
         sed -i "s/version = \"$VERSION\"/version = \"$NEXT_VERSION\"/" "$VERSION_FILE"
+        echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
         echo "Bumped version from $VERSION to $NEXT_VERSION"
 
-    - name: Commit and push version bump
+    - name: Open PR with version bump
       if: steps.check-snapshot.outputs.is_snapshot == 'false'
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add src/plugins/convention-plugins/src/main/kotlin/root.publication.gradle.kts
-        git commit -m "Bump version to ${{ steps.check-snapshot.outputs.version }} -> next minor snapshot"
-        git push
+      uses: peter-evans/create-pull-request@v7
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: chore/bump-version-${{ steps.bump.outputs.next_version }}
+        base: main
+        commit-message: "chore: bump version to ${{ steps.bump.outputs.next_version }}"
+        title: "chore: bump version to ${{ steps.bump.outputs.next_version }}"
+        body: |
+          Automated version bump after releasing `v${{ steps.check-snapshot.outputs.version }}`.
+
+          Bumps the version in `root.publication.gradle.kts` to `${{ steps.bump.outputs.next_version }}`.
+        delete-branch: true
