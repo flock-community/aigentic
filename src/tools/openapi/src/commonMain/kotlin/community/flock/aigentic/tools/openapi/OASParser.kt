@@ -13,25 +13,27 @@ import community.flock.aigentic.tools.http.EndpointOperation.Method.GET
 import community.flock.aigentic.tools.http.EndpointOperation.Method.PATCH
 import community.flock.aigentic.tools.http.EndpointOperation.Method.POST
 import community.flock.aigentic.tools.http.EndpointOperation.Method.PUT
-import community.flock.kotlinx.openapi.bindings.v3.MediaType
-import community.flock.kotlinx.openapi.bindings.v3.OpenAPI
-import community.flock.kotlinx.openapi.bindings.v3.OpenAPIObject
-import community.flock.kotlinx.openapi.bindings.v3.OperationObject
-import community.flock.kotlinx.openapi.bindings.v3.ParameterLocation
-import community.flock.kotlinx.openapi.bindings.v3.ParameterObject
-import community.flock.kotlinx.openapi.bindings.v3.ParameterOrReferenceObject
-import community.flock.kotlinx.openapi.bindings.v3.Path
-import community.flock.kotlinx.openapi.bindings.v3.ReferenceObject
-import community.flock.kotlinx.openapi.bindings.v3.RequestBodyObject
-import community.flock.kotlinx.openapi.bindings.v3.RequestBodyOrReferenceObject
-import community.flock.kotlinx.openapi.bindings.v3.SchemaObject
-import community.flock.kotlinx.openapi.bindings.v3.SchemaOrReferenceObject
-import community.flock.kotlinx.openapi.bindings.v3.Type
+import community.flock.kotlinx.openapi.bindings.MediaType
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3Model
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3Operation
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3Parameter
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3ParameterLocation
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3ParameterOrReference
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3Reference
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3RequestBody
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3RequestBodyOrReference
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3Schema
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3SchemaOrReference
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3SingleType
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3Type
+import community.flock.kotlinx.openapi.bindings.OpenAPIV3TypeArray
+import community.flock.kotlinx.openapi.bindings.Path
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonPrimitive
 
 class OpenAPIv3Parser(
-    private val openApi: OpenAPIObject,
+    private val openApi: OpenAPIV3Model,
     private val logger: Logger,
 ) {
     companion object {
@@ -39,7 +41,7 @@ class OpenAPIv3Parser(
             json: String,
             logger: Logger = SimpleLogger,
         ): List<EndpointOperation> =
-            OpenAPI(json = Json { ignoreUnknownKeys = true }).decodeFromString(json).let {
+            OpenAPIV3(json = Json { ignoreUnknownKeys = true }).decodeFromString(json).let {
                 OpenAPIv3Parser(it, logger).getEndpointOperations()
             }
     }
@@ -55,7 +57,7 @@ class OpenAPIv3Parser(
             )
         }
 
-    private fun OperationObject.toEndpointOperation(
+    private fun OpenAPIV3Operation.toEndpointOperation(
         method: EndpointOperation.Method,
         path: Path,
     ): EndpointOperation {
@@ -79,9 +81,9 @@ class OpenAPIv3Parser(
             firstUrl.trimEnd('/') + "/" + path.value.trimStart('/')
         }
 
-    private fun OperationObject.getParameters(): Parameters =
+    private fun OpenAPIV3Operation.getParameters(): Parameters =
         parameters?.fold(Parameters()) { parameters, parameterOrReferenceObject ->
-            parameterOrReferenceObject.resolve().let { parameterObject: ParameterObject ->
+            parameterOrReferenceObject.resolve().let { parameterObject: OpenAPIV3Parameter ->
                 val schemaObject = parameterObject.schema?.resolve() ?: aigenticException("Schema cannot be null")
 
                 val parameter =
@@ -92,14 +94,14 @@ class OpenAPIv3Parser(
                     )
 
                 when (parameterObject.`in`) {
-                    ParameterLocation.QUERY -> parameters.copy(query = parameters.query + listOfNotNull(parameter))
-                    ParameterLocation.PATH -> parameters.copy(path = parameters.path + listOfNotNull(parameter))
-                    ParameterLocation.COOKIE, ParameterLocation.HEADER -> parameters // Ignored
+                    OpenAPIV3ParameterLocation.QUERY -> parameters.copy(query = parameters.query + listOfNotNull(parameter))
+                    OpenAPIV3ParameterLocation.PATH -> parameters.copy(path = parameters.path + listOfNotNull(parameter))
+                    OpenAPIV3ParameterLocation.COOKIE, OpenAPIV3ParameterLocation.HEADER -> parameters // Ignored
                 }
             }
         } ?: Parameters()
 
-    private fun OperationObject.getRequestBody(): Parameter.Complex.Object? =
+    private fun OpenAPIV3Operation.getRequestBody(): Parameter.Complex.Object? =
         requestBody?.resolve()?.let { requestBodyObject ->
             requestBodyObject.content?.get(MediaType("application/json"))?.schema?.resolve()?.let {
                 it.createObjectParameter(
@@ -110,13 +112,13 @@ class OpenAPIv3Parser(
             }
         }
 
-    private fun Map<String, SchemaOrReferenceObject>.getParameters(required: List<String>?): List<Parameter> =
+    private fun Map<String, OpenAPIV3SchemaOrReference>.getParameters(required: List<String>?): List<Parameter> =
         mapValues { it.value.resolve() }.mapNotNull { (name, schemaObject) ->
             fun isRequired(name: String) = required?.contains(name) ?: false
             schemaObject.toParameter(name = name, description = schemaObject.description, isRequired = isRequired(name))
         }
 
-    private fun SchemaObject.toParameter(
+    private fun OpenAPIV3Schema.toParameter(
         name: String,
         description: String?,
         isRequired: Boolean,
@@ -151,7 +153,7 @@ class OpenAPIv3Parser(
             }
         }
 
-    private fun SchemaObject.createEnumParameter(
+    private fun OpenAPIV3Schema.createEnumParameter(
         name: String,
         description: String?,
         isRequired: Boolean,
@@ -169,23 +171,35 @@ class OpenAPIv3Parser(
         )
     }
 
-    private fun SchemaObject.determineEnumValueType(): Primitive =
-        when (type) {
-            null -> aigenticException("Enum value type cannot be null")
+    private fun OpenAPIV3Schema.determineEnumValueType(): Primitive =
+        when (type.toSingleType()) {
+            null -> {
+                aigenticException("Enum value type cannot be null")
+            }
 
-            Type.STRING -> Primitive.String
+            OpenAPIV3Type.STRING -> {
+                Primitive.String
+            }
 
-            Type.NUMBER -> Primitive.Number
+            OpenAPIV3Type.NUMBER -> {
+                Primitive.Number
+            }
 
-            Type.INTEGER -> Primitive.Integer
+            OpenAPIV3Type.INTEGER -> {
+                Primitive.Integer
+            }
 
-            Type.BOOLEAN -> Primitive.Boolean
+            OpenAPIV3Type.BOOLEAN -> {
+                Primitive.Boolean
+            }
 
             // Not sure why you want to use a boolean in an enum.... but it's possible
-            Type.OBJECT, Type.ARRAY -> aigenticException("Only primitive values are supported for enum, got: $type")
+            OpenAPIV3Type.OBJECT, OpenAPIV3Type.ARRAY, OpenAPIV3Type.NULL -> {
+                aigenticException("Only primitive values are supported for enum, got: ${type.toSingleType()}")
+            }
         }
 
-    private fun SchemaObject.createEnumValues(parameterType: Primitive) =
+    private fun OpenAPIV3Schema.createEnumValues(parameterType: Primitive) =
         when (parameterType) {
             Primitive.Boolean -> PrimitiveValue.Boolean::fromString
             Primitive.Integer -> PrimitiveValue.Integer::fromString
@@ -195,7 +209,7 @@ class OpenAPIv3Parser(
             enum?.map { constructor(it.content) } ?: aigenticException("Enum values cannot be null")
         }
 
-    private fun SchemaObject.createArrayParameter(
+    private fun OpenAPIV3Schema.createArrayParameter(
         name: String,
         description: String?,
         isRequired: Boolean,
@@ -213,7 +227,7 @@ class OpenAPIv3Parser(
         }
 
     private fun createArrayItemParameterDefinition(
-        arrayItemSchemaObject: SchemaObject,
+        arrayItemSchemaObject: OpenAPIV3Schema,
         isRequired: Boolean,
     ): Parameter? {
         val arrayItemSchemaParameterType = arrayItemSchemaObject.determineType()
@@ -273,7 +287,7 @@ class OpenAPIv3Parser(
         type = type,
     )
 
-    private fun SchemaObject.createObjectParameter(
+    private fun OpenAPIV3Schema.createObjectParameter(
         name: String,
         description: String?,
         isRequired: Boolean,
@@ -285,9 +299,9 @@ class OpenAPIv3Parser(
             parameters = properties?.getParameters(this.required) ?: emptyList(),
         )
 
-    private fun SchemaObject.determineType(): ParameterType? {
+    private fun OpenAPIV3Schema.determineType(): ParameterType? {
         val isUnion = oneOf != null || anyOf != null || allOf != null
-        return when (val schemaObjectType = this.type) {
+        return when (val schemaObjectType = this.type.toSingleType()) {
             null -> {
                 when {
                     isUnion -> {
@@ -341,66 +355,81 @@ class OpenAPIv3Parser(
         }
     }
 
-    private fun Type.toParameterType(): ParameterType =
+    private fun OpenAPIV3Type.toParameterType(): ParameterType? =
         when (this) {
-            Type.STRING -> Primitive.String
-            Type.NUMBER -> Primitive.Number
-            Type.INTEGER -> Primitive.Integer
-            Type.BOOLEAN -> Primitive.Boolean
-            Type.ARRAY -> ParameterType.Complex.Array
-            Type.OBJECT -> ParameterType.Complex.Object
+            OpenAPIV3Type.STRING -> Primitive.String
+            OpenAPIV3Type.NUMBER -> Primitive.Number
+            OpenAPIV3Type.INTEGER -> Primitive.Integer
+            OpenAPIV3Type.BOOLEAN -> Primitive.Boolean
+            OpenAPIV3Type.ARRAY -> ParameterType.Complex.Array
+            OpenAPIV3Type.OBJECT -> ParameterType.Complex.Object
+            OpenAPIV3Type.NULL -> null
         }
 
-    private fun ReferenceObject.getReference() =
+    private fun OpenAPIV3Reference.getReference() =
         this.ref.value
             .split("/")
             .getOrNull(3) ?: aigenticException("Wrong reference: ${this.ref.value}")
 
-    private fun ParameterOrReferenceObject.resolve(): ParameterObject {
-        fun ReferenceObject.resolveParameterObject(): ParameterObject =
+    private fun OpenAPIV3ParameterOrReference.resolve(): OpenAPIV3Parameter {
+        fun OpenAPIV3Reference.resolveParameterObject(): OpenAPIV3Parameter =
             openApi.components?.parameters?.get(getReference())?.let {
                 when (it) {
-                    is ParameterObject -> it
-                    is ReferenceObject -> it.resolveParameterObject()
+                    is OpenAPIV3Parameter -> it
+                    is OpenAPIV3Reference -> it.resolveParameterObject()
+                    else -> aigenticException("Unexpected parameter reference type: $it")
                 }
             } ?: aigenticException("Cannot resolve $ref")
 
         return when (this) {
-            is ParameterObject -> this
-            is ReferenceObject -> this.resolveParameterObject()
+            is OpenAPIV3Parameter -> this
+            is OpenAPIV3Reference -> this.resolveParameterObject()
+            else -> aigenticException("Unexpected parameter or reference: $this")
         }
     }
 
-    private fun SchemaOrReferenceObject.resolve(): SchemaObject {
-        fun ReferenceObject.resolveSchemaObject(): SchemaObject =
+    private fun OpenAPIV3SchemaOrReference.resolve(): OpenAPIV3Schema {
+        fun OpenAPIV3Reference.resolveSchemaObject(): OpenAPIV3Schema =
             openApi.components?.schemas?.get(getReference())?.let {
                 when (it) {
-                    is SchemaObject -> it
-                    is ReferenceObject -> it.resolveSchemaObject()
+                    is OpenAPIV3Schema -> it
+                    is OpenAPIV3Reference -> it.resolveSchemaObject()
+                    else -> aigenticException("Unexpected schema reference type: $it")
                 }
             } ?: aigenticException("Cannot resolve ref: $ref")
 
         return when (this) {
-            is ReferenceObject -> this.resolveSchemaObject()
-            is SchemaObject -> this
+            is OpenAPIV3Reference -> this.resolveSchemaObject()
+            is OpenAPIV3Schema -> this
+            else -> aigenticException("Unexpected schema or reference: $this")
         }
     }
 
-    private fun RequestBodyOrReferenceObject.resolve(): RequestBodyObject {
-        fun ReferenceObject.resolveRequestBody(): RequestBodyObject =
+    private fun OpenAPIV3RequestBodyOrReference.resolve(): OpenAPIV3RequestBody {
+        fun OpenAPIV3Reference.resolveRequestBody(): OpenAPIV3RequestBody =
             openApi.components?.requestBodies?.get(getReference())?.let {
                 when (it) {
-                    is RequestBodyObject -> it
-                    is ReferenceObject -> it.resolveRequestBody()
+                    is OpenAPIV3RequestBody -> it
+                    is OpenAPIV3Reference -> it.resolveRequestBody()
+                    else -> aigenticException("Unexpected request body reference type: $it")
                 }
             } ?: aigenticException("Cannot resolve ref: $ref")
 
         return when (this) {
-            is RequestBodyObject -> this
-            is ReferenceObject -> this.resolveRequestBody()
+            is OpenAPIV3RequestBody -> this
+            is OpenAPIV3Reference -> this.resolveRequestBody()
+            else -> aigenticException("Unexpected request body or reference: $this")
         }
     }
 }
+
+private fun community.flock.kotlinx.openapi.bindings.OpenAPIV3TypeDefinition?.toSingleType(): OpenAPIV3Type? =
+    when (this) {
+        null -> null
+        is OpenAPIV3SingleType -> value
+        is OpenAPIV3TypeArray -> values.firstOrNull { it != OpenAPIV3Type.NULL }
+        else -> null
+    }
 
 data class Parameters(
     val query: List<Parameter> = listOf(),
