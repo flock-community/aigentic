@@ -97,7 +97,7 @@ jobs:
 
     - name: Open PR with version bump
       if: steps.check-snapshot.outputs.is_snapshot == 'false'
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@v8
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: chore/bump-version-${{ steps.bump.outputs.next_version }}
