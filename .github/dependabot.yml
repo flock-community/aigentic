@@ -7,10 +7,9 @@ updates:
       day: "saturday"
     labels:
       - "dependencies"
+    ignore:
+      - dependency-name: "org.jetbrains.kotlin*"
     groups:
-      kotlin:
-        patterns:
-          - "org.jetbrains.kotlin*"
       ktor:
         patterns:
           - "io.ktor*"
