@@ -3,9 +3,9 @@ package community.flock.aigentic.platform.client
 import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.PlatformApiUrl
 import community.flock.aigentic.core.platform.RunSentResult
-import community.flock.aigentic.gateway.wirespec.GatewayClientErrorDto
-import community.flock.aigentic.gateway.wirespec.GatewayEndpoint
-import community.flock.aigentic.gateway.wirespec.ServerErrorDto
+import community.flock.aigentic.gateway.wirespec.endpoint.Gateway
+import community.flock.aigentic.gateway.wirespec.model.GatewayClientErrorDto
+import community.flock.aigentic.gateway.wirespec.model.ServerErrorDto
 import community.flock.aigentic.platform.util.createAgent
 import community.flock.aigentic.platform.util.createAgentRun
 import io.kotest.core.spec.style.DescribeSpec
@@ -19,14 +19,14 @@ class AigenticPlatformClientTest : DescribeSpec({
 
     withData(
         nameFn = { "Should map ${it.wirespecResponse} to ${it.runSentResult}" },
-        TestCase(GatewayEndpoint.Response201Unit(), RunSentResult.Success),
-        TestCase(GatewayEndpoint.Response401Unit(), RunSentResult.Unauthorized),
+        TestCase(Gateway.Response201(body = Unit), RunSentResult.Success),
+        TestCase(Gateway.Response401(body = Unit), RunSentResult.Unauthorized),
         TestCase(
-            GatewayEndpoint.Response400ApplicationJson(GatewayClientErrorDto("invalid request")),
+            Gateway.Response400(body = GatewayClientErrorDto("invalid request")),
             RunSentResult.Error("invalid request"),
         ),
         TestCase(
-            GatewayEndpoint.Response500ApplicationJson(ServerErrorDto("error", "something went wrong")),
+            Gateway.Response500(body = ServerErrorDto("error", "something went wrong")),
             RunSentResult.Error("error - something went wrong"),
         ),
     ) {
@@ -55,4 +55,4 @@ class AigenticPlatformClientTest : DescribeSpec({
     }
 })
 
-private data class TestCase<T>(val wirespecResponse: GatewayEndpoint.Response<T>, val runSentResult: RunSentResult)
+private data class TestCase<T : Any>(val wirespecResponse: Gateway.Response<T>, val runSentResult: RunSentResult)
