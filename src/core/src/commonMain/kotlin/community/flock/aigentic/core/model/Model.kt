@@ -5,7 +5,9 @@ import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 
 sealed interface Authentication {
-    data class APIKey(val key: String) : Authentication
+    data class APIKey(
+        val key: String,
+    ) : Authentication
 }
 
 interface ModelIdentifier {

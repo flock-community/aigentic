@@ -15,44 +15,48 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.serialization.serializer
 
-class AigenticPlatformClientTest : DescribeSpec({
+class AigenticPlatformClientTest :
+    DescribeSpec({
 
-    withData(
-        nameFn = { "Should map ${it.wirespecResponse} to ${it.runSentResult}" },
-        TestCase(Gateway.Response201(body = Unit), RunSentResult.Success),
-        TestCase(Gateway.Response401(body = Unit), RunSentResult.Unauthorized),
-        TestCase(
-            Gateway.Response400(body = GatewayClientErrorDto("invalid request")),
-            RunSentResult.Error("invalid request"),
-        ),
-        TestCase(
-            Gateway.Response500(body = ServerErrorDto("error", "something went wrong")),
-            RunSentResult.Error("error - something went wrong"),
-        ),
-    ) {
+        withData(
+            nameFn = { "Should map ${it.wirespecResponse} to ${it.runSentResult}" },
+            TestCase(Gateway.Response201(body = Unit), RunSentResult.Success),
+            TestCase(Gateway.Response401(body = Unit), RunSentResult.Unauthorized),
+            TestCase(
+                Gateway.Response400(body = GatewayClientErrorDto("invalid request")),
+                RunSentResult.Error("invalid request"),
+            ),
+            TestCase(
+                Gateway.Response500(body = ServerErrorDto("error", "something went wrong")),
+                RunSentResult.Error("error - something went wrong"),
+            ),
+        ) {
 
-        val agent = createAgent()
-        val run = createAgentRun()
+            val agent = createAgent()
+            val run = createAgentRun()
 
-        val platformEndpoints =
-            mockk<PlatformEndpoints>().apply {
-                coEvery { gateway(any()) } returns it.wirespecResponse
-            }
+            val platformEndpoints =
+                mockk<PlatformEndpoints>().apply {
+                    coEvery { gateway(any()) } returns it.wirespecResponse
+                }
 
-        val basicAuth = Authentication.BasicAuth("username", "password")
-        val apiUrl = PlatformApiUrl("http://localhost:8080")
+            val basicAuth = Authentication.BasicAuth("username", "password")
+            val apiUrl = PlatformApiUrl("http://localhost:8080")
 
-        val client =
-            AigenticPlatformClient(
-                basicAuth = basicAuth,
-                apiUrl = apiUrl,
-                platformEndpoints,
-            )
+            val client =
+                AigenticPlatformClient(
+                    basicAuth = basicAuth,
+                    apiUrl = apiUrl,
+                    platformEndpoints,
+                )
 
-        val result = client.sendRun(run, agent, serializer<String>())
+            val result = client.sendRun(run, agent, serializer<String>())
 
-        result shouldBe it.runSentResult
-    }
-})
+            result shouldBe it.runSentResult
+        }
+    })
 
-private data class TestCase<T : Any>(val wirespecResponse: Gateway.Response<T>, val runSentResult: RunSentResult)
+private data class TestCase<T : Any>(
+    val wirespecResponse: Gateway.Response<T>,
+    val runSentResult: RunSentResult,
+)

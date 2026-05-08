@@ -149,7 +149,11 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
                         text = "The messages below are part of example $index. The example ends when you encounter: <END_EXAMPLE_$index>",
                     ),
                 )
-                run.messages.filterIsInstance<ContextMessage>().firstOrNull()?.toExampleMessage()?.let { add(it) }
+                run.messages
+                    .filterIsInstance<ContextMessage>()
+                    .firstOrNull()
+                    ?.toExampleMessage()
+                    ?.let { add(it) }
                 addAll(run.messages.mapToTextMessages())
                 add(
                     ExampleToolMessage(
@@ -193,7 +197,10 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> ProcessModelResponse<I, O>.process(): Action<I, O> =
     when (responseMessage) {
-        is Message.ToolCalls -> ExecuteTools(state, agent, responseMessage.toolCalls)
+        is Message.ToolCalls -> {
+            ExecuteTools(state, agent, responseMessage.toolCalls)
+        }
+
         is Message.StructuredOutput -> {
             val response = Json.decodeFromJsonElement<O>(responseMessage.asJson())
             val outcome = Outcome.Finished("Finished", response)
@@ -265,48 +272,53 @@ internal suspend inline fun <reified I : Any, reified O : Any> Initialize<I, O>.
 @PublishedApi
 internal fun Context.toMessage(): Message =
     when (this) {
-        is Context.Url ->
+        is Context.Url -> {
             Url(
                 sender = Sender.Agent,
                 url = url,
                 mimeType = mimeType,
                 category = MessageCategory.CONFIG_CONTEXT,
             )
+        }
 
-        is Context.Base64 ->
+        is Context.Base64 -> {
             Base64(
                 sender = Sender.Agent,
                 base64Content = base64,
                 mimeType = mimeType,
                 category = MessageCategory.CONFIG_CONTEXT,
             )
+        }
 
-        is Context.Text ->
+        is Context.Text -> {
             Text(
                 sender = Sender.Agent,
                 text = text,
                 category = MessageCategory.CONFIG_CONTEXT,
             )
+        }
     }
 
 @PublishedApi
 internal fun Attachment.toMessage(): Message =
     when (this) {
-        is Attachment.Base64 ->
+        is Attachment.Base64 -> {
             Base64(
                 sender = Sender.Agent,
                 base64Content = base64Content,
                 mimeType = mimeType,
                 category = MessageCategory.RUN_CONTEXT,
             )
+        }
 
-        is Attachment.Url ->
+        is Attachment.Url -> {
             Url(
                 sender = Sender.Agent,
                 url = url,
                 mimeType = mimeType,
                 category = MessageCategory.RUN_CONTEXT,
             )
+        }
     }
 
 @PublishedApi

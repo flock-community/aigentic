@@ -19,14 +19,22 @@ interface ToolDescription {
  * Should not contain spaces (OpenAI returns 400 otherwise)
  */
 @JvmInline
-value class ToolName(val value: String)
+value class ToolName(
+    val value: String,
+)
 
-interface Tool : ToolDescription, ToolHandler<JsonObject, String>
+interface Tool :
+    ToolDescription,
+    ToolHandler<JsonObject, String>
 
-interface TypedTool<I : Any, O : Any> : ToolDescription, ToolHandler<I, O>
+interface TypedTool<I : Any, O : Any> :
+    ToolDescription,
+    ToolHandler<I, O>
 
 @PublishedApi
-internal interface InternalTool<T> : ToolDescription, ToolHandler<JsonObject, T>
+internal interface InternalTool<T> :
+    ToolDescription,
+    ToolHandler<JsonObject, T>
 
 inline fun <reified I : Any, reified O : Any> TypedTool<I, O>.createTool(): Tool {
     val typedTool = this

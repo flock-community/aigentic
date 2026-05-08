@@ -14,7 +14,9 @@ data class ItemName(
 )
 
 @AigenticParameter
-data class SaveItemResult(val message: String)
+data class SaveItemResult(
+    val message: String,
+)
 
 suspend fun runItemCategorizeExample(
     base64Image: String,

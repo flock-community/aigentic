@@ -15,8 +15,6 @@ data class AigenticPlatform(
         fun defaultAigenticPlatformClient(
             authentication: Authentication.BasicAuth,
             apiUrl: PlatformApiUrl,
-        ): AigenticPlatformClient {
-            return AigenticPlatformClient(authentication, apiUrl)
-        }
+        ): AigenticPlatformClient = AigenticPlatformClient(authentication, apiUrl)
     }
 }

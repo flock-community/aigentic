@@ -38,219 +38,229 @@ data class NewsEventInput(
     val count: Int,
 )
 
-class TestExecutorTest : DescribeSpec({
+class TestExecutorTest :
+    DescribeSpec({
 
-    val expectedToolCall = ToolCall(ToolCallId("1"), newsEventTool.name.value, """{"count": 10}""")
+        val expectedToolCall = ToolCall(ToolCallId("1"), newsEventTool.name.value, """{"count": 10}""")
 
-    val toolResult =
-        Message.ToolResult(
-            toolCallId = expectedToolCall.id,
-            toolName = newsEventTool.name.value,
-            response = ToolResultContent("""[]"""),
-        )
+        val toolResult =
+            Message.ToolResult(
+                toolCallId = expectedToolCall.id,
+                toolName = newsEventTool.name.value,
+                response = ToolResultContent("""[]"""),
+            )
 
-    describe("TestExecutor") {
+        describe("TestExecutor") {
 
-        it("should execute test successfully") {
+            it("should execute test successfully") {
 
-            val platformMock =
-                createMockPlatform(
-                    listOf(
-                        Message.ToolCalls(
-                            listOf(
-                                expectedToolCall,
-                                finishedTaskToolCall,
+                val platformMock =
+                    createMockPlatform(
+                        listOf(
+                            Message.ToolCalls(
+                                listOf(
+                                    expectedToolCall,
+                                    finishedTaskToolCall,
+                                ),
                             ),
+                            toolResult,
                         ),
-                        toolResult,
-                    ),
-                )
+                    )
 
-            val modelMock =
-                createMockModel(
-                    listOf(
-                        // Iteration 1
-                        expectedToolCall,
-                        finishedTaskToolCall,
-                        // Iteration 2
-                        expectedToolCall,
-                        finishedTaskToolCall,
-                    ),
-                )
+                val modelMock =
+                    createMockModel(
+                        listOf(
+                            // Iteration 1
+                            expectedToolCall,
+                            finishedTaskToolCall,
+                            // Iteration 2
+                            expectedToolCall,
+                            finishedTaskToolCall,
+                        ),
+                    )
 
-            val regressionTest = createRegressionTest(platformMock, modelMock, 2)
+                val regressionTest = createRegressionTest(platformMock, modelMock, 2)
 
-            val testReport = regressionTest.start()
+                val testReport = regressionTest.start()
 
-            testReport.successes.size shouldBe 2
-            testReport.errors.size shouldBe 0
-            testReport.failures.size shouldBe 0
+                testReport.successes.size shouldBe 2
+                testReport.errors.size shouldBe 0
+                testReport.failures.size shouldBe 0
 
-            coVerify(exactly = 1) { platformMock.getRuns<Unit>(any()) }
-            coVerify(exactly = 4) { modelMock.sendRequest(any(), any(), any()) }
-        }
+                coVerify(exactly = 1) { platformMock.getRuns<Unit>(any()) }
+                coVerify(exactly = 4) { modelMock.sendRequest(any(), any(), any()) }
+            }
 
-        it("should fail when expected tool is not called") {
+            it("should fail when expected tool is not called") {
 
-            val platformMock =
-                createMockPlatform(
-                    listOf(
-                        Message.ToolCalls(
-                            listOf(
-                                expectedToolCall,
-                                finishedTaskToolCall,
+                val platformMock =
+                    createMockPlatform(
+                        listOf(
+                            Message.ToolCalls(
+                                listOf(
+                                    expectedToolCall,
+                                    finishedTaskToolCall,
+                                ),
                             ),
+                            toolResult,
                         ),
-                        toolResult,
-                    ),
-                )
+                    )
 
-            val modelMock =
-                createMockModel(
-                    listOf(
-                        // Model is not calling expected tool here
-                        finishedTaskToolCall,
-                    ),
-                )
+                val modelMock =
+                    createMockModel(
+                        listOf(
+                            // Model is not calling expected tool here
+                            finishedTaskToolCall,
+                        ),
+                    )
 
-            val regressionTest = createRegressionTest(platformMock, modelMock)
+                val regressionTest = createRegressionTest(platformMock, modelMock)
 
-            val testReport = regressionTest.start()
+                val testReport = regressionTest.start()
 
-            testReport.successes.size shouldBe 0
-            testReport.failures.size shouldBe 1
-            testReport.errors.size shouldBe 0
+                testReport.successes.size shouldBe 0
+                testReport.failures.size shouldBe 1
+                testReport.errors.size shouldBe 0
 
-            testReport.failures.first().reason shouldBe
-                FailureReason.NotCalled(
-                    mapOf(
-                        newsEventTool.name to listOf(ToolCallExpectation(expectedToolCall, toolResult)),
-                    ),
-                )
-        }
+                testReport.failures.first().reason shouldBe
+                    FailureReason.NotCalled(
+                        mapOf(
+                            newsEventTool.name to listOf(ToolCallExpectation(expectedToolCall, toolResult)),
+                        ),
+                    )
+            }
 
-        it("should fail when expected tool is called with unexpected arguments") {
+            it("should fail when expected tool is called with unexpected arguments") {
 
-            val platformMock =
-                createMockPlatform(
-                    listOf(
-                        Message.ToolCalls(
-                            listOf(
-                                expectedToolCall,
-                                finishedTaskToolCall,
+                val platformMock =
+                    createMockPlatform(
+                        listOf(
+                            Message.ToolCalls(
+                                listOf(
+                                    expectedToolCall,
+                                    finishedTaskToolCall,
+                                ),
                             ),
+                            toolResult,
                         ),
-                        toolResult,
-                    ),
-                )
+                    )
 
-            val wrongArguments = """{"count": 20}"""
-            val modelMock =
-                createMockModel(
-                    listOf(
-                        expectedToolCall.copy(arguments = wrongArguments),
-                        finishedTaskToolCall,
-                    ),
-                )
+                val wrongArguments = """{"count": 20}"""
+                val modelMock =
+                    createMockModel(
+                        listOf(
+                            expectedToolCall.copy(arguments = wrongArguments),
+                            finishedTaskToolCall,
+                        ),
+                    )
 
-            val regressionTest = createRegressionTest(platformMock, modelMock)
+                val regressionTest = createRegressionTest(platformMock, modelMock)
 
-            val testReport = regressionTest.start()
+                val testReport = regressionTest.start()
 
-            testReport.successes.size shouldBe 0
-            testReport.failures.size shouldBe 1
-            testReport.errors.size shouldBe 0
+                testReport.successes.size shouldBe 0
+                testReport.failures.size shouldBe 1
+                testReport.errors.size shouldBe 0
 
-            testReport.failures.first().reason shouldBe
-                FailureReason.WrongArguments(
-                    newsEventTool.name,
-                    listOf(ToolCallExpectation(expectedToolCall, toolResult)),
-                    Json.parseToJsonElement(wrongArguments),
-                )
-        }
+                testReport.failures.first().reason shouldBe
+                    FailureReason.WrongArguments(
+                        newsEventTool.name,
+                        listOf(ToolCallExpectation(expectedToolCall, toolResult)),
+                        Json.parseToJsonElement(wrongArguments),
+                    )
+            }
 
-        it("should use context of run to initialize test agent") {
+            it("should use context of run to initialize test agent") {
 
-            val textContextMessage = Message.Text(Sender.Agent, "Some context message", MessageCategory.CONFIG_CONTEXT)
-            val base64ContextMessage = Message.Base64(Sender.Agent, "base64content", MimeType.PDF, MessageCategory.CONFIG_CONTEXT)
+                val textContextMessage = Message.Text(Sender.Agent, "Some context message", MessageCategory.CONFIG_CONTEXT)
+                val base64ContextMessage = Message.Base64(Sender.Agent, "base64content", MimeType.PDF, MessageCategory.CONFIG_CONTEXT)
 
-            val platformMock =
-                createMockPlatform(
+                val platformMock =
+                    createMockPlatform(
+                        listOf(
+                            textContextMessage,
+                            base64ContextMessage,
+                            Message.ToolCalls(
+                                listOf(
+                                    expectedToolCall,
+                                    finishedTaskToolCall,
+                                ),
+                            ),
+                            toolResult,
+                        ),
+                    )
+
+                val modelMock =
+                    createMockModel(
+                        listOf(
+                            expectedToolCall,
+                            finishedTaskToolCall,
+                        ),
+                    )
+
+                val regressionTest = createRegressionTest(platformMock, modelMock)
+
+                val testReport = regressionTest.start()
+
+                testReport.successes.size shouldBe 1
+                testReport.failures.size shouldBe 0
+                testReport.errors.size shouldBe 0
+
+                testReport.successes
+                    .first()
+                    .state.messagesAccessor
+                    .snapshot() shouldContainAll
                     listOf(
                         textContextMessage,
                         base64ContextMessage,
-                        Message.ToolCalls(
-                            listOf(
-                                expectedToolCall,
-                                finishedTaskToolCall,
+                    )
+            }
+
+            it("should no use Message.SystemPrompt of run but of agent instead") {
+
+                val platformMock =
+                    createMockPlatform(
+                        listOf(
+                            Message.SystemPrompt(
+                                "This is an older version version of the system prompt, the agent has a newer version which should be used instead",
                             ),
-                        ),
-                        toolResult,
-                    ),
-                )
-
-            val modelMock =
-                createMockModel(
-                    listOf(
-                        expectedToolCall,
-                        finishedTaskToolCall,
-                    ),
-                )
-
-            val regressionTest = createRegressionTest(platformMock, modelMock)
-
-            val testReport = regressionTest.start()
-
-            testReport.successes.size shouldBe 1
-            testReport.failures.size shouldBe 0
-            testReport.errors.size shouldBe 0
-
-            testReport.successes.first().state.messagesAccessor.snapshot() shouldContainAll
-                listOf(
-                    textContextMessage,
-                    base64ContextMessage,
-                )
-        }
-
-        it("should no use Message.SystemPrompt of run but of agent instead") {
-
-            val platformMock =
-                createMockPlatform(
-                    listOf(
-                        Message.SystemPrompt(
-                            "This is an older version version of the system prompt, the agent has a newer version which should be used instead",
-                        ),
-                        Message.ToolCalls(
-                            listOf(
-                                expectedToolCall,
-                                finishedTaskToolCall,
+                            Message.ToolCalls(
+                                listOf(
+                                    expectedToolCall,
+                                    finishedTaskToolCall,
+                                ),
                             ),
+                            toolResult,
                         ),
-                        toolResult,
-                    ),
-                )
+                    )
 
-            val modelMock =
-                createMockModel(
-                    listOf(
-                        expectedToolCall,
-                        finishedTaskToolCall,
-                    ),
-                )
+                val modelMock =
+                    createMockModel(
+                        listOf(
+                            expectedToolCall,
+                            finishedTaskToolCall,
+                        ),
+                    )
 
-            val regressionTest = createRegressionTest(platformMock, modelMock)
+                val regressionTest = createRegressionTest(platformMock, modelMock)
 
-            val testReport = regressionTest.start()
+                val testReport = regressionTest.start()
 
-            testReport.successes.size shouldBe 1
-            testReport.failures.size shouldBe 0
-            testReport.errors.size shouldBe 0
+                testReport.successes.size shouldBe 1
+                testReport.failures.size shouldBe 0
+                testReport.errors.size shouldBe 0
 
-            val systemPrompt = testReport.successes.first().state.messagesAccessor.snapshot().filterIsInstance<Message.SystemPrompt>().first()
-            systemPrompt.prompt shouldContain "Some task description"
+                val systemPrompt =
+                    testReport.successes
+                        .first()
+                        .state.messagesAccessor
+                        .snapshot()
+                        .filterIsInstance<Message.SystemPrompt>()
+                        .first()
+                systemPrompt.prompt shouldContain "Some task description"
+            }
         }
-    }
-})
+    })
 
 val newsEventTool =
     createTool<NewsEventInput, String>(

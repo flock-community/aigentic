@@ -30,17 +30,33 @@ internal fun createRequestContents(messages: List<Message>): List<Content> =
 
         val parts: List<Part> =
             when (message) {
-                is Message.Base64 -> listOf(Part.fromBytes(Base64.getDecoder().decode(message.base64Content), message.mimeType.value))
-                is Message.ExampleToolMessage -> listOf(Part.fromText(message.text))
-                is Message.SystemPrompt -> listOf(Part.fromText("See system instruction for your task"))
-                is Message.Text -> listOf(Part.fromText(message.text))
-                is Message.StructuredOutput -> listOf(Part.fromText(message.response))
-                is Message.ToolCalls ->
+                is Message.Base64 -> {
+                    listOf(Part.fromBytes(Base64.getDecoder().decode(message.base64Content), message.mimeType.value))
+                }
+
+                is Message.ExampleToolMessage -> {
+                    listOf(Part.fromText(message.text))
+                }
+
+                is Message.SystemPrompt -> {
+                    listOf(Part.fromText("See system instruction for your task"))
+                }
+
+                is Message.Text -> {
+                    listOf(Part.fromText(message.text))
+                }
+
+                is Message.StructuredOutput -> {
+                    listOf(Part.fromText(message.response))
+                }
+
+                is Message.ToolCalls -> {
                     message.toolCalls.map {
                         Part.fromFunctionCall(it.name, it.arguments.fromJson())
                     }
+                }
 
-                is Message.ToolResult ->
+                is Message.ToolResult -> {
                     listOf(
                         Part.fromFunctionResponse(
                             message.toolName,
@@ -49,11 +65,18 @@ internal fun createRequestContents(messages: List<Message>): List<Content> =
                             },
                         ),
                     )
+                }
 
-                is Message.Url -> listOf(Part.fromUri(message.url, message.mimeType.value))
+                is Message.Url -> {
+                    listOf(Part.fromUri(message.url, message.mimeType.value))
+                }
             }
 
-        Content.builder().role(message.sender.toVertexRole()).parts(parts).build()
+        Content
+            .builder()
+            .role(message.sender.toVertexRole())
+            .parts(parts)
+            .build()
     }
 
 internal fun createGenerateConfig(
@@ -62,7 +85,8 @@ internal fun createGenerateConfig(
     generationSettings: GenerationSettings,
     structuredOutputParameter: Parameter?,
 ): GenerateContentConfig =
-    GenerateContentConfig.builder()
+    GenerateContentConfig
+        .builder()
         .systemInstruction(getSystemInstruction(messages))
         .temperature(generationSettings.temperature)
         .topP(generationSettings.topP)
@@ -76,15 +100,15 @@ internal fun createGenerateConfig(
                 responseMimeType("application/json")
                 responseJsonSchema(param.getStructuredResponseSchema().toJsonNode())
             }
-        }
-        .build()
+        }.build()
 
 private fun List<ToolDescription>.toVertexTools(): List<Tool> {
     val declarations =
         map { toolDescription ->
 
             val functionDeclaration =
-                FunctionDeclaration.builder()
+                FunctionDeclaration
+                    .builder()
                     .name(toolDescription.name.value)
                     .description(toolDescription.description ?: "")
                     .parameters(Schema.fromJson(getToolParametersJson(toolDescription)))
@@ -94,8 +118,10 @@ private fun List<ToolDescription>.toVertexTools(): List<Tool> {
         }
 
     return listOf(
-        Tool.builder()
-            .functionDeclarations(declarations).build(),
+        Tool
+            .builder()
+            .functionDeclarations(declarations)
+            .build(),
     )
 }
 
@@ -103,7 +129,8 @@ private fun GenerateContentConfig.Builder.withThinkingConfig(thinkingConfig: Thi
     apply {
         thinkingConfig?.let {
             thinkingConfig(
-                com.google.genai.types.ThinkingConfig.builder()
+                com.google.genai.types.ThinkingConfig
+                    .builder()
                     .thinkingBudget(it.thinkingBudget)
                     .build(),
             )
@@ -121,14 +148,23 @@ private fun getToolParametersJson(toolDescription: ToolDescription): String =
     }.let { Json.encodeToString(it) }
 
 private fun getSystemInstruction(messages: List<Message>): Content =
-    messages.filterIsInstance<Message.SystemPrompt>().map {
-        Part.builder().text(it.prompt).build()
-    }.let { Content.builder().role(Sender.Agent.toVertexRole()).parts(it).build() }
+    messages
+        .filterIsInstance<Message.SystemPrompt>()
+        .map {
+            Part.builder().text(it.prompt).build()
+        }.let {
+            Content
+                .builder()
+                .role(Sender.Agent.toVertexRole())
+                .parts(it)
+                .build()
+        }
 
 private fun createSafetySettings(): List<SafetySetting> =
     HarmCategory.Known.entries
         .map { category ->
-            SafetySetting.builder()
+            SafetySetting
+                .builder()
                 .category(category)
                 .threshold(HarmBlockThreshold.Known.BLOCK_NONE)
                 .build()

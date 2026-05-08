@@ -15,28 +15,32 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.serialization.serializer
 
-class AigenticPlatformEndpointsTest : DescribeSpec({
+class AigenticPlatformEndpointsTest :
+    DescribeSpec({
 
-    it("should send http POST /gateway") {
+        it("should send http POST /gateway") {
 
-        val agent = createAgent()
-        val run = createAgentRun()
+            val agent = createAgent()
+            val run = createAgentRun()
 
-        val mockEngine =
-            MockEngine { request ->
-                when (request.method to request.url.encodedPath) {
-                    (HttpMethod.Post to "/gateway/runs") ->
-                        respond(content = ByteReadChannel.Empty, status = HttpStatusCode.Created)
-                    else ->
-                        error("Unexpected endpoint called! ${request.url.encodedPath}")
+            val mockEngine =
+                MockEngine { request ->
+                    when (request.method to request.url.encodedPath) {
+                        (HttpMethod.Post to "/gateway/runs") -> {
+                            respond(content = ByteReadChannel.Empty, status = HttpStatusCode.Created)
+                        }
+
+                        else -> {
+                            error("Unexpected endpoint called! ${request.url.encodedPath}")
+                        }
+                    }
                 }
-            }
 
-        val apiClient = AigenticPlatformEndpoints(Authentication.BasicAuth("", ""), PlatformApiUrl(""), mockEngine)
+            val apiClient = AigenticPlatformEndpoints(Authentication.BasicAuth("", ""), PlatformApiUrl(""), mockEngine)
 
-        val req = Gateway.Request(body = run.toDto(agent, serializer<String>()))
-        val res = apiClient.gateway(req)
+            val req = Gateway.Request(body = run.toDto(agent, serializer<String>()))
+            val res = apiClient.gateway(req)
 
-        res.status shouldBe HttpStatusCode.Created.value
-    }
-})
+            res.status shouldBe HttpStatusCode.Created.value
+        }
+    })

@@ -20,7 +20,9 @@ data class InvoiceComponent(
 )
 
 @AigenticParameter
-data class SaveResult(val message: String)
+data class SaveResult(
+    val message: String,
+)
 
 suspend fun invoiceExtractorAgent(
     invoicePdfBase64: String,

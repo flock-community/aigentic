@@ -38,24 +38,38 @@ internal fun createGenerateContentRequest(
         contents =
             messages.map { message ->
                 when (message) {
-                    is Message.Url ->
+                    is Message.Url -> {
                         listOf(
                             Part.FileDataPart(FileDataContent(mimeType = message.mimeType.value, fileUri = message.url)),
                         )
+                    }
 
-                    is Message.Base64 ->
+                    is Message.Base64 -> {
                         listOf(
                             Part.Blob(BlobContent(mimeType = message.mimeType.value, data = formatBase64Content(message))),
                         )
+                    }
 
-                    is Message.SystemPrompt ->
+                    is Message.SystemPrompt -> {
                         listOf(
                             Part.Text("See system instruction for your task"),
-                        ) // The API returns a 400 when the initial request contains no messages
-                    is Message.StructuredOutput -> listOf(Part.Text(message.response))
-                    is Message.Text -> listOf<Part>(Part.Text(message.text))
-                    is Message.ExampleToolMessage -> listOf<Part>(Part.Text(message.text))
-                    is Message.ToolCalls ->
+                        )
+                    }
+
+                    // The API returns a 400 when the initial request contains no messages
+                    is Message.StructuredOutput -> {
+                        listOf(Part.Text(message.response))
+                    }
+
+                    is Message.Text -> {
+                        listOf<Part>(Part.Text(message.text))
+                    }
+
+                    is Message.ExampleToolMessage -> {
+                        listOf<Part>(Part.Text(message.text))
+                    }
+
+                    is Message.ToolCalls -> {
                         message.toolCalls.map {
                             Part.FunctionCall(
                                 FunctionCallContent(
@@ -64,8 +78,9 @@ internal fun createGenerateContentRequest(
                                 ),
                             )
                         }
+                    }
 
-                    is Message.ToolResult ->
+                    is Message.ToolResult -> {
                         listOf(
                             Part.FunctionResponse(
                                 FunctionResponseContent(
@@ -76,6 +91,7 @@ internal fun createGenerateContentRequest(
                                 ),
                             ),
                         )
+                    }
                 }.let {
                     Content(message.sender.toRole(), it)
                 }
@@ -95,9 +111,11 @@ private fun defaultSafetySettings(): List<SafetySettings> =
 private fun formatBase64Content(message: Message.Base64) = message.base64Content.substringAfter("base64,")
 
 private fun getSystemInstruction(messages: List<Message>): Content =
-    messages.filterIsInstance<Message.SystemPrompt>().map {
-        Part.Text(it.prompt)
-    }.let { Content(Role.User, it) }
+    messages
+        .filterIsInstance<Message.SystemPrompt>()
+        .map {
+            Part.Text(it.prompt)
+        }.let { Content(Role.User, it) }
 
 private fun Sender.toRole(): Role =
     when (this) {

@@ -47,12 +47,19 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
         }.start()
 
     when (val result = run.outcome) {
-        is Outcome.Finished ->
+        is Outcome.Finished -> {
             result.response.let { response ->
                 "Hours inspected successfully: $response"
             }
-        is Outcome.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
-        is Outcome.Fatal -> "Agent crashed: ${result.message}"
+        }
+
+        is Outcome.Stuck -> {
+            "Agent is stuck and could not complete task, it says: ${result.reason}"
+        }
+
+        is Outcome.Fatal -> {
+            "Agent crashed: ${result.message}"
+        }
     }.also(::println)
 }
 
@@ -81,31 +88,36 @@ private fun getManagerResponse(input: EmployeeName): ManagerResponse =
 private fun getEmployeeByName(input: EmployeeName): EmployeeDetailsResponse {
     val details =
         when (input.name) {
-            "Niels" ->
+            "Niels" -> {
                 """
-                |Employee: Niels
-                |Telephone number: 0612345678
-                |Has completed hours: NO
-                |Number of reminders sent: 1
+Employee: Niels
+Telephone number: 0612345678
+Has completed hours: NO
+Number of reminders sent: 1
                 """.trimMargin()
+            }
 
-            "Henk" ->
+            "Henk" -> {
                 """
-                |Employee: Henk
-                |Telephone number: 0687654321
-                |Has completed hours: YES
-                |Number of reminders sent: 2
+Employee: Henk
+Telephone number: 0687654321
+Has completed hours: YES
+Number of reminders sent: 2
                 """.trimMargin()
+            }
 
-            "Jan" ->
+            "Jan" -> {
                 """
-                |Employee: Jan
-                |Telephone number: 0643211234
-                |Has completed hours: NO
-                |Number of reminders sent: 5
+Employee: Jan
+Telephone number: 0643211234
+Has completed hours: NO
+Number of reminders sent: 5
                 """.trimMargin()
+            }
 
-            else -> "Unknown employee"
+            else -> {
+                "Unknown employee"
+            }
         }
     return EmployeeDetailsResponse(details)
 }
@@ -128,19 +140,29 @@ data class SignalMessage(
 )
 
 @AigenticParameter
-data class EmployeeDetailsResponse(val details: String)
+data class EmployeeDetailsResponse(
+    val details: String,
+)
 
 @AigenticParameter
-data class ManagerResponse(val response: String)
+data class ManagerResponse(
+    val response: String,
+)
 
 @AigenticParameter
-data class UpdateEmployeeResponse(val message: String)
+data class UpdateEmployeeResponse(
+    val message: String,
+)
 
 @AigenticParameter
-data class SignalMessageResponse(val message: String)
+data class SignalMessageResponse(
+    val message: String,
+)
 
 @AigenticParameter
-data class EmployeesOverviewResponse(val overview: String)
+data class EmployeesOverviewResponse(
+    val overview: String,
+)
 
 @AigenticParameter
 data class AgentAdministrativeResponse(

@@ -10,15 +10,22 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
 @Serializable
-data class Content(val role: Role, val parts: List<Part>)
+data class Content(
+    val role: Role,
+    val parts: List<Part>,
+)
 
 @Serializable(PartSerializer::class)
 sealed interface Part {
     @Serializable
-    data class Text(val text: String) : Part
+    data class Text(
+        val text: String,
+    ) : Part
 
     @Serializable
-    data class FunctionCall(val functionCall: FunctionCallContent) : Part
+    data class FunctionCall(
+        val functionCall: FunctionCallContent,
+    ) : Part
 
     @Serializable
     data class Blob(
@@ -31,14 +38,22 @@ sealed interface Part {
     ) : Part
 
     @Serializable
-    data class FunctionResponse(val functionResponse: FunctionResponseContent) : Part
+    data class FunctionResponse(
+        val functionResponse: FunctionResponseContent,
+    ) : Part
 }
 
 @Serializable
-data class FunctionResponseContent(val name: String, val response: JsonElement)
+data class FunctionResponseContent(
+    val name: String,
+    val response: JsonElement,
+)
 
 @Serializable
-data class FunctionCallContent(val name: String, val args: JsonObject)
+data class FunctionCallContent(
+    val name: String,
+    val args: JsonObject,
+)
 
 typealias Base64 = String
 

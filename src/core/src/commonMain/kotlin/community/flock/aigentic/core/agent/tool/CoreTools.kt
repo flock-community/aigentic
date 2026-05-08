@@ -62,9 +62,16 @@ internal val stuckWithTaskTool =
     }
 
 sealed interface Outcome<out O : Any> {
-    data class Finished<O : Any>(val description: String, val response: O?) : Outcome<O>
+    data class Finished<O : Any>(
+        val description: String,
+        val response: O?,
+    ) : Outcome<O>
 
-    data class Stuck(val reason: String) : Outcome<Nothing>
+    data class Stuck(
+        val reason: String,
+    ) : Outcome<Nothing>
 
-    data class Fatal(val message: String) : Outcome<Nothing>
+    data class Fatal(
+        val message: String,
+    ) : Outcome<Nothing>
 }

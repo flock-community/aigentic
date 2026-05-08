@@ -13,27 +13,39 @@ sealed interface AgentStatus {
         override val text: String = "🚀 Agent started!"
     }
 
-    data class Finished(val result: String) : AgentStatus {
+    data class Finished(
+        val result: String,
+    ) : AgentStatus {
         override val text: String = "🏁 Agent finished! $result"
     }
 
-    data class Stuck(val result: String) : AgentStatus {
+    data class Stuck(
+        val result: String,
+    ) : AgentStatus {
         override val text: String = "🤯 Agent stuck! $result"
     }
 
-    data class Fatal(val reason: String) : AgentStatus {
+    data class Fatal(
+        val reason: String,
+    ) : AgentStatus {
         override val text: String = "💥 Agent crashed: $reason"
     }
 
-    data class Warning(val message: String) : AgentStatus {
+    data class Warning(
+        val message: String,
+    ) : AgentStatus {
         override val text: String = "⚠️ Warning: $message"
     }
 
-    data class ExecuteTool(val tool: ToolCall) : AgentStatus {
+    data class ExecuteTool(
+        val tool: ToolCall,
+    ) : AgentStatus {
         override val text = "🏗 Executing tool: ${tool.name} arguments: ${tool.arguments}"
     }
 
-    data class ToolResult(val result: Message.ToolResult) : AgentStatus {
+    data class ToolResult(
+        val result: Message.ToolResult,
+    ) : AgentStatus {
         override val text = "🦾 Tool result ${result.toolName}: ${result.response.result}"
     }
 
@@ -45,16 +57,24 @@ sealed interface AgentStatus {
         override val text: String = "🔐 Could not publish run to Aigentic platform, agent unauthorized! Make sure you've configured the correct agent name and secret!"
     }
 
-    data class PublishedRunError(val reason: String) : AgentStatus {
+    data class PublishedRunError(
+        val reason: String,
+    ) : AgentStatus {
         override val text: String = "💥 Could not publish run to Aigentic platform: $reason"
     }
 }
 
 fun Message.toStatus(): List<AgentStatus> =
     when (this) {
-        is Message.SystemPrompt -> emptyList()
-        is Message.Text, is Message.Url, is Message.Base64, is Message.ExampleToolMessage, is Message.StructuredOutput -> emptyList()
-        is Message.ToolCalls ->
+        is Message.SystemPrompt -> {
+            emptyList()
+        }
+
+        is Message.Text, is Message.Url, is Message.Base64, is Message.ExampleToolMessage, is Message.StructuredOutput -> {
+            emptyList()
+        }
+
+        is Message.ToolCalls -> {
             this.toolCalls.map {
                 when (it.name) {
                     FINISHED_TASK_TOOL_NAME -> AgentStatus.Finished(it.arguments)
@@ -62,5 +82,9 @@ fun Message.toStatus(): List<AgentStatus> =
                     else -> AgentStatus.ExecuteTool(it)
                 }
             }
-        is Message.ToolResult -> listOf(AgentStatus.ToolResult(this))
+        }
+
+        is Message.ToolResult -> {
+            listOf(AgentStatus.ToolResult(this))
+        }
     }

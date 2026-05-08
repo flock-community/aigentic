@@ -9,7 +9,9 @@ import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
 @AigenticParameter
-data class Words(val words: List<String>)
+data class Words(
+    val words: List<String>,
+)
 
 suspend fun runStructuredResponseAgent(apiKey: String) {
     val agent =

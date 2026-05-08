@@ -10,9 +10,10 @@ import community.flock.aigentic.platform.testing.RegressionTest
 import community.flock.aigentic.platform.testing.ToolCallOverride
 
 fun <I : Any, O : Any> regressionTest(regressionTestConfig: RegressionTestConfig<I, O>.() -> Unit): RegressionTest<I, O> =
-    RegressionTestConfig<I, O>().apply(
-        regressionTestConfig,
-    ).build()
+    RegressionTestConfig<I, O>()
+        .apply(
+            regressionTestConfig,
+        ).build()
 
 class RegressionTestConfig<I : Any, O : Any> : Config<RegressionTest<I, O>> {
     internal var numberOfIterations: Int = 1

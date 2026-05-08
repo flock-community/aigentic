@@ -14,124 +14,130 @@ import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 
 @AigenticParameter("Test response parameter")
-data class TestResponse(val message: String)
+data class TestResponse(
+    val message: String,
+)
 
-class AgentConfigTest : DescribeSpec({
+class AgentConfigTest :
+    DescribeSpec({
 
-    describe("AgentConfig") {
+        describe("AgentConfig") {
 
-        it("should build basic agent") {
-            val model = mockk<Model>(relaxed = true)
-            agent<Unit, Unit> {
-                model(model)
-                task("Task description") {
-                    addInstruction("Instruction description")
+            it("should build basic agent") {
+                val model = mockk<Model>(relaxed = true)
+                agent<Unit, Unit> {
+                    model(model)
+                    task("Task description") {
+                        addInstruction("Instruction description")
+                    }
+                    addTool(mockk(relaxed = true))
+                }.run {
+                    model shouldBe model
+                    task.description shouldBe "Task description"
+                    task.instructions.size shouldBe 1
+                    task.instructions.first().text shouldBe "Instruction description"
                 }
-                addTool(mockk(relaxed = true))
-            }.run {
-                model shouldBe model
-                task.description shouldBe "Task description"
-                task.instructions.size shouldBe 1
-                task.instructions.first().text shouldBe "Instruction description"
             }
-        }
 
-        it("should build agent with multiple tools") {
-            val tool1 = mockk<Tool>(relaxed = true)
-            val tool2 = mockk<Tool>(relaxed = true)
+            it("should build agent with multiple tools") {
+                val tool1 = mockk<Tool>(relaxed = true)
+                val tool2 = mockk<Tool>(relaxed = true)
 
-            agent<Unit, Unit> {
-                model(mockk(relaxed = true))
-                task("Task description") {}
-                addTool(tool1)
-                addTool(tool2)
-            }.run {
-                tools shouldBe mapOf(tool1.name to tool1, tool2.name to tool2)
-            }
-        }
-
-        it("should build agent with system prompt builder") {
-            val systemPromptBuilder = mockk<SystemPromptBuilder>(relaxed = true)
-            agent<Unit, Unit> {
-                model(mockk(relaxed = true))
-                task("Task description") {}
-                systemPrompt(systemPromptBuilder)
-                addTool(mockk(relaxed = true))
-            }.run {
-                systemPromptBuilder shouldBe systemPromptBuilder
-            }
-        }
-
-        it("should build agent with multiple contexts") {
-            agent<Unit, Unit> {
-                model(mockk(relaxed = true))
-                task("Task description") {}
-                context {
-                    addText("Some text")
-                    addUrl("https://example.com/image.jpg", MimeType.JPEG)
-                }
-                addTool(mockk(relaxed = true))
-            }.run {
-                contexts.size shouldBe 2
-                contexts.first() shouldBe Context.Text("Some text")
-                contexts.last() shouldBe Context.Url("https://example.com/image.jpg", MimeType.JPEG)
-            }
-        }
-
-        withData(
-            nameFn = { "Should fail with: '${it.expectedMessage}'" },
-            MissingPropertyTestCase(
-                agentConfig = {
-                    task("Task description") {}
-                },
-                expectedMessage = "Cannot build Agent, property 'model' is missing, please use 'model()' to provide it",
-            ),
-            MissingPropertyTestCase(
-                agentConfig = {
-                    model(mockk(relaxed = true))
-                },
-                expectedMessage = "Cannot build Agent, property 'task' is missing, please use 'task()' to provide it",
-            ),
-            MissingPropertyTestCase(
-                agentConfig = {
+                agent<Unit, Unit> {
                     model(mockk(relaxed = true))
                     task("Task description") {}
-                },
-                expectedMessage = "Cannot build Agent, property 'tools' is missing, please use 'addTool()' to provide it",
-            ),
-        ) { testCase ->
-            shouldThrow<IllegalStateException> {
-                agent(testCase.agentConfig)
-            }.run {
-                message shouldBe testCase.expectedMessage
+                    addTool(tool1)
+                    addTool(tool2)
+                }.run {
+                    tools shouldBe mapOf(tool1.name to tool1, tool2.name to tool2)
+                }
+            }
+
+            it("should build agent with system prompt builder") {
+                val systemPromptBuilder = mockk<SystemPromptBuilder>(relaxed = true)
+                agent<Unit, Unit> {
+                    model(mockk(relaxed = true))
+                    task("Task description") {}
+                    systemPrompt(systemPromptBuilder)
+                    addTool(mockk(relaxed = true))
+                }.run {
+                    systemPromptBuilder shouldBe systemPromptBuilder
+                }
+            }
+
+            it("should build agent with multiple contexts") {
+                agent<Unit, Unit> {
+                    model(mockk(relaxed = true))
+                    task("Task description") {}
+                    context {
+                        addText("Some text")
+                        addUrl("https://example.com/image.jpg", MimeType.JPEG)
+                    }
+                    addTool(mockk(relaxed = true))
+                }.run {
+                    contexts.size shouldBe 2
+                    contexts.first() shouldBe Context.Text("Some text")
+                    contexts.last() shouldBe Context.Url("https://example.com/image.jpg", MimeType.JPEG)
+                }
+            }
+
+            withData(
+                nameFn = { "Should fail with: '${it.expectedMessage}'" },
+                MissingPropertyTestCase(
+                    agentConfig = {
+                        task("Task description") {}
+                    },
+                    expectedMessage = "Cannot build Agent, property 'model' is missing, please use 'model()' to provide it",
+                ),
+                MissingPropertyTestCase(
+                    agentConfig = {
+                        model(mockk(relaxed = true))
+                    },
+                    expectedMessage = "Cannot build Agent, property 'task' is missing, please use 'task()' to provide it",
+                ),
+                MissingPropertyTestCase(
+                    agentConfig = {
+                        model(mockk(relaxed = true))
+                        task("Task description") {}
+                    },
+                    expectedMessage = "Cannot build Agent, property 'tools' is missing, please use 'addTool()' to provide it",
+                ),
+            ) { testCase ->
+                shouldThrow<IllegalStateException> {
+                    agent(testCase.agentConfig)
+                }.run {
+                    message shouldBe testCase.expectedMessage
+                }
+            }
+
+            it("should build agent with finishResponse using type parameter") {
+                agent<Unit, TestResponse> {
+                    model(mockk(relaxed = true))
+                    task("Task description") {}
+                    addTool(mockk(relaxed = true))
+                }.run {
+                    responseParameter shouldBe getParameter<TestResponse>()
+                }
+            }
+
+            it("should add tool with Unit input type") {
+                agent<Unit, Unit> {
+                    model(mockk(relaxed = true))
+                    task("Task description") {}
+                    addTool<Unit, String>(
+                        name = "unitTool",
+                        description = "A tool with Unit input",
+                        handler = { "result" },
+                    )
+                }.run {
+                    tools.size shouldBe 1
+                    tools.keys.first().value shouldBe "unitTool"
+                }
             }
         }
+    })
 
-        it("should build agent with finishResponse using type parameter") {
-            agent<Unit, TestResponse> {
-                model(mockk(relaxed = true))
-                task("Task description") {}
-                addTool(mockk(relaxed = true))
-            }.run {
-                responseParameter shouldBe getParameter<TestResponse>()
-            }
-        }
-
-        it("should add tool with Unit input type") {
-            agent<Unit, Unit> {
-                model(mockk(relaxed = true))
-                task("Task description") {}
-                addTool<Unit, String>(
-                    name = "unitTool",
-                    description = "A tool with Unit input",
-                    handler = { "result" },
-                )
-            }.run {
-                tools.size shouldBe 1
-                tools.keys.first().value shouldBe "unitTool"
-            }
-        }
-    }
-})
-
-private data class MissingPropertyTestCase(val agentConfig: AgentConfig<Unit, Unit>.() -> Unit, val expectedMessage: String)
+private data class MissingPropertyTestCase(
+    val agentConfig: AgentConfig<Unit, Unit>.() -> Unit,
+    val expectedMessage: String,
+)

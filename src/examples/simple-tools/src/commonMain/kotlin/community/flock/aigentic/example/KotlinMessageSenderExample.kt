@@ -8,10 +8,14 @@ import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
 @AigenticParameter
-data class KotlinMessage(val message: String)
+data class KotlinMessage(
+    val message: String,
+)
 
 @AigenticParameter
-data class MessageSendResult(val result: String)
+data class MessageSendResult(
+    val result: String,
+)
 
 suspend fun runKotlinMessageAgent(apiKey: String) {
     val run =

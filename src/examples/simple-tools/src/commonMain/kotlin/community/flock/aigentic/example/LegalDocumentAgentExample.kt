@@ -146,7 +146,13 @@ suspend fun runWorkflowExample(apiKey: String) {
                 println("Total cached tokens: ${totalUsage.cachedInputTokens}")
             }
         }
-        is Outcome.Fatal -> println("Error: ${outcome.message}")
-        is Outcome.Stuck -> println("Stuck: ${outcome.reason}")
+
+        is Outcome.Fatal -> {
+            println("Error: ${outcome.message}")
+        }
+
+        is Outcome.Stuck -> {
+            println("Stuck: ${outcome.reason}")
+        }
     }
 }

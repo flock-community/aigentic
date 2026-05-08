@@ -46,11 +46,10 @@ object SerializerToParameter {
             SerialKind.CONTEXTUAL -> aigenticException("Cannot handle contextual kind: $descriptor to create parameter")
         }
 
-    fun SerialDescriptor.parameters(): List<Parameter> {
-        return range()
+    fun SerialDescriptor.parameters(): List<Parameter> =
+        range()
             .map { children(it) }
             .map { it.toParameter() }
-    }
 
     fun SerialDescriptor.element(name: String) =
         Element(
@@ -92,18 +91,18 @@ object SerializerToParameter {
         )
     }
 
-    fun Element.toArray(): Parameter.Complex.Array {
-        return Parameter.Complex.Array(
+    fun Element.toArray(): Parameter.Complex.Array =
+        Parameter.Complex.Array(
             name = name,
             description = annotations.getDescription(),
             isRequired = !descriptor.isNullable,
             itemDefinition =
-                descriptor.parameters()
+                descriptor
+                    .parameters()
                     .firstOrNull()
                     ?.copy("Item")
                     ?: error("No item definition found"),
         )
-    }
 
     fun Element.toObject() =
         Parameter.Complex.Object(
@@ -113,19 +112,20 @@ object SerializerToParameter {
             parameters = descriptor.parameters(),
         )
 
-    fun Element.toMap(): Parameter.Complex.Object {
-        return Parameter.Complex.Object(
+    fun Element.toMap(): Parameter.Complex.Object =
+        Parameter.Complex.Object(
             name = name,
             description = annotations.getAigenticParameterDescription(),
             isRequired = !descriptor.isNullable,
             parameters = descriptor.parameters(),
         )
-    }
 
     fun List<Annotation>.getDescription(): String? = filterIsInstance<Description>().map { it.value }.firstOrNull()
 
     fun List<Annotation>.getAigenticParameterDescription(): String? =
-        filterIsInstance<AigenticParameter>().map {
-            it.description
-        }.firstOrNull()?.takeIf { it.isNotEmpty() }
+        filterIsInstance<AigenticParameter>()
+            .map {
+                it.description
+            }.firstOrNull()
+            ?.takeIf { it.isNotEmpty() }
 }

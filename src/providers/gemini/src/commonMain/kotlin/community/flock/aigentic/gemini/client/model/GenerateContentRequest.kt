@@ -78,7 +78,9 @@ data class ToolConfig(
 )
 
 @Serializable
-data class FunctionCallingConfig(val mode: Mode) {
+data class FunctionCallingConfig(
+    val mode: Mode,
+) {
     @Serializable
     enum class Mode {
         @SerialName("MODE_UNSPECIFIED")
@@ -114,7 +116,9 @@ data class Schema(
 
 @Serializable
 @JvmInline
-value class Role(val value: String) {
+value class Role(
+    val value: String,
+) {
     public companion object {
         public val User = Role("user")
         public val Model = Role("model")

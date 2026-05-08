@@ -8,7 +8,9 @@ import community.flock.aigentic.gemini.dsl.geminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
 @AigenticParameter
-data class Answer(val answer: String)
+data class Answer(
+    val answer: String,
+)
 
 suspend fun main() {
     val agent =
