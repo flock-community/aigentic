@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-api-changes.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

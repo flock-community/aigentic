@@ -33,7 +33,7 @@ agent<String, Answer> {
 
   // Configure your provider of choice
   openAIModel {
-    apiKey("<your-api-key")
+    apiKey("<your-api-key>")
     modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
   }
 
@@ -61,21 +61,30 @@ This fluent API makes it easy to configure various aspects of your agent, includ
 Aigentic's DSL provides a consistent interface for working with different LLM providers:
 
 ```kotlin
-// OpenAI model
-val openAIModel = openAIModel {
-  apiKey("YOUR_API_KEY")
-  modelIdentifier(OpenAIModelIdentifier.GPT4Turbo)
+agent<String, Answer> {
+    // OpenAI model
+    openAIModel {
+        apiKey("YOUR_API_KEY")
+        modelIdentifier(OpenAIModelIdentifier.GPT4O)
+    }
+    // ...
 }
 
-// Gemini model
-val geminiModel = geminiModel {
-    apiKey("YOUR_API_KEY")
-    modelIdentifier(GeminiModelIdentifier.Gemini2_5FlashPreview)
+agent<String, Answer> {
+    // Gemini model
+    geminiModel {
+        apiKey("YOUR_API_KEY")
+        modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+    }
+    // ...
 }
 
-// Ollama model
-val ollamaModel = ollamaModel {
-    apiUrl("http://localhost:11434/v1/")
+agent<String, Answer> {
+    // Ollama model
+    ollamaModel {
+        apiUrl("http://localhost:11434/v1/")
+    }
+    // ...
 }
 ```
 
@@ -91,7 +100,7 @@ data class WeatherRequest(val location: String)
 @AigenticParameter
 data class WeatherResponse(val temperature: Double, val conditions: String)
 
-val weatherTool = create<WeatherRequest, WeatherResponse>(
+val weatherTool = createTool<WeatherRequest, WeatherResponse>(
     name = "getWeather",
     description = "Get the current weather for a location"
 ) { request ->
