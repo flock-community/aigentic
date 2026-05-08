@@ -30,3 +30,12 @@ kotlin {
         }
     }
 }
+
+tasks.register<JavaExec>("runPlatformPublishIntegrationTest") {
+    group = "verification"
+    description = "Runs the platform publish integration test (requires env vars)."
+    mainClass.set("community.flock.aigentic.test.PlatformPublishIntegrationTestKt")
+    classpath = kotlin.jvm().compilations["main"].output.allOutputs +
+        kotlin.jvm().compilations["main"].runtimeDependencyFiles!!
+    standardInput = System.`in`
+}
