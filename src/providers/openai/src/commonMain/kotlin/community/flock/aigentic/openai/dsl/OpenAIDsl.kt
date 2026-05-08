@@ -12,7 +12,10 @@ import community.flock.aigentic.openai.model.OpenAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 
 fun <I : Any, O : Any> AgentConfig<I, O>.openAIModel(openAIModelConfig: OpenAIModelConfig.() -> Unit) =
-    OpenAIModelConfig().apply(openAIModelConfig).build().also { model(it) }
+    OpenAIModelConfig()
+        .apply(openAIModelConfig)
+        .build()
+        .also { model(it) }
         .also { model(it) }
 
 @AgentDSL

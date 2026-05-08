@@ -15,5 +15,7 @@ internal fun GoogleRequest.map(): Request =
     )
 
 private fun dynamicObjectToMap(jsObject: dynamic): Map<String, String> =
-    Json.parseToJsonElement(JSON.stringify(jsObject)).jsonObject
+    Json
+        .parseToJsonElement(JSON.stringify(jsObject))
+        .jsonObject
         .mapValues { it.value.jsonPrimitive.content }

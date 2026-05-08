@@ -37,9 +37,15 @@ private fun List<TestResult>.toTestReport() =
     ) { rapport, result ->
         when (result) {
             is TestResult.Success -> {
-                val inputTokens = result.state.modelRequestInfos.replayCache.sumOf { it.inputTokenCount }
-                val outputTokens = result.state.modelRequestInfos.replayCache.sumOf { it.outputTokenCount }
-                val thinkingOutputTokens = result.state.modelRequestInfos.replayCache.sumOf { it.thinkingOutputTokenCount }
+                val inputTokens =
+                    result.state.modelRequestInfos.replayCache
+                        .sumOf { it.inputTokenCount }
+                val outputTokens =
+                    result.state.modelRequestInfos.replayCache
+                        .sumOf { it.outputTokenCount }
+                val thinkingOutputTokens =
+                    result.state.modelRequestInfos.replayCache
+                        .sumOf { it.thinkingOutputTokenCount }
                 rapport.copy(
                     successes = rapport.successes + result,
                     inputTokenCount = rapport.inputTokenCount + inputTokens,
@@ -47,7 +53,13 @@ private fun List<TestResult>.toTestReport() =
                     thinkingOutputTokenCount = rapport.thinkingOutputTokenCount + thinkingOutputTokens,
                 )
             }
-            is TestResult.Failed -> rapport.copy(failures = rapport.failures + result)
-            is TestResult.AgentError -> rapport.copy(errors = rapport.errors + result)
+
+            is TestResult.Failed -> {
+                rapport.copy(failures = rapport.failures + result)
+            }
+
+            is TestResult.AgentError -> {
+                rapport.copy(errors = rapport.errors + result)
+            }
         }
     }

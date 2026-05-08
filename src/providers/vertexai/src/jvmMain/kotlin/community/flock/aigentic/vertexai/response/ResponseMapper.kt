@@ -49,7 +49,8 @@ private fun Content.toStructuredOutputMessage(): Message {
 
 private fun Content.toToolCallsMessage(): Message {
     val toolCalls =
-        parts().getOrNull()
+        parts()
+            .getOrNull()
             ?.mapNotNull { it.functionCall().getOrNull() }
             ?.map(::toToolCall)
             ?: emptyList()

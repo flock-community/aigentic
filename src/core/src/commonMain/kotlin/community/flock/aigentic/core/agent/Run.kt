@@ -37,10 +37,14 @@ data class WorkflowRun<O : Any>(
 ) : Run<O>()
 
 @JvmInline
-value class RunTag(val value: String)
+value class RunTag(
+    val value: String,
+)
 
 @JvmInline
-value class RunId(val value: String)
+value class RunId(
+    val value: String,
+)
 
 data class TokenUsage(
     val inputTokens: Int,
@@ -98,14 +102,20 @@ internal inline fun <reified O : Any> AgentRun<String>.decode(): AgentRun<O> {
         messages = messages,
         outcome =
             when (currentOutcome) {
-                is Outcome.Fatal -> currentOutcome
-                is Outcome.Finished<String> ->
+                is Outcome.Fatal -> {
+                    currentOutcome
+                }
+
+                is Outcome.Finished<String> -> {
                     Outcome.Finished(
                         description = currentOutcome.description,
                         response = currentOutcome.response?.let { Json.decodeFromString<O>(it) },
                     )
+                }
 
-                is Outcome.Stuck -> currentOutcome
+                is Outcome.Stuck -> {
+                    currentOutcome
+                }
             },
         modelRequests = modelRequests,
         exampleRunIds = exampleRunIds,

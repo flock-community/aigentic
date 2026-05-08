@@ -10,13 +10,20 @@ import kotlinx.serialization.serializer
 import kotlin.jvm.JvmInline
 
 sealed interface Authentication {
-    data class Secret(val secret: String) : Authentication
+    data class Secret(
+        val secret: String,
+    ) : Authentication
 
-    data class BasicAuth(val username: String, val password: String) : Authentication
+    data class BasicAuth(
+        val username: String,
+        val password: String,
+    ) : Authentication
 }
 
 @JvmInline
-value class PlatformApiUrl(val value: String)
+value class PlatformApiUrl(
+    val value: String,
+)
 
 interface PlatformClient {
     suspend fun <I : Any, O : Any> sendRun(
@@ -39,16 +46,19 @@ suspend inline fun <reified I : Any, reified O : Any> Platform.sendRun(
     agent: Agent<I, O>,
 ): RunSentResult = client.sendRun(run, agent, serializer<O>())
 
-suspend inline fun <reified O : Any> Platform.getRuns(tags: List<RunTag>): List<Pair<RunId, AgentRun<O>>> {
-    return client.getRuns(tags)
+suspend inline fun <reified O : Any> Platform.getRuns(tags: List<RunTag>): List<Pair<RunId, AgentRun<O>>> =
+    client
+        .getRuns(tags)
         .map { (runId: RunId, agentRunString: AgentRun<String>) ->
             runId to agentRunString.decode()
         }
-}
 
 sealed interface RunSentResult {
     data object Success : RunSentResult
+
     data object Unauthorized : RunSentResult
 
-    data class Error(val message: String) : RunSentResult
+    data class Error(
+        val message: String,
+    ) : RunSentResult
 }

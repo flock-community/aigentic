@@ -8,7 +8,9 @@ interface RateLimiter {
     suspend fun consume()
 }
 
-internal data class RateLimitBucket(val requestsPerMinute: Int) : RateLimiter {
+internal data class RateLimitBucket(
+    val requestsPerMinute: Int,
+) : RateLimiter {
     private var requestsLeft: Int = requestsPerMinute
     private val delayTime = (60_000 / requestsPerMinute).toLong()
 

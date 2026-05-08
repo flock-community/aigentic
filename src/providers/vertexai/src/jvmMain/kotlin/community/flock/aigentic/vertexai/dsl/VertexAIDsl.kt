@@ -10,11 +10,13 @@ import community.flock.aigentic.vertexai.VertexAIModel
 import community.flock.aigentic.vertexai.VertexAIModelIdentifier
 
 fun <I : Any, O : Any> AgentConfig<I, O>.vertexAIModel(vertexAIModelConfig: VertexAIModelConfig.() -> Unit) =
-    VertexAIModelConfig().apply(
-        vertexAIModelConfig,
-    ).build().also {
-        model(it)
-    }
+    VertexAIModelConfig()
+        .apply(
+            vertexAIModelConfig,
+        ).build()
+        .also {
+            model(it)
+        }
 
 class VertexAIModelConfig : Config<VertexAIModel> {
     private var project: String? = null

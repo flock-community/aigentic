@@ -17,156 +17,165 @@ import io.mockk.coEvery
 import io.mockk.mockk
 
 @AigenticParameter
-data class WorkflowInput(val query: String)
+data class WorkflowInput(
+    val query: String,
+)
 
 @AigenticParameter
-data class FirstResult(val firstProcessed: String)
+data class FirstResult(
+    val firstProcessed: String,
+)
 
 @AigenticParameter
-data class SecondResult(val secondProcessed: String)
+data class SecondResult(
+    val secondProcessed: String,
+)
 
 @AigenticParameter
-data class FinalResult(val output: String)
+data class FinalResult(
+    val output: String,
+)
 
-class WorkflowExecutorTest : DescribeSpec({
+class WorkflowExecutorTest :
+    DescribeSpec({
 
-    describe("happy path") {
+        describe("happy path") {
 
-        it("should execute 2-agent workflow successfully") {
+            it("should execute 2-agent workflow successfully") {
 
-            val firstAgent =
-                agent<WorkflowInput, FirstResult> {
-                    model(createMockModel(FirstResult("middle result")))
-                    task("Process input") {}
-                }
+                val firstAgent =
+                    agent<WorkflowInput, FirstResult> {
+                        model(createMockModel(FirstResult("middle result")))
+                        task("Process input") {}
+                    }
 
-            val secondAgent =
-                agent<FirstResult, FinalResult> {
-                    model(createMockModel(FinalResult("final result")))
-                    task("Generate output") {}
-                }
+                val secondAgent =
+                    agent<FirstResult, FinalResult> {
+                        model(createMockModel(FinalResult("final result")))
+                        task("Generate output") {}
+                    }
 
-            val workflow = firstAgent thenProcess secondAgent
-            val result = workflow.start(WorkflowInput("test"))
+                val workflow = firstAgent thenProcess secondAgent
+                val result = workflow.start(WorkflowInput("test"))
 
-            result.outcome.shouldBeInstanceOf<Outcome.Finished<FinalResult>>()
-            result.agentRuns[0].outcome.shouldBeInstanceOf<Outcome.Finished<FirstResult>>()
-            result.agentRuns[1].outcome.shouldBeInstanceOf<Outcome.Finished<FinalResult>>()
-            result.agentRuns.last() shouldBe result.agentRuns[1]
+                result.outcome.shouldBeInstanceOf<Outcome.Finished<FinalResult>>()
+                result.agentRuns[0].outcome.shouldBeInstanceOf<Outcome.Finished<FirstResult>>()
+                result.agentRuns[1].outcome.shouldBeInstanceOf<Outcome.Finished<FinalResult>>()
+                result.agentRuns.last() shouldBe result.agentRuns[1]
 
-            verifyWorkflowResult(result, 2)
-        }
-    }
-
-    describe("failure scenarios") {
-
-        it("should handle 3-agent workflow when third agent fails") {
-
-            val firstAgent =
-                agent<WorkflowInput, FirstResult> {
-                    model(createMockModel(FirstResult("first result")))
-                    task("Process input") {}
-                }
-
-            val secondAgent =
-                agent<FirstResult, SecondResult> {
-                    model(createMockModel(SecondResult("second result")))
-                    task("Process middle result") {}
-                }
-
-            val thirdAgent =
-                agent<SecondResult, FinalResult> {
-                    model(createMockModelWithStuck())
-                    task("Generate final output") {}
-                }
-
-            val workflow = firstAgent thenProcess secondAgent thenProcess thirdAgent
-            val result = workflow.start(WorkflowInput("test"))
-
-            result.outcome.shouldBeInstanceOf<Outcome.Stuck>()
-            result.agentRuns[0].outcome.shouldBeInstanceOf<Outcome.Finished<FirstResult>>()
-            result.agentRuns[1].outcome.shouldBeInstanceOf<Outcome.Finished<SecondResult>>()
-            result.agentRuns[2].outcome.shouldBeInstanceOf<Outcome.Stuck>()
-            result.agentRuns.last() shouldBe result.agentRuns[2]
-
-            verifyWorkflowResult(result, 3)
+                verifyWorkflowResult(result, 2)
+            }
         }
 
-        it("should stop at first agent when first agent encounters fatal error") {
+        describe("failure scenarios") {
 
-            val firstAgent =
-                agent<WorkflowInput, FirstResult> {
-                    model(createMockModelWithException(AigenticException("First agent fatal error")))
-                    task("Process input") {}
-                }
+            it("should handle 3-agent workflow when third agent fails") {
 
-            val secondAgent =
-                agent<FirstResult, FinalResult> {
-                    model(createMockModel(FinalResult("final result")))
-                    task("Generate output") {}
-                }
+                val firstAgent =
+                    agent<WorkflowInput, FirstResult> {
+                        model(createMockModel(FirstResult("first result")))
+                        task("Process input") {}
+                    }
 
-            val workflow = firstAgent thenProcess secondAgent
-            val result = workflow.start(WorkflowInput("test"))
+                val secondAgent =
+                    agent<FirstResult, SecondResult> {
+                        model(createMockModel(SecondResult("second result")))
+                        task("Process middle result") {}
+                    }
 
-            result.outcome.shouldBeInstanceOf<Outcome.Fatal>()
-            result.agentRuns[0].outcome.shouldBeInstanceOf<Outcome.Fatal>()
-            (result.agentRuns[0].outcome as Outcome.Fatal).message shouldBe "First agent fatal error"
-            result.agentRuns.last() shouldBe result.agentRuns[0]
+                val thirdAgent =
+                    agent<SecondResult, FinalResult> {
+                        model(createMockModelWithStuck())
+                        task("Generate final output") {}
+                    }
 
-            verifyWorkflowResult(result, 1)
+                val workflow = firstAgent thenProcess secondAgent thenProcess thirdAgent
+                val result = workflow.start(WorkflowInput("test"))
+
+                result.outcome.shouldBeInstanceOf<Outcome.Stuck>()
+                result.agentRuns[0].outcome.shouldBeInstanceOf<Outcome.Finished<FirstResult>>()
+                result.agentRuns[1].outcome.shouldBeInstanceOf<Outcome.Finished<SecondResult>>()
+                result.agentRuns[2].outcome.shouldBeInstanceOf<Outcome.Stuck>()
+                result.agentRuns.last() shouldBe result.agentRuns[2]
+
+                verifyWorkflowResult(result, 3)
+            }
+
+            it("should stop at first agent when first agent encounters fatal error") {
+
+                val firstAgent =
+                    agent<WorkflowInput, FirstResult> {
+                        model(createMockModelWithException(AigenticException("First agent fatal error")))
+                        task("Process input") {}
+                    }
+
+                val secondAgent =
+                    agent<FirstResult, FinalResult> {
+                        model(createMockModel(FinalResult("final result")))
+                        task("Generate output") {}
+                    }
+
+                val workflow = firstAgent thenProcess secondAgent
+                val result = workflow.start(WorkflowInput("test"))
+
+                result.outcome.shouldBeInstanceOf<Outcome.Fatal>()
+                result.agentRuns[0].outcome.shouldBeInstanceOf<Outcome.Fatal>()
+                (result.agentRuns[0].outcome as Outcome.Fatal).message shouldBe "First agent fatal error"
+                result.agentRuns.last() shouldBe result.agentRuns[0]
+
+                verifyWorkflowResult(result, 1)
+            }
         }
-    }
 
-    describe("5-agent workflows") {
+        describe("5-agent workflows") {
 
-        it("should execute 5-agent workflow successfully") {
+            it("should execute 5-agent workflow successfully") {
 
-            val firstAgent =
-                agent<WorkflowInput, FirstResult> {
-                    model(createMockModel(FirstResult("first result")))
-                    task("Process input") {}
-                }
+                val firstAgent =
+                    agent<WorkflowInput, FirstResult> {
+                        model(createMockModel(FirstResult("first result")))
+                        task("Process input") {}
+                    }
 
-            val secondAgent =
-                agent<FirstResult, SecondResult> {
-                    model(createMockModel(SecondResult("second result")))
-                    task("Process first result") {}
-                }
+                val secondAgent =
+                    agent<FirstResult, SecondResult> {
+                        model(createMockModel(SecondResult("second result")))
+                        task("Process first result") {}
+                    }
 
-            val thirdAgent =
-                agent<SecondResult, FirstResult> {
-                    model(createMockModel(FirstResult("third result")))
-                    task("Process second result") {}
-                }
+                val thirdAgent =
+                    agent<SecondResult, FirstResult> {
+                        model(createMockModel(FirstResult("third result")))
+                        task("Process second result") {}
+                    }
 
-            val fourthAgent =
-                agent<FirstResult, SecondResult> {
-                    model(createMockModel(SecondResult("fourth result")))
-                    task("Process third result") {}
-                }
+                val fourthAgent =
+                    agent<FirstResult, SecondResult> {
+                        model(createMockModel(SecondResult("fourth result")))
+                        task("Process third result") {}
+                    }
 
-            val fifthAgent =
-                agent<SecondResult, FinalResult> {
-                    model(createMockModel(FinalResult("final result")))
-                    task("Generate final output") {}
-                }
+                val fifthAgent =
+                    agent<SecondResult, FinalResult> {
+                        model(createMockModel(FinalResult("final result")))
+                        task("Generate final output") {}
+                    }
 
-            val workflow = firstAgent thenProcess secondAgent thenProcess thirdAgent thenProcess fourthAgent thenProcess fifthAgent
-            val result = workflow.start(WorkflowInput("test"))
+                val workflow = firstAgent thenProcess secondAgent thenProcess thirdAgent thenProcess fourthAgent thenProcess fifthAgent
+                val result = workflow.start(WorkflowInput("test"))
 
-            result.outcome.shouldBeInstanceOf<Outcome.Finished<FinalResult>>()
-            result.agentRuns[0].outcome.shouldBeInstanceOf<Outcome.Finished<FirstResult>>()
-            result.agentRuns[1].outcome.shouldBeInstanceOf<Outcome.Finished<SecondResult>>()
-            result.agentRuns[2].outcome.shouldBeInstanceOf<Outcome.Finished<FirstResult>>()
-            result.agentRuns[3].outcome.shouldBeInstanceOf<Outcome.Finished<SecondResult>>()
-            result.agentRuns[4].outcome.shouldBeInstanceOf<Outcome.Finished<FinalResult>>()
-            result.agentRuns.last() shouldBe result.agentRuns[4]
+                result.outcome.shouldBeInstanceOf<Outcome.Finished<FinalResult>>()
+                result.agentRuns[0].outcome.shouldBeInstanceOf<Outcome.Finished<FirstResult>>()
+                result.agentRuns[1].outcome.shouldBeInstanceOf<Outcome.Finished<SecondResult>>()
+                result.agentRuns[2].outcome.shouldBeInstanceOf<Outcome.Finished<FirstResult>>()
+                result.agentRuns[3].outcome.shouldBeInstanceOf<Outcome.Finished<SecondResult>>()
+                result.agentRuns[4].outcome.shouldBeInstanceOf<Outcome.Finished<FinalResult>>()
+                result.agentRuns.last() shouldBe result.agentRuns[4]
 
-            verifyWorkflowResult(result, 5)
+                verifyWorkflowResult(result, 5)
+            }
         }
-    }
-})
+    })
 
 private fun createMockModel(result: FirstResult): Model =
     mockk<Model>().also { mock ->
@@ -197,14 +206,13 @@ private fun createMockModelWithException(exception: Exception): Model =
         coEvery { mock.sendRequest(any(), any(), any()) } throws exception
     }
 
-fun createMockModelWithStuck(): Model {
-    return mockk<Model>().also { mock ->
+fun createMockModelWithStuck(): Model =
+    mockk<Model>().also { mock ->
         coEvery { mock.sendRequest(any(), any(), any()) } returnsMany
             listOf(
                 stuckWithTaskToolCall,
             ).toModelResponse()
     }
-}
 
 fun verifyWorkflowResult(
     result: WorkflowRun<*>,

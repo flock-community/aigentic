@@ -6,16 +6,14 @@ import community.flock.aigentic.core.model.Usage
 import community.flock.aigentic.openai.mapper.DomainMapper.toMessage
 import com.aallam.openai.api.core.Usage as OpenAIUsage
 
-internal fun ChatCompletion.toModelResponse(): ModelResponse {
-    return ModelResponse(
+internal fun ChatCompletion.toModelResponse(): ModelResponse =
+    ModelResponse(
         message = choices.first().message.toMessage(),
         usage = usage?.toUsage() ?: Usage.EMPTY,
     )
-}
 
-private fun OpenAIUsage.toUsage(): Usage {
-    return Usage(
+private fun OpenAIUsage.toUsage(): Usage =
+    Usage(
         inputTokenCount = promptTokens ?: 0,
         outputTokenCount = completionTokens ?: 0,
     )
-}

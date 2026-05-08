@@ -10,7 +10,10 @@ import community.flock.aigentic.openai.model.OpenAIApiUrl
 import community.flock.aigentic.openai.model.OpenAIModel
 
 fun <I : Any, O : Any> AgentConfig<I, O>.ollamaModel(ollamaConfig: OllamaConfig.() -> Unit) =
-    OllamaConfig().apply(ollamaConfig).build().also { model(it) }
+    OllamaConfig()
+        .apply(ollamaConfig)
+        .build()
+        .also { model(it) }
         .also { model(it) }
 
 class OllamaConfig : Config<OpenAIModel> {

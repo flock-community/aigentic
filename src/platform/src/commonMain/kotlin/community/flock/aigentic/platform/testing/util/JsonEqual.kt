@@ -10,16 +10,24 @@ fun JsonArray.equalsIgnoreOrder(other: JsonArray): Boolean {
     return this.all { item -> other.any { it.jsonEquals(item) } }
 }
 
-fun JsonElement.jsonEquals(other: JsonElement): Boolean {
-    return when {
-        this is JsonPrimitive && other is JsonPrimitive -> this == other
-        this is JsonArray && other is JsonArray -> this.equalsIgnoreOrder(other)
-        this is JsonObject && other is JsonObject ->
+fun JsonElement.jsonEquals(other: JsonElement): Boolean =
+    when {
+        this is JsonPrimitive && other is JsonPrimitive -> {
+            this == other
+        }
+
+        this is JsonArray && other is JsonArray -> {
+            this.equalsIgnoreOrder(other)
+        }
+
+        this is JsonObject && other is JsonObject -> {
             this.keys == other.keys &&
                 this.all { (key, value) ->
                     other[key]?.jsonEquals(value) == true
                 }
+        }
 
-        else -> false
+        else -> {
+            false
+        }
     }
-}

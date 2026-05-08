@@ -19,18 +19,31 @@ data class Task(
     val instructions: List<Instruction>,
 )
 
-data class Instruction(val text: String)
+data class Instruction(
+    val text: String,
+)
 
 sealed interface Context {
-    data class Text(val text: String) : Context
+    data class Text(
+        val text: String,
+    ) : Context
 
-    data class Url(val url: String, val mimeType: MimeType) : Context
+    data class Url(
+        val url: String,
+        val mimeType: MimeType,
+    ) : Context
 
-    data class Base64(val base64: String, val mimeType: MimeType) : Context
+    data class Base64(
+        val base64: String,
+        val mimeType: MimeType,
+    ) : Context
 }
 
 sealed interface Attachment {
-    data class Base64(val base64Content: String, val mimeType: MimeType) : Attachment {
+    data class Base64(
+        val base64Content: String,
+        val mimeType: MimeType,
+    ) : Attachment {
         companion object {
             fun pdf(base64Content: String) = Base64(base64Content, MimeType.PDF)
 
@@ -46,7 +59,10 @@ sealed interface Attachment {
         }
     }
 
-    data class Url(val url: String, val mimeType: MimeType) : Attachment {
+    data class Url(
+        val url: String,
+        val mimeType: MimeType,
+    ) : Attachment {
         companion object {
             fun pdf(url: String) = Url(url, MimeType.PDF)
 

@@ -31,7 +31,9 @@ interface RestClient {
     ): String
 }
 
-class KtorRestClient(engine: HttpClientEngine? = null) : RestClient {
+class KtorRestClient(
+    engine: HttpClientEngine? = null,
+) : RestClient {
     private val configuration: HttpClientConfig<*>.() -> Unit = {
         install(ContentNegotiation) {
             json()
@@ -51,21 +53,22 @@ class KtorRestClient(engine: HttpClientEngine? = null) : RestClient {
         resolvedRequestBody: ResolvedRequestBody?,
         headers: List<Header>,
     ): String =
-        ktor.request(resolvedUrl.urlString) {
-            headers {
-                headers.forEach { header ->
-                    append(header.name, header.value)
+        ktor
+            .request(resolvedUrl.urlString) {
+                headers {
+                    headers.forEach { header ->
+                        append(header.name, header.value)
+                    }
                 }
-            }
-            contentType(ContentType.Application.Json)
-            this.method = method.toKtorMethod()
-            url {
-                addQueryParameters(resolvedQueryParameters)
-            }
-            resolvedRequestBody?.let {
-                setBody(it.stringBody)
-            }
-        }.body<String>()
+                contentType(ContentType.Application.Json)
+                this.method = method.toKtorMethod()
+                url {
+                    addQueryParameters(resolvedQueryParameters)
+                }
+                resolvedRequestBody?.let {
+                    setBody(it.stringBody)
+                }
+            }.body<String>()
 
     private fun URLBuilder.addQueryParameters(resolvedQueryParameters: ResolvedQueryParameters) =
         resolvedQueryParameters.values.forEach { (name, value) ->

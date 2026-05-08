@@ -47,489 +47,496 @@ data class NewsEventInput(
     val count: Int,
 )
 
-class AgentExecutorTest : DescribeSpec({
+class AgentExecutorTest :
+    DescribeSpec({
 
-    describe("happy path") {
+        describe("happy path") {
 
-        it("should run agent successfully") {
+            it("should run agent successfully") {
 
-            val toolHandlerMock =
-                mockk<suspend (toolArguments: NewsEventInput) -> String>().apply {
-                    coEvery { this@apply.invoke(any<NewsEventInput>()) } returns
-                        Json.encodeToString(
+                val toolHandlerMock =
+                    mockk<suspend (toolArguments: NewsEventInput) -> String>().apply {
+                        coEvery { this@apply.invoke(any<NewsEventInput>()) } returns
+                            Json.encodeToString(
+                                listOf(
+                                    NewsEvent(1, "News event about AI"),
+                                    NewsEvent(2, "News event about Aigentic"),
+                                ),
+                            )
+                    }
+
+                val newsEventTool =
+                    createTool<NewsEventInput, String>(
+                        name = "getNewsEvents",
+                        description = null,
+                    ) { input -> toolHandlerMock(input) }
+
+                val expectedArguments = NewsEventInput(10)
+
+                val modelMock =
+                    mockk<Model>().apply {
+                        coEvery { sendRequest(any(), any(), any()) } returnsMany
                             listOf(
-                                NewsEvent(1, "News event about AI"),
-                                NewsEvent(2, "News event about Aigentic"),
+                                ToolCall(ToolCallId("1"), newsEventTool.name.value, Json.encodeToString(expectedArguments)),
+                                finishedTaskToolCall,
+                            ).toModelResponse()
+                    }
+
+                agent {
+                    model(modelMock)
+                    task("Summarize the retrieved news events") {
+                        addInstruction("Fetch top 10 news events")
+                        addInstruction("Summarize the results")
+                    }
+                    addTool(newsEventTool)
+                }.start().apply {
+
+                    outcome.shouldBeInstanceOf<Finished<String>>().description shouldBe "Finished the task"
+                    modelRequests.size shouldBe 2
+
+                    coVerify(exactly = 1) { toolHandlerMock.invoke(expectedArguments) }
+                    coVerify(exactly = 2) { modelMock.sendRequest(any(), any(), any()) }
+                }
+            }
+
+            it("should finish with Stuck result when model doesn't know what to do") {
+
+                agent {
+                    model(modelStuckDirectly)
+                    task("Summarize the retrieved news events") {
+                        addInstruction("Fetch top 10 news events")
+                    }
+                    addTool(mockk<Tool>(relaxed = true))
+                }.start().apply {
+                    outcome.shouldBeInstanceOf<Stuck>().reason shouldBe "I don't know what to do"
+                }
+            }
+
+            it("should add system prompt as first message") {
+
+                val expectedSystemPrompt = Message.SystemPrompt("You are a helpful agent")
+                val systemPromptMock =
+                    mockk<SystemPromptBuilder>().apply {
+                        every { buildSystemPrompt(any<Agent<Unit, Unit>>()) } returns expectedSystemPrompt
+                    }
+
+                val agent =
+                    agent {
+                        model(modelFinishTaskDirectly)
+                        systemPrompt(systemPromptMock)
+                        task("Execute some task") {}
+                        addTool(mockk(relaxed = true))
+                    }
+
+                agent.start().apply {
+                    messages[0] shouldBe expectedSystemPrompt
+                    verify(exactly = 1) { systemPromptMock.buildSystemPrompt(any<Agent<Unit, Unit>>()) }
+                }
+            }
+
+            it("should add provided context as messages after system prompt message") {
+
+                val expectedTextContext = "This is some text context"
+                val expectedImageContextBase64 = "base-64-encoded-string"
+                val expectedImageContextMimeType = MimeType.PNG
+
+                val agent =
+                    agent {
+                        model(modelFinishTaskDirectly)
+                        task("Execute some task") {}
+                        context {
+                            addText(expectedTextContext)
+                            addBase64(base64 = expectedImageContextBase64, mimeType = expectedImageContextMimeType)
+                        }
+                        addTool(mockk(relaxed = true))
+                    }
+
+                agent.start().apply {
+                    messages.drop(1).take(2) shouldBe
+                        listOf(
+                            Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT),
+                            Message.Base64(
+                                sender = Sender.Agent,
+                                base64Content = expectedImageContextBase64,
+                                mimeType = expectedImageContextMimeType,
+                                category = MessageCategory.CONFIG_CONTEXT,
                             ),
                         )
                 }
-
-            val newsEventTool =
-                createTool<NewsEventInput, String>(
-                    name = "getNewsEvents",
-                    description = null,
-                ) { input -> toolHandlerMock(input) }
-
-            val expectedArguments = NewsEventInput(10)
-
-            val modelMock =
-                mockk<Model>().apply {
-                    coEvery { sendRequest(any(), any(), any()) } returnsMany
-                        listOf(
-                            ToolCall(ToolCallId("1"), newsEventTool.name.value, Json.encodeToString(expectedArguments)),
-                            finishedTaskToolCall,
-                        ).toModelResponse()
-                }
-
-            agent {
-                model(modelMock)
-                task("Summarize the retrieved news events") {
-                    addInstruction("Fetch top 10 news events")
-                    addInstruction("Summarize the results")
-                }
-                addTool(newsEventTool)
-            }.start().apply {
-
-                outcome.shouldBeInstanceOf<Finished<String>>().description shouldBe "Finished the task"
-                modelRequests.size shouldBe 2
-
-                coVerify(exactly = 1) { toolHandlerMock.invoke(expectedArguments) }
-                coVerify(exactly = 2) { modelMock.sendRequest(any(), any(), any()) }
             }
-        }
 
-        it("should finish with Stuck result when model doesn't know what to do") {
+            it("should add ToolCall and ToolResult to messages") {
+                val toolCall = ToolCall(ToolCallId("1"), "toolName", "{}")
 
-            agent {
-                model(modelStuckDirectly)
-                task("Summarize the retrieved news events") {
-                    addInstruction("Fetch top 10 news events")
-                }
-                addTool(mockk<Tool>(relaxed = true))
-            }.start().apply {
-                outcome.shouldBeInstanceOf<Stuck>().reason shouldBe "I don't know what to do"
-            }
-        }
-
-        it("should add system prompt as first message") {
-
-            val expectedSystemPrompt = Message.SystemPrompt("You are a helpful agent")
-            val systemPromptMock =
-                mockk<SystemPromptBuilder>().apply {
-                    every { buildSystemPrompt(any<Agent<Unit, Unit>>()) } returns expectedSystemPrompt
-                }
-
-            val agent =
-                agent {
-                    model(modelFinishTaskDirectly)
-                    systemPrompt(systemPromptMock)
-                    task("Execute some task") {}
-                    addTool(mockk(relaxed = true))
-                }
-
-            agent.start().apply {
-                messages[0] shouldBe expectedSystemPrompt
-                verify(exactly = 1) { systemPromptMock.buildSystemPrompt(any<Agent<Unit, Unit>>()) }
-            }
-        }
-
-        it("should add provided context as messages after system prompt message") {
-
-            val expectedTextContext = "This is some text context"
-            val expectedImageContextBase64 = "base-64-encoded-string"
-            val expectedImageContextMimeType = MimeType.PNG
-
-            val agent =
-                agent {
-                    model(modelFinishTaskDirectly)
-                    task("Execute some task") {}
-                    context {
-                        addText(expectedTextContext)
-                        addBase64(base64 = expectedImageContextBase64, mimeType = expectedImageContextMimeType)
+                val modelMock =
+                    mockk<Model>().apply {
+                        coEvery { sendRequest(any(), any(), any()) } returnsMany
+                            listOf(
+                                toolCall,
+                                finishedTaskToolCall,
+                            ).toModelResponse()
                     }
-                    addTool(mockk(relaxed = true))
-                }
 
-            agent.start().apply {
-                messages.drop(1).take(2) shouldBe
-                    listOf(
-                        Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT),
-                        Message.Base64(
-                            sender = Sender.Agent,
-                            base64Content = expectedImageContextBase64,
-                            mimeType = expectedImageContextMimeType,
-                            category = MessageCategory.CONFIG_CONTEXT,
-                        ),
-                    )
+                val testTool =
+                    createTool<Unit, String>(
+                        name = toolCall.name,
+                        description = null,
+                    ) {
+                        "toolResult"
+                    }
+
+                val agent =
+                    agent {
+                        model(modelMock)
+                        task("Execute some task") {}
+                        addTool(testTool)
+                    }
+
+                agent.start().apply {
+                    messages[1] shouldBe Message.ToolCalls(listOf(toolCall))
+                    messages[2] shouldBe
+                        Message.ToolResult(
+                            toolCallId = toolCall.id,
+                            toolName = testTool.name.value,
+                            response = ToolResultContent("toolResult"),
+                        )
+                    messages[3] shouldBe Message.ToolCalls(listOf(finishedTaskToolCall))
+                }
             }
-        }
 
-        it("should add ToolCall and ToolResult to messages") {
-            val toolCall = ToolCall(ToolCallId("1"), "toolName", "{}")
+            it("should execute first finish any ToolCalls before FinishTask when both are received in the same message") {
 
-            val modelMock =
-                mockk<Model>().apply {
-                    coEvery { sendRequest(any(), any(), any()) } returnsMany
-                        listOf(
-                            toolCall,
-                            finishedTaskToolCall,
-                        ).toModelResponse()
-                }
+                val toolCall = ToolCall(ToolCallId("1"), "toolName", "{}")
 
-            val testTool =
-                createTool<Unit, String>(
-                    name = toolCall.name,
-                    description = null,
-                ) {
-                    "toolResult"
-                }
+                val modelMock =
+                    mockk<Model>().apply {
+                        coEvery { sendRequest(any(), any(), any()) } returns
+                            ModelResponse(
+                                Message.ToolCalls(listOf(toolCall, finishedTaskToolCall)),
+                                Usage.EMPTY,
+                            )
+                    }
 
-            val agent =
-                agent {
-                    model(modelMock)
-                    task("Execute some task") {}
-                    addTool(testTool)
-                }
+                val testTool =
+                    createTool<Unit, String>(
+                        name = toolCall.name,
+                        description = null,
+                    ) {
+                        "toolResult"
+                    }
 
-            agent.start().apply {
-                messages[1] shouldBe Message.ToolCalls(listOf(toolCall))
-                messages[2] shouldBe
-                    Message.ToolResult(
-                        toolCallId = toolCall.id,
-                        toolName = testTool.name.value,
-                        response = ToolResultContent("toolResult"),
-                    )
-                messages[3] shouldBe Message.ToolCalls(listOf(finishedTaskToolCall))
-            }
-        }
+                val agent =
+                    agent {
+                        model(modelMock)
+                        task("Execute some task") {}
+                        addTool(testTool)
+                    }
 
-        it("should execute first finish any ToolCalls before FinishTask when both are received in the same message") {
-
-            val toolCall = ToolCall(ToolCallId("1"), "toolName", "{}")
-
-            val modelMock =
-                mockk<Model>().apply {
-                    coEvery { sendRequest(any(), any(), any()) } returns
-                        ModelResponse(
-                            Message.ToolCalls(listOf(toolCall, finishedTaskToolCall)),
-                            Usage.EMPTY,
+                agent.start().apply {
+                    messages[1] shouldBe Message.ToolCalls(listOf(toolCall, finishedTaskToolCall))
+                    messages[2] shouldBe
+                        Message.ToolResult(
+                            toolCallId = toolCall.id,
+                            toolName = testTool.name.value,
+                            response = ToolResultContent("toolResult"),
                         )
                 }
+            }
 
-            val testTool =
-                createTool<Unit, String>(
-                    name = toolCall.name,
-                    description = null,
-                ) {
-                    "toolResult"
-                }
+            it("if agent return type is configured, its result should be in the Finished result") {
 
-            val agent =
-                agent {
-                    model(modelMock)
-                    task("Execute some task") {}
-                    addTool(testTool)
-                }
+                val response = buildJsonObject { put("message", "Agent response") }
 
-            agent.start().apply {
-                messages[1] shouldBe Message.ToolCalls(listOf(toolCall, finishedTaskToolCall))
-                messages[2] shouldBe
-                    Message.ToolResult(
-                        toolCallId = toolCall.id,
-                        toolName = testTool.name.value,
-                        response = ToolResultContent("toolResult"),
+                val toolCall =
+                    ToolCall(
+                        ToolCallId("1"),
+                        FINISHED_TASK_TOOL_NAME,
+                        buildJsonObject {
+                            put("description", "Finished the task")
+                            put("AgentResponse", response)
+                        }.encode(),
                     )
-            }
-        }
-
-        it("if agent return type is configured, its result should be in the Finished result") {
-
-            val response = buildJsonObject { put("message", "Agent response") }
-
-            val toolCall =
-                ToolCall(
-                    ToolCallId("1"),
-                    FINISHED_TASK_TOOL_NAME,
-                    buildJsonObject {
-                        put("description", "Finished the task")
-                        put("AgentResponse", response)
-                    }.encode(),
-                )
-            val modelMock =
-                mockk<Model>().apply {
-                    coEvery { sendRequest(any(), any(), any()) } returnsMany
-                        listOf(
-                            toolCall,
-                        ).toModelResponse()
-                }
-            val agent =
-                agent<Unit, AgentResponse> {
-                    model(modelMock)
-                    task("Execute some task") {}
-                }
-
-            agent.start().apply {
-                outcome.shouldBeTypeOf<Finished<AgentResponse>>()
-                this.outcome.response?.message shouldBe "Agent response"
-            }
-        }
-
-        it("if agent return type is not configured, the finished response field should be null") {
-            val agent =
-                agent {
-                    model(modelFinishTaskDirectly)
-                    task("Execute some task") {}
-                    addTool(mockk(relaxed = true))
-                }
-
-            agent.start().apply {
-                outcome.shouldBeTypeOf<Finished<Any>>()
-                (this.outcome as Finished).response shouldBe null
-            }
-        }
-
-        it("if agent return type is set to Unit, the finished response field should be null") {
-            val agent =
-                agent<Unit, Unit> {
-                    model(modelFinishTaskDirectly)
-                    task("Execute some task") {}
-                    addTool(mockk(relaxed = true))
-                }
-
-            agent.start().apply {
-                outcome.shouldBeTypeOf<Finished<Any>>()
-                (this.outcome as Finished).response shouldBe null
-            }
-        }
-
-        it("should categorize and order messages correctly in AgentRun") {
-
-            val expectedTextContext = "Config context text"
-            val expectedBase64Attachment = "base64-attachment-content"
-            val expectedUrlAttachment = "https://example.com/image.png"
-            val expectedStartRunText = "This text is run specific context text"
-
-            val toolCall = ToolCall(ToolCallId("1"), "toolName", "{}")
-
-            val messagesSlot = slot<List<Message>>()
-            val capturedMessages = mutableListOf<List<Message>>()
-
-            val modelMock =
-                mockk<Model>().apply {
-                    coEvery { sendRequest(capture(messagesSlot), any(), any()) } answers {
-                        capturedMessages.add(messagesSlot.captured)
-                        listOf(
-                            toolCall,
-                            finishedTaskToolCall,
-                        ).toModelResponse()[capturedMessages.size - 1]
+                val modelMock =
+                    mockk<Model>().apply {
+                        coEvery { sendRequest(any(), any(), any()) } returnsMany
+                            listOf(
+                                toolCall,
+                            ).toModelResponse()
                     }
-                }
-
-            val testTool =
-                createTool<Unit, String>(
-                    name = toolCall.name,
-                    description = null,
-                ) {
-                    "toolResult"
-                }
-
-            val agent =
-                agent<String, Unit> {
-                    model(modelMock)
-                    task("Execute some task") {}
-                    context {
-                        addText(expectedTextContext)
+                val agent =
+                    agent<Unit, AgentResponse> {
+                        model(modelMock)
+                        task("Execute some task") {}
                     }
-                    addTool(testTool)
+
+                agent.start().apply {
+                    outcome.shouldBeTypeOf<Finished<AgentResponse>>()
+                    this.outcome.response?.message shouldBe "Agent response"
                 }
+            }
 
-            agent.start(
-                expectedStartRunText,
-                Attachment.Base64.png(expectedBase64Attachment),
-                Attachment.Url.png(expectedUrlAttachment),
-            ).apply {
-                systemPromptMessage shouldBe messages[0]
+            it("if agent return type is not configured, the finished response field should be null") {
+                val agent =
+                    agent {
+                        model(modelFinishTaskDirectly)
+                        task("Execute some task") {}
+                        addTool(mockk(relaxed = true))
+                    }
 
-                val configContextMessages = messages.filter { it.category == MessageCategory.CONFIG_CONTEXT }
-                configContextMessages.size shouldBe 1
-                configContextMessages[0] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
+                agent.start().apply {
+                    outcome.shouldBeTypeOf<Finished<Any>>()
+                    (this.outcome as Finished).response shouldBe null
+                }
+            }
 
-                val runContextMessages = messages.filter { it.category == MessageCategory.RUN_CONTEXT }
-                runContextMessages.size shouldBe 3
-                runContextMessages[0] shouldBe
-                    Message.Base64(
-                        Sender.Agent,
-                        expectedBase64Attachment,
-                        MimeType.PNG,
-                        MessageCategory.RUN_CONTEXT,
-                    )
-                runContextMessages[1] shouldBe
-                    Message.Url(
-                        Sender.Agent,
-                        expectedUrlAttachment,
-                        MimeType.PNG,
-                        MessageCategory.RUN_CONTEXT,
-                    )
-                runContextMessages[2] shouldBe
-                    Message.Text(
-                        Sender.Agent,
+            it("if agent return type is set to Unit, the finished response field should be null") {
+                val agent =
+                    agent<Unit, Unit> {
+                        model(modelFinishTaskDirectly)
+                        task("Execute some task") {}
+                        addTool(mockk(relaxed = true))
+                    }
+
+                agent.start().apply {
+                    outcome.shouldBeTypeOf<Finished<Any>>()
+                    (this.outcome as Finished).response shouldBe null
+                }
+            }
+
+            it("should categorize and order messages correctly in AgentRun") {
+
+                val expectedTextContext = "Config context text"
+                val expectedBase64Attachment = "base64-attachment-content"
+                val expectedUrlAttachment = "https://example.com/image.png"
+                val expectedStartRunText = "This text is run specific context text"
+
+                val toolCall = ToolCall(ToolCallId("1"), "toolName", "{}")
+
+                val messagesSlot = slot<List<Message>>()
+                val capturedMessages = mutableListOf<List<Message>>()
+
+                val modelMock =
+                    mockk<Model>().apply {
+                        coEvery { sendRequest(capture(messagesSlot), any(), any()) } answers {
+                            capturedMessages.add(messagesSlot.captured)
+                            listOf(
+                                toolCall,
+                                finishedTaskToolCall,
+                            ).toModelResponse()[capturedMessages.size - 1]
+                        }
+                    }
+
+                val testTool =
+                    createTool<Unit, String>(
+                        name = toolCall.name,
+                        description = null,
+                    ) {
+                        "toolResult"
+                    }
+
+                val agent =
+                    agent<String, Unit> {
+                        model(modelMock)
+                        task("Execute some task") {}
+                        context {
+                            addText(expectedTextContext)
+                        }
+                        addTool(testTool)
+                    }
+
+                agent
+                    .start(
                         expectedStartRunText,
-                        MessageCategory.RUN_CONTEXT,
-                    )
+                        Attachment.Base64.png(expectedBase64Attachment),
+                        Attachment.Url.png(expectedUrlAttachment),
+                    ).apply {
+                        systemPromptMessage shouldBe messages[0]
 
-                val executionMessages = messages.filter { it.category == MessageCategory.EXECUTION }
-                executionMessages.size shouldBe 3
-                executionMessages[0] shouldBe Message.ToolCalls(listOf(toolCall))
-                executionMessages[1].shouldBeTypeOf<Message.ToolResult>()
-                executionMessages[2] shouldBe Message.ToolCalls(listOf(finishedTaskToolCall))
+                        val configContextMessages = messages.filter { it.category == MessageCategory.CONFIG_CONTEXT }
+                        configContextMessages.size shouldBe 1
+                        configContextMessages[0] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
 
-                capturedMessages.size shouldBe 2
+                        val runContextMessages = messages.filter { it.category == MessageCategory.RUN_CONTEXT }
+                        runContextMessages.size shouldBe 3
+                        runContextMessages[0] shouldBe
+                            Message.Base64(
+                                Sender.Agent,
+                                expectedBase64Attachment,
+                                MimeType.PNG,
+                                MessageCategory.RUN_CONTEXT,
+                            )
+                        runContextMessages[1] shouldBe
+                            Message.Url(
+                                Sender.Agent,
+                                expectedUrlAttachment,
+                                MimeType.PNG,
+                                MessageCategory.RUN_CONTEXT,
+                            )
+                        runContextMessages[2] shouldBe
+                            Message.Text(
+                                Sender.Agent,
+                                expectedStartRunText,
+                                MessageCategory.RUN_CONTEXT,
+                            )
 
-                val firstRequestMessages = capturedMessages[0]
-                val secondRequestMessages = capturedMessages[1]
+                        val executionMessages = messages.filter { it.category == MessageCategory.EXECUTION }
+                        executionMessages.size shouldBe 3
+                        executionMessages[0] shouldBe Message.ToolCalls(listOf(toolCall))
+                        executionMessages[1].shouldBeTypeOf<Message.ToolResult>()
+                        executionMessages[2] shouldBe Message.ToolCalls(listOf(finishedTaskToolCall))
 
-                firstRequestMessages.run {
-                    size shouldBe 5
-                    this[0].shouldBeTypeOf<Message.SystemPrompt>()
-                    this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
-                    this[2] shouldBe
-                        Message.Base64(
-                            Sender.Agent,
-                            expectedBase64Attachment,
-                            MimeType.PNG,
-                            MessageCategory.RUN_CONTEXT,
-                        )
-                    this[3] shouldBe
-                        Message.Url(
-                            Sender.Agent,
-                            expectedUrlAttachment,
-                            MimeType.PNG,
-                            MessageCategory.RUN_CONTEXT,
-                        )
-                    this[4] shouldBe
+                        capturedMessages.size shouldBe 2
+
+                        val firstRequestMessages = capturedMessages[0]
+                        val secondRequestMessages = capturedMessages[1]
+
+                        firstRequestMessages.run {
+                            size shouldBe 5
+                            this[0].shouldBeTypeOf<Message.SystemPrompt>()
+                            this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
+                            this[2] shouldBe
+                                Message.Base64(
+                                    Sender.Agent,
+                                    expectedBase64Attachment,
+                                    MimeType.PNG,
+                                    MessageCategory.RUN_CONTEXT,
+                                )
+                            this[3] shouldBe
+                                Message.Url(
+                                    Sender.Agent,
+                                    expectedUrlAttachment,
+                                    MimeType.PNG,
+                                    MessageCategory.RUN_CONTEXT,
+                                )
+                            this[4] shouldBe
+                                Message.Text(
+                                    Sender.Agent,
+                                    expectedStartRunText,
+                                    MessageCategory.RUN_CONTEXT,
+                                )
+                        }
+
+                        secondRequestMessages.run {
+                            size shouldBe 7
+                            this[0].shouldBeTypeOf<Message.SystemPrompt>()
+                            this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
+                            this[2] shouldBe
+                                Message.Base64(
+                                    Sender.Agent,
+                                    expectedBase64Attachment,
+                                    MimeType.PNG,
+                                    MessageCategory.RUN_CONTEXT,
+                                )
+                            this[3] shouldBe
+                                Message.Url(
+                                    Sender.Agent,
+                                    expectedUrlAttachment,
+                                    MimeType.PNG,
+                                    MessageCategory.RUN_CONTEXT,
+                                )
+                            this[4] shouldBe
+                                Message.Text(
+                                    Sender.Agent,
+                                    expectedStartRunText,
+                                    MessageCategory.RUN_CONTEXT,
+                                )
+                            this[5] shouldBe Message.ToolCalls(listOf(toolCall))
+                            this[6].shouldBeTypeOf<Message.ToolResult>()
+                        }
+                    }
+            }
+
+            it("should JSON-encode data class input as Text message") {
+
+                val inputDataClass = NewsEventInput(count = 5)
+
+                val agent =
+                    agent<NewsEventInput, Unit> {
+                        model(modelFinishTaskDirectly)
+                        task("Execute some task") {}
+                        addTool(mockk(relaxed = true))
+                    }
+
+                agent.start(inputDataClass).apply {
+                    val runContextMessages = messages.filter { it.category == MessageCategory.RUN_CONTEXT }
+                    runContextMessages.size shouldBe 1
+                    runContextMessages[0] shouldBe
                         Message.Text(
                             Sender.Agent,
-                            expectedStartRunText,
+                            """{"count":5}""",
                             MessageCategory.RUN_CONTEXT,
                         )
                 }
+            }
 
-                secondRequestMessages.run {
-                    size shouldBe 7
-                    this[0].shouldBeTypeOf<Message.SystemPrompt>()
-                    this[1] shouldBe Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT)
-                    this[2] shouldBe
-                        Message.Base64(
-                            Sender.Agent,
-                            expectedBase64Attachment,
-                            MimeType.PNG,
-                            MessageCategory.RUN_CONTEXT,
-                        )
-                    this[3] shouldBe
-                        Message.Url(
-                            Sender.Agent,
-                            expectedUrlAttachment,
-                            MimeType.PNG,
-                            MessageCategory.RUN_CONTEXT,
-                        )
-                    this[4] shouldBe
-                        Message.Text(
-                            Sender.Agent,
-                            expectedStartRunText,
-                            MessageCategory.RUN_CONTEXT,
-                        )
-                    this[5] shouldBe Message.ToolCalls(listOf(toolCall))
-                    this[6].shouldBeTypeOf<Message.ToolResult>()
+            it("should push run to platform if platform configured") {
+
+                val platform = mockk<Platform>(relaxed = true)
+
+                val agent =
+                    agent {
+                        platform(platform)
+                        model(modelFinishTaskDirectly)
+                        task("Execute some task") {}
+                        addTool(mockk(relaxed = true))
+                    }
+
+                val run = agent.start()
+                coVerify { platform.sendRun(run, agent) }
+            }
+
+            it("should succeed when platform throws exception (best effort publish)") {
+
+                val platform =
+                    mockk<Platform>().apply {
+                        coEvery { sendRun(any(), any<Agent<Unit, Unit>>()) } throws IOException("Something went wrong")
+                    }
+
+                val agent =
+                    agent {
+                        platform(platform)
+                        model(modelFinishTaskDirectly)
+                        task("Execute some task") {}
+                        addTool(mockk(relaxed = true))
+                    }
+
+                agent.start().apply {
+                    outcome.shouldBeInstanceOf<Finished<Unit>>()
                 }
             }
         }
 
-        it("should JSON-encode data class input as Text message") {
+        describe("exceptions") {
 
-            val inputDataClass = NewsEventInput(count = 5)
+            it("should finish with Fatal result when model throws AigenticException") {
 
-            val agent =
-                agent<NewsEventInput, Unit> {
-                    model(modelFinishTaskDirectly)
-                    task("Execute some task") {}
-                    addTool(mockk(relaxed = true))
-                }
+                val modelMock =
+                    mockk<Model>().apply {
+                        coEvery { sendRequest(any(), any(), any()) } throws AigenticException("Model exception")
+                    }
 
-            agent.start(inputDataClass).apply {
-                val runContextMessages = messages.filter { it.category == MessageCategory.RUN_CONTEXT }
-                runContextMessages.size shouldBe 1
-                runContextMessages[0] shouldBe
-                    Message.Text(
-                        Sender.Agent,
-                        """{"count":5}""",
-                        MessageCategory.RUN_CONTEXT,
-                    )
-            }
-        }
-
-        it("should push run to platform if platform configured") {
-
-            val platform = mockk<Platform>(relaxed = true)
-
-            val agent =
                 agent {
-                    platform(platform)
-                    model(modelFinishTaskDirectly)
-                    task("Execute some task") {}
-                    addTool(mockk(relaxed = true))
+                    model(modelMock)
+                    task("Summarize the retrieved news events") {
+                        addInstruction("Fetch top 10 news events")
+                    }
+                    addTool(mockk<Tool>(relaxed = true))
+                }.start().apply {
+                    outcome.shouldBeInstanceOf<Fatal>().message shouldBe "Model exception"
                 }
-
-            val run = agent.start()
-            coVerify { platform.sendRun(run, agent) }
-        }
-
-        it("should succeed when platform throws exception (best effort publish)") {
-
-            val platform =
-                mockk<Platform>().apply {
-                    coEvery { sendRun(any(), any<Agent<Unit, Unit>>()) } throws IOException("Something went wrong")
-                }
-
-            val agent =
-                agent {
-                    platform(platform)
-                    model(modelFinishTaskDirectly)
-                    task("Execute some task") {}
-                    addTool(mockk(relaxed = true))
-                }
-
-            agent.start().apply {
-                outcome.shouldBeInstanceOf<Finished<Unit>>()
             }
+
+            // Implement more in https://aigentic.youtrack.cloud/issue/AIGENTIC-29/Improve-Aigentic-client-Add-error-handling
         }
-    }
-
-    describe("exceptions") {
-
-        it("should finish with Fatal result when model throws AigenticException") {
-
-            val modelMock =
-                mockk<Model>().apply {
-                    coEvery { sendRequest(any(), any(), any()) } throws AigenticException("Model exception")
-                }
-
-            agent {
-                model(modelMock)
-                task("Summarize the retrieved news events") {
-                    addInstruction("Fetch top 10 news events")
-                }
-                addTool(mockk<Tool>(relaxed = true))
-            }.start().apply {
-                outcome.shouldBeInstanceOf<Fatal>().message shouldBe "Model exception"
-            }
-        }
-
-        // Implement more in https://aigentic.youtrack.cloud/issue/AIGENTIC-29/Improve-Aigentic-client-Add-error-handling
-    }
-})
+    })
 
 @AigenticParameter
-data class NewsEvent(val id: Int, val title: String)
+data class NewsEvent(
+    val id: Int,
+    val title: String,
+)
 
 @AigenticParameter
-data class AgentResponse(val message: String)
+data class AgentResponse(
+    val message: String,
+)

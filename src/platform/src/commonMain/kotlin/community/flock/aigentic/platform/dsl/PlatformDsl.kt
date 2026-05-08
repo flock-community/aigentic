@@ -16,7 +16,7 @@ fun <I : Any, O : Any> AgentConfig<I, O>.platform(platformConfig: PlatformConfig
     }
 
 @AgentDSL
-class PlatformConfig() : Config<Platform> {
+class PlatformConfig : Config<Platform> {
     private var name: String? = null
     private var secret: String? = null
     private var apiUrl: String = defaultPlatformApiUrl

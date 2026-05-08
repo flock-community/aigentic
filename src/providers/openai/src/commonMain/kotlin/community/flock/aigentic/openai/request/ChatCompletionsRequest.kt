@@ -16,8 +16,8 @@ internal fun createChatCompletionsRequest(
     tools: List<ToolDescription>,
     openAIModelIdentifier: ModelIdentifier,
     generationSettings: GenerationSettings,
-): ChatCompletionRequest {
-    return chatCompletionRequest {
+): ChatCompletionRequest =
+    chatCompletionRequest {
         temperature = generationSettings.temperature.toDouble()
         topP = generationSettings.topP.toDouble()
         // topK = generationSettings.topK, TODO: Top k currently not supported in OpenAI
@@ -26,4 +26,3 @@ internal fun createChatCompletionsRequest(
         this.tools = tools.map { it.toOpenAITool() }
         toolChoice = ToolChoice.Auto
     }
-}

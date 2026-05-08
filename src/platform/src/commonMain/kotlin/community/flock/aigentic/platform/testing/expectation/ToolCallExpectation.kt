@@ -31,7 +31,9 @@ fun <O : Any> createToolCallExpectation(
     val toolCall =
         toolCallOverrides.find { it.toolCallId == originalToolCall.id }?.let {
             ToolCall(
-                id = originalToolCall.id, name = originalToolCall.name, arguments = it.arguments,
+                id = originalToolCall.id,
+                name = originalToolCall.name,
+                arguments = it.arguments,
             )
         } ?: originalToolCall
 

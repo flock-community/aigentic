@@ -10,17 +10,23 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmInline
 
 @JvmInline
-value class ResolvedQueryParameters(val values: Map<String, JsonElement>) {
+value class ResolvedQueryParameters(
+    val values: Map<String, JsonElement>,
+) {
     companion object {
         fun empty() = ResolvedQueryParameters(emptyMap())
     }
 }
 
 @JvmInline
-value class ResolvedRequestBody(val stringBody: String)
+value class ResolvedRequestBody(
+    val stringBody: String,
+)
 
 @JvmInline
-value class ResolvedUrl(val urlString: String)
+value class ResolvedUrl(
+    val urlString: String,
+)
 
 interface QueryParametersArgumentsResolver {
     fun resolveQueryParameters(
@@ -34,15 +40,17 @@ class DefaultQueryParametersArgumentsResolver : QueryParametersArgumentsResolver
         queryParameters: List<Parameter>,
         callArguments: JsonObject,
     ): ResolvedQueryParameters =
-        queryParameters.mapNotNull { queryParameter ->
+        queryParameters
+            .mapNotNull { queryParameter ->
 
-            val parameterValue = queryParameter.getParameterValue(callArguments)
-            parameterValue?.let {
-                queryParameter.name to it
+                val parameterValue = queryParameter.getParameterValue(callArguments)
+                parameterValue?.let {
+                    queryParameter.name to it
+                }
+            }.toMap()
+            .let {
+                ResolvedQueryParameters(it)
             }
-        }.toMap().let {
-            ResolvedQueryParameters(it)
-        }
 }
 
 interface RequestBodyArgumentsResolver {
@@ -77,20 +85,21 @@ class DefaultUrlArgumentsResolver : UrlArgumentsResolver {
         callArguments: JsonObject,
     ): ResolvedUrl {
         // TODO Url encoding?
-        return pathParameters.fold(placeHolderUrl) { url, pathParam ->
-            val paramValue = pathParam.getParameterValue(callArguments)
-            if (paramValue == null) {
-                aigenticException("Path parameter '${pathParam.name}' required for url '$url' but not found in call arguments.")
-            } else {
-                url.replace("{${pathParam.name}}", paramValue.jsonPrimitive.content)
+        return pathParameters
+            .fold(placeHolderUrl) { url, pathParam ->
+                val paramValue = pathParam.getParameterValue(callArguments)
+                if (paramValue == null) {
+                    aigenticException("Path parameter '${pathParam.name}' required for url '$url' but not found in call arguments.")
+                } else {
+                    url.replace("{${pathParam.name}}", paramValue.jsonPrimitive.content)
+                }
+            }.let {
+                if (it.contains("{") || it.contains("}")) {
+                    aigenticException("Not all path parameters are resolved: '$it'")
+                } else {
+                    ResolvedUrl(it)
+                }
             }
-        }.let {
-            if (it.contains("{") || it.contains("}")) {
-                aigenticException("Not all path parameters are resolved: '$it'")
-            } else {
-                ResolvedUrl(it)
-            }
-        }
     }
 }
 

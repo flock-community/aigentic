@@ -88,8 +88,13 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                     },
                 exampleRunIds = exampleRunIds.map { it.value },
                 responseJsonSchema = agent.responseParameter?.toJsonSchemaString(),
-                temperature = agent.model.generationSettings.temperature.toDouble(),
-                thinkingBudget = agent.model.generationSettings.thinkingConfig?.thinkingBudget?.toLong(),
+                temperature =
+                    agent.model.generationSettings.temperature
+                        .toDouble(),
+                thinkingBudget =
+                    agent.model.generationSettings.thinkingConfig
+                        ?.thinkingBudget
+                        ?.toLong(),
             ),
         messages = messages.mapNotNull { it.toDto() },
         modelRequests = modelRequests.map { it.toDto() },
@@ -98,15 +103,16 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
 
 private fun Parameter.toDto(): ParameterDto =
     when (this) {
-        is Parameter.Primitive ->
+        is Parameter.Primitive -> {
             ParameterPrimitiveDto(
                 name = name,
                 description = description,
                 isRequired = isRequired,
                 paramType = type.toDto(),
             )
+        }
 
-        is Parameter.Complex.Object ->
+        is Parameter.Complex.Object -> {
             ParameterObjectDto(
                 name = name,
                 description = description,
@@ -114,8 +120,9 @@ private fun Parameter.toDto(): ParameterDto =
                 paramType = type.toDto(),
                 parameters = parameters.map { it.toDto() },
             )
+        }
 
-        is Parameter.Complex.Array ->
+        is Parameter.Complex.Array -> {
             ParameterArrayDto(
                 name = name,
                 description = description,
@@ -123,9 +130,9 @@ private fun Parameter.toDto(): ParameterDto =
                 paramType = type.toDto(),
                 itemDefinition = itemDefinition.toDto(),
             )
+        }
 
-        is Parameter.Complex.Enum ->
-
+        is Parameter.Complex.Enum -> {
             ParameterEnumDto(
                 name = name,
                 description = description,
@@ -139,6 +146,7 @@ private fun Parameter.toDto(): ParameterDto =
                     },
                 valueType = valueType.toDto(),
             )
+        }
     }
 
 private fun determineType(value: PrimitiveValue<*>): PrimitiveValueTypeDto =
@@ -189,7 +197,7 @@ private fun Sender.toDto(): SenderDto =
 
 private fun Message.toDto(): MessageDto? =
     when (this) {
-        is Message.Base64 ->
+        is Message.Base64 -> {
             Base64MessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
@@ -197,8 +205,9 @@ private fun Message.toDto(): MessageDto? =
                 mimeType = mimeType.toDto(),
                 category = category.toDto(),
             )
+        }
 
-        is Message.Url ->
+        is Message.Url -> {
             UrlMessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
@@ -206,32 +215,36 @@ private fun Message.toDto(): MessageDto? =
                 mimeType = mimeType.toDto(),
                 category = category.toDto(),
             )
+        }
 
-        is Message.SystemPrompt ->
+        is Message.SystemPrompt -> {
             SystemPromptMessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 prompt = prompt,
                 category = category.toDto(),
             )
+        }
 
-        is Message.Text ->
+        is Message.Text -> {
             TextMessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 text = text,
                 category = category.toDto(),
             )
+        }
 
-        is Message.ToolCalls ->
+        is Message.ToolCalls -> {
             ToolCallsMessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 toolCalls = toolCalls.map { it.toDto() },
                 category = category.toDto(),
             )
+        }
 
-        is Message.ToolResult ->
+        is Message.ToolResult -> {
             ToolResultMessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
@@ -240,15 +253,20 @@ private fun Message.toDto(): MessageDto? =
                 toolName = toolName,
                 category = category.toDto(),
             )
+        }
 
-        is Message.ExampleToolMessage -> null
-        is Message.StructuredOutput ->
+        is Message.ExampleToolMessage -> {
+            null
+        }
+
+        is Message.StructuredOutput -> {
             StructuredOutputMessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 response = response,
                 category = category.toDto(),
             )
+        }
     }
 
 private fun MessageCategory.toDto(): MessageCategoryDto =
@@ -280,19 +298,22 @@ private fun MimeType.toDto(): MimeTypeDto =
 
 private fun <O : Any> Outcome<O>.toDto(outputSerializer: KSerializer<O>) =
     when (this) {
-        is Outcome.Fatal ->
+        is Outcome.Fatal -> {
             FatalResultDto(
                 message = message,
             )
+        }
 
-        is Outcome.Finished ->
+        is Outcome.Finished -> {
             FinishedResultDto(
                 description = description,
                 response = response?.let { Json.encodeToString(outputSerializer, it) },
             )
+        }
 
-        is Outcome.Stuck ->
+        is Outcome.Stuck -> {
             StuckResultDto(
                 reason = reason,
             )
+        }
     }

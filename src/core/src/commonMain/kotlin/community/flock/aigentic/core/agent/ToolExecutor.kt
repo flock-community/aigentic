@@ -42,7 +42,11 @@ internal suspend inline fun <I : Any, reified O : Any> executeTool(
     }
 
 sealed interface ToolExecutionResult {
-    data class FinishedToolResult<O : Any>(val outcome: Outcome<O>) : ToolExecutionResult
+    data class FinishedToolResult<O : Any>(
+        val outcome: Outcome<O>,
+    ) : ToolExecutionResult
 
-    data class ToolResult(val message: Message.ToolResult) : ToolExecutionResult
+    data class ToolResult(
+        val message: Message.ToolResult,
+    ) : ToolExecutionResult
 }

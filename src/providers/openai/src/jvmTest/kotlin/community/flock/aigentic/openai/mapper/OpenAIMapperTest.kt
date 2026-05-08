@@ -15,41 +15,42 @@ import io.kotest.matchers.should
 import io.kotest.matchers.types.beInstanceOf
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-class OpenAIMapperTest : DescribeSpec({
+class OpenAIMapperTest :
+    DescribeSpec({
 
-    describe("OpenAI Mapper") {
+        describe("OpenAI Mapper") {
 
-        it("Should format data url when raw base64 content is provided") {
-            val base64Content = "iVBORw0KGgoAAA=="
-            val mimeType = MimeType.PNG
-            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
+            it("Should format data url when raw base64 content is provided") {
+                val base64Content = "iVBORw0KGgoAAA=="
+                val mimeType = MimeType.PNG
+                val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
 
-            val chatMessage = base64Message.toOpenAIMessage()
+                val chatMessage = base64Message.toOpenAIMessage()
 
-            chatMessage should beInstanceOf<ChatMessage>()
-            chatMessage.role should be(ChatRole.Assistant)
-            chatMessage.messageContent.shouldBeInstanceOf<ListContent>().run {
-                this.content[0].shouldBeInstanceOf<ImagePart>().run {
-                    this.imageUrl.url should be("data:${mimeType.value};base64,$base64Content")
+                chatMessage should beInstanceOf<ChatMessage>()
+                chatMessage.role should be(ChatRole.Assistant)
+                chatMessage.messageContent.shouldBeInstanceOf<ListContent>().run {
+                    this.content[0].shouldBeInstanceOf<ImagePart>().run {
+                        this.imageUrl.url should be("data:${mimeType.value};base64,$base64Content")
+                    }
+                }
+            }
+
+            it("should not format when already is base64 data url") {
+
+                val base64Content = "data:image/png;base64,iVBORw0KGgoAAA=="
+                val mimeType = MimeType.PNG
+                val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
+
+                val chatMessage = base64Message.toOpenAIMessage()
+
+                chatMessage should beInstanceOf<ChatMessage>()
+                chatMessage.role should be(ChatRole.Assistant)
+                chatMessage.messageContent.shouldBeInstanceOf<ListContent>().run {
+                    this.content[0].shouldBeInstanceOf<ImagePart>().run {
+                        this.imageUrl.url should be(base64Content)
+                    }
                 }
             }
         }
-
-        it("should not format when already is base64 data url") {
-
-            val base64Content = "data:image/png;base64,iVBORw0KGgoAAA=="
-            val mimeType = MimeType.PNG
-            val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
-
-            val chatMessage = base64Message.toOpenAIMessage()
-
-            chatMessage should beInstanceOf<ChatMessage>()
-            chatMessage.role should be(ChatRole.Assistant)
-            chatMessage.messageContent.shouldBeInstanceOf<ListContent>().run {
-                this.content[0].shouldBeInstanceOf<ImagePart>().run {
-                    this.imageUrl.url should be(base64Content)
-                }
-            }
-        }
-    }
-})
+    })

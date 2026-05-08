@@ -58,7 +58,9 @@ internal inline fun <reified I : Any, reified O : Any> registerHttpFunction(func
 }
 
 sealed interface Authentication {
-    data class AuthorizationHeader(val key: String) : Authentication
+    data class AuthorizationHeader(
+        val key: String,
+    ) : Authentication
 }
 
 data class GoogleHttpCloudFunction<I : Any, O : Any>(

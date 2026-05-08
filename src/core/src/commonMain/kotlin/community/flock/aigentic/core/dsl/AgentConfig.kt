@@ -30,8 +30,7 @@ inline fun <I : Any, reified O : Any> agent(agentConfig: AgentConfig<I, O>.() ->
             if (O::class != Unit::class) {
                 setFinishResponse<O>()
             }
-        }
-        .apply(agentConfig)
+        }.apply(agentConfig)
         .build()
 
 @AgentDSL
@@ -66,14 +65,17 @@ class AgentConfig<I : Any, O : Any> : Config<Agent<I, O>> {
     }
 
     fun AgentConfig<I, O>.context(contextConfig: ContextConfig.() -> Unit) =
-        ContextConfig().apply(contextConfig).build()
+        ContextConfig()
+            .apply(contextConfig)
+            .build()
             .also { contexts = it }
 
     fun AgentConfig<I, O>.task(
         description: String,
         taskConfig: TaskConfig.() -> Unit,
     ): TaskConfig =
-        TaskConfig(description).apply(taskConfig)
+        TaskConfig(description)
+            .apply(taskConfig)
             .also { task = it }
 
     fun AgentConfig<I, O>.systemPrompt(systemPromptBuilder: SystemPromptBuilder) {
@@ -124,19 +126,22 @@ class ContextConfig : Config<List<Context>> {
     internal val contexts = mutableListOf<Context>()
 
     fun ContextConfig.addText(text: String) =
-        Context.Text(text)
+        Context
+            .Text(text)
             .also { contexts.add(it) }
 
     fun ContextConfig.addUrl(
         url: String,
         mimeType: MimeType,
-    ) = Context.Url(url = url, mimeType = mimeType)
+    ) = Context
+        .Url(url = url, mimeType = mimeType)
         .also { contexts.add(it) }
 
     fun ContextConfig.addBase64(
         base64: String,
         mimeType: MimeType,
-    ) = Context.Base64(base64 = base64, mimeType = mimeType)
+    ) = Context
+        .Base64(base64 = base64, mimeType = mimeType)
         .also { contexts.add(it) }
 
     override fun build(): List<Context> = contexts

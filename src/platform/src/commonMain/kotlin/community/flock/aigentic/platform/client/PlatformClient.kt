@@ -43,7 +43,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.reflect.KType
 
-interface PlatformEndpoints : Gateway.Handler, GetRuns.Handler
+interface PlatformEndpoints :
+    Gateway.Handler,
+    GetRuns.Handler
 
 const val defaultPlatformApiUrl = "https://aigentic-backend-kib53ypjwq-ez.a.run.app/"
 
@@ -60,13 +62,23 @@ class AigenticPlatformClient(
         val runDto = run.toDto(agent, outputSerializer)
         val request = Gateway.Request(body = runDto)
         return when (val response = endpoints.gateway(request)) {
-            is Gateway.Response201 -> RunSentResult.Success
-            is Gateway.Response401 -> RunSentResult.Unauthorized
-            is Gateway.Response400 -> RunSentResult.Error(response.body.message)
-            is Gateway.Response500 ->
+            is Gateway.Response201 -> {
+                RunSentResult.Success
+            }
+
+            is Gateway.Response401 -> {
+                RunSentResult.Unauthorized
+            }
+
+            is Gateway.Response400 -> {
+                RunSentResult.Error(response.body.message)
+            }
+
+            is Gateway.Response500 -> {
                 RunSentResult.Error(
                     "${response.body.name} - ${response.body.description}",
                 )
+            }
         }
     }
 

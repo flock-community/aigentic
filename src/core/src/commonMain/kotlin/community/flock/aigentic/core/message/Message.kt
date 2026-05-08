@@ -24,21 +24,24 @@ sealed class Message(
         override val sender: Sender,
         val text: String,
         override val category: MessageCategory,
-    ) : Message(sender, category), ContextMessage
+    ) : Message(sender, category),
+        ContextMessage
 
     data class Url(
         override val sender: Sender,
         val url: String,
         val mimeType: MimeType,
         override val category: MessageCategory,
-    ) : Message(Sender.Agent, category), ContextMessage
+    ) : Message(Sender.Agent, category),
+        ContextMessage
 
     data class Base64(
         override val sender: Sender,
         val base64Content: String,
         val mimeType: MimeType,
         override val category: MessageCategory,
-    ) : Message(Sender.Agent, category), ContextMessage
+    ) : Message(Sender.Agent, category),
+        ContextMessage
 
     data class ToolCalls(
         val toolCalls: List<ToolCall>,
@@ -62,7 +65,8 @@ sealed class Message(
         val text: String,
         val id: ToolCallId? = null,
         override val category: MessageCategory = MessageCategory.EXAMPLE,
-    ) : Message(sender, category), ContextMessage
+    ) : Message(sender, category),
+        ContextMessage
 }
 
 data class ToolCall(
@@ -71,7 +75,9 @@ data class ToolCall(
     val arguments: String,
 )
 
-enum class MimeType(val value: String) {
+enum class MimeType(
+    val value: String,
+) {
     JPEG("image/jpeg"),
     PNG("image/png"),
     WEBP("image/webp"),
@@ -81,13 +87,18 @@ enum class MimeType(val value: String) {
 }
 
 @JvmInline
-value class ToolCallId(val id: String)
+value class ToolCallId(
+    val id: String,
+)
 
 @JvmInline
-value class ToolResultContent(val result: String)
+value class ToolResultContent(
+    val result: String,
+)
 
 sealed interface Sender {
     data object Agent : Sender
+
     data object Model : Sender
 }
 
@@ -107,7 +118,8 @@ fun List<Message>.mapToTextMessages(): List<Message.ExampleToolMessage> {
         }
 
     val messageResults: List<Message.ExampleToolMessage> =
-        this.filterIsInstance<Message.ToolResult>()
+        this
+            .filterIsInstance<Message.ToolResult>()
             .map { Message.ExampleToolMessage(id = it.toolCallId, text = "Tool call result: " + it.response.result, sender = Sender.Agent) }
 
     val joinedMessages = messageArguments.zip(messageResults).flatMap { listOf(it.first, it.second) }

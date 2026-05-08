@@ -32,19 +32,24 @@ suspend fun runOpenAPIAgent(
         }.start()
 
     when (val result = run.outcome) {
-        is Outcome.Finished ->
+        is Outcome.Finished -> {
             result.response.let { response ->
                 "Hacker News agent completed successfully: $response"
             }
+        }
 
-        is Outcome.Stuck -> "Agent is stuck and could not complete task, it says: ${result.reason}"
-        is Outcome.Fatal -> "Agent crashed: ${result.message}"
+        is Outcome.Stuck -> {
+            "Agent is stuck and could not complete task, it says: ${result.reason}"
+        }
+
+        is Outcome.Fatal -> {
+            "Agent crashed: ${result.message}"
+        }
     }.also(::println)
 }
 
-private fun sendEmailHandler(input: SendEmailRequest): SendEmailResponse {
-    return SendEmailResponse("✉️ Sending email: '${input.message}' with subject: '${input.subject}' to recipient: ${input.emailAddress}")
-}
+private fun sendEmailHandler(input: SendEmailRequest): SendEmailResponse =
+    SendEmailResponse("✉️ Sending email: '${input.message}' with subject: '${input.subject}' to recipient: ${input.emailAddress}")
 
 @AigenticParameter
 data class SendEmailRequest(
@@ -54,7 +59,9 @@ data class SendEmailRequest(
 )
 
 @AigenticParameter
-data class SendEmailResponse(val message: String)
+data class SendEmailResponse(
+    val message: String,
+)
 
 @AigenticParameter
 data class HackerNewsAgentResponse(

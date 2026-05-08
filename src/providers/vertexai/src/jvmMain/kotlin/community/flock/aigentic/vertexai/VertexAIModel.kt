@@ -19,18 +19,27 @@ sealed class VertexAIModelIdentifier(
     override val stringValue: String,
 ) : ModelIdentifier {
     data object Gemini2_5Flash : VertexAIModelIdentifier("gemini-2.5-flash")
+
     data object Gemini2_5Pro : VertexAIModelIdentifier("gemini-2.5-pro")
+
     data object Gemini2_0Flash : VertexAIModelIdentifier("gemini-2.0-flash")
+
     data object Gemini2_0FlashLite : VertexAIModelIdentifier("gemini-2.0-flash-lite")
 
-    data class Custom(val identifier: String) : VertexAIModelIdentifier(identifier)
+    data class Custom(
+        val identifier: String,
+    ) : VertexAIModelIdentifier(identifier)
 }
 
 @JvmInline
-value class Project(val value: String)
+value class Project(
+    val value: String,
+)
 
 @JvmInline
-value class Location(val value: String)
+value class Location(
+    val value: String,
+)
 
 class VertexAIModel(
     override val modelIdentifier: ModelIdentifier,
@@ -46,11 +55,13 @@ class VertexAIModel(
         tools: List<ToolDescription>,
         structuredOutputParameter: Parameter?,
     ): ModelResponse =
-        client.async.models.generateContent(
-            modelIdentifier.stringValue,
-            createRequestContents(messages),
-            createGenerateConfig(messages, tools, generationSettings, structuredOutputParameter),
-        ).await().toModelResponse(structuredOutputParameter != null)
+        client.async.models
+            .generateContent(
+                modelIdentifier.stringValue,
+                createRequestContents(messages),
+                createGenerateConfig(messages, tools, generationSettings, structuredOutputParameter),
+            ).await()
+            .toModelResponse(structuredOutputParameter != null)
 
     companion object {
         fun defaultVertexAIClient(
@@ -58,7 +69,8 @@ class VertexAIModel(
             location: Location,
             requestTimeoutMillis: Long,
         ): Client =
-            Client.Builder()
+            Client
+                .Builder()
                 .vertexAI(true)
                 .httpOptions(HttpOptions.builder().timeout(requestTimeoutMillis.toInt()).build())
                 .project(project.value)

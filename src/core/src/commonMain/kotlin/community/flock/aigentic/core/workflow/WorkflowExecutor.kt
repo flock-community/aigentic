@@ -43,8 +43,13 @@ internal suspend inline fun <reified I : Any, reified M : Any, reified O : Any> 
             }
         }
 
-        is Outcome.Stuck -> createWorkflowRun(runs, outcome)
-        is Outcome.Fatal -> createWorkflowRun(runs, outcome)
+        is Outcome.Stuck -> {
+            createWorkflowRun(runs, outcome)
+        }
+
+        is Outcome.Fatal -> {
+            createWorkflowRun(runs, outcome)
+        }
     }
 }
 
@@ -74,9 +79,11 @@ suspend inline fun <reified I : Any, reified M1 : Any, reified M2 : Any, reified
     vararg attachments: Attachment,
 ): WorkflowRun<O> =
     executeWorkflow(firstAgent, input, attachments.toList()) { intermediateResult, agentRuns ->
-        restWorkflow.start(intermediateResult)
+        restWorkflow
+            .start(intermediateResult)
             .also { agentRuns.addAll(it.agentRuns) }
-            .agentRuns.last() as AgentRun<O>
+            .agentRuns
+            .last() as AgentRun<O>
     }
 
 suspend inline fun <reified I : Any, reified M1 : Any, reified M2 : Any, reified M3 : Any, reified O : Any> Workflow4<I, M1, M2, M3, O>.start(
@@ -84,9 +91,11 @@ suspend inline fun <reified I : Any, reified M1 : Any, reified M2 : Any, reified
     vararg attachments: Attachment,
 ): WorkflowRun<O> =
     executeWorkflow(firstAgent, input, attachments.toList()) { intermediateResult, agentRuns ->
-        restWorkflow.start(intermediateResult)
+        restWorkflow
+            .start(intermediateResult)
             .also { agentRuns.addAll(it.agentRuns) }
-            .agentRuns.last() as AgentRun<O>
+            .agentRuns
+            .last() as AgentRun<O>
     }
 
 suspend inline fun <reified I : Any, reified M1 : Any, reified M2 : Any, reified M3 : Any, reified M4 : Any, reified O : Any> Workflow5<I, M1, M2, M3, M4, O>.start(
@@ -94,7 +103,9 @@ suspend inline fun <reified I : Any, reified M1 : Any, reified M2 : Any, reified
     vararg attachments: Attachment,
 ): WorkflowRun<O> =
     executeWorkflow(firstAgent, input, attachments.toList()) { intermediateResult, agentRuns ->
-        restWorkflow.start(intermediateResult)
+        restWorkflow
+            .start(intermediateResult)
             .also { agentRuns.addAll(it.agentRuns) }
-            .agentRuns.last() as AgentRun<O>
+            .agentRuns
+            .last() as AgentRun<O>
     }
