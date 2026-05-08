@@ -59,6 +59,6 @@ google-gen-ai = { module = "com.google.genai:google-genai", version.ref = "googl
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 spotless = { id = "com.diffplug.gradle.spotless", version = "6.20.0" }
-dokka = { id = "org.jetbrains.dokka", version = "1.8.20" }
+dokka = { id = "org.jetbrains.dokka", version = "2.2.0" }
 kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotest" }
 wirespec = { id = "community.flock.wirespec.plugin.gradle", version.ref = "wirespec" }
