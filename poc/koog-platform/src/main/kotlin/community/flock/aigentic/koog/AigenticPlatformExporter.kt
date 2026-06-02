@@ -6,6 +6,7 @@ import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.prompt.Prompt
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.message.Message
+import ai.koog.prompt.params.LLMParams
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.basicAuth
@@ -38,14 +39,18 @@ fun GraphAIAgent.FeatureContext.aigenticPlatform(
         onLLMCallStarting { collector.onLlmStart(it.runId) }
         onLLMCallCompleted { collector.onLlmCompleted(it.runId, it.prompt, it.model, it.tools, it.response) }
         onAgentCompleted { event ->
+            val structuredOutput = event.result != null && event.result !is String
             val run =
-                collector.build(event.runId, agentDescription) { responseText ->
+                collector.build(event.runId, agentDescription, structuredOutput) { responseText ->
                     FinishedResultDto("Agent completed", responseText ?: event.result?.toString())
                 }
             if (run != null) httpClient.sendRun(apiUrl, name, secret, run)
         }
         onAgentExecutionFailed { event ->
-            val run = collector.build(event.runId, agentDescription) { FatalResultDto(event.error.message ?: "Unknown error") }
+            val run =
+                collector.build(event.runId, agentDescription, structuredOutput = false) {
+                    FatalResultDto(event.error.message ?: "Unknown error")
+                }
             if (run != null) httpClient.sendRun(apiUrl, name, secret, run)
         }
     }
@@ -93,6 +98,7 @@ private class RunCollector {
         accumulator.temperature = prompt.params.temperature
         accumulator.messages = prompt.messages + listOfNotNull(response)
         accumulator.lastResponseText = response?.textContent()
+        (prompt.params.schema as? LLMParams.Schema.JSON)?.let { accumulator.responseSchemaJson = it.schema.toString() }
         val meta = response?.metaInfo
         accumulator.modelRequests +=
             ModelRequestInfoDto(
@@ -106,6 +112,7 @@ private class RunCollector {
     fun build(
         runId: String,
         agentDescription: String,
+        structuredOutput: Boolean,
         result: (lastResponseText: String?) -> ResultDto,
     ): RunDto? {
         val accumulator = runs.remove(runId) ?: return null
@@ -119,10 +126,11 @@ private class RunCollector {
                     modelIdentifier = accumulator.model?.id ?: "unknown",
                     systemPrompt = systemPrompt,
                     tools = accumulator.tools.toToolDtos(),
+                    responseJsonSchema = accumulator.responseSchemaJson,
                     temperature = accumulator.temperature ?: 0.0,
                 ),
             result = result(accumulator.lastResponseText),
-            messages = accumulator.messages.toMessageDtos(),
+            messages = accumulator.messages.toMessageDtos(structuredFinalResponse = structuredOutput),
             modelRequests = accumulator.modelRequests,
         )
     }
@@ -138,6 +146,7 @@ private class RunCollector {
         var temperature: Double? = null,
         var messages: List<Message> = emptyList(),
         var lastResponseText: String? = null,
+        var responseSchemaJson: String? = null,
         val modelRequests: MutableList<ModelRequestInfoDto> = mutableListOf(),
         val llmCallStarts: ArrayDeque<String> = ArrayDeque(),
     )

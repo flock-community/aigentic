@@ -69,7 +69,7 @@ The Aigentic `MessageDto` union and Koog's message model line up well. Mapping
 | `ToolResultMessageDto`       | `MessagePart.Tool.Result` (on `Message.User`)                      | ✅ 1:1 |
 | `UrlMessageDto`              | `MessagePart.Attachment` + `AttachmentContent.URL`                 | ✅ with MIME caveat |
 | `Base64MessageDto`           | `MessagePart.Attachment` + `AttachmentContent.Binary` (`asBase64()`) | ✅ with MIME caveat |
-| `StructuredOutputMessageDto` | no distinct Koog type — structured output is an `Assistant` text driven by `LLMParams.schema` | ⚠️ policy mapping |
+| `StructuredOutputMessageDto` | the final `Message.Assistant` when the agent has a typed (non-`String`) output | ✅ (see Structured output) |
 
 Two caveats:
 
@@ -136,9 +136,20 @@ val extract by node<String, Result<StructuredResponse<Invoice>>> {
 }
 ```
 
-**Mapping to the platform:** the structured result becomes `FinishedResultDto.response` (the JSON output),
-and the same JSON also appears in `messages` as the assistant message. `StructuredOutputExporterTest`
-runs exactly this flow (with a mocked LLM) and asserts the published `RunDto` carries the typed invoice.
+**Feature parity with Aigentic.** Aigentic treats an agent as a *structured-output agent* when it has a
+typed response and no tools (`isStructuredOutputAgent()` = `tools.isEmpty() && responseParameter != null`),
+in which case the final answer is published as a `StructuredOutputMessageDto` and `config.responseJsonSchema`
+is set. The exporter mirrors this: it detects structured output from the agent's typed result
+(`onAgentCompleted.result !is String`) and then
+
+- emits the final assistant message as `StructuredOutputMessageDto` (Model sender) rather than `TextMessageDto`,
+- sets `FinishedResultDto.response` to the structured JSON,
+- sets `config.responseJsonSchema` from `prompt.params.schema` when the model uses native structured output.
+
+`StructuredOutputExporterTest` runs the full PDF-invoice flow end-to-end (mocked LLM): a real PDF
+`MessagePart.Attachment` is sent in the user message, and the published `RunDto` is asserted to contain a
+`Base64MessageDto` (`APPLICATION_PDF`) for the document and a `StructuredOutputMessageDto` carrying the typed
+invoice — the same shape an equivalent Aigentic run would publish.
 
 ## Why this is an isolated build (important finding)
 

@@ -5,16 +5,21 @@ import ai.koog.prompt.message.AttachmentContent
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.message.MessagePart
 
-internal fun List<Message>.toMessageDtos(): List<MessageDto> = flatMap { it.toMessageDtos() }
+internal fun List<Message>.toMessageDtos(structuredFinalResponse: Boolean = false): List<MessageDto> {
+    val lastAssistantIndex = indexOfLast { it is Message.Assistant }
+    return flatMapIndexed { index, message ->
+        message.toMessageDtos(structuredOutput = structuredFinalResponse && index == lastAssistantIndex)
+    }
+}
 
-private fun Message.toMessageDtos(): List<MessageDto> {
+private fun Message.toMessageDtos(structuredOutput: Boolean): List<MessageDto> {
     val createdAt = metaInfo.timestamp.toString()
     return when (this) {
         is Message.System ->
             listOf(SystemPromptMessageDto(createdAt, SenderDto.Agent, textContent(), MessageCategoryDto.SYSTEM_PROMPT))
 
         is Message.User -> userDtos(createdAt)
-        is Message.Assistant -> assistantDtos(createdAt)
+        is Message.Assistant -> assistantDtos(createdAt, structuredOutput)
     }
 }
 
@@ -31,11 +36,19 @@ private fun Message.User.userDtos(createdAt: String): List<MessageDto> {
     return dtos
 }
 
-private fun Message.Assistant.assistantDtos(createdAt: String): List<MessageDto> {
+private fun Message.Assistant.assistantDtos(
+    createdAt: String,
+    structuredOutput: Boolean,
+): List<MessageDto> {
     val dtos = mutableListOf<MessageDto>()
     val text = parts.filterIsInstance<MessagePart.Text>().joinToString("\n") { it.text }
     if (text.isNotEmpty()) {
-        dtos += TextMessageDto(createdAt, SenderDto.Model, text, MessageCategoryDto.EXECUTION)
+        dtos +=
+            if (structuredOutput) {
+                StructuredOutputMessageDto(createdAt, SenderDto.Model, text, MessageCategoryDto.EXECUTION)
+            } else {
+                TextMessageDto(createdAt, SenderDto.Model, text, MessageCategoryDto.EXECUTION)
+            }
     }
     dtos += parts.filterIsInstance<MessagePart.Attachment>().mapNotNull { it.toDto(createdAt, SenderDto.Model) }
     val calls = parts.filterIsInstance<MessagePart.Tool.Call>()

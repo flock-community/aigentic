@@ -1,13 +1,17 @@
 package community.flock.aigentic.koog
 
 import ai.koog.agents.core.agent.AIAgent
+import ai.koog.agents.core.dsl.builder.node
 import ai.koog.agents.core.dsl.builder.strategy
-import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
 import ai.koog.agents.core.tools.annotations.LLMDescription
+import ai.koog.agents.testing.tools.getMockExecutor
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
-import ai.koog.agents.testing.tools.getMockExecutor
+import ai.koog.prompt.message.AttachmentContent
+import ai.koog.prompt.message.AttachmentSource
+import ai.koog.prompt.message.MessagePart
+import ai.koog.prompt.structure.StructuredResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -40,7 +44,7 @@ data class Invoice(
 
 class StructuredOutputExporterTest {
     @Test
-    fun `structured request-response agent publishes its typed result as a RunDto`() =
+    fun `pdf invoice is extracted as structured output and published with feature parity`() =
         runTest {
             val capturedBodies = mutableListOf<String>()
             val mockEngine =
@@ -52,7 +56,6 @@ class StructuredOutputExporterTest {
 
             val invoiceJson =
                 """{"number":"INV-42","total":42.0,"items":[{"description":"Widget","amount":42.0}]}"""
-
             val mockExecutor = getMockExecutor { mockLLMAnswer(invoiceJson).asDefaultResponse }
 
             val model =
@@ -62,9 +65,25 @@ class StructuredOutputExporterTest {
                     capabilities = listOf(LLMCapability.Completion, LLMCapability.Temperature),
                 )
 
+            val pdfBytes = "%PDF-1.4 fake invoice bytes".encodeToByteArray()
+
             val extractInvoice =
-                strategy<String, Invoice>("invoice-extraction") {
-                    val extract by nodeLLMRequestStructured<Invoice>()
+                strategy<ByteArray, Invoice>("invoice-extraction") {
+                    val extract by node<ByteArray, Result<StructuredResponse<Invoice>>>("extract") { pdf ->
+                        llm.writeSession {
+                            appendPrompt {
+                                user(
+                                    listOf(
+                                        MessagePart.Text("Extract the invoice from the attached document."),
+                                        MessagePart.Attachment(
+                                            AttachmentSource.File(AttachmentContent.Binary.Bytes(pdf), format = "pdf", mimeType = "application/pdf"),
+                                        ),
+                                    ),
+                                )
+                            }
+                            requestLLMStructured<Invoice>()
+                        }
+                    }
                     edge(nodeStart forwardTo extract)
                     edge(extract forwardTo nodeFinish transformed { it.getOrThrow().data })
                 }
@@ -85,19 +104,23 @@ class StructuredOutputExporterTest {
                     )
                 }
 
-            val invoice: Invoice = agent.run("<invoice document>")
+            val invoice: Invoice = agent.run(pdfBytes)
 
             assertEquals("INV-42", invoice.number)
             assertEquals("Widget", invoice.items.single().description)
 
             val run = aigenticJson.decodeFromString<RunDto>(capturedBodies.single())
 
+            val pdfMessage = run.messages.filterIsInstance<Base64MessageDto>().single()
+            assertEquals(MimeTypeDto.APPLICATION_PDF, pdfMessage.mimeType)
+
+            val structured = run.messages.filterIsInstance<StructuredOutputMessageDto>().single()
+            assertEquals(SenderDto.Model, structured.sender)
+            assertTrue(structured.response.contains("INV-42"))
+            assertTrue(run.messages.none { it is TextMessageDto && it.sender == SenderDto.Model })
+
             val result = run.result
-            assertTrue(result is FinishedResultDto, "Structured run should finish successfully")
-            assertTrue(result.response!!.contains("INV-42"), "The structured output should be published as the run result")
-            assertTrue(
-                run.messages.any { it is TextMessageDto && it.sender == SenderDto.Model && it.text.contains("INV-42") },
-                "The structured JSON should appear as the assistant message",
-            )
+            assertTrue(result is FinishedResultDto)
+            assertTrue(result.response!!.contains("INV-42"))
         }
 }
