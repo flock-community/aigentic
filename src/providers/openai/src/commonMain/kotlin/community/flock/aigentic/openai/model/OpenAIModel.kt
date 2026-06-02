@@ -25,6 +25,30 @@ import com.aallam.openai.api.logging.LogLevel as OpenAILogLevel
 sealed class OpenAIModelIdentifier(
     override val stringValue: String,
 ) : ModelIdentifier {
+    data object GPT5_5 : OpenAIModelIdentifier("gpt-5.5")
+
+    data object GPT5_5Pro : OpenAIModelIdentifier("gpt-5.5-pro")
+
+    data object GPT5_4 : OpenAIModelIdentifier("gpt-5.4")
+
+    data object GPT5_4Pro : OpenAIModelIdentifier("gpt-5.4-pro")
+
+    data object GPT5_4Mini : OpenAIModelIdentifier("gpt-5.4-mini")
+
+    data object GPT5_4Nano : OpenAIModelIdentifier("gpt-5.4-nano")
+
+    data object GPT5 : OpenAIModelIdentifier("gpt-5")
+
+    data object GPT5Mini : OpenAIModelIdentifier("gpt-5-mini")
+
+    data object GPT5Nano : OpenAIModelIdentifier("gpt-5-nano")
+
+    data object GPT4_1 : OpenAIModelIdentifier("gpt-4.1")
+
+    data object GPT4_1Mini : OpenAIModelIdentifier("gpt-4.1-mini")
+
+    data object GPT4_1Nano : OpenAIModelIdentifier("gpt-4.1-nano")
+
     data object GPT4O : OpenAIModelIdentifier("gpt-4o")
 
     data object GPT4OMini : OpenAIModelIdentifier("gpt-4o-mini")
@@ -33,17 +57,7 @@ sealed class OpenAIModelIdentifier(
 
     data object GPT3_5Turbo : OpenAIModelIdentifier("gpt-3.5-turbo")
 
-    data object GPT4_1 : OpenAIModelIdentifier("gpt-4.1")
-
-    data object GPT4_1Mini : OpenAIModelIdentifier("gpt-4.1-mini")
-
-    data object GPT4_1Nano : OpenAIModelIdentifier("gpt-4.1-nano")
-
-    data object GPT4_5Preview : OpenAIModelIdentifier("gpt-4.5-preview")
-
-    data object O1 : OpenAIModelIdentifier("o1")
-
-    data object O1Pro : OpenAIModelIdentifier("o1-pro")
+    data object O3Pro : OpenAIModelIdentifier("o3-pro")
 
     data object O3 : OpenAIModelIdentifier("o3")
 
@@ -51,7 +65,9 @@ sealed class OpenAIModelIdentifier(
 
     data object O3Mini : OpenAIModelIdentifier("o3-mini")
 
-    data object O1Mini : OpenAIModelIdentifier("o1-mini")
+    data object O1 : OpenAIModelIdentifier("o1")
+
+    data object O1Pro : OpenAIModelIdentifier("o1-pro")
 
     data object GPT4OMiniSearchPreview : OpenAIModelIdentifier("gpt-4o-mini-search-preview")
 
