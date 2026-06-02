@@ -1,6 +1,7 @@
 package community.flock.aigentic.koog
 
 import ai.koog.agents.core.tools.ToolDescriptor
+import ai.koog.prompt.message.AttachmentContent
 import ai.koog.prompt.message.Message
 import ai.koog.prompt.message.MessagePart
 
@@ -23,6 +24,7 @@ private fun Message.User.userDtos(createdAt: String): List<MessageDto> {
     if (text.isNotEmpty()) {
         dtos += TextMessageDto(createdAt, SenderDto.Agent, text, MessageCategoryDto.EXECUTION)
     }
+    dtos += parts.filterIsInstance<MessagePart.Attachment>().mapNotNull { it.toDto(createdAt, SenderDto.Agent) }
     parts.filterIsInstance<MessagePart.Tool.Result>().forEach { result ->
         dtos += ToolResultMessageDto(createdAt, SenderDto.Agent, result.id ?: "", result.tool, result.output, MessageCategoryDto.EXECUTION)
     }
@@ -35,6 +37,7 @@ private fun Message.Assistant.assistantDtos(createdAt: String): List<MessageDto>
     if (text.isNotEmpty()) {
         dtos += TextMessageDto(createdAt, SenderDto.Model, text, MessageCategoryDto.EXECUTION)
     }
+    dtos += parts.filterIsInstance<MessagePart.Attachment>().mapNotNull { it.toDto(createdAt, SenderDto.Model) }
     val calls = parts.filterIsInstance<MessagePart.Tool.Call>()
     if (calls.isNotEmpty()) {
         dtos += ToolCallsMessageDto(
@@ -46,6 +49,37 @@ private fun Message.Assistant.assistantDtos(createdAt: String): List<MessageDto>
     }
     return dtos
 }
+
+private fun MessagePart.Attachment.toDto(
+    createdAt: String,
+    sender: SenderDto,
+): MessageDto? {
+    return when (val content = source.content) {
+        is AttachmentContent.PlainText ->
+            TextMessageDto(createdAt, sender, content.text, MessageCategoryDto.EXECUTION)
+
+        is AttachmentContent.URL -> {
+            val mimeType = source.mimeType.toMimeTypeDto() ?: return null
+            UrlMessageDto(createdAt, sender, content.url, mimeType, MessageCategoryDto.EXECUTION)
+        }
+
+        is AttachmentContent.Binary -> {
+            val mimeType = source.mimeType.toMimeTypeDto() ?: return null
+            Base64MessageDto(createdAt, sender, content.asBase64(), mimeType, MessageCategoryDto.EXECUTION)
+        }
+    }
+}
+
+private fun String.toMimeTypeDto(): MimeTypeDto? =
+    when (lowercase()) {
+        "image/jpeg", "image/jpg" -> MimeTypeDto.IMAGE_JPEG
+        "image/png" -> MimeTypeDto.IMAGE_PNG
+        "image/webp" -> MimeTypeDto.IMAGE_WEBP
+        "image/heic" -> MimeTypeDto.IMAGE_HEIC
+        "image/heif" -> MimeTypeDto.IMAGE_HEIF
+        "application/pdf" -> MimeTypeDto.APPLICATION_PDF
+        else -> null
+    }
 
 internal fun List<ToolDescriptor>.toToolDtos(): List<ToolDto> =
     map { tool ->

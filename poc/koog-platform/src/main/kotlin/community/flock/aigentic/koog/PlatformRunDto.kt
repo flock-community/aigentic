@@ -79,6 +79,8 @@ enum class SenderDto { Agent, Model }
 
 enum class MessageCategoryDto { SYSTEM_PROMPT, CONFIG_CONTEXT, RUN_CONTEXT, EXAMPLE, EXECUTION }
 
+enum class MimeTypeDto { IMAGE_JPEG, IMAGE_PNG, IMAGE_WEBP, IMAGE_HEIC, IMAGE_HEIF, APPLICATION_PDF }
+
 @Serializable
 sealed interface MessageDto {
     val createdAt: String
@@ -120,6 +122,35 @@ data class ToolResultMessageDto(
     override val sender: SenderDto,
     val toolCallId: String,
     val toolName: String,
+    val response: String,
+    override val category: MessageCategoryDto? = null,
+) : MessageDto
+
+@Serializable
+@SerialName("UrlMessageDto")
+data class UrlMessageDto(
+    override val createdAt: String,
+    override val sender: SenderDto,
+    val url: String,
+    val mimeType: MimeTypeDto,
+    override val category: MessageCategoryDto? = null,
+) : MessageDto
+
+@Serializable
+@SerialName("Base64MessageDto")
+data class Base64MessageDto(
+    override val createdAt: String,
+    override val sender: SenderDto,
+    val base64Content: String,
+    val mimeType: MimeTypeDto,
+    override val category: MessageCategoryDto? = null,
+) : MessageDto
+
+@Serializable
+@SerialName("StructuredOutputMessageDto")
+data class StructuredOutputMessageDto(
+    override val createdAt: String,
+    override val sender: SenderDto,
     val response: String,
     override val category: MessageCategoryDto? = null,
 ) : MessageDto

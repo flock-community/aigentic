@@ -56,6 +56,38 @@ the platform mocked with a Ktor `MockEngine`), then asserts that exactly one `Ru
 ./gradlew -p poc/koog-platform test
 ```
 
+## Message-type compatibility (Koog ↔ Aigentic Platform)
+
+The Aigentic `MessageDto` union and Koog's message model line up well. Mapping
+(`KoogRunMapper.kt`):
+
+| Aigentic `MessageDto`        | Koog source                                                        | Status |
+|------------------------------|--------------------------------------------------------------------|--------|
+| `SystemPromptMessageDto`     | `Message.System`                                                   | ✅ 1:1 |
+| `TextMessageDto`             | `MessagePart.Text` (User → Agent, Assistant → Model)               | ✅ 1:1 |
+| `ToolCallsMessageDto`        | `MessagePart.Tool.Call` (on `Message.Assistant`)                   | ✅ 1:1 |
+| `ToolResultMessageDto`       | `MessagePart.Tool.Result` (on `Message.User`)                      | ✅ 1:1 |
+| `UrlMessageDto`              | `MessagePart.Attachment` + `AttachmentContent.URL`                 | ✅ with MIME caveat |
+| `Base64MessageDto`           | `MessagePart.Attachment` + `AttachmentContent.Binary` (`asBase64()`) | ✅ with MIME caveat |
+| `StructuredOutputMessageDto` | no distinct Koog type — structured output is an `Assistant` text driven by `LLMParams.schema` | ⚠️ policy mapping |
+
+Two caveats:
+
+1. **MIME-type subset.** Aigentic's `MimeTypeDto` is a fixed set — `IMAGE_{JPEG,PNG,WEBP,HEIC,HEIF}`
+   and `APPLICATION_PDF`. Koog allows *any* `mimeType` string and also `Image`/`Video`/`Audio`/`File`
+   sources. So a Koog attachment is publishable only when its MIME type is one of those six; anything
+   else (video, audio, gif, …) has no representation in the current contract and is **skipped** by the
+   mapper (`toMimeTypeDto()` returns `null`). Supporting more would require extending `MimeTypeDto` in
+   `gateway.ws`. Koog's `Reasoning` parts (thinking) likewise have no Aigentic message type and are dropped.
+
+2. **Structured output.** Aigentic has a dedicated `StructuredOutputMessageDto`, but Koog has no
+   distinct structured-output message — it is a normal `Message.Assistant` whose text is JSON (produced
+   via `LLMParams.schema`). It maps to `TextMessageDto` by default; emitting `StructuredOutputMessageDto`
+   would be a policy choice (e.g. "when a response schema is configured, treat the final assistant
+   message as structured output").
+
+`KoogRunMapperTest` covers the supported types end-to-end and asserts the unsupported-MIME skip.
+
 ## Why this is an isolated build (important finding)
 
 Koog `1.0.0` is built with **Kotlin 2.3.10**; Aigentic is on **Kotlin 2.1.10**. Kotlin metadata is
