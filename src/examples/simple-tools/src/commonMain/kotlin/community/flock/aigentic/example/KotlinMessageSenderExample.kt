@@ -22,7 +22,7 @@ suspend fun runKotlinMessageAgent(apiKey: String) {
         agent {
             geminiModel {
                 apiKey(apiKey)
-                modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
+                modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
             }
             task("Send 2 nice messages about Kotlin") {
                 addInstruction("use the sendMessageTool to send an individual message")

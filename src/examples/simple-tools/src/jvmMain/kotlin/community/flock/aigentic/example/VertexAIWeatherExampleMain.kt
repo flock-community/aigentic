@@ -39,7 +39,7 @@ suspend fun runVertexAIWeatherExample(
             vertexAIModel {
                 project(project)
                 location(location)
-                modelIdentifier(VertexAIModelIdentifier.Gemini2_0Flash)
+                modelIdentifier(VertexAIModelIdentifier.Gemini2_5Flash)
             }
             task("Provide weather information to users") {
                 addInstruction("You are a helpful weather assistant that provides weather information for different locations.")
