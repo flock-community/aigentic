@@ -151,6 +151,36 @@ is set. The exporter mirrors this: it detects structured output from the agent's
 `Base64MessageDto` (`APPLICATION_PDF`) for the document and a `StructuredOutputMessageDto` carrying the typed
 invoice — the same shape an equivalent Aigentic run would publish.
 
+## Message categories (`context` vs `start()` vs execution)
+
+Aigentic stamps each message with a `MessageCategoryDto` based on *where it came from*
+(`AgentExecutor.seedInitialMessages`):
+
+| Category         | Aigentic origin                                   | Koog equivalent |
+|------------------|---------------------------------------------------|-----------------|
+| `SYSTEM_PROMPT`  | the system prompt                                 | `Message.System` |
+| `CONFIG_CONTEXT` | `context { … }` (set at agent definition, every run) | the base `AIAgentConfig.prompt` (system + seeded context) |
+| `RUN_CONTEXT`    | `start(input, attachments)` (per invocation)      | content added for the run, before the first model turn |
+| `EXECUTION`      | messages produced during the loop                 | everything from the first `Message.Assistant` onward |
+| `EXAMPLE`        | example runs                                       | (set explicitly via metadata) |
+
+**Yes — you can add attachments in different places in Koog, and they are distinguishable.** A PDF can
+live in (a) the **config prompt** (`AIAgentConfig.prompt`, the analog of `context { }` — present on every
+run), (b) the **run input** (appended by a node from `agent.run(input)`, the analog of `start()`), or (c)
+**mid-execution**. The exporter derives the category from two signals:
+
+1. **Origin (automatic).** The base config prompt is reachable from the event context
+   (`agent.agentConfig.prompt`), so the exporter records its size at `onAgentStarting`. Messages within
+   that prefix are `SYSTEM_PROMPT`/`CONFIG_CONTEXT`; content appended before the first assistant message is
+   `RUN_CONTEXT`; everything after is `EXECUTION`.
+2. **Explicit metadata (override).** Koog messages carry `metaInfo.metadata: JsonObject?`. Tagging a
+   message with `{"aigentic.category": "RUN_CONTEXT"}` (etc.) overrides the positional default — the direct
+   analog of Aigentic choosing the category from the API you call.
+
+`MessageCategoryTest` covers both signals; `StructuredOutputExporterTest` proves it end-to-end by attaching
+a reference image in the config prompt (→ `CONFIG_CONTEXT`) and the invoice PDF in the run (→ `RUN_CONTEXT`)
+and asserting the published `RunDto` distinguishes them.
+
 ## Why this is an isolated build (important finding)
 
 Koog `1.0.0` is built with **Kotlin 2.3.10**; Aigentic is on **Kotlin 2.1.10**. Kotlin metadata is

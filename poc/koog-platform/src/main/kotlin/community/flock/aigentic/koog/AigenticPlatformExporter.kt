@@ -35,7 +35,7 @@ fun GraphAIAgent.FeatureContext.aigenticPlatform(
 ) {
     val collector = RunCollector()
     handleEvents {
-        onAgentStarting { collector.onStart(it.runId) }
+        onAgentStarting { collector.onStart(it.runId, it.agent.agentConfig.prompt.messages.size) }
         onLLMCallStarting { collector.onLlmStart(it.runId) }
         onLLMCallCompleted { collector.onLlmCompleted(it.runId, it.prompt, it.model, it.tools, it.response) }
         onAgentCompleted { event ->
@@ -77,8 +77,11 @@ private suspend fun HttpClient.sendRun(
 private class RunCollector {
     private val runs = mutableMapOf<String, Accumulator>()
 
-    fun onStart(runId: String) {
-        runs[runId] = Accumulator(startedAt = now())
+    fun onStart(
+        runId: String,
+        configPromptSize: Int,
+    ) {
+        runs[runId] = Accumulator(startedAt = now(), configPromptSize = configPromptSize)
     }
 
     fun onLlmStart(runId: String) {
@@ -130,7 +133,11 @@ private class RunCollector {
                     temperature = accumulator.temperature ?: 0.0,
                 ),
             result = result(accumulator.lastResponseText),
-            messages = accumulator.messages.toMessageDtos(structuredFinalResponse = structuredOutput),
+            messages =
+                accumulator.messages.toMessageDtos(
+                    configPromptSize = accumulator.configPromptSize,
+                    structuredFinalResponse = structuredOutput,
+                ),
             modelRequests = accumulator.modelRequests,
         )
     }
@@ -141,6 +148,7 @@ private class RunCollector {
 
     private class Accumulator(
         val startedAt: String,
+        val configPromptSize: Int = 0,
         var model: LLModel? = null,
         var tools: List<ToolDescriptor> = emptyList(),
         var temperature: Double? = null,

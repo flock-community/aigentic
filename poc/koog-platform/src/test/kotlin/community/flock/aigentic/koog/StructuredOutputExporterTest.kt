@@ -1,10 +1,12 @@
 package community.flock.aigentic.koog
 
 import ai.koog.agents.core.agent.AIAgent
+import ai.koog.agents.core.agent.config.AIAgentConfig
 import ai.koog.agents.core.dsl.builder.node
 import ai.koog.agents.core.dsl.builder.strategy
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.testing.tools.getMockExecutor
+import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
@@ -88,13 +90,25 @@ class StructuredOutputExporterTest {
                     edge(extract forwardTo nodeFinish transformed { it.getOrThrow().data })
                 }
 
+            // A reference document attached at agent-definition time (Aigentic's `context { }` => CONFIG_CONTEXT).
+            val agentConfig =
+                AIAgentConfig(
+                    prompt =
+                        prompt("invoice-agent") {
+                            system("Extract the structured invoice from the document.")
+                            user {
+                                attachment(AttachmentSource.Image(AttachmentContent.URL("https://example.com/reference-invoice.png"), format = "png"))
+                            }
+                        },
+                    model = model,
+                    maxAgentIterations = 5,
+                )
+
             val agent =
                 AIAgent(
                     promptExecutor = mockExecutor,
-                    llmModel = model,
                     strategy = extractInvoice,
-                    systemPrompt = "Extract the structured invoice from the document.",
-                    temperature = 0.0,
+                    agentConfig = agentConfig,
                 ) {
                     aigenticPlatform(
                         name = "user",
@@ -111,11 +125,19 @@ class StructuredOutputExporterTest {
 
             val run = aigenticJson.decodeFromString<RunDto>(capturedBodies.single())
 
+            // The run's PDF (attached during execution from the run input) => RUN_CONTEXT.
             val pdfMessage = run.messages.filterIsInstance<Base64MessageDto>().single()
             assertEquals(MimeTypeDto.APPLICATION_PDF, pdfMessage.mimeType)
+            assertEquals(MessageCategoryDto.RUN_CONTEXT, pdfMessage.category)
+
+            // The reference image from the config prompt => CONFIG_CONTEXT.
+            val referenceImage = run.messages.filterIsInstance<UrlMessageDto>().single()
+            assertEquals(MimeTypeDto.IMAGE_PNG, referenceImage.mimeType)
+            assertEquals(MessageCategoryDto.CONFIG_CONTEXT, referenceImage.category)
 
             val structured = run.messages.filterIsInstance<StructuredOutputMessageDto>().single()
             assertEquals(SenderDto.Model, structured.sender)
+            assertEquals(MessageCategoryDto.EXECUTION, structured.category)
             assertTrue(structured.response.contains("INV-42"))
             assertTrue(run.messages.none { it is TextMessageDto && it.sender == SenderDto.Model })
 
