@@ -38,11 +38,14 @@ fun GraphAIAgent.FeatureContext.aigenticPlatform(
         onLLMCallStarting { collector.onLlmStart(it.runId) }
         onLLMCallCompleted { collector.onLlmCompleted(it.runId, it.prompt, it.model, it.tools, it.response) }
         onAgentCompleted { event ->
-            val run = collector.build(event.runId, agentDescription, FinishedResultDto("Agent completed", event.result?.toString()))
+            val run =
+                collector.build(event.runId, agentDescription) { responseText ->
+                    FinishedResultDto("Agent completed", responseText ?: event.result?.toString())
+                }
             if (run != null) httpClient.sendRun(apiUrl, name, secret, run)
         }
         onAgentExecutionFailed { event ->
-            val run = collector.build(event.runId, agentDescription, FatalResultDto(event.error.message ?: "Unknown error"))
+            val run = collector.build(event.runId, agentDescription) { FatalResultDto(event.error.message ?: "Unknown error") }
             if (run != null) httpClient.sendRun(apiUrl, name, secret, run)
         }
     }
@@ -89,6 +92,7 @@ private class RunCollector {
         accumulator.tools = tools
         accumulator.temperature = prompt.params.temperature
         accumulator.messages = prompt.messages + listOfNotNull(response)
+        accumulator.lastResponseText = response?.textContent()
         val meta = response?.metaInfo
         accumulator.modelRequests +=
             ModelRequestInfoDto(
@@ -102,7 +106,7 @@ private class RunCollector {
     fun build(
         runId: String,
         agentDescription: String,
-        result: ResultDto,
+        result: (lastResponseText: String?) -> ResultDto,
     ): RunDto? {
         val accumulator = runs.remove(runId) ?: return null
         val systemPrompt = accumulator.messages.filterIsInstance<Message.System>().firstOrNull()?.textContent() ?: ""
@@ -117,7 +121,7 @@ private class RunCollector {
                     tools = accumulator.tools.toToolDtos(),
                     temperature = accumulator.temperature ?: 0.0,
                 ),
-            result = result,
+            result = result(accumulator.lastResponseText),
             messages = accumulator.messages.toMessageDtos(),
             modelRequests = accumulator.modelRequests,
         )
@@ -133,6 +137,7 @@ private class RunCollector {
         var tools: List<ToolDescriptor> = emptyList(),
         var temperature: Double? = null,
         var messages: List<Message> = emptyList(),
+        var lastResponseText: String? = null,
         val modelRequests: MutableList<ModelRequestInfoDto> = mutableListOf(),
         val llmCallStarts: ArrayDeque<String> = ArrayDeque(),
     )

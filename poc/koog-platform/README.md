@@ -80,13 +80,65 @@ Two caveats:
    mapper (`toMimeTypeDto()` returns `null`). Supporting more would require extending `MimeTypeDto` in
    `gateway.ws`. Koog's `Reasoning` parts (thinking) likewise have no Aigentic message type and are dropped.
 
-2. **Structured output.** Aigentic has a dedicated `StructuredOutputMessageDto`, but Koog has no
-   distinct structured-output message — it is a normal `Message.Assistant` whose text is JSON (produced
-   via `LLMParams.schema`). It maps to `TextMessageDto` by default; emitting `StructuredOutputMessageDto`
-   would be a policy choice (e.g. "when a response schema is configured, treat the final assistant
-   message as structured output").
+2. **Structured output.** Aigentic has a dedicated `StructuredOutputMessageDto`. Koog has no distinct
+   structured-output *message* type, but it fully supports structured output as a first-class agent
+   feature (see below). The structured result is captured as the run's result; at the message level it
+   is the final `Message.Assistant` text (JSON).
 
 `KoogRunMapperTest` covers the supported types end-to-end and asserts the unsupported-MIME skip.
+
+## Structured output (typed request/response, e.g. "PDF invoice → line items → done")
+
+Yes — this is fully supported in Koog and is arguably *more* first-class than in Aigentic. Koog gives
+a typed `AIAgent<Input, Output>` whose `run(...)` returns the parsed object directly:
+
+```kotlin
+@Serializable
+@LLMDescription("An invoice with its line items")
+data class Invoice(
+    @property:LLMDescription("Invoice number") val number: String,
+    @property:LLMDescription("Total amount due") val total: Double,
+    val items: List<LineItem>,
+) { @Serializable data class LineItem(val description: String, val amount: Double) }
+
+val extractInvoice = strategy<String, Invoice>("invoice-extraction") {
+    val extract by nodeLLMRequestStructured<Invoice>()   // schema is derived from the @Serializable type
+    edge(nodeStart forwardTo extract)
+    edge(extract forwardTo nodeFinish transformed { it.getOrThrow().data })
+}
+
+val agent = AIAgent(promptExecutor = executor, llmModel = model, strategy = extractInvoice) {
+    aigenticPlatform(name = "…", secret = "…")
+}
+val invoice: Invoice = agent.run("…")   // typed result, then the run is published
+```
+
+How it works under the hood (`PromptExecutor.executeStructured` / `requestLLMStructured<T>`): Koog
+derives a JSON schema from the `@Serializable` type, uses the model's native structured-output mode when
+available (`LLMCapability.Schema.JSON.Standard/Basic`) or otherwise a manual mode (schema in the prompt),
+then parses the assistant's JSON back into `T` (with an optional `StructureFixingParser` to repair
+malformed output). This is the direct equivalent of Aigentic's `Outcome.Finished` carrying a typed `O`.
+
+**Feeding a PDF in:** attach the document to the user message and request the structure in one node:
+
+```kotlin
+val extract by node<String, Result<StructuredResponse<Invoice>>> {
+    llm.writeSession {
+        appendPrompt {
+            user("Extract the invoice") {
+                attachments {
+                    binaryFile(pdfBytes, format = "pdf", mimeType = "application/pdf")
+                }
+            }
+        }
+        requestLLMStructured<Invoice>()
+    }
+}
+```
+
+**Mapping to the platform:** the structured result becomes `FinishedResultDto.response` (the JSON output),
+and the same JSON also appears in `messages` as the assistant message. `StructuredOutputExporterTest`
+runs exactly this flow (with a mocked LLM) and asserts the published `RunDto` carries the typed invoice.
 
 ## Why this is an isolated build (important finding)
 
