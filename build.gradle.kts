@@ -1,5 +1,7 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin
 
 plugins {
     id("root.publication")
@@ -7,8 +9,15 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform).apply(false)
     alias(libs.plugins.kotlinx.serialization) apply false
     alias(libs.plugins.spotless) apply false
+    alias(libs.plugins.ksp) apply false
     alias(libs.plugins.kotest.multiplatform) apply false
     alias(libs.plugins.dokka)
+}
+
+allprojects {
+    plugins.withType<NodeJsPlugin> {
+        the<NodeJsEnvSpec>().version.set("22.0.0")
+    }
 }
 
 subprojects {
