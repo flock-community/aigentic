@@ -45,7 +45,7 @@ val licencePlateExtractor =
         addTool(invoiceExtractTool)
         geminiModel {
             apiKey(geminiKey)
-            modelIdentifier(GeminiModelIdentifier.Gemini2_0Flash)
+            modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
         }
         platform {
             name("licence-plate-extractor")
