@@ -12,7 +12,7 @@ openaiClient = "4.1.0"
 google-cloud-functions-framework = "^3.5.1"
 wirespec = "0.17.20"
 logback = "1.5.32"
-google-gen-ai = "1.28.0"
+google-gen-ai = "1.56.0"
 
 [libraries]
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
