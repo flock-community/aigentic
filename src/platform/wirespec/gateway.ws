@@ -4,7 +4,8 @@ type RunDto {
     config: ConfigDto,
     result: ResultDto,
     messages: MessageDto[],
-    modelRequests: ModelRequestInfoDto[]
+    modelRequests: ModelRequestInfoDto[],
+    evaluation: RunEvaluationDto?
 }
 
 type ModelRequestInfoDto {
@@ -213,8 +214,17 @@ type ServerErrorDto {
     description: String
 }
 
+type RunEvaluationDto {
+    evaluationSet: String,
+    expectedResponse: String
+}
+
+type RunCreatedDto {
+    runId: String
+}
+
 endpoint Gateway POST RunDto /gateway/runs -> {
-    201 -> Unit
+    201 -> RunCreatedDto
     401 -> Unit
     400 -> GatewayClientErrorDto
     500 -> ServerErrorDto
@@ -234,5 +244,13 @@ endpoint GetRuns GET /gateway/runs ? { tags: String? } -> {
     200 -> RunDetailsDto[]
     404 -> Unit
     401 -> Unit
+    500 -> ServerErrorDto
+}
+
+endpoint AddToEvaluationSet POST RunEvaluationDto /gateway/runs/{runId: String}/evaluation -> {
+    200 -> Unit
+    400 -> GatewayClientErrorDto
+    401 -> Unit
+    404 -> Unit
     500 -> ServerErrorDto
 }

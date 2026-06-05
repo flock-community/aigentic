@@ -1,10 +1,12 @@
 package community.flock.aigentic.platform.client
 
+import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.PlatformApiUrl
 import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.gateway.wirespec.endpoint.Gateway
 import community.flock.aigentic.gateway.wirespec.model.GatewayClientErrorDto
+import community.flock.aigentic.gateway.wirespec.model.RunCreatedDto
 import community.flock.aigentic.gateway.wirespec.model.ServerErrorDto
 import community.flock.aigentic.platform.util.createAgent
 import community.flock.aigentic.platform.util.createAgentRun
@@ -20,7 +22,8 @@ class AigenticPlatformClientTest :
 
         withData(
             nameFn = { "Should map ${it.wirespecResponse} to ${it.runSentResult}" },
-            TestCase(Gateway.Response201(body = Unit), RunSentResult.Success),
+            TestCase(Gateway.Response201(body = RunCreatedDto("run-123")), RunSentResult.Success(RunId("run-123"))),
+            TestCase(Gateway.Response201(body = RunCreatedDto("")), RunSentResult.Success(null)),
             TestCase(Gateway.Response401(body = Unit), RunSentResult.Unauthorized),
             TestCase(
                 Gateway.Response400(body = GatewayClientErrorDto("invalid request")),
@@ -50,7 +53,7 @@ class AigenticPlatformClientTest :
                     platformEndpoints,
                 )
 
-            val result = client.sendRun(run, agent, serializer<String>())
+            val result = client.sendRun(run, agent, serializer<String>(), null)
 
             result shouldBe it.runSentResult
         }
