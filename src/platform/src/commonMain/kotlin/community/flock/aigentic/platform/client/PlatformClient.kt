@@ -11,7 +11,7 @@ import community.flock.aigentic.core.platform.EvaluationSubmitResult
 import community.flock.aigentic.core.platform.PlatformApiUrl
 import community.flock.aigentic.core.platform.PlatformClient
 import community.flock.aigentic.core.platform.RunSentResult
-import community.flock.aigentic.gateway.wirespec.endpoint.AddToEvaluationSet
+import community.flock.aigentic.gateway.wirespec.endpoint.AddRunAnnotations
 import community.flock.aigentic.gateway.wirespec.endpoint.Gateway
 import community.flock.aigentic.gateway.wirespec.endpoint.GetRuns
 import community.flock.aigentic.gateway.wirespec.model.RunCreatedDto
@@ -51,7 +51,7 @@ import kotlin.reflect.KType
 interface PlatformEndpoints :
     Gateway.Handler,
     GetRuns.Handler,
-    AddToEvaluationSet.Handler
+    AddRunAnnotations.Handler
 
 const val defaultPlatformApiUrl = "https://aigentic-backend-kib53ypjwq-ez.a.run.app/"
 
@@ -70,11 +70,10 @@ class AigenticPlatformClient(
         val request = Gateway.Request(body = runDto)
         return when (val response = endpoints.gateway(request)) {
             is Gateway.Response201 -> {
-                RunSentResult.Success(
-                    response.body.runId
-                        .takeIf { it.isNotBlank() }
-                        ?.let(::RunId),
-                )
+                response.body.runId
+                    .takeIf { it.isNotBlank() }
+                    ?.let { RunSentResult.Success(RunId(it)) }
+                    ?: RunSentResult.Error("Gateway accepted the run but returned no run id")
             }
 
             is Gateway.Response401 -> {
@@ -100,7 +99,7 @@ class AigenticPlatformClient(
         outputSerializer: KSerializer<O>,
     ): EvaluationSubmitResult {
         val request =
-            AddToEvaluationSet.Request(
+            AddRunAnnotations.Request(
                 runId = runId.value,
                 body =
                     RunEvaluationDto(
@@ -108,24 +107,24 @@ class AigenticPlatformClient(
                         expectedResponse = Json.encodeToString(outputSerializer, expected),
                     ),
             )
-        return when (val response = endpoints.addToEvaluationSet(request)) {
-            is AddToEvaluationSet.Response200 -> {
+        return when (val response = endpoints.addRunAnnotations(request)) {
+            is AddRunAnnotations.Response200 -> {
                 EvaluationSubmitResult.Success
             }
 
-            is AddToEvaluationSet.Response401 -> {
+            is AddRunAnnotations.Response401 -> {
                 EvaluationSubmitResult.Unauthorized
             }
 
-            is AddToEvaluationSet.Response404 -> {
+            is AddRunAnnotations.Response404 -> {
                 EvaluationSubmitResult.NotFound
             }
 
-            is AddToEvaluationSet.Response400 -> {
+            is AddRunAnnotations.Response400 -> {
                 EvaluationSubmitResult.Error(response.body.message)
             }
 
-            is AddToEvaluationSet.Response500 -> {
+            is AddRunAnnotations.Response500 -> {
                 EvaluationSubmitResult.Error("${response.body.name} - ${response.body.description}")
             }
         }
@@ -215,8 +214,8 @@ class AigenticPlatformEndpoints(
         val edge = Gateway.Handler.client(serialization)
         val rawRequest = edge.to(request)
         val rawResponse = executeRequest(rawRequest)
-        // Backward compatibility: old gateways respond 201 with an empty body (no RunCreatedDto).
-        // Surface it as a Response201 with an empty runId so the run id stays null instead of throwing.
+        // Backward compatibility: older gateways answer 201 with an empty body (the previous `201 -> Unit`).
+        // Surface it as a 201 with a blank runId so it doesn't throw; sendRun maps the blank id to an Error.
         if (rawResponse.statusCode == 201 && rawResponse.body?.isEmpty() != false) {
             return Gateway.Response201(RunCreatedDto(runId = ""))
         }
@@ -230,8 +229,8 @@ class AigenticPlatformEndpoints(
         return edge.from(rawResponse)
     }
 
-    override suspend fun addToEvaluationSet(request: AddToEvaluationSet.Request): AddToEvaluationSet.Response<*> {
-        val edge = AddToEvaluationSet.Handler.client(serialization)
+    override suspend fun addRunAnnotations(request: AddRunAnnotations.Request): AddRunAnnotations.Response<*> {
+        val edge = AddRunAnnotations.Handler.client(serialization)
         val rawRequest = edge.to(request)
         val rawResponse = executeRequest(rawRequest)
         return edge.from(rawResponse)

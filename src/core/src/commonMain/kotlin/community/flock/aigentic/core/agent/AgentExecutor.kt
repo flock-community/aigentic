@@ -112,11 +112,11 @@ internal suspend inline fun <reified I : Any, reified O : Any> publishRun(
 }
 
 suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.addToEvaluationSet(
-    runId: RunId,
+    runId: String,
     evaluationSet: String,
     expected: O,
 ): EvaluationSubmitResult =
-    platform?.addToEvaluationSet(runId, evaluationSet, expected)
+    platform?.addToEvaluationSet(RunId(runId), evaluationSet, expected)
         ?: aigenticException("Platform must be configured to add a run to an evaluation set")
 
 suspend inline fun <reified I : Any, reified O : Any> executeAction(action: Action<I, O>): Pair<State, Outcome<O>> {

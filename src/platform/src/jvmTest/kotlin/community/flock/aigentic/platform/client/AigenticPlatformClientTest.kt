@@ -23,7 +23,10 @@ class AigenticPlatformClientTest :
         withData(
             nameFn = { "Should map ${it.wirespecResponse} to ${it.runSentResult}" },
             TestCase(Gateway.Response201(body = RunCreatedDto("run-123")), RunSentResult.Success(RunId("run-123"))),
-            TestCase(Gateway.Response201(body = RunCreatedDto("")), RunSentResult.Success(null)),
+            TestCase(
+                Gateway.Response201(body = RunCreatedDto("")),
+                RunSentResult.Error("Gateway accepted the run but returned no run id"),
+            ),
             TestCase(Gateway.Response401(body = Unit), RunSentResult.Unauthorized),
             TestCase(
                 Gateway.Response400(body = GatewayClientErrorDto("invalid request")),

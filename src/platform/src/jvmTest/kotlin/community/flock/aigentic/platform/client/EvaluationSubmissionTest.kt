@@ -232,7 +232,7 @@ class EvaluationSubmissionTest :
 
         describe("addToEvaluationSet") {
 
-            it("POSTs the serialized expected output to /gateway/runs/{runId}/evaluation") {
+            it("POSTs the serialized expected output to /gateway/runs/{runId}/annotations") {
                 var capturedPath: String? = null
                 var capturedBody: String? = null
                 val engine =
@@ -246,13 +246,13 @@ class EvaluationSubmissionTest :
 
                 val result =
                     agent.addToEvaluationSet(
-                        runId = RunId("run-99"),
+                        runId = "run-99",
                         evaluationSet = "golden",
                         expected = InvoiceFields("INV-009", "9.99"),
                     )
 
                 result shouldBe EvaluationSubmitResult.Success
-                capturedPath shouldBe "/gateway/runs/run-99/evaluation"
+                capturedPath shouldBe "/gateway/runs/run-99/annotations"
                 val body = capturedBody.shouldNotBeNull()
                 val evaluationDto = lenientJson.decodeFromString(RunEvaluationDto.serializer(), body)
                 evaluationDto.evaluationSet shouldBe "golden"

@@ -247,7 +247,7 @@ endpoint GetRuns GET /gateway/runs ? { tags: String? } -> {
     500 -> ServerErrorDto
 }
 
-endpoint AddToEvaluationSet POST RunEvaluationDto /gateway/runs/{runId: String}/evaluation -> {
+endpoint AddRunAnnotations POST RunEvaluationDto /gateway/runs/{runId: String}/annotations -> {
     200 -> Unit
     400 -> GatewayClientErrorDto
     401 -> Unit

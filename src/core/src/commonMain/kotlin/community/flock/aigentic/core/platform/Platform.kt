@@ -71,7 +71,7 @@ suspend inline fun <reified O : Any> Platform.getRuns(tags: List<RunTag>): List<
 
 sealed interface RunSentResult {
     data class Success(
-        val runId: RunId?,
+        val runId: RunId,
     ) : RunSentResult
 
     data object Unauthorized : RunSentResult
