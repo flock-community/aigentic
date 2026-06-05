@@ -33,7 +33,9 @@ import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.asJson
 import community.flock.aigentic.core.message.mapToTextMessages
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.platform.EvaluationSubmitResult
 import community.flock.aigentic.core.platform.RunSentResult
+import community.flock.aigentic.core.platform.addToEvaluationSet
 import community.flock.aigentic.core.platform.getRuns
 import community.flock.aigentic.core.platform.sendRun
 import community.flock.aigentic.core.tool.Parameter
@@ -51,6 +53,7 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(vararg a
 suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(
     input: I? = null,
     vararg attachments: Attachment,
+    expected: Expected<O>? = null,
 ): AgentRun<O> =
     coroutineScope {
         val agent = this@start
@@ -59,13 +62,13 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
         try {
             val run = executeAction(Initialize(state, agent, input, attachments.toList())).toRun()
-            publishRun(agent, run, state)
-            run
+            val platformRunId = publishRun(agent, run, state, expected)
+            run.copy(platformRunId = platformRunId)
         } catch (e: AigenticException) {
             state.events.emit(AgentStatus.Fatal(e.message))
             val run = (state to Outcome.Fatal(e.message)).toRun<O>()
-            publishRun(agent, run, state)
-            run
+            val platformRunId = publishRun(agent, run, state, expected)
+            run.copy(platformRunId = platformRunId)
         } finally {
             delay(10) // Allow some time for the logging to finish
             logging.cancelAndJoin()
@@ -77,21 +80,44 @@ internal suspend inline fun <reified I : Any, reified O : Any> publishRun(
     agent: Agent<I, O>,
     run: AgentRun<O>,
     state: State,
-) {
-    if (agent.platform != null) {
-        runCatching {
-            agent.platform.sendRun(run, agent)
-        }.onSuccess { result ->
+    expected: Expected<O>?,
+): RunId? {
+    if (agent.platform == null) return null
+    return runCatching {
+        agent.platform.sendRun(run, agent, expected)
+    }.fold(
+        onSuccess = { result ->
             when (result) {
-                RunSentResult.Success -> state.events.emit(AgentStatus.PublishedRunSuccess)
-                RunSentResult.Unauthorized -> state.events.emit(AgentStatus.PublishedRunUnauthorized)
-                is RunSentResult.Error -> state.events.emit(AgentStatus.PublishedRunError(result.message))
+                is RunSentResult.Success -> {
+                    state.events.emit(AgentStatus.PublishedRunSuccess)
+                    result.runId
+                }
+
+                RunSentResult.Unauthorized -> {
+                    state.events.emit(AgentStatus.PublishedRunUnauthorized)
+                    null
+                }
+
+                is RunSentResult.Error -> {
+                    state.events.emit(AgentStatus.PublishedRunError(result.message))
+                    null
+                }
             }
-        }.onFailure { exception ->
+        },
+        onFailure = { exception ->
             state.events.emit(AgentStatus.PublishedRunError(exception.message ?: "Unknown error"))
-        }
-    }
+            null
+        },
+    )
 }
+
+suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.addToEvaluationSet(
+    runId: String,
+    evaluationSet: String,
+    expected: O,
+): EvaluationSubmitResult =
+    platform?.addToEvaluationSet(RunId(runId), evaluationSet, expected)
+        ?: aigenticException("Platform must be configured to add a run to an evaluation set")
 
 suspend inline fun <reified I : Any, reified O : Any> executeAction(action: Action<I, O>): Pair<State, Outcome<O>> {
     var currentAction = action

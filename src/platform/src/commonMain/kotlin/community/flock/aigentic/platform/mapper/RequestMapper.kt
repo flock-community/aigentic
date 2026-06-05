@@ -2,6 +2,7 @@ package community.flock.aigentic.platform.mapper
 
 import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.AgentRun
+import community.flock.aigentic.core.agent.Expected
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
@@ -34,6 +35,7 @@ import community.flock.aigentic.gateway.wirespec.model.PrimitiveValueNumberDto
 import community.flock.aigentic.gateway.wirespec.model.PrimitiveValueStringDto
 import community.flock.aigentic.gateway.wirespec.model.PrimitiveValueTypeDto
 import community.flock.aigentic.gateway.wirespec.model.RunDto
+import community.flock.aigentic.gateway.wirespec.model.RunEvaluationDto
 import community.flock.aigentic.gateway.wirespec.model.SenderDto
 import community.flock.aigentic.gateway.wirespec.model.StructuredOutputMessageDto
 import community.flock.aigentic.gateway.wirespec.model.StuckResultDto
@@ -65,6 +67,7 @@ private fun Parameter.toJsonSchemaString(): String =
 fun <I : Any, O : Any> AgentRun<O>.toDto(
     agent: Agent<I, O>,
     outputSerializer: KSerializer<O>,
+    expected: Expected<O>? = null,
 ): RunDto =
     RunDto(
         startedAt = startedAt.toString(),
@@ -99,6 +102,13 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
         messages = messages.mapNotNull { it.toDto() },
         modelRequests = modelRequests.map { it.toDto() },
         result = outcome.toDto(outputSerializer),
+        evaluation =
+            expected?.let {
+                RunEvaluationDto(
+                    evaluationSet = it.evaluationSet,
+                    expectedResponse = Json.encodeToString(outputSerializer, it.output),
+                )
+            },
     )
 
 private fun Parameter.toDto(): ParameterDto =
