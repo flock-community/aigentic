@@ -26,8 +26,10 @@ include(
     "src:providers:ollama",
     "src:providers:jsonschema",
     "src:cloud:google-cloud-function",
+    "src:integrations:koog",
     "src:examples:simple-tools",
     "src:examples:openapi-tools",
     "src:examples:google-http-cloud-function",
-    "src:examples:testing"
+    "src:examples:testing",
+    "src:examples:koog-example"
 )
