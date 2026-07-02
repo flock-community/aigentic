@@ -4,6 +4,7 @@ import ai.koog.agents.core.agent.GraphAIAgent
 import ai.koog.agents.features.eventHandler.feature.EventHandler
 import community.flock.aigentic.core.agent.Agent
 import community.flock.aigentic.core.agent.AgentRun
+import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
@@ -12,6 +13,7 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.platform.Platform
+import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.core.platform.sendRun
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
@@ -29,6 +31,7 @@ fun GraphAIAgent.FeatureContext.reportRunsToAigentic(
     platform: Platform,
     task: Task,
     tags: List<RunTag> = emptyList(),
+    onRunReported: (RunId) -> Unit = {},
 ) {
     install(EventHandler) {
         var startedAt: Instant? = null
@@ -60,7 +63,8 @@ fun GraphAIAgent.FeatureContext.reportRunsToAigentic(
                     modelRequests = modelRequests.toList(),
                     systemPromptMessage = prompt,
                 )
-            platform.sendRun(run, agent)
+            val result = platform.sendRun(run, agent)
+            if (result is RunSentResult.Success) onRunReported(result.runId)
         }
 
         onAgentStarting { startedAt = Clock.System.now() }
