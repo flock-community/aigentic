@@ -1,6 +1,7 @@
 package community.flock.aigentic.example.koog
 
 import ai.koog.agents.core.agent.AIAgent
+import ai.koog.agents.core.agent.config.AIAgentConfig
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
@@ -20,6 +21,7 @@ import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.platform.Authentication
 import community.flock.aigentic.core.platform.PlatformApiUrl
+import community.flock.aigentic.koog.fetchExampleRunPrompt
 import community.flock.aigentic.koog.reportRunsToAigentic
 import community.flock.aigentic.platform.AigenticPlatform
 import community.flock.aigentic.platform.client.defaultPlatformApiUrl
@@ -66,6 +68,8 @@ suspend fun main() {
             apiUrl = PlatformApiUrl(aigenticPlatformUrl),
         )
 
+    val tags = listOf(RunTag("koog-example"))
+
     val toolRegistry = ToolRegistry { tools(WeatherTools().asTools()) }
 
     val openAIClient = OpenAILLMClient(apiKey = openAIKey, httpClientFactory = HttpClientFactoryResolver.resolve())
@@ -78,12 +82,13 @@ suspend fun main() {
         )
 
     MultiLLMPromptExecutor(mapOf(LLMProvider.OpenAI to openAIClient)).use { executor ->
+        val prompt = fetchExampleRunPrompt<WeatherAnswer>(platform, tags, systemPrompt)
+
         val agent =
             AIAgent(
                 promptExecutor = executor,
-                llmModel = OpenAIModels.Chat.GPT4oMini,
+                agentConfig = AIAgentConfig(prompt = prompt, model = OpenAIModels.Chat.GPT4oMini, maxAgentIterations = 50),
                 strategy = structuredOutputWithToolsStrategy<WeatherAnswer>(structuredOutputConfig),
-                systemPrompt = systemPrompt,
                 toolRegistry = toolRegistry,
             ) {
                 reportRunsToAigentic<WeatherAnswer>(
@@ -93,7 +98,7 @@ suspend fun main() {
                             description = "Answer weather questions",
                             instructions = listOf(Instruction("Use the weather tool for current conditions")),
                         ),
-                    tags = listOf(RunTag("koog-example")),
+                    tags = tags,
                 )
             }
 

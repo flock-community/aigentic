@@ -102,6 +102,5 @@ inline fun <reified Output : Any> GraphAIAgent.FeatureContext.reportRunsToAigent
         onAgentExecutionFailed { ctx ->
             report(Outcome.Fatal(message = ctx.error.message ?: "Koog agent execution failed"))
         }
-
     }
 }
