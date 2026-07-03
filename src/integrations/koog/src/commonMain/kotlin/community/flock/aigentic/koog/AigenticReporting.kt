@@ -27,11 +27,11 @@ import community.flock.aigentic.koog.model.KoogModelIdentifier
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-fun GraphAIAgent.FeatureContext.reportRunsToAigentic(
+inline fun <reified Output : Any> GraphAIAgent.FeatureContext.reportRunsToAigentic(
     platform: Platform,
     task: Task,
     tags: List<RunTag> = emptyList(),
-    onRunReported: (RunId) -> Unit = {},
+    noinline onRunReported: (RunId) -> Unit = {},
 ) {
     install(EventHandler) {
         var startedAt: Instant? = null
@@ -42,9 +42,9 @@ fun GraphAIAgent.FeatureContext.reportRunsToAigentic(
         val messages = mutableListOf<Message>()
         val modelRequests = mutableListOf<ModelRequestInfo>()
 
-        suspend fun report(outcome: Outcome<String>) {
+        val report: suspend (Outcome<Output>) -> Unit = { outcome ->
             val agent =
-                Agent<String, String>(
+                Agent<String, Output>(
                     platform = null,
                     customSystemPromptBuilder = null,
                     model = koogModel ?: KoogModel(KoogModelIdentifier("unknown", "unknown")),
@@ -96,11 +96,12 @@ fun GraphAIAgent.FeatureContext.reportRunsToAigentic(
         onToolCallCompleted { ctx -> messages += ctx.toAigenticToolResultMessage() }
 
         onAgentCompleted { ctx ->
-            report(Outcome.Finished(description = "Koog agent finished", response = ctx.result?.toString()))
+            report(Outcome.Finished(description = "Koog agent finished", response = ctx.result as? Output))
         }
 
         onAgentExecutionFailed { ctx ->
             report(Outcome.Fatal(message = ctx.error.message ?: "Koog agent execution failed"))
         }
+
     }
 }
