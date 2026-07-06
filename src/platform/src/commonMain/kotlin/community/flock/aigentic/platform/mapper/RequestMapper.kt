@@ -293,7 +293,6 @@ private fun ToolCall.toDto(): ToolCallDto =
         id = id.id,
         name = name,
         arguments = arguments,
-        expectedArguments = null,
     )
 
 private fun MimeType.toDto(): MimeTypeDto =
