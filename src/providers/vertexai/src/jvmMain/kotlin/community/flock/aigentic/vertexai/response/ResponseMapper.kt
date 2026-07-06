@@ -15,7 +15,7 @@ import generateRandomString
 import kotlin.jvm.optionals.getOrNull
 
 fun GenerateContentResponse.toModelResponse(isStructuredOutput: Boolean): ModelResponse {
-    promptFeedback().getOrNull()?.blockReason()?.let {
+    promptFeedback().getOrNull()?.blockReason()?.getOrNull()?.let {
         aigenticException("VertexAI blocked the prompt because of reason: '$it'")
     }
 
