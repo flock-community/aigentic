@@ -13,8 +13,6 @@ import community.flock.aigentic.core.message.Message as AigenticMessage
 
 fun Prompt.systemPromptText(): String = messages.filterIsInstance<KoogMessage.System>().joinToString("\n") { it.textContent() }
 
-fun Prompt.initialUserText(): String? = messages.filterIsInstance<KoogMessage.User>().firstOrNull()?.textContent()
-
 fun KoogMessage.Assistant.toAigenticMessages(): List<AigenticMessage> {
     val toolCalls = parts.filterIsInstance<MessagePart.Tool.Call>()
     return when {

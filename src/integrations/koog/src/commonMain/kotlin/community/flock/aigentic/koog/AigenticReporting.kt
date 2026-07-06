@@ -17,7 +17,6 @@ import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.core.platform.sendRun
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
-import community.flock.aigentic.koog.mapper.initialUserText
 import community.flock.aigentic.koog.mapper.systemPromptText
 import community.flock.aigentic.koog.mapper.toAigenticMessages
 import community.flock.aigentic.koog.mapper.toAigenticTool
@@ -67,15 +66,22 @@ inline fun <reified Output : Any> GraphAIAgent.FeatureContext.reportRunsToAigent
             if (result is RunSentResult.Success) onRunReported(result.runId)
         }
 
-        onAgentStarting { startedAt = Clock.System.now() }
+        onAgentStarting { ctx ->
+            startedAt = Clock.System.now()
+            // ctx.context.agentInput is the raw run() input, captured before the strategy graph
+            // appends it (or any fetchExampleRunPrompt-spliced example messages) to the live prompt -
+            // ctx.prompt.initialUserText() in onLLMCallStarting would otherwise pick up whichever
+            // user-role message happens to come first, which is the spliced example preamble when
+            // one is present, not the real question.
+            ctx.context.agentInput?.toString()?.let {
+                messages += Message.Text(sender = Sender.Agent, text = it, category = MessageCategory.RUN_CONTEXT)
+            }
+        }
 
         onLLMCallStarting { ctx ->
             lastLLMCallStartedAt = Clock.System.now()
             if (systemPromptMessage == null) {
                 systemPromptMessage = Message.SystemPrompt(prompt = ctx.prompt.systemPromptText())
-                ctx.prompt.initialUserText()?.let {
-                    messages += Message.Text(sender = Sender.Agent, text = it, category = MessageCategory.RUN_CONTEXT)
-                }
                 koogModel = KoogModel(KoogModelIdentifier(ctx.model.id))
                 tools = ctx.tools.associate { ToolName(it.name) to it.toAigenticTool() }
             }

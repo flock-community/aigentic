@@ -21,7 +21,7 @@ class KoogMessageMapperTest :
 
         describe("Prompt mapping") {
 
-            it("extracts the system prompt text and the first user message") {
+            it("extracts the system prompt text") {
                 val prompt =
                     Prompt(
                         messages =
@@ -33,7 +33,6 @@ class KoogMessageMapperTest :
                     )
 
                 prompt.systemPromptText() shouldBe "You are a weather assistant."
-                prompt.initialUserText() shouldBe "What's the weather in Amsterdam?"
             }
         }
 
