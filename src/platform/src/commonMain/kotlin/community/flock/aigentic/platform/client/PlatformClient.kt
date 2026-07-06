@@ -134,7 +134,9 @@ class AigenticPlatformClient(
         when (val response = endpoints.getRuns(GetRuns.Request(tags = tags.joinToString(",") { it.value }))) {
             is GetRuns.Response200 -> response.body
             is GetRuns.Response401 -> aigenticException("Unauthorized to get runs")
-            is GetRuns.Response404 -> aigenticException("Runs not found")
+            // No runs match the given tags - a normal, expected state (e.g. the first run with a
+            // given tag, before any example runs have been tagged yet), not an error.
+            is GetRuns.Response404 -> emptyList()
             is GetRuns.Response500 -> aigenticException("Internal server error")
         }.map { RunId(it.runId) to it.toRun() }
 }

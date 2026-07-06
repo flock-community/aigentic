@@ -47,7 +47,7 @@ inline fun <reified Output : Any> GraphAIAgent.FeatureContext.reportRunsToAigent
                 Agent<String, Output>(
                     platform = null,
                     customSystemPromptBuilder = null,
-                    model = koogModel ?: KoogModel(KoogModelIdentifier("unknown", "unknown")),
+                    model = koogModel ?: KoogModel(KoogModelIdentifier("unknown")),
                     task = task,
                     contexts = emptyList(),
                     tools = tools,
@@ -76,7 +76,7 @@ inline fun <reified Output : Any> GraphAIAgent.FeatureContext.reportRunsToAigent
                 ctx.prompt.initialUserText()?.let {
                     messages += Message.Text(sender = Sender.Agent, text = it, category = MessageCategory.RUN_CONTEXT)
                 }
-                koogModel = KoogModel(KoogModelIdentifier(ctx.model.provider.id, ctx.model.id))
+                koogModel = KoogModel(KoogModelIdentifier(ctx.model.id))
                 tools = ctx.tools.associate { ToolName(it.name) to it.toAigenticTool() }
             }
         }

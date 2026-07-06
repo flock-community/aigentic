@@ -9,10 +9,9 @@ import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 
 class KoogModelIdentifier(
-    provider: String,
     id: String,
 ) : ModelIdentifier {
-    override val stringValue: String = "$provider/$id"
+    override val stringValue: String = id
 }
 
 class KoogModel(
