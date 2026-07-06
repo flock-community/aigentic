@@ -29,10 +29,11 @@ class ExamplePromptTest :
             it("only sets the system prompt when no tags are given") {
                 val platform = mockk<Platform>()
 
-                val prompt = fetchExampleRunPrompt<String>(platform, emptyList(), "You are a helpful agent")
+                val (prompt, exampleRunIds) = fetchExampleRunPrompt<String>(platform, emptyList(), "You are a helpful agent")
 
                 prompt.messages.filterIsInstance<KoogMessage.System>().map { it.textContent() } shouldBe listOf("You are a helpful agent")
                 prompt.messages.filterIsInstance<KoogMessage.User>() shouldBe emptyList()
+                exampleRunIds shouldBe emptyList()
             }
 
             it("only sets the system prompt when no runs match the tags") {
@@ -42,10 +43,11 @@ class ExamplePromptTest :
                     }
                 val platform = mockk<Platform>().apply { every { this@apply.client } returns client }
 
-                val prompt = fetchExampleRunPrompt<String>(platform, listOf(RunTag("example")), "You are a helpful agent")
+                val (prompt, exampleRunIds) = fetchExampleRunPrompt<String>(platform, listOf(RunTag("example")), "You are a helpful agent")
 
                 prompt.messages.filterIsInstance<KoogMessage.System>().map { it.textContent() } shouldBe listOf("You are a helpful agent")
                 prompt.messages.filterIsInstance<KoogMessage.User>() shouldBe emptyList()
+                exampleRunIds shouldBe emptyList()
             }
 
             it("splices example run messages in as user turns, wrapped in start/end markers") {
@@ -71,7 +73,7 @@ class ExamplePromptTest :
                     }
                 val platform = mockk<Platform>().apply { every { this@apply.client } returns client }
 
-                val prompt = fetchExampleRunPrompt<String>(platform, listOf(RunTag("example")), "You are a helpful agent")
+                val (prompt, exampleRunIds) = fetchExampleRunPrompt<String>(platform, listOf(RunTag("example")), "You are a helpful agent")
 
                 val userTexts = prompt.messages.filterIsInstance<KoogMessage.User>().map { it.textContent() }
 
@@ -92,6 +94,7 @@ class ExamplePromptTest :
                     )
 
                 (prompt.messages.first() as KoogMessage.System).textContent() shouldBe "You are a helpful agent"
+                exampleRunIds shouldBe listOf(RunId("run-1"))
             }
         }
     })

@@ -2,6 +2,7 @@ package community.flock.aigentic.koog
 
 import ai.koog.prompt.Prompt
 import ai.koog.prompt.dsl.prompt
+import community.flock.aigentic.core.agent.RunId
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.message.ContextMessage
 import community.flock.aigentic.core.message.Message
@@ -12,17 +13,20 @@ import community.flock.aigentic.core.platform.getRuns
 /**
  * Koog has no equivalent of the native DSL's example-run state (`state.addExampleMessage`), so this
  * pre-fetches runs tagged [tags] and splices them into a [Prompt] as extra user turns instead, using
- * the same marker wording as `fetchExampleRunMessages` in the core `AgentExecutor`.
+ * the same marker wording as `fetchExampleRunMessages` in the core `AgentExecutor`. The matched
+ * [RunId]s are returned alongside the [Prompt] so callers can report them via `reportRunsToAigentic`'s
+ * `exampleRunIds`, the same way the native DSL's `state.addExampleRunId` does - otherwise the
+ * platform has no record that a run's prompt was seeded with examples.
  */
 suspend inline fun <reified Output : Any> fetchExampleRunPrompt(
     platform: Platform,
     tags: List<RunTag>,
     systemPrompt: String,
     id: String = "koog-agent",
-): Prompt {
+): Pair<Prompt, List<RunId>> {
     val runs = if (tags.isEmpty()) emptyList() else platform.getRuns<Output>(tags)
 
-    return prompt(id) {
+    val prompt = prompt(id) {
         system(systemPrompt)
 
         if (runs.isNotEmpty()) {
@@ -51,6 +55,8 @@ suspend inline fun <reified Output : Any> fetchExampleRunPrompt(
             )
         }
     }
+
+    return prompt to runs.map { it.first }
 }
 
 @PublishedApi

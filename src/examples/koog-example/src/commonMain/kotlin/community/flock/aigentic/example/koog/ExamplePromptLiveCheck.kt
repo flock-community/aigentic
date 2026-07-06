@@ -27,9 +27,10 @@ suspend fun main() {
         )
 
     val tags = listOf(RunTag("koog-example"))
-    val prompt =
+    val (prompt, exampleRunIds) =
         fetchExampleRunPrompt<WeatherAnswer>(platform, tags, "You are a weather assistant. Use the weather tool to answer questions about the weather.")
 
+    println("LIVE_CHECK_EXAMPLE_RUN_IDS=${exampleRunIds.map { it.value }}")
     println("LIVE_CHECK_MESSAGE_COUNT=${prompt.messages.size}")
     prompt.messages.forEachIndexed { index, message ->
         val role =

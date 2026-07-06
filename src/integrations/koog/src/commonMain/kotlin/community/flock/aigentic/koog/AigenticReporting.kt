@@ -30,6 +30,7 @@ inline fun <reified Output : Any> GraphAIAgent.FeatureContext.reportRunsToAigent
     platform: Platform,
     task: Task,
     tags: List<RunTag> = emptyList(),
+    exampleRunIds: List<RunId> = emptyList(),
     noinline onRunReported: (RunId) -> Unit = {},
 ) {
     install(EventHandler) {
@@ -61,6 +62,7 @@ inline fun <reified Output : Any> GraphAIAgent.FeatureContext.reportRunsToAigent
                     outcome = outcome,
                     modelRequests = modelRequests.toList(),
                     systemPromptMessage = prompt,
+                    exampleRunIds = exampleRunIds,
                 )
             val result = platform.sendRun(run, agent)
             if (result is RunSentResult.Success) onRunReported(result.runId)

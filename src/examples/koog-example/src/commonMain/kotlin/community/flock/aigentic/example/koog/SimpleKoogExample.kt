@@ -82,7 +82,7 @@ suspend fun main() {
         )
 
     MultiLLMPromptExecutor(mapOf(LLMProvider.OpenAI to openAIClient)).use { executor ->
-        val prompt = fetchExampleRunPrompt<WeatherAnswer>(platform, tags, systemPrompt)
+        val (prompt, exampleRunIds) = fetchExampleRunPrompt<WeatherAnswer>(platform, tags, systemPrompt)
 
         val agent =
             AIAgent(
@@ -99,6 +99,7 @@ suspend fun main() {
                             instructions = listOf(Instruction("Use the weather tool for current conditions")),
                         ),
                     tags = tags,
+                    exampleRunIds = exampleRunIds,
                 )
             }
 
