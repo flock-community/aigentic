@@ -88,6 +88,15 @@ repositories {
 ./gradlew -q build
 ```
 
+### Before committing
+
+Always run these locally before committing — CI enforces both and will fail the build otherwise:
+
+```bash
+./gradlew -q spotlessApply  # formatting (fixes violations in place)
+./gradlew -q build          # lint + full build + tests
+```
+
 ## License
 
 Aigentic is released under the MIT License. See [LICENSE](LICENSE) for details.
