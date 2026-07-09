@@ -244,14 +244,45 @@ In other words, Koog stays in the driver's seat. It owns the model calls, the to
 
 ### Overview
 
-The integration lives in the `src:integrations:koog` module (JVM only for now) and gives you two functions:
+The integration lives in the `src:integrations:koog` module (JVM only for now) and gives you:
 
-- `reportRunsToAigentic` - installs a Koog `EventHandler` on your agent that captures messages, tool calls, and token usage as the run happens, then sends the finished run to the Aigentic platform.
+- `Aigentic` - a Koog feature. Install it like any other Koog feature (`install(Aigentic) { ... }`) and it captures messages, tool calls, and token usage as the run happens, then sends the finished run to the Aigentic platform.
+- `outputType<Output>()` - tells the feature how to serialize a structured (non-`String`) agent output. Only needed if your agent doesn't produce plain text.
 - `fetchExampleRunPrompt` - fetches previously reported runs with matching tags from the Aigentic platform and splices them into your Koog `Prompt` as few-shot examples, since Koog has no built-in equivalent to Aigentic's native example-run state.
 
 ### Basic Usage
 
-Here's a trimmed version of the weather example from `src/examples/koog-example`:
+For a plain-text Koog agent, reporting to Aigentic is a single `install(Aigentic) { }` block:
+
+```kotlin
+suspend fun main() {
+    val agent =
+        AIAgent(
+            promptExecutor = executor,
+            llmModel = OpenAIModels.Chat.GPT4oMini,
+            systemPrompt = "You are a helpful assistant.",
+        ) {
+            install(Aigentic) {
+                task = Task("Answer questions", emptyList())
+            }
+        }
+
+    println(agent.run("What's 2 + 2?"))
+}
+```
+
+That's it - no platform to build by hand. `platform` defaults to an `AigenticPlatform` built from the `AIGENTIC_PLATFORM_NAME`, `AIGENTIC_PLATFORM_SECRET`, and `AIGENTIC_PLATFORM_URL` environment variables. `task` is the one thing you do set yourself - it's what the platform groups your runs' evaluations under, so there's no sensible default for it.
+
+If your agent returns structured output instead of plain text, add `outputType<Output>()` so the feature knows how to serialize it:
+
+```kotlin
+install(Aigentic) {
+    task = Task("Answer weather questions", emptyList())
+    outputType<WeatherAnswer>()
+}
+```
+
+Here's a trimmed version of the weather example from `src/examples/koog-example`, which also uses tags and few-shot examples:
 
 ```kotlin
 class WeatherTools : ToolSet {
@@ -268,12 +299,7 @@ data class WeatherAnswer(
 )
 
 suspend fun main() {
-    val platform =
-        AigenticPlatform(
-            authentication = Authentication.BasicAuth(username = "your-platform-name", password = "your-platform-secret"),
-            apiUrl = PlatformApiUrl(defaultPlatformApiUrl),
-        )
-
+    val platform = defaultAigenticPlatform(agentName = "your-platform-name")
     val tags = listOf(RunTag("koog-example"))
     val toolRegistry = ToolRegistry { tools(WeatherTools().asTools()) }
     val executor = MultiLLMPromptExecutor(mapOf(LLMProvider.OpenAI to OpenAILLMClient(apiKey = "your-openai-api-key")))
@@ -281,9 +307,9 @@ suspend fun main() {
     // Fetch past runs tagged "koog-example" and splice them into the prompt as examples
     val (prompt, exampleRunIds) =
         fetchExampleRunPrompt<WeatherAnswer>(
-            platform,
-            tags,
-            "You are a weather assistant. Use the weather tool to answer questions about the weather.",
+            platform = platform,
+            tags = tags,
+            systemPrompt = "You are a weather assistant. Use the weather tool to answer questions about the weather.",
         )
 
     val agent =
@@ -293,40 +319,43 @@ suspend fun main() {
             strategy = structuredOutputWithToolsStrategy<WeatherAnswer>(structuredOutputConfig),
             toolRegistry = toolRegistry,
         ) {
-            // The only Aigentic-specific line inside the agent itself
-            reportRunsToAigentic<WeatherAnswer>(
-                platform = platform,
+            // The only Aigentic-specific block inside the agent itself
+            install(Aigentic) {
+                platform = platform
                 task =
                     Task(
                         description = "Answer weather questions",
                         instructions = listOf(Instruction("Use the weather tool for current conditions")),
-                    ),
-                tags = tags,
-                exampleRunIds = exampleRunIds,
-            )
+                    )
+                this.tags = tags
+                this.exampleRunIds = exampleRunIds
+                outputType<WeatherAnswer>()
+            }
         }
 
     println(agent.run("What's the weather like in Amsterdam?"))
 }
 ```
 
-Everything else is plain Koog: the tool set, the model, the executor, and the strategy. Aigentic only adds the `reportRunsToAigentic` block and, if you want few-shot examples, the `fetchExampleRunPrompt` call.
+Everything else is plain Koog: the tool set, the model, the executor, and the strategy. Aigentic only adds the `install(Aigentic) { }` block and, if you want few-shot examples, the `fetchExampleRunPrompt` call before it.
+
+One gotcha worth knowing: inside `install(Aigentic) { }`, `tags = tags` (reusing a local val with the same name as the config property) assigns to the *local* `tags`, not the config's - Kotlin resolves the shadowed name that way. Qualify it with `this.tags = tags` when you reuse the name, as in the example above.
 
 ### How It Works
 
-`reportRunsToAigentic` hooks into Koog's `EventHandler` lifecycle:
+`Aigentic` hooks straight into Koog's feature pipeline (the same one `install(OpenTelemetry)` and other Koog features use):
 
 1. **Run start**: captures the raw input you passed to `agent.run(...)` as the run's context, before the strategy graph (or any spliced examples) touches the prompt.
 2. **First LLM call**: captures the system prompt, the model identifier, and the tool descriptors Koog registered.
 3. **Every LLM call**: maps the assistant's response (text or tool calls) into Aigentic messages and records input/output token counts.
 4. **Every tool call**: maps the tool result into an Aigentic tool-result message.
-5. **Agent finished or failed**: builds the full `AgentRun` and sends it to the Aigentic platform, including any `exampleRunIds` you fetched with `fetchExampleRunPrompt`.
+5. **Agent finished or failed**: builds the full `AgentRun` and sends it to the Aigentic platform, including any `exampleRunIds` you fetched with `fetchExampleRunPrompt`, serialized with `outputSerializer` (plain `String` by default, or whatever you set with `outputType<Output>()`).
 
 ### What's Supported
 
 - Single Koog `AIAgent` runs, including multi-step strategies with several sequential tool and LLM calls
 - Text questions and answers, tool calls with primitive, enum, array, and object parameters, and tool results
-- Structured output through Koog's native schema mode (`StructuredRequest.Native`), as used in the weather example
+- Structured output through Koog's native schema mode (`StructuredRequest.Native`), as used in the weather example, via `outputType<Output>()`
 - Token usage and cost reporting, based on the token counts Koog's response metadata provides
 - Few-shot examples, by manually fetching tagged historical runs from the platform and splicing them into the prompt
 - Any Koog-supported LLM provider in principle - the reporting code only reads provider-agnostic Koog types (`Prompt`, `Message`, `ToolDescriptor`), it doesn't branch on provider. That said, only OpenAI is exercised by the current example and tests, so other providers haven't been verified yet.
@@ -338,12 +367,12 @@ Everything else is plain Koog: the tool set, the model, the executor, and the st
 - **`Outcome.Stuck`**: Aigentic's native agents can signal "I'm stuck" through a dedicated internal tool. Koog agents don't know about that tool, so a Koog run always reports as either `Finished` or `Fatal` - there's currently no way to see that an agent gave up.
 - **Workflow DSL**: chaining multiple agents together with Aigentic's Workflow DSL doesn't have a Koog equivalent yet. Each Koog agent reports as one standalone run.
 - **Attachments and multi-modal content**: reported runs always have an empty context, and message mapping only handles text and tool-call parts. Images or other non-text content used in a Koog run aren't reflected in the Aigentic run.
-- **Few-shot examples are a prompt hack, not a first-class feature**: `fetchExampleRunPrompt` splices historical runs in as plain user-turn text wrapped in marker strings (`<END_EXAMPLE_0>`, `<END_OF_ALL_EXAMPLES>`), rather than using dedicated message types the way the native DSL's example-run state does. You also need to thread the returned `exampleRunIds` into `reportRunsToAigentic` yourself - nothing wires that up automatically.
+- **Few-shot examples are a prompt hack, not a first-class feature**: `fetchExampleRunPrompt` splices historical runs in as plain user-turn text wrapped in marker strings (`<END_EXAMPLE_0>`, `<END_OF_ALL_EXAMPLES>`), rather than using dedicated message types the way the native DSL's example-run state does. It also can't be folded into `install(Aigentic) { }` - Koog has no way to rewrite the prompt from inside a feature, so it has to run before the agent is built. You still need to set the returned `exampleRunIds` on the config yourself - nothing wires that up automatically.
 - **JVM only**: the Koog integration module currently only targets `jvm()`, unlike Aigentic's core, which is Kotlin Multiplatform. There's no JS, Native, or Wasm support yet.
 - **Cost display depends on exact model IDs**: the model identifier reported is whatever Koog gives as `ctx.model.id`, unchanged. Depending on how the Aigentic platform matches model IDs to its pricing tables, non-OpenAI/Gemini models, or provider-prefixed IDs from things like OpenRouter, may show up with no cost data.
 
 ### TLDR
 
-The Koog integration doesn't replace Aigentic's own agent DSL - it lets a Koog-native agent report its runs to the Aigentic platform so you get the same visibility (run history, token usage, few-shot examples) without changing how you build the agent. Koog stays fully in control of execution; Aigentic only observes and reports.
+The Koog integration doesn't replace Aigentic's own agent DSL - it lets a Koog-native agent report its runs to the Aigentic platform so you get the same visibility (run history, token usage, few-shot examples) without changing how you build the agent. Install `Aigentic` like any other Koog feature, set a `task`, and you're done - Koog stays fully in control of execution, Aigentic only observes and reports.
 
 Keep in mind this is a one-way, observation-only bridge: it can't drive execution, share tools with native Aigentic agents, report a "stuck" outcome, or participate in the Workflow DSL. If you need those, build the agent with Aigentic's native `agent { }` DSL instead.
