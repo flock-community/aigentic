@@ -183,8 +183,7 @@ type ToolCallsMessageDto {
 type ToolCallDto {
     id: String,
     name: String,
-    arguments: String,
-    expectedArguments: String?
+    arguments: String
 }
 
 type ToolResultMessageDto {
