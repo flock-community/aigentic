@@ -19,9 +19,10 @@ import ai.koog.prompt.structure.json.JsonStructure
 import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
+import community.flock.aigentic.koog.Aigentic
 import community.flock.aigentic.koog.defaultAigenticPlatform
 import community.flock.aigentic.koog.fetchExampleRunPrompt
-import community.flock.aigentic.koog.reportRunsToAigentic
+import community.flock.aigentic.koog.outputType
 import kotlinx.serialization.Serializable
 
 class WeatherTools : ToolSet {
@@ -60,7 +61,7 @@ suspend fun main() {
     val openAIClient = OpenAILLMClient(apiKey = openAIKey, httpClientFactory = HttpClientFactoryResolver.resolve())
 
     // Native mode sets the request's schema parameter instead of adding a prompting message, so it
-    // doesn't shift what AigenticReporting captures as the RUN_CONTEXT message (the first user turn).
+    // doesn't shift what the Aigentic feature captures as the RUN_CONTEXT message (the first user turn).
     val structuredOutputConfig =
         StructuredRequestConfig(
             default = StructuredRequest.Native(JsonStructure.create<WeatherAnswer>(schemaGenerator = OpenAIStandardJsonSchemaGenerator)),
@@ -76,16 +77,17 @@ suspend fun main() {
                 strategy = structuredOutputWithToolsStrategy<WeatherAnswer>(structuredOutputConfig),
                 toolRegistry = toolRegistry,
             ) {
-                reportRunsToAigentic<WeatherAnswer>(
-                    platform = aigenticPlatform,
+                install(Aigentic) {
+                    platform = aigenticPlatform
                     task =
                         Task(
                             description = "Answer weather questions",
                             instructions = listOf(Instruction("Use the weather tool for current conditions")),
-                        ),
-                    tags = tags,
-                    exampleRunIds = exampleRunIds,
-                )
+                        )
+                    this.tags = tags
+                    this.exampleRunIds = exampleRunIds
+                    outputType<WeatherAnswer>()
+                }
             }
 
         println(agent.run("What's the weather like in Amsterdam?"))
