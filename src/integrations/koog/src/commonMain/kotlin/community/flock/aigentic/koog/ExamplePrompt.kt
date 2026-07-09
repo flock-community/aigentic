@@ -19,8 +19,8 @@ import community.flock.aigentic.core.platform.getRuns
  * platform has no record that a run's prompt was seeded with examples.
  */
 suspend inline fun <reified Output : Any> fetchExampleRunPrompt(
-    platform: Platform,
-    tags: List<RunTag>,
+    platform: Platform = defaultAigenticPlatform(),
+    tags: List<RunTag> = emptyList(),
     systemPrompt: String,
     id: String = "koog-agent",
 ): Pair<Prompt, List<RunId>> {

@@ -27,7 +27,7 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 
 inline fun <reified Output : Any> GraphAIAgent.FeatureContext.reportRunsToAigentic(
-    platform: Platform,
+    platform: Platform = defaultAigenticPlatform(),
     task: Task,
     tags: List<RunTag> = emptyList(),
     exampleRunIds: List<RunId> = emptyList(),

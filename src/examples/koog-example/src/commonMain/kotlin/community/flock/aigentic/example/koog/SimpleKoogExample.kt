@@ -19,12 +19,9 @@ import ai.koog.prompt.structure.json.JsonStructure
 import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
-import community.flock.aigentic.core.platform.Authentication
-import community.flock.aigentic.core.platform.PlatformApiUrl
+import community.flock.aigentic.koog.defaultAigenticPlatform
 import community.flock.aigentic.koog.fetchExampleRunPrompt
 import community.flock.aigentic.koog.reportRunsToAigentic
-import community.flock.aigentic.platform.AigenticPlatform
-import community.flock.aigentic.platform.client.defaultPlatformApiUrl
 import kotlinx.serialization.Serializable
 
 class WeatherTools : ToolSet {
@@ -46,15 +43,9 @@ private val openAIKey by lazy {
     }
 }
 
-private val aigenticPlatformSecret by lazy {
-    System.getenv("AIGENTIC_PLATFORM_SECRET").also {
-        if (it.isNullOrEmpty()) error("Set 'AIGENTIC_PLATFORM_SECRET' environment variable!")
-    }
+private val aigenticPlatform by lazy {
+    defaultAigenticPlatform(agentName = System.getenv("AIGENTIC_PLATFORM_NAME") ?: "koog-example")
 }
-
-private val aigenticPlatformName by lazy { System.getenv("AIGENTIC_PLATFORM_NAME") ?: "koog-example" }
-
-private val aigenticPlatformUrl by lazy { System.getenv("AIGENTIC_PLATFORM_URL") ?: defaultPlatformApiUrl }
 
 private val systemPrompt by lazy {
     System.getenv("KOOG_EXAMPLE_SYSTEM_PROMPT")
@@ -62,12 +53,6 @@ private val systemPrompt by lazy {
 }
 
 suspend fun main() {
-    val platform =
-        AigenticPlatform(
-            authentication = Authentication.BasicAuth(username = aigenticPlatformName, password = aigenticPlatformSecret),
-            apiUrl = PlatformApiUrl(aigenticPlatformUrl),
-        )
-
     val tags = listOf(RunTag("koog-example"))
 
     val toolRegistry = ToolRegistry { tools(WeatherTools().asTools()) }
@@ -82,7 +67,7 @@ suspend fun main() {
         )
 
     MultiLLMPromptExecutor(mapOf(LLMProvider.OpenAI to openAIClient)).use { executor ->
-        val (prompt, exampleRunIds) = fetchExampleRunPrompt<WeatherAnswer>(platform, tags, systemPrompt)
+        val (prompt, exampleRunIds) = fetchExampleRunPrompt<WeatherAnswer>(aigenticPlatform, tags, systemPrompt)
 
         val agent =
             AIAgent(
@@ -92,7 +77,7 @@ suspend fun main() {
                 toolRegistry = toolRegistry,
             ) {
                 reportRunsToAigentic<WeatherAnswer>(
-                    platform = platform,
+                    platform = aigenticPlatform,
                     task =
                         Task(
                             description = "Answer weather questions",
