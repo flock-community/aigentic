@@ -7,6 +7,7 @@ import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.model.Usage
 import community.flock.aigentic.gemini.client.model.Content
+import community.flock.aigentic.gemini.client.model.FinishReason
 import community.flock.aigentic.gemini.client.model.GenerateContentResponse
 import community.flock.aigentic.gemini.client.model.Part
 import community.flock.aigentic.gemini.client.model.UsageMetadata
@@ -21,6 +22,13 @@ fun GenerateContentResponse.toModelResponse(isStructuredOutput: Boolean): ModelR
     val candidate =
         candidates?.firstOrNull()
             ?: aigenticException("No candidate found in Gemini response: $this.")
+
+    if (candidate.finishReason == FinishReason.MAX_TOKENS) {
+        aigenticException(
+            "Gemini truncated the response because the max output token limit was reached, " +
+                "increase it with generationConfig { maxOutputTokens(...) }",
+        )
+    }
 
     val content =
         candidate.content
