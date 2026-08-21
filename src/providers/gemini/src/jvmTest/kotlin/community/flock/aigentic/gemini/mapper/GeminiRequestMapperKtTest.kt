@@ -43,5 +43,19 @@ class GeminiRequestMapperKtTest :
                         this.inlineData shouldBe BlobContent(mimeType = mimeType.value, data = "iVBORw0KGgoAAA==")
                     }
             }
+
+            it("should set max output tokens when configured") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(maxOutputTokens = 65536)
+
+                createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null)
+                    .generationConfig
+                    .maxOutputTokens shouldBe 65536
+            }
+
+            it("should omit max output tokens when not configured") {
+                createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null)
+                    .generationConfig
+                    .maxOutputTokens shouldBe null
+            }
         }
     })

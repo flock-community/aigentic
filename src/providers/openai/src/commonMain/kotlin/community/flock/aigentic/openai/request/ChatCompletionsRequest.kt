@@ -20,6 +20,7 @@ internal fun createChatCompletionsRequest(
     chatCompletionRequest {
         temperature = generationSettings.temperature.toDouble()
         topP = generationSettings.topP.toDouble()
+        maxCompletionTokens = generationSettings.maxOutputTokens
         // topK = generationSettings.topK, TODO: Top k currently not supported in OpenAI
         model = ModelId(openAIModelIdentifier.stringValue)
         this.messages = messages.map { it.toOpenAIMessage() }
