@@ -9,7 +9,10 @@ import community.flock.aigentic.gemini.client.model.BlobContent
 import community.flock.aigentic.gemini.client.model.Part
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import io.kotest.matchers.types.shouldBeInstanceOf
+import kotlinx.serialization.json.Json
 
 class GeminiRequestMapperKtTest :
     DescribeSpec({
@@ -56,6 +59,19 @@ class GeminiRequestMapperKtTest :
                 createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null)
                     .generationConfig
                     .maxOutputTokens shouldBe null
+            }
+
+            it("should include max_output_tokens in the serialized request body when configured") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(maxOutputTokens = 65536)
+                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null)
+
+                Json { ignoreUnknownKeys = true }.encodeToString(request) shouldContain "\"max_output_tokens\":65536"
+            }
+
+            it("should not serialize a max_output_tokens key when not configured") {
+                val request = createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null)
+
+                Json { ignoreUnknownKeys = true }.encodeToString(request) shouldNotContain "max_output_tokens"
             }
         }
     })
