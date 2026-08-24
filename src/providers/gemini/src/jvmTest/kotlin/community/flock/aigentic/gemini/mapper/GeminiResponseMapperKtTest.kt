@@ -1,9 +1,14 @@
 package community.flock.aigentic.gemini.mapper
 
+import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.gemini.client.geminiJson
 import community.flock.aigentic.gemini.client.model.FinishReason
 import community.flock.aigentic.gemini.client.model.GenerateContentResponse
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.json.Json
 
 class GeminiResponseMapperKtTest :
@@ -64,6 +69,68 @@ class GeminiResponseMapperKtTest :
 
                 parsed.candidates?.first()?.content shouldBe null
                 parsed.candidates?.first()?.finishReason shouldBe FinishReason.SAFETY
+            }
+
+            it("should fail with a truncation message when the max output token limit is reached") {
+                val json =
+                    """
+                    {
+                      "candidates": [
+                        {
+                          "content": {
+                            "role": "model",
+                            "parts": [
+                              { "text": "{\"answer\": \"a partial respo" }
+                            ]
+                          },
+                          "finishReason": "MAX_TOKENS"
+                        }
+                      ],
+                      "usageMetadata": {
+                        "promptTokenCount": 10,
+                        "candidatesTokenCount": 8192,
+                        "totalTokenCount": 8202
+                      }
+                    }
+                    """.trimIndent()
+
+                val parsed = geminiJson.decodeFromString<GenerateContentResponse>(json)
+
+                shouldThrow<Exception> {
+                    parsed.toModelResponse(true)
+                }.message shouldContain "truncated"
+            }
+
+            it("should map a structured output response that finished normally") {
+                val json =
+                    """
+                    {
+                      "candidates": [
+                        {
+                          "content": {
+                            "role": "model",
+                            "parts": [
+                              { "text": "{\"answer\": \"complete\"}" }
+                            ]
+                          },
+                          "finishReason": "STOP"
+                        }
+                      ],
+                      "usageMetadata": {
+                        "promptTokenCount": 10,
+                        "candidatesTokenCount": 5,
+                        "totalTokenCount": 15
+                      }
+                    }
+                    """.trimIndent()
+
+                val parsed = geminiJson.decodeFromString<GenerateContentResponse>(json)
+
+                parsed
+                    .toModelResponse(true)
+                    .message
+                    .shouldBeInstanceOf<Message.StructuredOutput>()
+                    .response shouldBe """{"answer": "complete"}"""
             }
         }
     })

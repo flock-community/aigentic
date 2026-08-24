@@ -98,6 +98,9 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                     agent.model.generationSettings.thinkingConfig
                         ?.thinkingBudget
                         ?.toLong(),
+                maxOutputTokens =
+                    agent.model.generationSettings.maxOutputTokens
+                        ?.toLong(),
             ),
         messages = messages.mapNotNull { it.toDto() },
         modelRequests = modelRequests.map { it.toDto() },

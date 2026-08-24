@@ -129,6 +129,7 @@ private fun GenerationSettings.toGenerationConfig(structuredResponseParameter: P
         topP = topP,
         topK = topK,
         candidateCount = 1,
+        maxOutputTokens = maxOutputTokens,
         thinkingConfig = thinkingConfig?.let { ThinkingConfig(it.thinkingBudget) },
         responseSchema = structuredResponseParameter?.getStructuredResponseSchema(),
         responseMimeType = structuredResponseParameter?.let { "application/json" },

@@ -5,10 +5,13 @@ import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.GenerationSettings
+import community.flock.aigentic.gemini.client.geminiJson
 import community.flock.aigentic.gemini.client.model.BlobContent
 import community.flock.aigentic.gemini.client.model.Part
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 class GeminiRequestMapperKtTest :
@@ -42,6 +45,33 @@ class GeminiRequestMapperKtTest :
                     .run {
                         this.inlineData shouldBe BlobContent(mimeType = mimeType.value, data = "iVBORw0KGgoAAA==")
                     }
+            }
+
+            it("should set max output tokens when configured") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(maxOutputTokens = 65536)
+
+                createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null)
+                    .generationConfig
+                    .maxOutputTokens shouldBe 65536
+            }
+
+            it("should omit max output tokens when not configured") {
+                createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null)
+                    .generationConfig
+                    .maxOutputTokens shouldBe null
+            }
+
+            it("should include max_output_tokens in the serialized request body when configured") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(maxOutputTokens = 65536)
+                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null)
+
+                geminiJson.encodeToString(request) shouldContain "\"max_output_tokens\":65536"
+            }
+
+            it("should not serialize a max_output_tokens key when not configured") {
+                val request = createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null)
+
+                geminiJson.encodeToString(request) shouldNotContain "max_output_tokens"
             }
         }
     })

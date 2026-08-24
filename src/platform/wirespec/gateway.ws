@@ -25,7 +25,8 @@ type ConfigDto {
     exampleRunIds: String[]?,
     responseJsonSchema: String?,
     temperature: Number,
-    thinkingBudget: Integer?
+    thinkingBudget: Integer?,
+    maxOutputTokens: Integer?
 }
 
 type TaskDto {
