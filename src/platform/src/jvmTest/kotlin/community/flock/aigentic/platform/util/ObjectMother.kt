@@ -14,7 +14,7 @@ import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import kotlin.time.Clock
 
-fun createAgent() =
+fun createAgent(settings: GenerationSettings = GenerationSettings.DEFAULT) =
     Agent<Unit, String>(
         platform = null,
         customSystemPromptBuilder = null,
@@ -24,7 +24,7 @@ fun createAgent() =
                     object : ModelIdentifier {
                         override val stringValue: String = "test-model-identifier"
                     }
-                override val generationSettings = GenerationSettings.DEFAULT
+                override val generationSettings = settings
 
                 override suspend fun sendRequest(
                     messages: List<Message>,

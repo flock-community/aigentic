@@ -10,6 +10,7 @@ import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessage
 import community.flock.aigentic.openai.mapper.toOpenAITool
+import community.flock.aigentic.openai.model.usesMaxCompletionTokens
 
 internal fun createChatCompletionsRequest(
     messages: List<Message>,
@@ -20,6 +21,9 @@ internal fun createChatCompletionsRequest(
     chatCompletionRequest {
         temperature = generationSettings.temperature.toDouble()
         topP = generationSettings.topP.toDouble()
+        generationSettings.maxOutputTokens?.let {
+            if (openAIModelIdentifier.usesMaxCompletionTokens()) maxCompletionTokens = it else maxTokens = it
+        }
         // topK = generationSettings.topK, TODO: Top k currently not supported in OpenAI
         model = ModelId(openAIModelIdentifier.stringValue)
         this.messages = messages.map { it.toOpenAIMessage() }

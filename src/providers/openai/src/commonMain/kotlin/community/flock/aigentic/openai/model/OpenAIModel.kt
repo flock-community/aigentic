@@ -78,6 +78,44 @@ sealed class OpenAIModelIdentifier(
     ) : OpenAIModelIdentifier(identifier)
 }
 
+internal fun ModelIdentifier.usesMaxCompletionTokens(): Boolean =
+    when (this) {
+        is OpenAIModelIdentifier -> requiresMaxCompletionTokens()
+        else -> false
+    }
+
+private fun OpenAIModelIdentifier.requiresMaxCompletionTokens(): Boolean =
+    when (this) {
+        OpenAIModelIdentifier.GPT5_5,
+        OpenAIModelIdentifier.GPT5_5Pro,
+        OpenAIModelIdentifier.GPT5_4,
+        OpenAIModelIdentifier.GPT5_4Pro,
+        OpenAIModelIdentifier.GPT5_4Mini,
+        OpenAIModelIdentifier.GPT5_4Nano,
+        OpenAIModelIdentifier.GPT5,
+        OpenAIModelIdentifier.GPT5Mini,
+        OpenAIModelIdentifier.GPT5Nano,
+        OpenAIModelIdentifier.O3Pro,
+        OpenAIModelIdentifier.O3,
+        OpenAIModelIdentifier.O4Mini,
+        OpenAIModelIdentifier.O3Mini,
+        OpenAIModelIdentifier.O1,
+        OpenAIModelIdentifier.O1Pro,
+        -> true
+
+        OpenAIModelIdentifier.GPT4_1,
+        OpenAIModelIdentifier.GPT4_1Mini,
+        OpenAIModelIdentifier.GPT4_1Nano,
+        OpenAIModelIdentifier.GPT4O,
+        OpenAIModelIdentifier.GPT4OMini,
+        OpenAIModelIdentifier.GPT4Turbo,
+        OpenAIModelIdentifier.GPT3_5Turbo,
+        OpenAIModelIdentifier.GPT4OMiniSearchPreview,
+        OpenAIModelIdentifier.GPT4OSearchPreview,
+        is OpenAIModelIdentifier.Custom,
+        -> false
+    }
+
 class OpenAIModel(
     val authentication: Authentication.APIKey,
     override val modelIdentifier: ModelIdentifier,

@@ -29,6 +29,8 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import io.ktor.client.plugins.logging.LogLevel as KtorLogLevel
 
+internal val geminiJson = Json { ignoreUnknownKeys = true }
+
 class GeminiClient(
     private val config: GeminiApiConfig,
     private val rateLimiter: RateLimiter,
@@ -37,11 +39,7 @@ class GeminiClient(
 ) {
     private val configuration: HttpClientConfig<*>.() -> Unit = {
         install(ContentNegotiation) {
-            json(
-                Json {
-                    ignoreUnknownKeys = true
-                },
-            )
+            json(geminiJson)
         }
         install(Logging) {
             logger = Logger.SIMPLE

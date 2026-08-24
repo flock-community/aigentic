@@ -5,6 +5,7 @@ import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
+import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.getParameter
 import io.kotest.assertions.throwables.shouldThrow
@@ -118,6 +119,24 @@ class AgentConfigTest :
                 }.run {
                     responseParameter shouldBe getParameter<TestResponse>()
                 }
+            }
+
+            it("should build generation settings with max output tokens and thinking budget") {
+                GenerationConfig()
+                    .apply {
+                        maxOutputTokens(65536)
+                        thinkingBudget(10)
+                    }.build()
+                    .run {
+                        maxOutputTokens shouldBe 65536
+                        thinkingConfig shouldBe ThinkingConfig(10)
+                    }
+            }
+
+            it("should build generation settings without max output tokens by default") {
+                GenerationConfig()
+                    .build()
+                    .maxOutputTokens shouldBe null
             }
 
             it("should add tool with Unit input type") {

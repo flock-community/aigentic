@@ -153,6 +153,7 @@ class GenerationConfig : Config<GenerationSettings> {
     internal var topK: Int = GenerationSettings.DEFAULT_TOP_K
     internal var topP: Float = GenerationSettings.DEFAULT_TOP_P
     internal var thinkingBudget: Int? = null
+    internal var maxOutputTokens: Int? = null
 
     fun GenerationConfig.temperature(temperature: Float) {
         this.temperature = temperature
@@ -170,11 +171,16 @@ class GenerationConfig : Config<GenerationSettings> {
         this.thinkingBudget = thinkingBudget
     }
 
+    fun GenerationConfig.maxOutputTokens(maxOutputTokens: Int) {
+        this.maxOutputTokens = maxOutputTokens
+    }
+
     override fun build(): GenerationSettings =
         GenerationSettings(
             temperature = temperature,
             topK = topK,
             topP = topP,
-            thinkingBudget?.let(::ThinkingConfig),
+            thinkingConfig = thinkingBudget?.let(::ThinkingConfig),
+            maxOutputTokens = maxOutputTokens,
         )
 }

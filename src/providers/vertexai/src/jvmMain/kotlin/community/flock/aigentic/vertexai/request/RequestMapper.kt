@@ -95,6 +95,7 @@ internal fun createGenerateConfig(
         .tools(if (structuredOutputParameter == null) tools.toVertexTools() else emptyList())
         .safetySettings(createSafetySettings())
         .withThinkingConfig(generationSettings.thinkingConfig)
+        .withMaxOutputTokens(generationSettings.maxOutputTokens)
         .apply {
             structuredOutputParameter?.let { param ->
                 responseMimeType("application/json")
@@ -135,6 +136,11 @@ private fun GenerateContentConfig.Builder.withThinkingConfig(thinkingConfig: Thi
                     .build(),
             )
         }
+    }
+
+private fun GenerateContentConfig.Builder.withMaxOutputTokens(maxOutputTokens: Int?): GenerateContentConfig.Builder =
+    apply {
+        maxOutputTokens?.let { maxOutputTokens(it) }
     }
 
 private fun getToolParametersJson(toolDescription: ToolDescription): String =
