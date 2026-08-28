@@ -21,6 +21,8 @@ import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.exception.aigenticException
+import community.flock.aigentic.core.logging.Logger
+import community.flock.aigentic.core.logging.SimpleLogger
 import community.flock.aigentic.core.message.ContextMessage
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Message.Base64
@@ -54,6 +56,7 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(
     input: I? = null,
     vararg attachments: Attachment,
     expected: Expected<O>? = null,
+    logger: Logger = SimpleLogger,
 ): AgentRun<O> =
     coroutineScope {
         val agent = this@start
@@ -65,6 +68,7 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(
             val platformRunId = publishRun(agent, run, state, expected)
             run.copy(platformRunId = platformRunId)
         } catch (e: AigenticException) {
+            logger.error(e.message)
             state.events.emit(AgentStatus.Fatal(e.message))
             val run = (state to Outcome.Fatal(e.message)).toRun<O>()
             val platformRunId = publishRun(agent, run, state, expected)

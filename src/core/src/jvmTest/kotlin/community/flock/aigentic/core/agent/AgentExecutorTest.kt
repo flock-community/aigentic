@@ -13,6 +13,7 @@ import community.flock.aigentic.core.agent.tool.Outcome.Stuck
 import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.exception.AigenticException
+import community.flock.aigentic.core.logging.Logger
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -524,6 +525,25 @@ class AgentExecutorTest :
                 }.start().apply {
                     outcome.shouldBeInstanceOf<Fatal>().message shouldBe "Model exception"
                 }
+            }
+
+            it("should log the AigenticException at error level") {
+
+                val modelMock =
+                    mockk<Model>().apply {
+                        coEvery { sendRequest(any(), any(), any()) } throws AigenticException("Model exception")
+                    }
+                val loggerMock = mockk<Logger>(relaxed = true)
+
+                agent {
+                    model(modelMock)
+                    task("Summarize the retrieved news events") {
+                        addInstruction("Fetch top 10 news events")
+                    }
+                    addTool(mockk<Tool>(relaxed = true))
+                }.start(logger = loggerMock)
+
+                verify { loggerMock.error("Model exception") }
             }
 
             // Implement more in https://aigentic.youtrack.cloud/issue/AIGENTIC-29/Improve-Aigentic-client-Add-error-handling
