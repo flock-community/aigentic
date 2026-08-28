@@ -33,9 +33,9 @@ data class ModelResponse(
 )
 
 data class GenerationSettings(
-    val temperature: Float,
-    val topK: Int,
-    val topP: Float,
+    val temperature: Float?,
+    val topK: Int?,
+    val topP: Float?,
     val thinkingConfig: ThinkingConfig?,
     val maxOutputTokens: Int? = null,
 ) {
@@ -46,9 +46,9 @@ data class GenerationSettings(
 
         val DEFAULT =
             GenerationSettings(
-                temperature = DEFAULT_TEMPERATURE,
-                topK = DEFAULT_TOP_K,
-                topP = DEFAULT_TOP_P,
+                temperature = null,
+                topK = null,
+                topP = null,
                 thinkingConfig = null,
             )
     }

@@ -222,5 +222,115 @@ class ChatCompletionsRequestTest :
 
                 request.reasoningEffort?.id shouldBe "medium"
             }
+
+            it("should send default temperature and topP for a non-reasoning model when not configured") {
+                val request =
+                    createChatCompletionsRequest(
+                        emptyList(),
+                        emptyList(),
+                        OpenAIModelIdentifier.GPT4O,
+                        GenerationSettings.DEFAULT,
+                    )
+
+                request.temperature shouldBe GenerationSettings.DEFAULT_TEMPERATURE.toDouble()
+                request.topP shouldBe GenerationSettings.DEFAULT_TOP_P.toDouble()
+            }
+
+            it("should omit temperature and topP for a reasoning model when not configured") {
+                val request =
+                    createChatCompletionsRequest(
+                        emptyList(),
+                        emptyList(),
+                        OpenAIModelIdentifier.O3,
+                        GenerationSettings.DEFAULT,
+                    )
+
+                request.temperature shouldBe null
+                request.topP shouldBe null
+            }
+
+            it("should omit temperature and topP for a gpt-5 model when not configured") {
+                val request =
+                    createChatCompletionsRequest(
+                        emptyList(),
+                        emptyList(),
+                        OpenAIModelIdentifier.GPT5,
+                        GenerationSettings.DEFAULT,
+                    )
+
+                request.temperature shouldBe null
+                request.topP shouldBe null
+            }
+
+            it("should send default temperature and topP for a Custom model when not configured") {
+                val request =
+                    createChatCompletionsRequest(
+                        emptyList(),
+                        emptyList(),
+                        OpenAIModelIdentifier.Custom("some-ollama-model"),
+                        GenerationSettings.DEFAULT,
+                    )
+
+                request.temperature shouldBe GenerationSettings.DEFAULT_TEMPERATURE.toDouble()
+                request.topP shouldBe GenerationSettings.DEFAULT_TOP_P.toDouble()
+            }
+
+            it("should forward an explicit topP for gpt-4o") {
+                val request =
+                    createChatCompletionsRequest(
+                        emptyList(),
+                        emptyList(),
+                        OpenAIModelIdentifier.GPT4O,
+                        GenerationSettings.DEFAULT.copy(topP = 0.9f),
+                    )
+
+                request.topP shouldBe 0.9f.toDouble()
+            }
+
+            it("should send an explicit temperature for a Custom model without throwing") {
+                val request =
+                    createChatCompletionsRequest(
+                        emptyList(),
+                        emptyList(),
+                        OpenAIModelIdentifier.Custom("llama3"),
+                        GenerationSettings.DEFAULT.copy(temperature = 0.2f),
+                    )
+
+                request.temperature shouldBe 0.2f.toDouble()
+            }
+
+            it("should not send topK for a reasoning model and not throw") {
+                val request =
+                    createChatCompletionsRequest(
+                        emptyList(),
+                        emptyList(),
+                        OpenAIModelIdentifier.O3,
+                        GenerationSettings.DEFAULT.copy(topK = 40),
+                    )
+
+                request.temperature shouldBe null
+            }
+
+            it("should throw when temperature is configured on a reasoning model") {
+                shouldThrow<Exception> {
+                    createChatCompletionsRequest(
+                        emptyList(),
+                        emptyList(),
+                        OpenAIModelIdentifier.O3,
+                        GenerationSettings.DEFAULT.copy(temperature = 0.5f),
+                    )
+                }.message shouldContain "temperature is not supported"
+            }
+
+            it("should throw when topP is configured on a reasoning model") {
+                shouldThrow<Exception> {
+                    createChatCompletionsRequest(
+                        emptyList(),
+                        emptyList(),
+                        OpenAIModelIdentifier.O3,
+                        GenerationSettings.DEFAULT.copy(topP = 0.5f),
+                    )
+                }.message shouldContain "topP is not supported"
+            }
         }
     })

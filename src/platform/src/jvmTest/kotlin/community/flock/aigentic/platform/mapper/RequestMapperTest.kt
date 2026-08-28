@@ -27,5 +27,13 @@ class RequestMapperTest :
                     .toDto(agent, serializer<String>())
                     .config.maxOutputTokens shouldBe null
             }
+
+            it("should default temperature to 0.0 when not configured") {
+                val agent = createAgent()
+
+                createAgentRun()
+                    .toDto(agent, serializer<String>())
+                    .config.temperature shouldBe 0.0
+            }
         }
     })

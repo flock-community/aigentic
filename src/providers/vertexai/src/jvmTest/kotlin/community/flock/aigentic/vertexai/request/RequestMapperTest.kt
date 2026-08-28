@@ -275,6 +275,82 @@ class RequestMapperTest :
                     .thinkingBudget() shouldBe Optional.of(1024)
             }
 
+            it("should include default sampling parameters for a Gemini 2.x model when not configured") {
+                val config = createGenerateConfig(emptyList(), emptyList(), GenerationSettings.DEFAULT, null, VertexAIModelIdentifier.Gemini2_5Flash)
+
+                config.temperature() shouldBe Optional.of(GenerationSettings.DEFAULT_TEMPERATURE)
+                config.topP() shouldBe Optional.of(GenerationSettings.DEFAULT_TOP_P)
+                config.topK() shouldBe Optional.of(GenerationSettings.DEFAULT_TOP_K.toFloat())
+                config.candidateCount() shouldBe Optional.of(1)
+            }
+
+            it("should omit sampling parameters for a Gemini 3.x model when not configured") {
+                val config = createGenerateConfig(emptyList(), emptyList(), GenerationSettings.DEFAULT, null, VertexAIModelIdentifier.Gemini3_5Flash)
+
+                config.temperature() shouldBe Optional.empty()
+                config.topP() shouldBe Optional.empty()
+                config.topK() shouldBe Optional.empty()
+                config.candidateCount() shouldBe Optional.empty()
+            }
+
+            it("should include an explicitly configured temperature for a Gemini 3.x model and still omit topP/topK") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(temperature = 0.5f)
+                val config = createGenerateConfig(emptyList(), emptyList(), generationSettings, null, VertexAIModelIdentifier.Gemini3_5Flash)
+
+                config.temperature() shouldBe Optional.of(0.5f)
+                config.topP() shouldBe Optional.empty()
+                config.topK() shouldBe Optional.empty()
+            }
+
+            it("should omit sampling parameters for a Custom Gemini 4.x model when not configured") {
+                val config =
+                    createGenerateConfig(
+                        emptyList(),
+                        emptyList(),
+                        GenerationSettings.DEFAULT,
+                        null,
+                        VertexAIModelIdentifier.Custom("gemini-4.0-pro"),
+                    )
+
+                config.temperature() shouldBe Optional.empty()
+                config.topP() shouldBe Optional.empty()
+                config.topK() shouldBe Optional.empty()
+                config.candidateCount() shouldBe Optional.empty()
+            }
+
+            it("should include default sampling parameters for a Custom identifier without a version match when not configured") {
+                val config =
+                    createGenerateConfig(
+                        emptyList(),
+                        emptyList(),
+                        GenerationSettings.DEFAULT,
+                        null,
+                        VertexAIModelIdentifier.Custom("my-proxy"),
+                    )
+
+                config.temperature() shouldBe Optional.of(GenerationSettings.DEFAULT_TEMPERATURE)
+                config.topP() shouldBe Optional.of(GenerationSettings.DEFAULT_TOP_P)
+                config.topK() shouldBe Optional.of(GenerationSettings.DEFAULT_TOP_K.toFloat())
+                config.candidateCount() shouldBe Optional.of(1)
+            }
+
+            it("should send an explicit temperature, topK and topP for a Gemini 2.5 model exactly as configured") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(temperature = 0.5f, topK = 5, topP = 0.9f)
+                val config = createGenerateConfig(emptyList(), emptyList(), generationSettings, null, VertexAIModelIdentifier.Gemini2_5Flash)
+
+                config.temperature() shouldBe Optional.of(0.5f)
+                config.topK() shouldBe Optional.of(5f)
+                config.topP() shouldBe Optional.of(0.9f)
+            }
+
+            it("should send an explicit topP and topK for a Gemini 3.5 model") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(topK = 5, topP = 0.9f)
+                val config = createGenerateConfig(emptyList(), emptyList(), generationSettings, null, VertexAIModelIdentifier.Gemini3_5Flash)
+
+                config.topK() shouldBe Optional.of(5f)
+                config.topP() shouldBe Optional.of(0.9f)
+            }
+
             it("should allow thinkingLevel on a Custom gemini-exp-1206 identifier") {
                 val generationSettings =
                     GenerationSettings.DEFAULT.copy(

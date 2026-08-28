@@ -54,9 +54,9 @@ enum class HarmProbability {
 
 @Serializable
 data class GenerationConfig(
-    val temperature: Float?,
-    @SerialName("top_p") val topP: Float?,
-    @SerialName("top_k") val topK: Int?,
+    val temperature: Float? = null,
+    @SerialName("top_p") val topP: Float? = null,
+    @SerialName("top_k") val topK: Int? = null,
     @SerialName("candidate_count") val candidateCount: Int? = null,
     @SerialName("max_output_tokens") val maxOutputTokens: Int? = null,
     @SerialName("stop_sequences") val stopSequences: List<String>? = null,

@@ -376,6 +376,89 @@ class GeminiRequestMapperKtTest :
                     ?.thinkingBudget shouldBe 1024
             }
 
+            it("should include default sampling parameters for a Gemini 2.x model when not configured") {
+                val request = createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
+                val json = geminiJson.encodeToString(request)
+
+                json shouldContain "\"temperature\":0.0"
+                json shouldContain "\"top_p\":0.1"
+                json shouldContain "\"top_k\":1"
+                json shouldContain "\"candidate_count\":1"
+            }
+
+            it("should omit sampling parameters for a Gemini 3.x model when not configured") {
+                val request = createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini3_5Flash)
+                val json = geminiJson.encodeToString(request)
+
+                json shouldNotContain "temperature"
+                json shouldNotContain "top_p"
+                json shouldNotContain "top_k"
+                json shouldNotContain "candidate_count"
+            }
+
+            it("should include an explicitly configured temperature for a Gemini 3.x model and still omit topP/topK") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(temperature = 0.5f)
+                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_5Flash)
+                val json = geminiJson.encodeToString(request)
+
+                json shouldContain "\"temperature\":0.5"
+                json shouldNotContain "top_p"
+                json shouldNotContain "top_k"
+            }
+
+            it("should omit sampling parameters for a Custom Gemini 4.x model when not configured") {
+                val request =
+                    createGenerateContentRequest(
+                        emptyList(),
+                        emptyList(),
+                        GenerationSettings.DEFAULT,
+                        null,
+                        GeminiModelIdentifier.Custom("gemini-4.0-pro"),
+                    )
+                val json = geminiJson.encodeToString(request)
+
+                json shouldNotContain "temperature"
+                json shouldNotContain "top_p"
+                json shouldNotContain "top_k"
+                json shouldNotContain "candidate_count"
+            }
+
+            it("should include default sampling parameters for a Custom identifier without a version match when not configured") {
+                val request =
+                    createGenerateContentRequest(
+                        emptyList(),
+                        emptyList(),
+                        GenerationSettings.DEFAULT,
+                        null,
+                        GeminiModelIdentifier.Custom("my-proxy"),
+                    )
+                val json = geminiJson.encodeToString(request)
+
+                json shouldContain "\"temperature\":0.0"
+                json shouldContain "\"top_p\":0.1"
+                json shouldContain "\"top_k\":1"
+                json shouldContain "\"candidate_count\":1"
+            }
+
+            it("should send an explicit temperature, topK and topP for a Gemini 2.5 model exactly as configured") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(temperature = 0.5f, topK = 5, topP = 0.9f)
+                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini2_5Flash)
+                val json = geminiJson.encodeToString(request)
+
+                json shouldContain "\"temperature\":0.5"
+                json shouldContain "\"top_k\":5"
+                json shouldContain "\"top_p\":0.9"
+            }
+
+            it("should send an explicit topP and topK for a Gemini 3.5 model") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(topK = 5, topP = 0.9f)
+                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_5Flash)
+                val json = geminiJson.encodeToString(request)
+
+                json shouldContain "\"top_k\":5"
+                json shouldContain "\"top_p\":0.9"
+            }
+
             it("should allow thinkingLevel on a Custom gemini-exp-1206 identifier") {
                 val generationSettings =
                     GenerationSettings.DEFAULT.copy(

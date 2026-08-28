@@ -22,6 +22,7 @@ import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import community.flock.aigentic.vertexai.VertexAIModelIdentifier
 import community.flock.aigentic.vertexai.fromJson
 import community.flock.aigentic.vertexai.resolveThinkingLevel
+import community.flock.aigentic.vertexai.supportsSampling
 import community.flock.aigentic.vertexai.validateVertexAIThinkingConfig
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -94,10 +95,7 @@ internal fun createGenerateConfig(
     return GenerateContentConfig
         .builder()
         .systemInstruction(getSystemInstruction(messages))
-        .temperature(generationSettings.temperature)
-        .topP(generationSettings.topP)
-        .topK(generationSettings.topK.toFloat())
-        .candidateCount(1)
+        .withSampling(generationSettings, modelIdentifier)
         .tools(if (structuredOutputParameter == null) tools.toVertexTools() else emptyList())
         .safetySettings(createSafetySettings())
         .withThinkingConfig(generationSettings.thinkingConfig, modelIdentifier)
@@ -156,6 +154,22 @@ private fun GenerateContentConfig.Builder.withThinkingConfig(
 private fun GenerateContentConfig.Builder.withMaxOutputTokens(maxOutputTokens: Int?): GenerateContentConfig.Builder =
     apply {
         maxOutputTokens?.let { maxOutputTokens(it) }
+    }
+
+private fun GenerateContentConfig.Builder.withSampling(
+    generationSettings: GenerationSettings,
+    modelIdentifier: ModelIdentifier,
+): GenerateContentConfig.Builder =
+    apply {
+        val supportsSampling = (modelIdentifier as? VertexAIModelIdentifier)?.supportsSampling() ?: true
+        val resolvedTemperature =
+            if (supportsSampling) generationSettings.temperature ?: GenerationSettings.DEFAULT_TEMPERATURE else generationSettings.temperature
+        val resolvedTopP = if (supportsSampling) generationSettings.topP ?: GenerationSettings.DEFAULT_TOP_P else generationSettings.topP
+        val resolvedTopK = if (supportsSampling) generationSettings.topK ?: GenerationSettings.DEFAULT_TOP_K else generationSettings.topK
+        resolvedTemperature?.let { temperature(it) }
+        resolvedTopP?.let { topP(it) }
+        resolvedTopK?.let { topK(it.toFloat()) }
+        if (supportsSampling) candidateCount(1)
     }
 
 private fun getToolParametersJson(toolDescription: ToolDescription): String =
