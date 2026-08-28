@@ -17,6 +17,20 @@ class OpenAIModelTest :
                 shouldThrow<Exception> {
                     OpenAIModel(
                         authentication = Authentication.APIKey("key"),
+                        modelIdentifier = OpenAIModelIdentifier.GPT4O,
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                            ),
+                        apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
+                    )
+                }
+            }
+
+            it("should build successfully with thinkingLevel MINIMAL on O3") {
+                shouldNotThrowAny {
+                    OpenAIModel(
+                        authentication = Authentication.APIKey("key"),
                         modelIdentifier = OpenAIModelIdentifier.O3,
                         generationSettings =
                             GenerationSettings.DEFAULT.copy(

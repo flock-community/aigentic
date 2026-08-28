@@ -124,11 +124,24 @@ internal fun OpenAIModelIdentifier.supportsReasoningEffort(): Boolean =
     }
 
 /**
- * thinkingLevel MINIMAL is only supported on the gpt-5 family and custom identifiers; the o-series
- * reasoning models (o1, o3, o3-mini, o4-mini and their pro variants) do not support it.
+ * MINIMAL is an aigentic-level concept expressing "think as little as possible". The o-series
+ * reasoning models (o1, o3, o3-mini, o4-mini and their pro variants) don't have a MINIMAL
+ * reasoning_effort of their own, so it maps to their lowest supported level, LOW; the gpt-5
+ * family and custom identifiers pass MINIMAL through unchanged.
  */
-internal fun OpenAIModelIdentifier.supportsMinimalThinkingLevel(): Boolean =
+internal fun OpenAIModelIdentifier.resolveThinkingLevel(level: ThinkingLevel): ThinkingLevel =
+    if (level == ThinkingLevel.MINIMAL && isOSeriesReasoningModel()) ThinkingLevel.LOW else level
+
+private fun OpenAIModelIdentifier.isOSeriesReasoningModel(): Boolean =
     when (this) {
+        OpenAIModelIdentifier.O3Pro,
+        OpenAIModelIdentifier.O3,
+        OpenAIModelIdentifier.O4Mini,
+        OpenAIModelIdentifier.O3Mini,
+        OpenAIModelIdentifier.O1,
+        OpenAIModelIdentifier.O1Pro,
+        -> true
+
         OpenAIModelIdentifier.GPT5_5,
         OpenAIModelIdentifier.GPT5_5Pro,
         OpenAIModelIdentifier.GPT5_4,
@@ -138,15 +151,6 @@ internal fun OpenAIModelIdentifier.supportsMinimalThinkingLevel(): Boolean =
         OpenAIModelIdentifier.GPT5,
         OpenAIModelIdentifier.GPT5Mini,
         OpenAIModelIdentifier.GPT5Nano,
-        is OpenAIModelIdentifier.Custom,
-        -> true
-
-        OpenAIModelIdentifier.O3Pro,
-        OpenAIModelIdentifier.O3,
-        OpenAIModelIdentifier.O4Mini,
-        OpenAIModelIdentifier.O3Mini,
-        OpenAIModelIdentifier.O1,
-        OpenAIModelIdentifier.O1Pro,
         OpenAIModelIdentifier.GPT4_1,
         OpenAIModelIdentifier.GPT4_1Mini,
         OpenAIModelIdentifier.GPT4_1Nano,
@@ -156,6 +160,7 @@ internal fun OpenAIModelIdentifier.supportsMinimalThinkingLevel(): Boolean =
         OpenAIModelIdentifier.GPT3_5Turbo,
         OpenAIModelIdentifier.GPT4OMiniSearchPreview,
         OpenAIModelIdentifier.GPT4OSearchPreview,
+        is OpenAIModelIdentifier.Custom,
         -> false
     }
 
@@ -199,18 +204,10 @@ internal fun validateOpenAIThinkingConfig(
     if (thinkingConfig.thinkingBudget != null) {
         aigenticException("thinkingBudget is not supported by OpenAI, use thinkingLevel()")
     }
-    thinkingConfig.thinkingLevel?.let { level ->
+    thinkingConfig.thinkingLevel?.let {
         if (!modelIdentifier.supportsReasoningEffort()) {
             aigenticException(
                 "thinkingLevel is not supported on ${modelIdentifier.stringValue}, it is not a reasoning model",
-            )
-        }
-        if (level == ThinkingLevel.MINIMAL &&
-            modelIdentifier is OpenAIModelIdentifier &&
-            !modelIdentifier.supportsMinimalThinkingLevel()
-        ) {
-            aigenticException(
-                "thinkingLevel MINIMAL is not supported on ${modelIdentifier.stringValue}, supported: LOW, MEDIUM, HIGH",
             )
         }
     }

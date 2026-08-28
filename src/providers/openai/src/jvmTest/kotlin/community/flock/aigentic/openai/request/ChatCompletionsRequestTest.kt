@@ -138,15 +138,16 @@ class ChatCompletionsRequestTest :
                 request.reasoningEffort shouldBe null
             }
 
-            it("should throw when thinkingLevel MINIMAL is configured on O3") {
-                shouldThrow<Exception> {
+            it("should send reasoning effort low when thinkingLevel MINIMAL is configured on O3") {
+                val request =
                     createChatCompletionsRequest(
                         emptyList(),
                         emptyList(),
                         OpenAIModelIdentifier.O3,
                         GenerationSettings.DEFAULT.copy(thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL)),
                     )
-                }
+
+                request.reasoningEffort?.id shouldBe "low"
             }
 
             it("should send reasoning effort minimal for a gpt-5 model") {

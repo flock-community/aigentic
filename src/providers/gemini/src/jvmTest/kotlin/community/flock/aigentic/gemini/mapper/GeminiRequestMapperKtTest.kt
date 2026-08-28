@@ -136,15 +136,32 @@ class GeminiRequestMapperKtTest :
                 }
             }
 
-            it("should throw when thinkingLevel MINIMAL is configured on gemini-3.7-flash") {
+            it("should map thinkingLevel MINIMAL to low on gemini-3.7-flash") {
                 val generationSettings =
                     GenerationSettings.DEFAULT.copy(
                         thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
                     )
-
-                shouldThrow<Exception> {
+                val request =
                     createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_7Flash)
-                }
+
+                geminiJson.encodeToString(request) shouldContain "\"thinkingLevel\":\"low\""
+            }
+
+            it("should map thinkingLevel MINIMAL to low on gemini-3.1-pro-preview") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
+                    )
+                val request =
+                    createGenerateContentRequest(
+                        emptyList(),
+                        emptyList(),
+                        generationSettings,
+                        null,
+                        GeminiModelIdentifier.Gemini3_1ProPreview,
+                    )
+
+                geminiJson.encodeToString(request) shouldContain "\"thinkingLevel\":\"low\""
             }
 
             it("should allow thinkingLevel MINIMAL on gemini-3.6-flash") {

@@ -11,6 +11,8 @@ import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessage
 import community.flock.aigentic.openai.mapper.toOpenAITool
+import community.flock.aigentic.openai.model.OpenAIModelIdentifier
+import community.flock.aigentic.openai.model.resolveThinkingLevel
 import community.flock.aigentic.openai.model.usesMaxCompletionTokens
 import community.flock.aigentic.openai.model.validateOpenAIThinkingConfig
 
@@ -33,7 +35,8 @@ internal fun createChatCompletionsRequest(
         this.tools = tools.map { it.toOpenAITool() }
         toolChoice = ToolChoice.Auto
         generationSettings.thinkingConfig?.thinkingLevel?.let { level ->
-            reasoningEffort = Effort(level.name.lowercase())
+            val resolvedLevel = (openAIModelIdentifier as? OpenAIModelIdentifier)?.resolveThinkingLevel(level) ?: level
+            reasoningEffort = Effort(resolvedLevel.name.lowercase())
         }
     }
 }

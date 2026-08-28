@@ -21,6 +21,7 @@ import community.flock.aigentic.gemini.client.model.SafetySettings
 import community.flock.aigentic.gemini.client.model.ThinkingConfig
 import community.flock.aigentic.gemini.client.model.Tool
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
+import community.flock.aigentic.gemini.model.resolveThinkingLevel
 import community.flock.aigentic.gemini.model.validateGeminiThinkingConfig
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.json.Json
@@ -138,16 +139,16 @@ private fun GenerationSettings.toGenerationConfig(
         topK = topK,
         candidateCount = 1,
         maxOutputTokens = maxOutputTokens,
-        thinkingConfig = thinkingConfig?.takeIf { it.thinkingBudget != null || it.thinkingLevel != null }?.toThinkingConfig(),
+        thinkingConfig = thinkingConfig?.takeIf { it.thinkingBudget != null || it.thinkingLevel != null }?.toThinkingConfig(modelIdentifier),
         responseSchema = structuredResponseParameter?.getStructuredResponseSchema(),
         responseMimeType = structuredResponseParameter?.let { "application/json" },
     )
 }
 
-private fun CoreThinkingConfig.toThinkingConfig(): ThinkingConfig =
+private fun CoreThinkingConfig.toThinkingConfig(modelIdentifier: GeminiModelIdentifier): ThinkingConfig =
     ThinkingConfig(
         thinkingBudget = thinkingBudget,
-        thinkingLevel = thinkingLevel?.name?.lowercase(),
+        thinkingLevel = thinkingLevel?.let { modelIdentifier.resolveThinkingLevel(it) }?.name?.lowercase(),
     )
 
 private fun Parameter.getStructuredResponseSchema(): JsonObject? =

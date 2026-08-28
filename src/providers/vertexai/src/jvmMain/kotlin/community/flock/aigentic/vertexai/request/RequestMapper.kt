@@ -19,7 +19,9 @@ import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
+import community.flock.aigentic.vertexai.VertexAIModelIdentifier
 import community.flock.aigentic.vertexai.fromJson
+import community.flock.aigentic.vertexai.resolveThinkingLevel
 import community.flock.aigentic.vertexai.validateVertexAIThinkingConfig
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -98,7 +100,7 @@ internal fun createGenerateConfig(
         .candidateCount(1)
         .tools(if (structuredOutputParameter == null) tools.toVertexTools() else emptyList())
         .safetySettings(createSafetySettings())
-        .withThinkingConfig(generationSettings.thinkingConfig)
+        .withThinkingConfig(generationSettings.thinkingConfig, modelIdentifier)
         .withMaxOutputTokens(generationSettings.maxOutputTokens)
         .apply {
             structuredOutputParameter?.let { param ->
@@ -131,7 +133,10 @@ private fun List<ToolDescription>.toVertexTools(): List<Tool> {
     )
 }
 
-private fun GenerateContentConfig.Builder.withThinkingConfig(thinkingConfig: ThinkingConfig?): GenerateContentConfig.Builder =
+private fun GenerateContentConfig.Builder.withThinkingConfig(
+    thinkingConfig: ThinkingConfig?,
+    modelIdentifier: ModelIdentifier,
+): GenerateContentConfig.Builder =
     apply {
         thinkingConfig?.takeIf { it.thinkingBudget != null || it.thinkingLevel != null }?.let {
             thinkingConfig(
@@ -139,7 +144,10 @@ private fun GenerateContentConfig.Builder.withThinkingConfig(thinkingConfig: Thi
                     .builder()
                     .apply {
                         it.thinkingBudget?.let { budget -> thinkingBudget(budget) }
-                        it.thinkingLevel?.let { level -> thinkingLevel(level.name) }
+                        it.thinkingLevel?.let { level ->
+                            val resolvedLevel = (modelIdentifier as? VertexAIModelIdentifier)?.resolveThinkingLevel(level) ?: level
+                            thinkingLevel(resolvedLevel.name)
+                        }
                     }.build(),
             )
         }

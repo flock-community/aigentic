@@ -90,15 +90,32 @@ class RequestMapperTest :
                 }
             }
 
-            it("should throw when thinkingLevel MINIMAL is configured on gemini-3.1-pro-preview") {
+            it("should map thinkingLevel MINIMAL to LOW on gemini-3.1-pro-preview") {
                 val generationSettings =
                     GenerationSettings.DEFAULT.copy(
                         thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
                     )
 
-                shouldThrow<Exception> {
-                    createGenerateConfig(emptyList(), emptyList(), generationSettings, null, VertexAIModelIdentifier.Gemini3_1ProPreview)
-                }
+                createGenerateConfig(emptyList(), emptyList(), generationSettings, null, VertexAIModelIdentifier.Gemini3_1ProPreview)
+                    .thinkingConfig()
+                    .get()
+                    .thinkingLevel()
+                    .get()
+                    .toString() shouldBe "LOW"
+            }
+
+            it("should map thinkingLevel MINIMAL to LOW on gemini-3.7-flash") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
+                    )
+
+                createGenerateConfig(emptyList(), emptyList(), generationSettings, null, VertexAIModelIdentifier.Gemini3_7Flash)
+                    .thinkingConfig()
+                    .get()
+                    .thinkingLevel()
+                    .get()
+                    .toString() shouldBe "LOW"
             }
 
             it("should allow thinkingBudget on a Custom gemini-2.x model") {

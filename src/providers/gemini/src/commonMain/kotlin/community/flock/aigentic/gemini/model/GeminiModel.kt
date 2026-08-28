@@ -104,6 +104,20 @@ internal fun GeminiModelIdentifier.supportsThinkingBudget(): Boolean = thinkingC
 
 internal fun GeminiModelIdentifier.supportedThinkingLevels(): Set<ThinkingLevel>? = thinkingCapability().supportedThinkingLevels
 
+/**
+ * MINIMAL is an aigentic-level concept expressing "think as little as possible". Models that
+ * don't have a MINIMAL level of their own (gemini-3.7-flash, gemini-3.1-pro-preview) fall back to
+ * their lowest supported level, LOW, instead of failing.
+ */
+internal fun GeminiModelIdentifier.resolveThinkingLevel(level: ThinkingLevel): ThinkingLevel {
+    val supportedLevels = thinkingCapability().supportedThinkingLevels
+    return if (level == ThinkingLevel.MINIMAL && supportedLevels != null && ThinkingLevel.MINIMAL !in supportedLevels) {
+        ThinkingLevel.LOW
+    } else {
+        level
+    }
+}
+
 internal fun validateGeminiThinkingConfig(
     modelIdentifier: GeminiModelIdentifier,
     generationSettings: GenerationSettings,
@@ -117,19 +131,11 @@ internal fun validateGeminiThinkingConfig(
         )
     }
 
-    thinkingConfig.thinkingLevel?.let { level ->
-        val supportedLevels =
-            capability.supportedThinkingLevels
-                ?: aigenticException(
-                    "thinkingLevel is not supported on Gemini 2.x models, use thinkingBudget() for ${modelIdentifier.stringValue}",
-                )
-        if (level !in supportedLevels) {
-            aigenticException(
-                "thinkingLevel $level is not supported on ${modelIdentifier.stringValue}, supported: ${
-                    supportedLevels.joinToString(", ")
-                }",
+    thinkingConfig.thinkingLevel?.let {
+        capability.supportedThinkingLevels
+            ?: aigenticException(
+                "thinkingLevel is not supported on Gemini 2.x models, use thinkingBudget() for ${modelIdentifier.stringValue}",
             )
-        }
     }
 }
 

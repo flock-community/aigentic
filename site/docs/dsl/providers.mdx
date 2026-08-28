@@ -107,15 +107,15 @@ agent<String, Answer> {
     | Model | Default level | Supported levels |
     | --- | --- | --- |
     | `gemini-2.5-pro` / `gemini-2.5-flash` / `gemini-2.5-flash-lite` | n/a | `thinkingBudget` only |
-    | `gemini-3.7-flash` | medium | LOW, MEDIUM, HIGH |
+    | `gemini-3.7-flash` | medium | LOW, MEDIUM, HIGH (MINIMAL maps to LOW) |
     | `gemini-3.6-flash` | medium | MINIMAL, LOW, MEDIUM, HIGH |
     | `gemini-3.5-flash` | medium | MINIMAL, LOW, MEDIUM, HIGH |
     | `gemini-3.5-flash-lite` | minimal | MINIMAL, LOW, MEDIUM, HIGH |
-    | `gemini-3.1-pro-preview` | high | LOW, MEDIUM, HIGH |
+    | `gemini-3.1-pro-preview` | high | LOW, MEDIUM, HIGH (MINIMAL maps to LOW) |
     | `gemini-3.1-flash-lite` | minimal | MINIMAL, LOW, MEDIUM, HIGH |
     | `gemini-3-flash-preview` | high | MINIMAL, LOW, MEDIUM, HIGH |
 
-    `thinkingLevel(ThinkingLevel.MINIMAL)` throws a client-side `AigenticException` on `gemini-3.7-flash` and `gemini-3.1-pro-preview`, since those two models don't support MINIMAL.
+    `ThinkingLevel` is an aigentic-level concept; each provider maps it to what the underlying model supports. `MINIMAL` maps to the lowest level the model supports: `low` on `gemini-3.7-flash` and `gemini-3.1-pro-preview`, since those two models don't have a MINIMAL level of their own.
 
     For a `Custom(identifier)` model identifier, Aigentic infers the same rules from the identifier prefix: an identifier starting with `"gemini-2"` only supports `thinkingBudget()` (a `thinkingLevel()` throws), one starting with `"gemini-3"` only supports `thinkingLevel()` with all four levels (a `thinkingBudget()` throws). Any other identifier (a tuned endpoint, a proxy name, or an older model like `gemini-1.5-pro`) is passed through without validation — both `thinkingBudget()` and `thinkingLevel()` are accepted as-is.
   </TabItem>
@@ -137,7 +137,7 @@ agent<String, Answer> {
 }`}
     </CodeBlock>
 
-    Same rules as Gemini: 2.x models only support `thinkingBudget()`, 3.x models only support `thinkingLevel()`, using the same model → default level → supported levels table above, the same `Custom(identifier)` prefix rules, and the same MINIMAL restriction on `gemini-3.7-flash` and `gemini-3.1-pro-preview`.
+    Same rules as Gemini: 2.x models only support `thinkingBudget()`, 3.x models only support `thinkingLevel()`, using the same model → default level → supported levels table above, the same `Custom(identifier)` prefix rules, and the same MINIMAL-maps-to-LOW behavior on `gemini-3.7-flash` and `gemini-3.1-pro-preview`.
   </TabItem>
 
   <TabItem value="OpenAI" label="OpenAI">
@@ -158,7 +158,7 @@ agent<String, Answer> {
 
     `thinkingLevel()` maps to OpenAI's `reasoning_effort` request field and is only supported on reasoning models (the `o`-series, the `gpt-5` family, and any `Custom` model identifier). Configuring it on a non-reasoning model, or configuring `thinkingBudget()` on any OpenAI model, throws an exception.
 
-    `ThinkingLevel.MINIMAL` is only supported on the `gpt-5` family and `Custom` model identifiers. Configuring it on an `o`-series model (`o1`, `o3`, `o3-mini`, `o4-mini`, or their pro variants) throws an `AigenticException`; those models support LOW, MEDIUM and HIGH.
+    `MINIMAL` maps to the lowest level the model supports: on the `gpt-5` family and `Custom` model identifiers it is passed through as `minimal`, while on the `o`-series models (`o1`, `o3`, `o3-mini`, `o4-mini`, or their pro variants), which don't have a MINIMAL reasoning_effort of their own, it maps to `low`.
   </TabItem>
 
   <TabItem value="Ollama" label="Ollama">
