@@ -52,5 +52,84 @@ class GeminiModelTest :
                     )
                 }
             }
+
+            it("should allow thinkingBudget on a Custom identifier with the models/ prefix") {
+                shouldNotThrowAny {
+                    validateGeminiThinkingConfig(
+                        modelIdentifier = GeminiModelIdentifier.Custom("models/gemini-2.5-flash"),
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                            ),
+                    )
+                }
+            }
+
+            it("should throw when thinkingLevel is configured on a Custom identifier with the models/ prefix") {
+                shouldThrow<Exception> {
+                    validateGeminiThinkingConfig(
+                        modelIdentifier = GeminiModelIdentifier.Custom("models/gemini-2.5-flash"),
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                            ),
+                    )
+                }
+            }
+
+            it("should allow thinkingLevel on a Custom identifier with major version 4") {
+                shouldNotThrowAny {
+                    validateGeminiThinkingConfig(
+                        modelIdentifier = GeminiModelIdentifier.Custom("gemini-4.0-pro"),
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                            ),
+                    )
+                }
+            }
+
+            it("should throw when thinkingBudget is configured on a Custom identifier with major version 4") {
+                shouldThrow<Exception> {
+                    validateGeminiThinkingConfig(
+                        modelIdentifier = GeminiModelIdentifier.Custom("gemini-4.0-pro"),
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                            ),
+                    )
+                }
+            }
+
+            it("should allow thinkingBudget and thinkingLevel on a Custom gemini-exp-1206 identifier") {
+                shouldNotThrowAny {
+                    validateGeminiThinkingConfig(
+                        modelIdentifier = GeminiModelIdentifier.Custom("gemini-exp-1206"),
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                            ),
+                    )
+                    validateGeminiThinkingConfig(
+                        modelIdentifier = GeminiModelIdentifier.Custom("gemini-exp-1206"),
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                            ),
+                    )
+                }
+            }
+
+            it("should allow thinkingBudget on a Custom identifier with major version 1") {
+                shouldNotThrowAny {
+                    validateGeminiThinkingConfig(
+                        modelIdentifier = GeminiModelIdentifier.Custom("gemini-1.5-pro"),
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                            ),
+                    )
+                }
+            }
         }
     })

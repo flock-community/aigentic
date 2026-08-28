@@ -152,7 +152,7 @@ class RequestMapperTest :
                 }
             }
 
-            it("should allow thinkingBudget on a Custom identifier that is neither gemini-2.x nor gemini-3.x") {
+            it("should allow thinkingBudget on a Custom identifier with major version 1") {
                 val generationSettings =
                     GenerationSettings.DEFAULT.copy(
                         thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
@@ -169,7 +169,7 @@ class RequestMapperTest :
                     .thinkingBudget() shouldBe Optional.of(1024)
             }
 
-            it("should allow thinkingLevel on a Custom identifier that is neither gemini-2.x nor gemini-3.x") {
+            it("should allow thinkingLevel on a Custom identifier that has no version match") {
                 val generationSettings =
                     GenerationSettings.DEFAULT.copy(
                         thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
@@ -181,6 +181,112 @@ class RequestMapperTest :
                     generationSettings,
                     null,
                     VertexAIModelIdentifier.Custom("my-proxy"),
+                ).thinkingConfig()
+                    .get()
+                    .thinkingLevel()
+                    .get()
+                    .toString() shouldBe "LOW"
+            }
+
+            it("should allow thinkingBudget on a Custom identifier with the models/ prefix") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                createGenerateConfig(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    VertexAIModelIdentifier.Custom("models/gemini-2.5-flash"),
+                ).thinkingConfig()
+                    .get()
+                    .thinkingBudget() shouldBe Optional.of(1024)
+            }
+
+            it("should throw when thinkingLevel is configured on a Custom identifier with the models/ prefix") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                    )
+
+                shouldThrow<Exception> {
+                    createGenerateConfig(
+                        emptyList(),
+                        emptyList(),
+                        generationSettings,
+                        null,
+                        VertexAIModelIdentifier.Custom("models/gemini-2.5-flash"),
+                    )
+                }
+            }
+
+            it("should allow thinkingLevel on a Custom identifier with major version 4") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
+                    )
+
+                createGenerateConfig(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    VertexAIModelIdentifier.Custom("gemini-4.0-pro"),
+                ).thinkingConfig()
+                    .get()
+                    .thinkingLevel()
+                    .get()
+                    .toString() shouldBe "MINIMAL"
+            }
+
+            it("should throw when thinkingBudget is configured on a Custom identifier with major version 4") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                shouldThrow<Exception> {
+                    createGenerateConfig(
+                        emptyList(),
+                        emptyList(),
+                        generationSettings,
+                        null,
+                        VertexAIModelIdentifier.Custom("gemini-4.0-pro"),
+                    )
+                }
+            }
+
+            it("should allow thinkingBudget on a Custom gemini-exp-1206 identifier") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                createGenerateConfig(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    VertexAIModelIdentifier.Custom("gemini-exp-1206"),
+                ).thinkingConfig()
+                    .get()
+                    .thinkingBudget() shouldBe Optional.of(1024)
+            }
+
+            it("should allow thinkingLevel on a Custom gemini-exp-1206 identifier") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                    )
+
+                createGenerateConfig(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    VertexAIModelIdentifier.Custom("gemini-exp-1206"),
                 ).thinkingConfig()
                     .get()
                     .thinkingLevel()

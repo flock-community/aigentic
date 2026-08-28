@@ -50,11 +50,8 @@ internal data class ThinkingCapability(
     val supportedThinkingLevels: Set<ThinkingLevel>?,
 )
 
-/**
- * A [VertexAIModelIdentifier.Custom] identifier that starts with "gemini-2" is treated as a Gemini 2.x model
- * (budget only) and one that starts with "gemini-3" as a Gemini 3.x model (level only, all four levels).
- * Any other identifier (tuned endpoints, proxy names, older models) is passed through without validation.
- */
+private val vertexAIMajorVersionRegex = Regex("^(models/)?gemini-(\\d+)")
+
 internal fun VertexAIModelIdentifier.thinkingCapability(): ThinkingCapability =
     when (this) {
         VertexAIModelIdentifier.Gemini2_5Pro,
@@ -83,17 +80,23 @@ internal fun VertexAIModelIdentifier.thinkingCapability(): ThinkingCapability =
         }
 
         is VertexAIModelIdentifier.Custom -> {
+            val majorVersion =
+                vertexAIMajorVersionRegex
+                    .find(identifier)
+                    ?.groupValues
+                    ?.get(2)
+                    ?.toIntOrNull()
             when {
-                identifier.startsWith("gemini-2") -> {
+                majorVersion == null -> {
+                    ThinkingCapability(supportsThinkingBudget = true, supportedThinkingLevels = ThinkingLevel.entries.toSet())
+                }
+
+                majorVersion <= 2 -> {
                     ThinkingCapability(supportsThinkingBudget = true, supportedThinkingLevels = null)
                 }
 
-                identifier.startsWith("gemini-3") -> {
-                    ThinkingCapability(supportsThinkingBudget = false, supportedThinkingLevels = ThinkingLevel.entries.toSet())
-                }
-
                 else -> {
-                    ThinkingCapability(supportsThinkingBudget = true, supportedThinkingLevels = ThinkingLevel.entries.toSet())
+                    ThinkingCapability(supportsThinkingBudget = false, supportedThinkingLevels = ThinkingLevel.entries.toSet())
                 }
             }
         }

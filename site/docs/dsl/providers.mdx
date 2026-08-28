@@ -117,7 +117,7 @@ agent<String, Answer> {
 
     `ThinkingLevel` is an aigentic-level concept; each provider maps it to what the underlying model supports. `MINIMAL` maps to the lowest level the model supports: `low` on `gemini-3.7-flash` and `gemini-3.1-pro-preview`, since those two models don't have a MINIMAL level of their own.
 
-    For a `Custom(identifier)` model identifier, Aigentic infers the same rules from the identifier prefix: an identifier starting with `"gemini-2"` only supports `thinkingBudget()` (a `thinkingLevel()` throws), one starting with `"gemini-3"` only supports `thinkingLevel()` with all four levels (a `thinkingBudget()` throws). Any other identifier (a tuned endpoint, a proxy name, or an older model like `gemini-1.5-pro`) is passed through without validation — both `thinkingBudget()` and `thinkingLevel()` are accepted as-is.
+    For a `Custom(identifier)` model identifier, Aigentic infers the same rules from the identifier's major version number, parsed with `^(models/)?gemini-(\d+)` (so both `"gemini-2.5-flash"` and `"models/gemini-2.5-flash"` match): a major version of 2 or lower only supports `thinkingBudget()` (a `thinkingLevel()` throws), a major version of 3 or higher only supports `thinkingLevel()` with all four levels, `MINIMAL` forwarded as-is (a `thinkingBudget()` throws). An identifier with no version match (a tuned endpoint, a proxy name, or an experimental name like `gemini-exp-1206`) is passed through without validation — both `thinkingBudget()` and `thinkingLevel()` are accepted as-is.
   </TabItem>
 
   <TabItem value="VertexAI" label="VertexAI">
@@ -137,7 +137,7 @@ agent<String, Answer> {
 }`}
     </CodeBlock>
 
-    Same rules as Gemini: 2.x models only support `thinkingBudget()`, 3.x models only support `thinkingLevel()`, using the same model → default level → supported levels table above, the same `Custom(identifier)` prefix rules, and the same MINIMAL-maps-to-LOW behavior on `gemini-3.7-flash` and `gemini-3.1-pro-preview`.
+    Same rules as Gemini: 2.x models only support `thinkingBudget()`, 3.x models only support `thinkingLevel()`, using the same model → default level → supported levels table above, the same `Custom(identifier)` major-version rules, and the same MINIMAL-maps-to-LOW behavior on `gemini-3.7-flash` and `gemini-3.1-pro-preview`.
   </TabItem>
 
   <TabItem value="OpenAI" label="OpenAI">
