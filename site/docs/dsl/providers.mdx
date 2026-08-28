@@ -79,6 +79,108 @@ Aigentic supports several LLM providers out of the box:
   </TabItem>
 </Tabs>
 
+## Thinking configuration
+
+Reasoning models let you control how much they think before answering. Aigentic exposes this through two `generationConfig` DSL functions: `thinkingBudget(tokens)` and `thinkingLevel(level)`. They are mutually exclusive; configuring both throws an `AigenticException`. Leaving both unset uses the model's default behaviour.
+
+Model/identifier and thinking-level errors (an unsupported combination, or a level that isn't allowed on that model) are raised client-side as soon as the model is built — for example inside `geminiModel { ... }`, before any request is ever sent — not later when the agent runs.
+
+<Tabs>
+  <TabItem value="Gemini" label="Gemini">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.core.model.ThinkingLevel
+
+agent<String, Answer> {
+    geminiModel {
+        apiKey("your-api-key")
+        modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
+        generationConfig {
+            thinkingLevel(ThinkingLevel.LOW)
+        }
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    Gemini 2.x models only support `thinkingBudget()` (a token budget, `-1` for dynamic, `0` to disable except on Pro). Gemini 3.x models only support `thinkingLevel()`.
+
+    | Model | Default level | Supported levels |
+    | --- | --- | --- |
+    | `gemini-2.5-pro` / `gemini-2.5-flash` / `gemini-2.5-flash-lite` | n/a | `thinkingBudget` only |
+    | `gemini-3.7-flash` | medium | LOW, MEDIUM, HIGH |
+    | `gemini-3.6-flash` | medium | MINIMAL, LOW, MEDIUM, HIGH |
+    | `gemini-3.5-flash` | medium | MINIMAL, LOW, MEDIUM, HIGH |
+    | `gemini-3.5-flash-lite` | minimal | MINIMAL, LOW, MEDIUM, HIGH |
+    | `gemini-3.1-pro-preview` | high | LOW, MEDIUM, HIGH |
+    | `gemini-3.1-flash-lite` | minimal | MINIMAL, LOW, MEDIUM, HIGH |
+    | `gemini-3-flash-preview` | high | MINIMAL, LOW, MEDIUM, HIGH |
+
+    `thinkingLevel(ThinkingLevel.MINIMAL)` throws a client-side `AigenticException` on `gemini-3.7-flash` and `gemini-3.1-pro-preview`, since those two models don't support MINIMAL.
+
+    For a `Custom(identifier)` model identifier, Aigentic infers the same rules from the identifier prefix: an identifier starting with `"gemini-2"` only supports `thinkingBudget()` (a `thinkingLevel()` throws), one starting with `"gemini-3"` only supports `thinkingLevel()` with all four levels (a `thinkingBudget()` throws). Any other identifier (a tuned endpoint, a proxy name, or an older model like `gemini-1.5-pro`) is passed through without validation — both `thinkingBudget()` and `thinkingLevel()` are accepted as-is.
+  </TabItem>
+
+  <TabItem value="VertexAI" label="VertexAI">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.core.model.ThinkingLevel
+
+agent<String, Answer> {
+    vertexAIModel {
+        project("your-project-id")
+        location("your-location")
+        modelIdentifier(VertexAIModelIdentifier.Gemini3_5Flash)
+        generationConfig {
+            thinkingLevel(ThinkingLevel.LOW)
+        }
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    Same rules as Gemini: 2.x models only support `thinkingBudget()`, 3.x models only support `thinkingLevel()`, using the same model → default level → supported levels table above, the same `Custom(identifier)` prefix rules, and the same MINIMAL restriction on `gemini-3.7-flash` and `gemini-3.1-pro-preview`.
+  </TabItem>
+
+  <TabItem value="OpenAI" label="OpenAI">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.core.model.ThinkingLevel
+
+agent<String, Answer> {
+    openAIModel {
+        apiKey("your-api-key")
+        modelIdentifier(OpenAIModelIdentifier.O3)
+        generationConfig {
+            thinkingLevel(ThinkingLevel.LOW)
+        }
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    `thinkingLevel()` maps to OpenAI's `reasoning_effort` request field and is only supported on reasoning models (the `o`-series, the `gpt-5` family, and any `Custom` model identifier). Configuring it on a non-reasoning model, or configuring `thinkingBudget()` on any OpenAI model, throws an exception.
+
+    `ThinkingLevel.MINIMAL` is only supported on the `gpt-5` family and `Custom` model identifiers. Configuring it on an `o`-series model (`o1`, `o3`, `o3-mini`, `o4-mini`, or their pro variants) throws an `AigenticException`; those models support LOW, MEDIUM and HIGH.
+  </TabItem>
+
+  <TabItem value="Ollama" label="Ollama">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.core.model.ThinkingLevel
+
+agent<String, Answer> {
+    ollamaModel {
+        apiUrl("http://localhost:11434/v1/")
+        modelIdentifier(OpenAIModelIdentifier.Custom("llama3"))
+        generationConfig {
+            thinkingLevel(ThinkingLevel.LOW)
+        }
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    Ollama models go through the OpenAI-compatible request path: `thinkingLevel()` maps to `reasoning_effort`, and `thinkingBudget()` always throws an `AigenticException` since Ollama has no budget-based thinking control.
+  </TabItem>
+</Tabs>
+
 ## Structured output (Gemini & Vertex AI)
 
 You don’t need structured output to use output types. With any provider you can define `agent<Input, Output>` and Aigentic will parse the model’s response into your `Output` type in the normal chat/tool‑calling flow.

@@ -6,6 +6,7 @@ import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ThinkingConfig
+import community.flock.aigentic.core.model.ThinkingLevel
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.getParameter
 import io.kotest.assertions.throwables.shouldThrow
@@ -137,6 +138,36 @@ class AgentConfigTest :
                 GenerationConfig()
                     .build()
                     .maxOutputTokens shouldBe null
+            }
+
+            it("should build generation settings with thinking level") {
+                GenerationConfig()
+                    .apply {
+                        thinkingLevel(ThinkingLevel.LOW)
+                    }.build()
+                    .thinkingConfig shouldBe ThinkingConfig(thinkingLevel = ThinkingLevel.LOW)
+            }
+
+            it("should build generation settings without a thinking config by default") {
+                GenerationConfig()
+                    .build()
+                    .thinkingConfig shouldBe null
+            }
+
+            it("should throw when both thinkingBudget and thinkingLevel are configured") {
+                shouldThrow<Exception> {
+                    GenerationConfig()
+                        .apply {
+                            thinkingBudget(10)
+                            thinkingLevel(ThinkingLevel.LOW)
+                        }.build()
+                }
+            }
+
+            it("should throw when constructing a ThinkingConfig with both thinkingBudget and thinkingLevel") {
+                shouldThrow<Exception> {
+                    ThinkingConfig(10, ThinkingLevel.LOW)
+                }
             }
 
             it("should add tool with Unit input type") {

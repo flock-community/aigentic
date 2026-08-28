@@ -14,11 +14,13 @@ import com.google.genai.types.Tool
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.GenerationSettings
+import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import community.flock.aigentic.vertexai.fromJson
+import community.flock.aigentic.vertexai.validateVertexAIThinkingConfig
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -84,8 +86,10 @@ internal fun createGenerateConfig(
     tools: List<ToolDescription>,
     generationSettings: GenerationSettings,
     structuredOutputParameter: Parameter?,
-): GenerateContentConfig =
-    GenerateContentConfig
+    modelIdentifier: ModelIdentifier,
+): GenerateContentConfig {
+    validateVertexAIThinkingConfig(modelIdentifier, generationSettings)
+    return GenerateContentConfig
         .builder()
         .systemInstruction(getSystemInstruction(messages))
         .temperature(generationSettings.temperature)
@@ -102,6 +106,7 @@ internal fun createGenerateConfig(
                 responseJsonSchema(param.getStructuredResponseSchema().toJsonNode())
             }
         }.build()
+}
 
 private fun List<ToolDescription>.toVertexTools(): List<Tool> {
     val declarations =
@@ -128,12 +133,14 @@ private fun List<ToolDescription>.toVertexTools(): List<Tool> {
 
 private fun GenerateContentConfig.Builder.withThinkingConfig(thinkingConfig: ThinkingConfig?): GenerateContentConfig.Builder =
     apply {
-        thinkingConfig?.let {
+        thinkingConfig?.takeIf { it.thinkingBudget != null || it.thinkingLevel != null }?.let {
             thinkingConfig(
                 com.google.genai.types.ThinkingConfig
                     .builder()
-                    .thinkingBudget(it.thinkingBudget)
-                    .build(),
+                    .apply {
+                        it.thinkingBudget?.let { budget -> thinkingBudget(budget) }
+                        it.thinkingLevel?.let { level -> thinkingLevel(level.name) }
+                    }.build(),
             )
         }
     }
