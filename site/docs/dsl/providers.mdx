@@ -205,7 +205,7 @@ agent<String, Answer> {
 | OpenAI/Ollama reasoning models (the `o`-series and the `gpt-5` family only, by explicit identifier) | Omitted from the request | Throws an `AigenticException` when the model is built |
 | OpenAI non-reasoning models (`gpt-4o`, `gpt-4.1`, `gpt-3.5-turbo`, ...) and every `Custom` identifier (including Ollama) | `temperature=0.0`, `topP=0.1` | Sent as configured |
 
-On Gemini and VertexAI 3.x models, an explicitly set `topK()`/`topP()` is still forwarded as-is; Google may reject it with a `400` since Gemini 3.x models are documented to only accept the default sampling parameters.
+On Gemini and VertexAI 3.x models, an explicitly set `topK()`/`topP()` is forwarded as-is and accepted by the API (200); Google recommends leaving them unset on 3.x for best reasoning quality.
 
 `topK` is never sent to OpenAI-compatible models (OpenAI or Ollama), even when configured — the client has never supported it there, and it is not validated either.
 
