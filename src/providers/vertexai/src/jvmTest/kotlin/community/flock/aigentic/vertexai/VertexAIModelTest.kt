@@ -44,30 +44,24 @@ class VertexAIModelTest :
 
             it("should build successfully with a valid thinking configuration") {
                 shouldNotThrowAny {
-                    VertexAIModel(
+                    validateVertexAIThinkingConfig(
                         modelIdentifier = VertexAIModelIdentifier.Gemini2_5Flash,
                         generationSettings =
                             GenerationSettings.DEFAULT.copy(
                                 thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
                             ),
-                        project = Project("project"),
-                        location = Location("location"),
-                        requestTimeoutMillis = 60_000,
                     )
                 }
             }
 
             it("should not validate an unrelated ModelIdentifier implementation") {
                 shouldNotThrowAny {
-                    VertexAIModel(
+                    validateVertexAIThinkingConfig(
                         modelIdentifier = OtherModelIdentifier,
                         generationSettings =
                             GenerationSettings.DEFAULT.copy(
                                 thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
                             ),
-                        project = Project("project"),
-                        location = Location("location"),
-                        requestTimeoutMillis = 60_000,
                     )
                 }
             }

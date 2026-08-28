@@ -20,54 +20,24 @@ import kotlinx.coroutines.future.await
 sealed class VertexAIModelIdentifier(
     override val stringValue: String,
 ) : ModelIdentifier {
-    /**
-     * Default thinking level: medium. Supported levels: LOW, MEDIUM, HIGH (no MINIMAL).
-     */
     data object Gemini3_7Flash : VertexAIModelIdentifier("gemini-3.7-flash")
 
-    /**
-     * Default thinking level: medium. Supported levels: MINIMAL, LOW, MEDIUM, HIGH.
-     */
     data object Gemini3_6Flash : VertexAIModelIdentifier("gemini-3.6-flash")
 
-    /**
-     * Default thinking level: medium. Supported levels: MINIMAL, LOW, MEDIUM, HIGH.
-     */
     data object Gemini3_5Flash : VertexAIModelIdentifier("gemini-3.5-flash")
 
-    /**
-     * Default thinking level: minimal. Supported levels: MINIMAL, LOW, MEDIUM, HIGH.
-     */
     data object Gemini3_5FlashLite : VertexAIModelIdentifier("gemini-3.5-flash-lite")
 
-    /**
-     * Default thinking level: high. Supported levels: LOW, MEDIUM, HIGH (no MINIMAL).
-     */
     data object Gemini3_1ProPreview : VertexAIModelIdentifier("gemini-3.1-pro-preview")
 
-    /**
-     * Default thinking level: minimal. Supported levels: MINIMAL, LOW, MEDIUM, HIGH.
-     */
     data object Gemini3_1FlashLite : VertexAIModelIdentifier("gemini-3.1-flash-lite")
 
-    /**
-     * Default thinking level: high. Supported levels: MINIMAL, LOW, MEDIUM, HIGH.
-     */
     data object Gemini3FlashPreview : VertexAIModelIdentifier("gemini-3-flash-preview")
 
-    /**
-     * Only supports thinkingBudget, thinkingLevel is not available on this model.
-     */
     data object Gemini2_5Pro : VertexAIModelIdentifier("gemini-2.5-pro")
 
-    /**
-     * Only supports thinkingBudget, thinkingLevel is not available on this model.
-     */
     data object Gemini2_5Flash : VertexAIModelIdentifier("gemini-2.5-flash")
 
-    /**
-     * Only supports thinkingBudget, thinkingLevel is not available on this model.
-     */
     data object Gemini2_5FlashLite : VertexAIModelIdentifier("gemini-2.5-flash-lite")
 
     data class Custom(

@@ -21,54 +21,24 @@ import community.flock.aigentic.gemini.mapper.toModelResponse
 sealed class GeminiModelIdentifier(
     override val stringValue: String,
 ) : ModelIdentifier {
-    /**
-     * Default thinking level: medium. Supported levels: LOW, MEDIUM, HIGH (no MINIMAL).
-     */
     data object Gemini3_7Flash : GeminiModelIdentifier("gemini-3.7-flash")
 
-    /**
-     * Default thinking level: medium. Supported levels: MINIMAL, LOW, MEDIUM, HIGH.
-     */
     data object Gemini3_6Flash : GeminiModelIdentifier("gemini-3.6-flash")
 
-    /**
-     * Default thinking level: medium. Supported levels: MINIMAL, LOW, MEDIUM, HIGH.
-     */
     data object Gemini3_5Flash : GeminiModelIdentifier("gemini-3.5-flash")
 
-    /**
-     * Default thinking level: minimal. Supported levels: MINIMAL, LOW, MEDIUM, HIGH.
-     */
     data object Gemini3_5FlashLite : GeminiModelIdentifier("gemini-3.5-flash-lite")
 
-    /**
-     * Default thinking level: high. Supported levels: LOW, MEDIUM, HIGH (no MINIMAL).
-     */
     data object Gemini3_1ProPreview : GeminiModelIdentifier("gemini-3.1-pro-preview")
 
-    /**
-     * Default thinking level: minimal. Supported levels: MINIMAL, LOW, MEDIUM, HIGH.
-     */
     data object Gemini3_1FlashLite : GeminiModelIdentifier("gemini-3.1-flash-lite")
 
-    /**
-     * Default thinking level: high. Supported levels: MINIMAL, LOW, MEDIUM, HIGH.
-     */
     data object Gemini3FlashPreview : GeminiModelIdentifier("gemini-3-flash-preview")
 
-    /**
-     * Only supports thinkingBudget, thinkingLevel is not available on this model.
-     */
     data object Gemini2_5Pro : GeminiModelIdentifier("gemini-2.5-pro")
 
-    /**
-     * Only supports thinkingBudget, thinkingLevel is not available on this model.
-     */
     data object Gemini2_5Flash : GeminiModelIdentifier("gemini-2.5-flash")
 
-    /**
-     * Only supports thinkingBudget, thinkingLevel is not available on this model.
-     */
     data object Gemini2_5FlashLite : GeminiModelIdentifier("gemini-2.5-flash-lite")
 
     data class Custom(
