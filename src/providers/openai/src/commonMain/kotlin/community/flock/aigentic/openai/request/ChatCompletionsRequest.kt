@@ -13,7 +13,9 @@ import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessage
 import community.flock.aigentic.openai.mapper.toOpenAITool
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import community.flock.aigentic.openai.model.resolveThinkingLevel
+import community.flock.aigentic.openai.model.supportsSampling
 import community.flock.aigentic.openai.model.usesMaxCompletionTokens
+import community.flock.aigentic.openai.model.validateOpenAISamplingConfig
 import community.flock.aigentic.openai.model.validateOpenAIThinkingConfig
 
 internal fun createChatCompletionsRequest(
@@ -23,13 +25,18 @@ internal fun createChatCompletionsRequest(
     generationSettings: GenerationSettings,
 ): ChatCompletionRequest {
     validateOpenAIThinkingConfig(openAIModelIdentifier, generationSettings)
+    validateOpenAISamplingConfig(openAIModelIdentifier, generationSettings)
     return chatCompletionRequest {
-        temperature = generationSettings.temperature.toDouble()
-        topP = generationSettings.topP.toDouble()
+        if (openAIModelIdentifier.supportsSampling()) {
+            temperature = (generationSettings.temperature ?: GenerationSettings.DEFAULT_TEMPERATURE).toDouble()
+            topP = (generationSettings.topP ?: GenerationSettings.DEFAULT_TOP_P).toDouble()
+        } else {
+            temperature = generationSettings.temperature?.toDouble()
+            topP = generationSettings.topP?.toDouble()
+        }
         generationSettings.maxOutputTokens?.let {
             if (openAIModelIdentifier.usesMaxCompletionTokens()) maxCompletionTokens = it else maxTokens = it
         }
-        // topK = generationSettings.topK, TODO: Top k currently not supported in OpenAI
         model = ModelId(openAIModelIdentifier.stringValue)
         this.messages = messages.map { it.toOpenAIMessage() }
         this.tools = tools.map { it.toOpenAITool() }

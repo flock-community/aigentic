@@ -46,28 +46,30 @@ sealed class GeminiModelIdentifier(
     ) : GeminiModelIdentifier(identifier)
 }
 
-internal data class ThinkingCapability(
+internal data class ModelCapability(
     val supportsThinkingBudget: Boolean,
     val supportedThinkingLevels: Set<ThinkingLevel>?,
+    val supportsSampling: Boolean,
 )
 
 private val geminiMajorVersionRegex = Regex("(?:^|/)gemini-(\\d+)")
 
-internal fun GeminiModelIdentifier.thinkingCapability(): ThinkingCapability =
+internal fun GeminiModelIdentifier.capability(): ModelCapability =
     when (this) {
         GeminiModelIdentifier.Gemini2_5Pro,
         GeminiModelIdentifier.Gemini2_5Flash,
         GeminiModelIdentifier.Gemini2_5FlashLite,
         -> {
-            ThinkingCapability(supportsThinkingBudget = true, supportedThinkingLevels = null)
+            ModelCapability(supportsThinkingBudget = true, supportedThinkingLevels = null, supportsSampling = true)
         }
 
         GeminiModelIdentifier.Gemini3_7Flash,
         GeminiModelIdentifier.Gemini3_1ProPreview,
         -> {
-            ThinkingCapability(
+            ModelCapability(
                 supportsThinkingBudget = false,
                 supportedThinkingLevels = setOf(ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH),
+                supportsSampling = false,
             )
         }
 
@@ -77,7 +79,11 @@ internal fun GeminiModelIdentifier.thinkingCapability(): ThinkingCapability =
         GeminiModelIdentifier.Gemini3_1FlashLite,
         GeminiModelIdentifier.Gemini3FlashPreview,
         -> {
-            ThinkingCapability(supportsThinkingBudget = false, supportedThinkingLevels = ThinkingLevel.entries.toSet())
+            ModelCapability(
+                supportsThinkingBudget = false,
+                supportedThinkingLevels = ThinkingLevel.entries.toSet(),
+                supportsSampling = false,
+            )
         }
 
         is GeminiModelIdentifier.Custom -> {
@@ -89,19 +95,29 @@ internal fun GeminiModelIdentifier.thinkingCapability(): ThinkingCapability =
                     ?.toIntOrNull()
             when {
                 majorVersion == null -> {
-                    ThinkingCapability(supportsThinkingBudget = true, supportedThinkingLevels = ThinkingLevel.entries.toSet())
+                    ModelCapability(
+                        supportsThinkingBudget = true,
+                        supportedThinkingLevels = ThinkingLevel.entries.toSet(),
+                        supportsSampling = true,
+                    )
                 }
 
                 majorVersion <= 2 -> {
-                    ThinkingCapability(supportsThinkingBudget = true, supportedThinkingLevels = null)
+                    ModelCapability(supportsThinkingBudget = true, supportedThinkingLevels = null, supportsSampling = true)
                 }
 
                 else -> {
-                    ThinkingCapability(supportsThinkingBudget = false, supportedThinkingLevels = ThinkingLevel.entries.toSet())
+                    ModelCapability(
+                        supportsThinkingBudget = false,
+                        supportedThinkingLevels = ThinkingLevel.entries.toSet(),
+                        supportsSampling = false,
+                    )
                 }
             }
         }
     }
+
+internal fun GeminiModelIdentifier.supportsSampling(): Boolean = capability().supportsSampling
 
 /**
  * MINIMAL is an aigentic-level concept expressing "think as little as possible". Models that
@@ -109,7 +125,7 @@ internal fun GeminiModelIdentifier.thinkingCapability(): ThinkingCapability =
  * their lowest supported level, LOW, instead of failing.
  */
 internal fun GeminiModelIdentifier.resolveThinkingLevel(level: ThinkingLevel): ThinkingLevel {
-    val supportedLevels = thinkingCapability().supportedThinkingLevels
+    val supportedLevels = capability().supportedThinkingLevels
     return if (level == ThinkingLevel.MINIMAL && supportedLevels != null && ThinkingLevel.MINIMAL !in supportedLevels) {
         ThinkingLevel.LOW
     } else {
@@ -122,7 +138,7 @@ internal fun validateGeminiThinkingConfig(
     generationSettings: GenerationSettings,
 ) {
     val thinkingConfig = generationSettings.thinkingConfig ?: return
-    val capability = modelIdentifier.thinkingCapability()
+    val capability = modelIdentifier.capability()
 
     if (thinkingConfig.thinkingBudget != null && !capability.supportsThinkingBudget) {
         aigenticException(

@@ -45,28 +45,30 @@ sealed class VertexAIModelIdentifier(
     ) : VertexAIModelIdentifier(identifier)
 }
 
-internal data class ThinkingCapability(
+internal data class ModelCapability(
     val supportsThinkingBudget: Boolean,
     val supportedThinkingLevels: Set<ThinkingLevel>?,
+    val supportsSampling: Boolean,
 )
 
 private val vertexAIMajorVersionRegex = Regex("(?:^|/)gemini-(\\d+)")
 
-internal fun VertexAIModelIdentifier.thinkingCapability(): ThinkingCapability =
+internal fun VertexAIModelIdentifier.capability(): ModelCapability =
     when (this) {
         VertexAIModelIdentifier.Gemini2_5Pro,
         VertexAIModelIdentifier.Gemini2_5Flash,
         VertexAIModelIdentifier.Gemini2_5FlashLite,
         -> {
-            ThinkingCapability(supportsThinkingBudget = true, supportedThinkingLevels = null)
+            ModelCapability(supportsThinkingBudget = true, supportedThinkingLevels = null, supportsSampling = true)
         }
 
         VertexAIModelIdentifier.Gemini3_7Flash,
         VertexAIModelIdentifier.Gemini3_1ProPreview,
         -> {
-            ThinkingCapability(
+            ModelCapability(
                 supportsThinkingBudget = false,
                 supportedThinkingLevels = setOf(ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH),
+                supportsSampling = false,
             )
         }
 
@@ -76,7 +78,11 @@ internal fun VertexAIModelIdentifier.thinkingCapability(): ThinkingCapability =
         VertexAIModelIdentifier.Gemini3_1FlashLite,
         VertexAIModelIdentifier.Gemini3FlashPreview,
         -> {
-            ThinkingCapability(supportsThinkingBudget = false, supportedThinkingLevels = ThinkingLevel.entries.toSet())
+            ModelCapability(
+                supportsThinkingBudget = false,
+                supportedThinkingLevels = ThinkingLevel.entries.toSet(),
+                supportsSampling = false,
+            )
         }
 
         is VertexAIModelIdentifier.Custom -> {
@@ -88,19 +94,29 @@ internal fun VertexAIModelIdentifier.thinkingCapability(): ThinkingCapability =
                     ?.toIntOrNull()
             when {
                 majorVersion == null -> {
-                    ThinkingCapability(supportsThinkingBudget = true, supportedThinkingLevels = ThinkingLevel.entries.toSet())
+                    ModelCapability(
+                        supportsThinkingBudget = true,
+                        supportedThinkingLevels = ThinkingLevel.entries.toSet(),
+                        supportsSampling = true,
+                    )
                 }
 
                 majorVersion <= 2 -> {
-                    ThinkingCapability(supportsThinkingBudget = true, supportedThinkingLevels = null)
+                    ModelCapability(supportsThinkingBudget = true, supportedThinkingLevels = null, supportsSampling = true)
                 }
 
                 else -> {
-                    ThinkingCapability(supportsThinkingBudget = false, supportedThinkingLevels = ThinkingLevel.entries.toSet())
+                    ModelCapability(
+                        supportsThinkingBudget = false,
+                        supportedThinkingLevels = ThinkingLevel.entries.toSet(),
+                        supportsSampling = false,
+                    )
                 }
             }
         }
     }
+
+internal fun VertexAIModelIdentifier.supportsSampling(): Boolean = capability().supportsSampling
 
 /**
  * MINIMAL is an aigentic-level concept expressing "think as little as possible". Models that
@@ -108,7 +124,7 @@ internal fun VertexAIModelIdentifier.thinkingCapability(): ThinkingCapability =
  * their lowest supported level, LOW, instead of failing.
  */
 internal fun VertexAIModelIdentifier.resolveThinkingLevel(level: ThinkingLevel): ThinkingLevel {
-    val supportedLevels = thinkingCapability().supportedThinkingLevels
+    val supportedLevels = capability().supportedThinkingLevels
     return if (level == ThinkingLevel.MINIMAL && supportedLevels != null && ThinkingLevel.MINIMAL !in supportedLevels) {
         ThinkingLevel.LOW
     } else {
@@ -122,7 +138,7 @@ internal fun validateVertexAIThinkingConfig(
 ) {
     val thinkingConfig = generationSettings.thinkingConfig ?: return
     val vertexAIModelIdentifier = modelIdentifier as? VertexAIModelIdentifier ?: return
-    val capability = vertexAIModelIdentifier.thinkingCapability()
+    val capability = vertexAIModelIdentifier.capability()
 
     if (thinkingConfig.thinkingBudget != null && !capability.supportsThinkingBudget) {
         aigenticException(

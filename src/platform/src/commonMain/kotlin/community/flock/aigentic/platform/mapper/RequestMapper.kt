@@ -10,6 +10,7 @@ import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
+import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
@@ -92,7 +93,7 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                 exampleRunIds = exampleRunIds.map { it.value },
                 responseJsonSchema = agent.responseParameter?.toJsonSchemaString(),
                 temperature =
-                    agent.model.generationSettings.temperature
+                    (agent.model.generationSettings.temperature ?: GenerationSettings.DEFAULT_TEMPERATURE)
                         .toDouble(),
                 thinkingBudget =
                     agent.model.generationSettings.thinkingConfig
