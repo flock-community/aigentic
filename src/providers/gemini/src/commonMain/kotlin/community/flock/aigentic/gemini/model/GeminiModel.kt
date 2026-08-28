@@ -51,7 +51,7 @@ internal data class ThinkingCapability(
     val supportedThinkingLevels: Set<ThinkingLevel>?,
 )
 
-private val geminiMajorVersionRegex = Regex("^(models/)?gemini-(\\d+)")
+private val geminiMajorVersionRegex = Regex("(?:^|/)gemini-(\\d+)")
 
 internal fun GeminiModelIdentifier.thinkingCapability(): ThinkingCapability =
     when (this) {
@@ -85,7 +85,7 @@ internal fun GeminiModelIdentifier.thinkingCapability(): ThinkingCapability =
                 geminiMajorVersionRegex
                     .find(identifier)
                     ?.groupValues
-                    ?.get(2)
+                    ?.get(1)
                     ?.toIntOrNull()
             when {
                 majorVersion == null -> {
@@ -102,10 +102,6 @@ internal fun GeminiModelIdentifier.thinkingCapability(): ThinkingCapability =
             }
         }
     }
-
-internal fun GeminiModelIdentifier.supportsThinkingBudget(): Boolean = thinkingCapability().supportsThinkingBudget
-
-internal fun GeminiModelIdentifier.supportedThinkingLevels(): Set<ThinkingLevel>? = thinkingCapability().supportedThinkingLevels
 
 /**
  * MINIMAL is an aigentic-level concept expressing "think as little as possible". Models that

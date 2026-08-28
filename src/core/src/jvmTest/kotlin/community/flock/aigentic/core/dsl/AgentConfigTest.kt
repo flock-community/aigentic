@@ -3,6 +3,7 @@ package community.flock.aigentic.core.dsl
 import community.flock.aigentic.core.agent.Context
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.annotations.AigenticParameter
+import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ThinkingConfig
@@ -155,7 +156,7 @@ class AgentConfigTest :
             }
 
             it("should throw when both thinkingBudget and thinkingLevel are configured") {
-                shouldThrow<Exception> {
+                shouldThrow<AigenticException> {
                     GenerationConfig()
                         .apply {
                             thinkingBudget(10)
@@ -165,7 +166,7 @@ class AgentConfigTest :
             }
 
             it("should throw when constructing a ThinkingConfig with both thinkingBudget and thinkingLevel") {
-                shouldThrow<Exception> {
+                shouldThrow<AigenticException> {
                     ThinkingConfig(10, ThinkingLevel.LOW)
                 }
             }

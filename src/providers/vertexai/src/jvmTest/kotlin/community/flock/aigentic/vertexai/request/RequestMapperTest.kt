@@ -76,7 +76,7 @@ class RequestMapperTest :
 
                 shouldThrow<Exception> {
                     createGenerateConfig(emptyList(), emptyList(), generationSettings, null, VertexAIModelIdentifier.Gemini3_5Flash)
-                }
+                }.message shouldContain "only supported on Gemini 2.x models"
             }
 
             it("should throw when thinkingLevel is configured on a 2.x model") {
@@ -87,7 +87,7 @@ class RequestMapperTest :
 
                 shouldThrow<Exception> {
                     createGenerateConfig(emptyList(), emptyList(), generationSettings, null, VertexAIModelIdentifier.Gemini2_5Flash)
-                }
+                }.message shouldContain "not supported on Gemini 2.x models"
             }
 
             it("should map thinkingLevel MINIMAL to LOW on gemini-3.1-pro-preview") {
@@ -149,7 +149,7 @@ class RequestMapperTest :
                         null,
                         VertexAIModelIdentifier.Custom("gemini-3.9-flash"),
                     )
-                }
+                }.message shouldContain "only supported on Gemini 2.x models"
             }
 
             it("should allow thinkingBudget on a Custom identifier with major version 1") {
@@ -219,7 +219,7 @@ class RequestMapperTest :
                         null,
                         VertexAIModelIdentifier.Custom("models/gemini-2.5-flash"),
                     )
-                }
+                }.message shouldContain "not supported on Gemini 2.x models"
             }
 
             it("should allow thinkingLevel on a Custom identifier with major version 4") {
@@ -255,7 +255,7 @@ class RequestMapperTest :
                         null,
                         VertexAIModelIdentifier.Custom("gemini-4.0-pro"),
                     )
-                }
+                }.message shouldContain "only supported on Gemini 2.x models"
             }
 
             it("should allow thinkingBudget on a Custom gemini-exp-1206 identifier") {

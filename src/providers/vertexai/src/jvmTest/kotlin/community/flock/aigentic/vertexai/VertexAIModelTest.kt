@@ -8,6 +8,7 @@ import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 
 private object OtherModelIdentifier : ModelIdentifier {
     override val stringValue: String = "other-model"
@@ -39,7 +40,7 @@ class VertexAIModelTest :
                         location = Location("location"),
                         requestTimeoutMillis = 60_000,
                     )
-                }
+                }.message shouldContain "not supported on Gemini 2.x models"
             }
 
             it("should build successfully with a valid thinking configuration") {
@@ -87,13 +88,25 @@ class VertexAIModelTest :
                                 thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
                             ),
                     )
-                }
+                }.message shouldContain "not supported on Gemini 2.x models"
             }
 
             it("should allow thinkingLevel on a Custom identifier with major version 4") {
                 shouldNotThrowAny {
                     validateVertexAIThinkingConfig(
                         modelIdentifier = VertexAIModelIdentifier.Custom("gemini-4.0-pro"),
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                            ),
+                    )
+                }
+            }
+
+            it("should allow thinkingLevel on a Custom identifier with a resource-path prefix and major version 4") {
+                shouldNotThrowAny {
+                    validateVertexAIThinkingConfig(
+                        modelIdentifier = VertexAIModelIdentifier.Custom("publishers/google/models/gemini-4.0-pro"),
                         generationSettings =
                             GenerationSettings.DEFAULT.copy(
                                 thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
@@ -111,7 +124,7 @@ class VertexAIModelTest :
                                 thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
                             ),
                     )
-                }
+                }.message shouldContain "only supported on Gemini 2.x models"
             }
 
             it("should allow thinkingBudget and thinkingLevel on a Custom gemini-exp-1206 identifier") {

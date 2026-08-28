@@ -122,7 +122,7 @@ class GeminiRequestMapperKtTest :
 
                 shouldThrow<Exception> {
                     createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_5Flash)
-                }
+                }.message shouldContain "only supported on Gemini 2.x models"
             }
 
             it("should throw when thinkingLevel is configured on a 2.5 model") {
@@ -133,7 +133,7 @@ class GeminiRequestMapperKtTest :
 
                 shouldThrow<Exception> {
                     createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini2_5Flash)
-                }
+                }.message shouldContain "not supported on Gemini 2.x models"
             }
 
             it("should map thinkingLevel MINIMAL to low on gemini-3.7-flash") {
@@ -190,7 +190,7 @@ class GeminiRequestMapperKtTest :
                         null,
                         GeminiModelIdentifier.Custom("gemini-2.5-x"),
                     )
-                }
+                }.message shouldContain "not supported on Gemini 2.x models"
             }
 
             it("should allow thinkingLevel on a Custom non-gemini-2.x model") {
@@ -254,7 +254,7 @@ class GeminiRequestMapperKtTest :
                         null,
                         GeminiModelIdentifier.Custom("gemini-3.9-flash"),
                     )
-                }
+                }.message shouldContain "only supported on Gemini 2.x models"
             }
 
             it("should allow thinkingBudget on a Custom identifier with major version 1") {
@@ -322,7 +322,7 @@ class GeminiRequestMapperKtTest :
                         null,
                         GeminiModelIdentifier.Custom("models/gemini-2.5-flash"),
                     )
-                }
+                }.message shouldContain "not supported on Gemini 2.x models"
             }
 
             it("should allow thinkingLevel on a Custom identifier with major version 4") {
@@ -356,7 +356,7 @@ class GeminiRequestMapperKtTest :
                         null,
                         GeminiModelIdentifier.Custom("gemini-4.0-pro"),
                     )
-                }
+                }.message shouldContain "only supported on Gemini 2.x models"
             }
 
             it("should allow thinkingBudget on a Custom identifier that has no version match") {

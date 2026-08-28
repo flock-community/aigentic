@@ -6,6 +6,7 @@ import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.string.shouldContain
 import io.mockk.mockk
 
 class OllamaDslTest :
@@ -40,7 +41,7 @@ class OllamaDslTest :
                         task("Task description") {}
                         addTool(mockk(relaxed = true))
                     }
-                }
+                }.message shouldContain "thinkingBudget is not supported by OpenAI-compatible models"
             }
         }
     })

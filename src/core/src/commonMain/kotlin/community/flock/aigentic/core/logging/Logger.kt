@@ -3,7 +3,7 @@ package community.flock.aigentic.core.logging
 interface Logger {
     fun warning(message: String)
 
-    fun error(message: String)
+    fun error(message: String) = warning(message)
 }
 
 data object SimpleLogger : Logger {

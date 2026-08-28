@@ -50,7 +50,7 @@ internal data class ThinkingCapability(
     val supportedThinkingLevels: Set<ThinkingLevel>?,
 )
 
-private val vertexAIMajorVersionRegex = Regex("^(models/)?gemini-(\\d+)")
+private val vertexAIMajorVersionRegex = Regex("(?:^|/)gemini-(\\d+)")
 
 internal fun VertexAIModelIdentifier.thinkingCapability(): ThinkingCapability =
     when (this) {
@@ -84,7 +84,7 @@ internal fun VertexAIModelIdentifier.thinkingCapability(): ThinkingCapability =
                 vertexAIMajorVersionRegex
                     .find(identifier)
                     ?.groupValues
-                    ?.get(2)
+                    ?.get(1)
                     ?.toIntOrNull()
             when {
                 majorVersion == null -> {
@@ -101,10 +101,6 @@ internal fun VertexAIModelIdentifier.thinkingCapability(): ThinkingCapability =
             }
         }
     }
-
-internal fun VertexAIModelIdentifier.supportsThinkingBudget(): Boolean = thinkingCapability().supportsThinkingBudget
-
-internal fun VertexAIModelIdentifier.supportedThinkingLevels(): Set<ThinkingLevel>? = thinkingCapability().supportedThinkingLevels
 
 /**
  * MINIMAL is an aigentic-level concept expressing "think as little as possible". Models that

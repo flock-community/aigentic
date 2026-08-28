@@ -85,12 +85,6 @@ internal fun ModelIdentifier.usesMaxCompletionTokens(): Boolean =
         else -> false
     }
 
-internal fun ModelIdentifier.supportsReasoningEffort(): Boolean =
-    when (this) {
-        is OpenAIModelIdentifier -> supportsReasoningEffort()
-        else -> false
-    }
-
 internal fun OpenAIModelIdentifier.supportsReasoningEffort(): Boolean =
     when (this) {
         OpenAIModelIdentifier.GPT5_5,
@@ -124,15 +118,18 @@ internal fun OpenAIModelIdentifier.supportsReasoningEffort(): Boolean =
     }
 
 /**
- * MINIMAL is an aigentic-level concept expressing "think as little as possible". The o-series
- * reasoning models (o1, o3, o3-mini, o4-mini and their pro variants) don't have a MINIMAL
- * reasoning_effort of their own, so it maps to their lowest supported level, LOW; the gpt-5
- * family and custom identifiers pass MINIMAL through unchanged.
+ * MINIMAL is an aigentic-level concept expressing "think as little as possible". Models whose
+ * lowest reasoning_effort value isn't "minimal" (the o-series only goes down to LOW, and the
+ * gpt-5.4/gpt-5.5 families replaced "minimal" with "none", which this DSL doesn't expose as a
+ * ThinkingLevel) fall back to their lowest representable level instead of failing; the base
+ * gpt-5 family and custom identifiers pass MINIMAL through unchanged.
  */
-internal fun OpenAIModelIdentifier.resolveThinkingLevel(level: ThinkingLevel): ThinkingLevel =
-    if (level == ThinkingLevel.MINIMAL && isOSeriesReasoningModel()) ThinkingLevel.LOW else level
+internal fun OpenAIModelIdentifier.resolveThinkingLevel(level: ThinkingLevel): ThinkingLevel {
+    val minimumLevel = minimumSupportedThinkingLevel()
+    return if (level.ordinal < minimumLevel.ordinal) minimumLevel else level
+}
 
-private fun OpenAIModelIdentifier.isOSeriesReasoningModel(): Boolean =
+private fun OpenAIModelIdentifier.minimumSupportedThinkingLevel(): ThinkingLevel =
     when (this) {
         OpenAIModelIdentifier.O3Pro,
         OpenAIModelIdentifier.O3,
@@ -140,14 +137,16 @@ private fun OpenAIModelIdentifier.isOSeriesReasoningModel(): Boolean =
         OpenAIModelIdentifier.O3Mini,
         OpenAIModelIdentifier.O1,
         OpenAIModelIdentifier.O1Pro,
-        -> true
-
-        OpenAIModelIdentifier.GPT5_5,
-        OpenAIModelIdentifier.GPT5_5Pro,
         OpenAIModelIdentifier.GPT5_4,
-        OpenAIModelIdentifier.GPT5_4Pro,
         OpenAIModelIdentifier.GPT5_4Mini,
         OpenAIModelIdentifier.GPT5_4Nano,
+        OpenAIModelIdentifier.GPT5_5,
+        -> ThinkingLevel.LOW
+
+        OpenAIModelIdentifier.GPT5_4Pro,
+        OpenAIModelIdentifier.GPT5_5Pro,
+        -> ThinkingLevel.MEDIUM
+
         OpenAIModelIdentifier.GPT5,
         OpenAIModelIdentifier.GPT5Mini,
         OpenAIModelIdentifier.GPT5Nano,
@@ -161,7 +160,7 @@ private fun OpenAIModelIdentifier.isOSeriesReasoningModel(): Boolean =
         OpenAIModelIdentifier.GPT4OMiniSearchPreview,
         OpenAIModelIdentifier.GPT4OSearchPreview,
         is OpenAIModelIdentifier.Custom,
-        -> false
+        -> ThinkingLevel.MINIMAL
     }
 
 private fun OpenAIModelIdentifier.requiresMaxCompletionTokens(): Boolean =
@@ -201,13 +200,14 @@ internal fun validateOpenAIThinkingConfig(
     generationSettings: GenerationSettings,
 ) {
     val thinkingConfig = generationSettings.thinkingConfig ?: return
+    val openAIModelIdentifier = modelIdentifier as? OpenAIModelIdentifier ?: return
     if (thinkingConfig.thinkingBudget != null) {
-        aigenticException("thinkingBudget is not supported by OpenAI, use thinkingLevel()")
+        aigenticException("thinkingBudget is not supported by OpenAI-compatible models, use thinkingLevel()")
     }
     thinkingConfig.thinkingLevel?.let {
-        if (!modelIdentifier.supportsReasoningEffort()) {
+        if (!openAIModelIdentifier.supportsReasoningEffort()) {
             aigenticException(
-                "thinkingLevel is not supported on ${modelIdentifier.stringValue}, it is not a reasoning model",
+                "thinkingLevel is not supported on ${openAIModelIdentifier.stringValue}, it is not a reasoning model",
             )
         }
     }

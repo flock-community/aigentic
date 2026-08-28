@@ -2,11 +2,17 @@ package community.flock.aigentic.openai.model
 
 import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.GenerationSettings
+import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.string.shouldContain
+
+private object OtherModelIdentifier : ModelIdentifier {
+    override val stringValue: String = "other-model"
+}
 
 class OpenAIModelTest :
     DescribeSpec({
@@ -24,7 +30,7 @@ class OpenAIModelTest :
                             ),
                         apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
                     )
-                }
+                }.message shouldContain "it is not a reasoning model"
             }
 
             it("should build successfully with thinkingLevel MINIMAL on O3") {
@@ -51,6 +57,18 @@ class OpenAIModelTest :
                                 thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
                             ),
                         apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
+                    )
+                }
+            }
+
+            it("should not validate an unrelated ModelIdentifier implementation") {
+                shouldNotThrowAny {
+                    validateOpenAIThinkingConfig(
+                        modelIdentifier = OtherModelIdentifier,
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                            ),
                     )
                 }
             }

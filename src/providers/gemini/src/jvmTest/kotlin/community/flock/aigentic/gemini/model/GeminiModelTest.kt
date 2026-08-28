@@ -9,6 +9,7 @@ import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.mockk.mockk
 
 class GeminiModelTest :
@@ -36,7 +37,7 @@ class GeminiModelTest :
                             ),
                         geminiClient = mockk<GeminiClient>(relaxed = true),
                     )
-                }
+                }.message shouldContain "not supported on Gemini 2.x models"
             }
 
             it("should build successfully with a valid thinking configuration") {
@@ -74,13 +75,25 @@ class GeminiModelTest :
                                 thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
                             ),
                     )
-                }
+                }.message shouldContain "not supported on Gemini 2.x models"
             }
 
             it("should allow thinkingLevel on a Custom identifier with major version 4") {
                 shouldNotThrowAny {
                     validateGeminiThinkingConfig(
                         modelIdentifier = GeminiModelIdentifier.Custom("gemini-4.0-pro"),
+                        generationSettings =
+                            GenerationSettings.DEFAULT.copy(
+                                thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                            ),
+                    )
+                }
+            }
+
+            it("should allow thinkingLevel on a Custom identifier with a resource-path prefix and major version 4") {
+                shouldNotThrowAny {
+                    validateGeminiThinkingConfig(
+                        modelIdentifier = GeminiModelIdentifier.Custom("publishers/google/models/gemini-4.0-pro"),
                         generationSettings =
                             GenerationSettings.DEFAULT.copy(
                                 thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
@@ -98,7 +111,7 @@ class GeminiModelTest :
                                 thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
                             ),
                     )
-                }
+                }.message shouldContain "only supported on Gemini 2.x models"
             }
 
             it("should allow thinkingBudget and thinkingLevel on a Custom gemini-exp-1206 identifier") {
