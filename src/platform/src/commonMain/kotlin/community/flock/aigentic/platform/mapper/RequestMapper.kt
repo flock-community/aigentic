@@ -93,7 +93,7 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                 responseJsonSchema = agent.responseParameter?.toJsonSchemaString(),
                 temperature =
                     agent.model.generationSettings.temperature
-                        .toDouble(),
+                        ?.toDouble(),
                 thinkingBudget =
                     agent.model.generationSettings.thinkingConfig
                         ?.thinkingBudget

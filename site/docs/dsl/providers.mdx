@@ -25,7 +25,6 @@ Aigentic supports several LLM providers out of the box:
         modelIdentifier(OpenAIModelIdentifier.GPT4O)
         generationConfig {
             temperature(0.7f)
-            topK(40)
             topP(0.95f)
         }
     }
@@ -78,6 +77,139 @@ Aigentic supports several LLM providers out of the box:
     </CodeBlock>
   </TabItem>
 </Tabs>
+
+## Thinking configuration
+
+Reasoning models let you control how much they think before answering. Aigentic exposes this through two `generationConfig` DSL functions: `thinkingBudget(tokens)` and `thinkingLevel(level)`. They are mutually exclusive; configuring both throws an `AigenticException`. Leaving both unset uses the model's default behaviour.
+
+Migrating from `0.11.0`: `thinkingBudget()` on a Gemini or VertexAI 3.x model identifier used to be forwarded as-is; it now throws an `AigenticException` (use `thinkingLevel()` instead). `thinkingBudget()` on an OpenAI or Ollama model used to be silently ignored; it now throws too.
+
+Model/identifier and thinking-level errors (an unsupported combination, or a level that isn't allowed on that model) are raised client-side as soon as the model is built — for example inside `geminiModel { ... }`, before any request is ever sent — not later when the agent runs.
+
+<Tabs>
+  <TabItem value="Gemini" label="Gemini">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.core.model.ThinkingLevel
+
+agent<String, Answer> {
+    geminiModel {
+        apiKey("your-api-key")
+        modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
+        generationConfig {
+            thinkingLevel(ThinkingLevel.LOW)
+        }
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    Gemini 2.x models only support `thinkingBudget()` (a token budget, `-1` for dynamic, `0` to disable except on Pro). Gemini 3.x models only support `thinkingLevel()`.
+
+    | Model | Default level | Supported levels |
+    | --- | --- | --- |
+    | `gemini-2.5-pro` / `gemini-2.5-flash` / `gemini-2.5-flash-lite` | n/a | `thinkingBudget` only |
+    | `gemini-3.7-flash` | medium | LOW, MEDIUM, HIGH (MINIMAL maps to LOW) |
+    | `gemini-3.6-flash` | medium | MINIMAL, LOW, MEDIUM, HIGH |
+    | `gemini-3.5-flash` | medium | MINIMAL, LOW, MEDIUM, HIGH |
+    | `gemini-3.5-flash-lite` | minimal | MINIMAL, LOW, MEDIUM, HIGH |
+    | `gemini-3.1-pro-preview` | high | LOW, MEDIUM, HIGH (MINIMAL maps to LOW) |
+    | `gemini-3.1-flash-lite` | minimal | MINIMAL, LOW, MEDIUM, HIGH |
+    | `gemini-3-flash-preview` | high | MINIMAL, LOW, MEDIUM, HIGH |
+
+    `ThinkingLevel` is an aigentic-level concept; each provider maps it to what the underlying model supports. `MINIMAL` maps to the lowest level the model supports: `low` on `gemini-3.7-flash` and `gemini-3.1-pro-preview`, since those two models don't have a MINIMAL level of their own.
+
+    For a `Custom(identifier)` model identifier, Aigentic infers the same rules from the identifier's major version number, parsed with `(?:^|/)gemini-(\d+)` (so `"gemini-2.5-flash"`, `"models/gemini-2.5-flash"`, and a full resource path like `"publishers/google/models/gemini-2.5-flash"` or `"projects/.../locations/.../publishers/google/models/gemini-2.5-flash"` all match): a major version of 2 or lower only supports `thinkingBudget()` (a `thinkingLevel()` throws), a major version of 3 or higher only supports `thinkingLevel()` with all four levels, `MINIMAL` forwarded as-is (a `thinkingBudget()` throws). An identifier with no version match (a tuned endpoint, a proxy name, or an experimental name like `gemini-exp-1206`) is passed through without validation — both `thinkingBudget()` and `thinkingLevel()` are accepted as-is.
+  </TabItem>
+
+  <TabItem value="VertexAI" label="VertexAI">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.core.model.ThinkingLevel
+
+agent<String, Answer> {
+    vertexAIModel {
+        project("your-project-id")
+        location("your-location")
+        modelIdentifier(VertexAIModelIdentifier.Gemini3_5Flash)
+        generationConfig {
+            thinkingLevel(ThinkingLevel.LOW)
+        }
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    Same rules as Gemini: 2.x models only support `thinkingBudget()`, 3.x models only support `thinkingLevel()`, using the same model → default level → supported levels table above, the same `Custom(identifier)` major-version rules, and the same MINIMAL-maps-to-LOW behavior on `gemini-3.7-flash` and `gemini-3.1-pro-preview`.
+  </TabItem>
+
+  <TabItem value="OpenAI" label="OpenAI">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.core.model.ThinkingLevel
+
+agent<String, Answer> {
+    openAIModel {
+        apiKey("your-api-key")
+        modelIdentifier(OpenAIModelIdentifier.O3)
+        generationConfig {
+            thinkingLevel(ThinkingLevel.LOW)
+        }
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    `thinkingLevel()` maps to OpenAI's `reasoning_effort` request field and is only supported on reasoning models (the `o`-series, the `gpt-5` family, and any `Custom` model identifier). Configuring it on a non-reasoning model, or configuring `thinkingBudget()` on any OpenAI-compatible model, throws an `AigenticException`.
+
+    `MINIMAL` maps to the lowest `reasoning_effort` value the model actually accepts, since not every model has a `minimal` value of its own:
+
+    | Model | Accepted `reasoning_effort` values | `MINIMAL` / `LOW` maps to |
+    | --- | --- | --- |
+    | `gpt-5`, `gpt-5-mini`, `gpt-5-nano` | minimal, low, medium, high | `minimal` (unchanged) |
+    | `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.5` | none, low, medium, high, xhigh | `low` (no `minimal`, and `none` isn't a `ThinkingLevel`) |
+    | `gpt-5.4-pro`, `gpt-5.5-pro` | medium, high, xhigh | `medium` (no `minimal`/`none`/`low`) |
+    | `o1`, `o1-pro`, `o3`, `o3-pro`, `o3-mini`, `o4-mini` | low, medium, high | `low` (no `minimal`) |
+    | `Custom` | model-dependent | passed through as `minimal` |
+
+    Aigentic's `ThinkingLevel` enum only has `MINIMAL`/`LOW`/`MEDIUM`/`HIGH`; it does not expose OpenAI's `none` or `xhigh` values.
+  </TabItem>
+
+  <TabItem value="Ollama" label="Ollama">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.core.model.ThinkingLevel
+
+agent<String, Answer> {
+    ollamaModel {
+        apiUrl("http://localhost:11434/v1/")
+        modelIdentifier(OpenAIModelIdentifier.Custom("llama3"))
+        generationConfig {
+            thinkingLevel(ThinkingLevel.LOW)
+        }
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    Ollama models go through the OpenAI-compatible request path: `thinkingLevel()` maps to `reasoning_effort`, and `thinkingBudget()` always throws an `AigenticException` since Ollama has no budget-based thinking control.
+
+    Ollama's `/v1` OpenAI-compatibility layer maps the incoming `reasoning_effort` onto its native `think` field: `minimal` becomes `low`, `low`/`medium`/`high` pass through as-is, `xhigh` becomes `max`, and `none` disables thinking (source: `thinkFromReasoningEffort` in `openai/openai.go`, `ollama/ollama`, since v0.11.5). Aigentic itself only ever sends `minimal`/`low`/`medium`/`high`, since `Custom` model identifiers (which is what all Ollama models use) pass `MINIMAL` through unchanged and the DSL has no `none`/`xhigh` level.
+  </TabItem>
+</Tabs>
+
+## Sampling parameters
+
+`generationConfig` also exposes `temperature(value)`, `topK(value)` and `topP(value)`. All three are nullable and default to unset. Reasoning models don't accept custom sampling parameters, so Aigentic only fills in a default when the underlying model actually uses one.
+
+| Model class | Default when unset | Behavior when explicitly set |
+| --- | --- | --- |
+| Gemini 2.x, VertexAI 2.x, a `Custom` identifier with major version ≤ 2 or no version match | `temperature=0.0`, `topK=1`, `topP=0.1` (plus `candidate_count=1`) | Sent as configured |
+| Gemini 3.x, VertexAI 3.x, a `Custom` identifier with major version ≥ 3 | Omitted from the request entirely | Sent as configured |
+| OpenAI/Ollama reasoning models (the `o`-series and the `gpt-5` family only, by explicit identifier) | Omitted from the request | Throws an `AigenticException` when the model is built |
+| OpenAI non-reasoning models (`gpt-4o`, `gpt-4.1`, `gpt-3.5-turbo`, ...) and every `Custom` identifier (including Ollama) | `temperature=0.0`, `topP=0.1` | Sent as configured |
+
+On Gemini and VertexAI 3.x models, an explicitly set `topK()`/`topP()` is forwarded as-is and accepted by the API (200); Google recommends leaving them unset on 3.x for best reasoning quality.
+
+`topK` is never sent to OpenAI-compatible models (OpenAI or Ollama), even when configured — the client has never supported it there, and it is not validated either.
+
+Like the thinking-configuration errors above, an OpenAI reasoning model rejecting an explicit `temperature()`/`topP()` is raised client-side as soon as the model is built, not later when the agent runs.
 
 ## Structured output (Gemini & Vertex AI)
 
@@ -132,4 +264,8 @@ interface Model {
 }
 ```
 
-You can implement this interface to connect to your own model
+You can implement this interface to connect to your own model.
+
+:::caution Breaking change in 0.12.0
+`GenerationSettings.temperature`, `topK` and `topP` changed from `Float`/`Int`/`Float` to `Float?`/`Int?`/`Float?`. If your custom `Model` implementation reads these fields directly (e.g. `generationSettings.temperature.toDouble()`), update it to handle `null` — it now means "not configured" rather than a provider-specific default.
+:::

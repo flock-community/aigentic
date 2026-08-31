@@ -6,10 +6,12 @@ import community.flock.aigentic.core.agent.Instruction
 import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.Task
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ThinkingConfig
+import community.flock.aigentic.core.model.ThinkingLevel
 import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
@@ -149,10 +151,11 @@ class ContextConfig : Config<List<Context>> {
 
 @AgentDSL
 class GenerationConfig : Config<GenerationSettings> {
-    internal var temperature: Float = GenerationSettings.DEFAULT_TEMPERATURE
-    internal var topK: Int = GenerationSettings.DEFAULT_TOP_K
-    internal var topP: Float = GenerationSettings.DEFAULT_TOP_P
+    internal var temperature: Float? = null
+    internal var topK: Int? = null
+    internal var topP: Float? = null
     internal var thinkingBudget: Int? = null
+    internal var thinkingLevel: ThinkingLevel? = null
     internal var maxOutputTokens: Int? = null
 
     fun GenerationConfig.temperature(temperature: Float) {
@@ -171,6 +174,10 @@ class GenerationConfig : Config<GenerationSettings> {
         this.thinkingBudget = thinkingBudget
     }
 
+    fun GenerationConfig.thinkingLevel(thinkingLevel: ThinkingLevel) {
+        this.thinkingLevel = thinkingLevel
+    }
+
     fun GenerationConfig.maxOutputTokens(maxOutputTokens: Int) {
         this.maxOutputTokens = maxOutputTokens
     }
@@ -180,7 +187,22 @@ class GenerationConfig : Config<GenerationSettings> {
             temperature = temperature,
             topK = topK,
             topP = topP,
-            thinkingConfig = thinkingBudget?.let(::ThinkingConfig),
+            thinkingConfig =
+                when {
+                    thinkingBudget != null && thinkingLevel != null -> {
+                        aigenticException(
+                            "Cannot build GenerationSettings, 'thinkingBudget' and 'thinkingLevel' are mutually exclusive, use one of 'thinkingBudget()' or 'thinkingLevel()'",
+                        )
+                    }
+
+                    thinkingBudget != null || thinkingLevel != null -> {
+                        ThinkingConfig(thinkingBudget = thinkingBudget, thinkingLevel = thinkingLevel)
+                    }
+
+                    else -> {
+                        null
+                    }
+                },
             maxOutputTokens = maxOutputTokens,
         )
 }
