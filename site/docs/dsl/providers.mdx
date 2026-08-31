@@ -264,4 +264,8 @@ interface Model {
 }
 ```
 
-You can implement this interface to connect to your own model
+You can implement this interface to connect to your own model.
+
+:::caution Breaking change in 0.12.0
+`GenerationSettings.temperature`, `topK` and `topP` changed from `Float`/`Int`/`Float` to `Float?`/`Int?`/`Float?`. If your custom `Model` implementation reads these fields directly (e.g. `generationSettings.temperature.toDouble()`), update it to handle `null` — it now means "not configured" rather than a provider-specific default.
+:::
