@@ -13,6 +13,7 @@ import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ModelResponse
+import community.flock.aigentic.core.model.ThinkingLevel
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.openai.mapper.toModelResponse
@@ -84,6 +85,84 @@ internal fun ModelIdentifier.usesMaxCompletionTokens(): Boolean =
         else -> false
     }
 
+internal fun OpenAIModelIdentifier.supportsReasoningEffort(): Boolean =
+    when (this) {
+        OpenAIModelIdentifier.GPT5_5,
+        OpenAIModelIdentifier.GPT5_5Pro,
+        OpenAIModelIdentifier.GPT5_4,
+        OpenAIModelIdentifier.GPT5_4Pro,
+        OpenAIModelIdentifier.GPT5_4Mini,
+        OpenAIModelIdentifier.GPT5_4Nano,
+        OpenAIModelIdentifier.GPT5,
+        OpenAIModelIdentifier.GPT5Mini,
+        OpenAIModelIdentifier.GPT5Nano,
+        OpenAIModelIdentifier.O3Pro,
+        OpenAIModelIdentifier.O3,
+        OpenAIModelIdentifier.O4Mini,
+        OpenAIModelIdentifier.O3Mini,
+        OpenAIModelIdentifier.O1,
+        OpenAIModelIdentifier.O1Pro,
+        is OpenAIModelIdentifier.Custom,
+        -> true
+
+        OpenAIModelIdentifier.GPT4_1,
+        OpenAIModelIdentifier.GPT4_1Mini,
+        OpenAIModelIdentifier.GPT4_1Nano,
+        OpenAIModelIdentifier.GPT4O,
+        OpenAIModelIdentifier.GPT4OMini,
+        OpenAIModelIdentifier.GPT4Turbo,
+        OpenAIModelIdentifier.GPT3_5Turbo,
+        OpenAIModelIdentifier.GPT4OMiniSearchPreview,
+        OpenAIModelIdentifier.GPT4OSearchPreview,
+        -> false
+    }
+
+/**
+ * MINIMAL is an aigentic-level concept expressing "think as little as possible". Models whose
+ * lowest reasoning_effort value isn't "minimal" (the o-series only goes down to LOW, and the
+ * gpt-5.4/gpt-5.5 families replaced "minimal" with "none", which this DSL doesn't expose as a
+ * ThinkingLevel) fall back to their lowest representable level instead of failing; the base
+ * gpt-5 family and custom identifiers pass MINIMAL through unchanged.
+ */
+internal fun OpenAIModelIdentifier.resolveThinkingLevel(level: ThinkingLevel): ThinkingLevel {
+    val minimumLevel = minimumSupportedThinkingLevel()
+    return if (level.ordinal < minimumLevel.ordinal) minimumLevel else level
+}
+
+private fun OpenAIModelIdentifier.minimumSupportedThinkingLevel(): ThinkingLevel =
+    when (this) {
+        OpenAIModelIdentifier.O3Pro,
+        OpenAIModelIdentifier.O3,
+        OpenAIModelIdentifier.O4Mini,
+        OpenAIModelIdentifier.O3Mini,
+        OpenAIModelIdentifier.O1,
+        OpenAIModelIdentifier.O1Pro,
+        OpenAIModelIdentifier.GPT5_4,
+        OpenAIModelIdentifier.GPT5_4Mini,
+        OpenAIModelIdentifier.GPT5_4Nano,
+        OpenAIModelIdentifier.GPT5_5,
+        -> ThinkingLevel.LOW
+
+        OpenAIModelIdentifier.GPT5_4Pro,
+        OpenAIModelIdentifier.GPT5_5Pro,
+        -> ThinkingLevel.MEDIUM
+
+        OpenAIModelIdentifier.GPT5,
+        OpenAIModelIdentifier.GPT5Mini,
+        OpenAIModelIdentifier.GPT5Nano,
+        OpenAIModelIdentifier.GPT4_1,
+        OpenAIModelIdentifier.GPT4_1Mini,
+        OpenAIModelIdentifier.GPT4_1Nano,
+        OpenAIModelIdentifier.GPT4O,
+        OpenAIModelIdentifier.GPT4OMini,
+        OpenAIModelIdentifier.GPT4Turbo,
+        OpenAIModelIdentifier.GPT3_5Turbo,
+        OpenAIModelIdentifier.GPT4OMiniSearchPreview,
+        OpenAIModelIdentifier.GPT4OSearchPreview,
+        is OpenAIModelIdentifier.Custom,
+        -> ThinkingLevel.MINIMAL
+    }
+
 private fun OpenAIModelIdentifier.requiresMaxCompletionTokens(): Boolean =
     when (this) {
         OpenAIModelIdentifier.GPT5_5,
@@ -116,6 +195,24 @@ private fun OpenAIModelIdentifier.requiresMaxCompletionTokens(): Boolean =
         -> false
     }
 
+internal fun validateOpenAIThinkingConfig(
+    modelIdentifier: ModelIdentifier,
+    generationSettings: GenerationSettings,
+) {
+    val thinkingConfig = generationSettings.thinkingConfig ?: return
+    val openAIModelIdentifier = modelIdentifier as? OpenAIModelIdentifier ?: return
+    if (thinkingConfig.thinkingBudget != null) {
+        aigenticException("thinkingBudget is not supported by OpenAI-compatible models, use thinkingLevel()")
+    }
+    thinkingConfig.thinkingLevel?.let {
+        if (!openAIModelIdentifier.supportsReasoningEffort()) {
+            aigenticException(
+                "thinkingLevel is not supported on ${openAIModelIdentifier.stringValue}, it is not a reasoning model",
+            )
+        }
+    }
+}
+
 class OpenAIModel(
     val authentication: Authentication.APIKey,
     override val modelIdentifier: ModelIdentifier,
@@ -123,6 +220,10 @@ class OpenAIModel(
     logLevel: LogLevel = LogLevel.NONE,
     apiUrl: OpenAIApiUrl,
 ) : Model {
+    init {
+        validateOpenAIThinkingConfig(modelIdentifier, generationSettings)
+    }
+
     private val openAI: OpenAI = defaultOpenAI(authentication, apiUrl, logLevel)
 
     override suspend fun sendRequest(

@@ -70,6 +70,7 @@ data class GenerationConfig(
 @Serializable
 data class ThinkingConfig(
     val thinkingBudget: Int? = null,
+    val thinkingLevel: String? = null,
 )
 
 @Serializable
