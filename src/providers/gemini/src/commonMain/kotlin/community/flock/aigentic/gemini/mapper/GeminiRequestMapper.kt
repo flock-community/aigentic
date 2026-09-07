@@ -22,6 +22,7 @@ import community.flock.aigentic.gemini.client.model.ThinkingConfig
 import community.flock.aigentic.gemini.client.model.Tool
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import community.flock.aigentic.gemini.model.resolveThinkingLevel
+import community.flock.aigentic.gemini.model.supportsSampling
 import community.flock.aigentic.gemini.model.validateGeminiThinkingConfig
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.json.Json
@@ -133,11 +134,12 @@ private fun GenerationSettings.toGenerationConfig(
     modelIdentifier: GeminiModelIdentifier,
 ): GenerationConfig {
     validateGeminiThinkingConfig(modelIdentifier, this)
+    val supportsSampling = modelIdentifier.supportsSampling()
     return GenerationConfig(
-        temperature = temperature,
-        topP = topP,
-        topK = topK,
-        candidateCount = 1,
+        temperature = if (supportsSampling) temperature ?: GenerationSettings.DEFAULT_TEMPERATURE else temperature,
+        topP = if (supportsSampling) topP ?: GenerationSettings.DEFAULT_TOP_P else topP,
+        topK = if (supportsSampling) topK ?: GenerationSettings.DEFAULT_TOP_K else topK,
+        candidateCount = if (supportsSampling) 1 else null,
         maxOutputTokens = maxOutputTokens,
         thinkingConfig = thinkingConfig?.takeIf { it.thinkingBudget != null || it.thinkingLevel != null }?.toThinkingConfig(modelIdentifier),
         responseSchema = structuredResponseParameter?.getStructuredResponseSchema(),

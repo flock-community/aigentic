@@ -151,9 +151,9 @@ class ContextConfig : Config<List<Context>> {
 
 @AgentDSL
 class GenerationConfig : Config<GenerationSettings> {
-    internal var temperature: Float = GenerationSettings.DEFAULT_TEMPERATURE
-    internal var topK: Int = GenerationSettings.DEFAULT_TOP_K
-    internal var topP: Float = GenerationSettings.DEFAULT_TOP_P
+    internal var temperature: Float? = null
+    internal var topK: Int? = null
+    internal var topP: Float? = null
     internal var thinkingBudget: Int? = null
     internal var thinkingLevel: ThinkingLevel? = null
     internal var maxOutputTokens: Int? = null

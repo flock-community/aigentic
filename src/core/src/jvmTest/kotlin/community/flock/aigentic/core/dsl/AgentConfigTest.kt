@@ -171,6 +171,30 @@ class AgentConfigTest :
                 }
             }
 
+            it("should build generation settings with temperature, topK and topP null by default") {
+                GenerationConfig()
+                    .build()
+                    .run {
+                        temperature shouldBe null
+                        topK shouldBe null
+                        topP shouldBe null
+                    }
+            }
+
+            it("should build generation settings with the configured temperature, topK and topP") {
+                GenerationConfig()
+                    .apply {
+                        temperature(0.5f)
+                        topK(5)
+                        topP(0.9f)
+                    }.build()
+                    .run {
+                        temperature shouldBe 0.5f
+                        topK shouldBe 5
+                        topP shouldBe 0.9f
+                    }
+            }
+
             it("should add tool with Unit input type") {
                 agent<Unit, Unit> {
                     model(mockk(relaxed = true))

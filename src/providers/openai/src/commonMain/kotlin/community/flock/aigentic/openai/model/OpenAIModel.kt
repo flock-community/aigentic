@@ -85,6 +85,44 @@ internal fun ModelIdentifier.usesMaxCompletionTokens(): Boolean =
         else -> false
     }
 
+internal fun ModelIdentifier.supportsSampling(): Boolean =
+    when (this) {
+        is OpenAIModelIdentifier -> supportsSampling()
+        else -> true
+    }
+
+internal fun OpenAIModelIdentifier.supportsSampling(): Boolean =
+    when (this) {
+        OpenAIModelIdentifier.O1,
+        OpenAIModelIdentifier.O1Pro,
+        OpenAIModelIdentifier.O3,
+        OpenAIModelIdentifier.O3Pro,
+        OpenAIModelIdentifier.O3Mini,
+        OpenAIModelIdentifier.O4Mini,
+        OpenAIModelIdentifier.GPT5,
+        OpenAIModelIdentifier.GPT5Mini,
+        OpenAIModelIdentifier.GPT5Nano,
+        OpenAIModelIdentifier.GPT5_4,
+        OpenAIModelIdentifier.GPT5_4Pro,
+        OpenAIModelIdentifier.GPT5_4Mini,
+        OpenAIModelIdentifier.GPT5_4Nano,
+        OpenAIModelIdentifier.GPT5_5,
+        OpenAIModelIdentifier.GPT5_5Pro,
+        -> false
+
+        OpenAIModelIdentifier.GPT4_1,
+        OpenAIModelIdentifier.GPT4_1Mini,
+        OpenAIModelIdentifier.GPT4_1Nano,
+        OpenAIModelIdentifier.GPT4O,
+        OpenAIModelIdentifier.GPT4OMini,
+        OpenAIModelIdentifier.GPT4Turbo,
+        OpenAIModelIdentifier.GPT3_5Turbo,
+        OpenAIModelIdentifier.GPT4OMiniSearchPreview,
+        OpenAIModelIdentifier.GPT4OSearchPreview,
+        is OpenAIModelIdentifier.Custom,
+        -> true
+    }
+
 internal fun OpenAIModelIdentifier.supportsReasoningEffort(): Boolean =
     when (this) {
         OpenAIModelIdentifier.GPT5_5,
@@ -213,6 +251,23 @@ internal fun validateOpenAIThinkingConfig(
     }
 }
 
+internal fun validateOpenAISamplingConfig(
+    modelIdentifier: ModelIdentifier,
+    generationSettings: GenerationSettings,
+) {
+    if (modelIdentifier.supportsSampling()) return
+    if (generationSettings.temperature != null) {
+        aigenticException(
+            "temperature is not supported on ${modelIdentifier.stringValue}, this model only accepts the default (1)",
+        )
+    }
+    if (generationSettings.topP != null) {
+        aigenticException(
+            "topP is not supported on ${modelIdentifier.stringValue}, this model only accepts the default (1)",
+        )
+    }
+}
+
 class OpenAIModel(
     val authentication: Authentication.APIKey,
     override val modelIdentifier: ModelIdentifier,
@@ -222,6 +277,7 @@ class OpenAIModel(
 ) : Model {
     init {
         validateOpenAIThinkingConfig(modelIdentifier, generationSettings)
+        validateOpenAISamplingConfig(modelIdentifier, generationSettings)
     }
 
     private val openAI: OpenAI = defaultOpenAI(authentication, apiUrl, logLevel)

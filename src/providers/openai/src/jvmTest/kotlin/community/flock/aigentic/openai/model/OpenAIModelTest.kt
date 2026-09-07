@@ -72,5 +72,49 @@ class OpenAIModelTest :
                     )
                 }
             }
+
+            it("should throw when built with an explicit temperature on a reasoning model") {
+                shouldThrow<Exception> {
+                    OpenAIModel(
+                        authentication = Authentication.APIKey("key"),
+                        modelIdentifier = OpenAIModelIdentifier.O3,
+                        generationSettings = GenerationSettings.DEFAULT.copy(temperature = 0.5f),
+                        apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
+                    )
+                }.message shouldContain "temperature is not supported"
+            }
+
+            it("should throw when built with an explicit topP on a reasoning model") {
+                shouldThrow<Exception> {
+                    OpenAIModel(
+                        authentication = Authentication.APIKey("key"),
+                        modelIdentifier = OpenAIModelIdentifier.O3,
+                        generationSettings = GenerationSettings.DEFAULT.copy(topP = 0.5f),
+                        apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
+                    )
+                }.message shouldContain "topP is not supported"
+            }
+
+            it("should build successfully with a non-reasoning model and an explicit temperature") {
+                shouldNotThrowAny {
+                    OpenAIModel(
+                        authentication = Authentication.APIKey("key"),
+                        modelIdentifier = OpenAIModelIdentifier.GPT4O,
+                        generationSettings = GenerationSettings.DEFAULT.copy(temperature = 0.5f),
+                        apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
+                    )
+                }
+            }
+
+            it("should not throw when built with topK on a reasoning model") {
+                shouldNotThrowAny {
+                    OpenAIModel(
+                        authentication = Authentication.APIKey("key"),
+                        modelIdentifier = OpenAIModelIdentifier.O3,
+                        generationSettings = GenerationSettings.DEFAULT.copy(topK = 40),
+                        apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
+                    )
+                }
+            }
         }
     })
