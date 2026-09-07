@@ -20,21 +20,27 @@ import community.flock.aigentic.gemini.client.model.Role
 import community.flock.aigentic.gemini.client.model.SafetySettings
 import community.flock.aigentic.gemini.client.model.ThinkingConfig
 import community.flock.aigentic.gemini.client.model.Tool
+import community.flock.aigentic.gemini.model.GeminiModelIdentifier
+import community.flock.aigentic.gemini.model.resolveThinkingLevel
+import community.flock.aigentic.gemini.model.supportsSampling
+import community.flock.aigentic.gemini.model.validateGeminiThinkingConfig
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import community.flock.aigentic.core.model.ThinkingConfig as CoreThinkingConfig
 
 internal fun createGenerateContentRequest(
     messages: List<Message>,
     tools: List<ToolDescription>,
     generationSettings: GenerationSettings,
     structuredResponseParameter: Parameter?,
+    modelIdentifier: GeminiModelIdentifier,
 ): GenerateContentRequest =
     GenerateContentRequest(
         systemInstruction = getSystemInstruction(messages),
-        generationConfig = generationSettings.toGenerationConfig(structuredResponseParameter),
+        generationConfig = generationSettings.toGenerationConfig(structuredResponseParameter, modelIdentifier),
         contents =
             messages.map { message ->
                 when (message) {
@@ -123,16 +129,28 @@ private fun Sender.toRole(): Role =
         Sender.Model -> Role.Model
     }
 
-private fun GenerationSettings.toGenerationConfig(structuredResponseParameter: Parameter?): GenerationConfig =
-    GenerationConfig(
-        temperature = temperature,
-        topP = topP,
-        topK = topK,
-        candidateCount = 1,
+private fun GenerationSettings.toGenerationConfig(
+    structuredResponseParameter: Parameter?,
+    modelIdentifier: GeminiModelIdentifier,
+): GenerationConfig {
+    validateGeminiThinkingConfig(modelIdentifier, this)
+    val supportsSampling = modelIdentifier.supportsSampling()
+    return GenerationConfig(
+        temperature = if (supportsSampling) temperature ?: GenerationSettings.DEFAULT_TEMPERATURE else temperature,
+        topP = if (supportsSampling) topP ?: GenerationSettings.DEFAULT_TOP_P else topP,
+        topK = if (supportsSampling) topK ?: GenerationSettings.DEFAULT_TOP_K else topK,
+        candidateCount = if (supportsSampling) 1 else null,
         maxOutputTokens = maxOutputTokens,
-        thinkingConfig = thinkingConfig?.let { ThinkingConfig(it.thinkingBudget) },
+        thinkingConfig = thinkingConfig?.takeIf { it.thinkingBudget != null || it.thinkingLevel != null }?.toThinkingConfig(modelIdentifier),
         responseSchema = structuredResponseParameter?.getStructuredResponseSchema(),
         responseMimeType = structuredResponseParameter?.let { "application/json" },
+    )
+}
+
+private fun CoreThinkingConfig.toThinkingConfig(modelIdentifier: GeminiModelIdentifier): ThinkingConfig =
+    ThinkingConfig(
+        thinkingBudget = thinkingBudget,
+        thinkingLevel = thinkingLevel?.let { modelIdentifier.resolveThinkingLevel(it) }?.name?.lowercase(),
     )
 
 private fun Parameter.getStructuredResponseSchema(): JsonObject? =

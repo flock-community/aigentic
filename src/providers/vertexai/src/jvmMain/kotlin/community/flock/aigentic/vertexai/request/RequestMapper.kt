@@ -14,11 +14,16 @@ import com.google.genai.types.Tool
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.GenerationSettings
+import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
+import community.flock.aigentic.vertexai.VertexAIModelIdentifier
 import community.flock.aigentic.vertexai.fromJson
+import community.flock.aigentic.vertexai.resolveThinkingLevel
+import community.flock.aigentic.vertexai.supportsSampling
+import community.flock.aigentic.vertexai.validateVertexAIThinkingConfig
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -84,17 +89,16 @@ internal fun createGenerateConfig(
     tools: List<ToolDescription>,
     generationSettings: GenerationSettings,
     structuredOutputParameter: Parameter?,
-): GenerateContentConfig =
-    GenerateContentConfig
+    modelIdentifier: ModelIdentifier,
+): GenerateContentConfig {
+    validateVertexAIThinkingConfig(modelIdentifier, generationSettings)
+    return GenerateContentConfig
         .builder()
         .systemInstruction(getSystemInstruction(messages))
-        .temperature(generationSettings.temperature)
-        .topP(generationSettings.topP)
-        .topK(generationSettings.topK.toFloat())
-        .candidateCount(1)
+        .withSampling(generationSettings, modelIdentifier)
         .tools(if (structuredOutputParameter == null) tools.toVertexTools() else emptyList())
         .safetySettings(createSafetySettings())
-        .withThinkingConfig(generationSettings.thinkingConfig)
+        .withThinkingConfig(generationSettings.thinkingConfig, modelIdentifier)
         .withMaxOutputTokens(generationSettings.maxOutputTokens)
         .apply {
             structuredOutputParameter?.let { param ->
@@ -102,6 +106,7 @@ internal fun createGenerateConfig(
                 responseJsonSchema(param.getStructuredResponseSchema().toJsonNode())
             }
         }.build()
+}
 
 private fun List<ToolDescription>.toVertexTools(): List<Tool> {
     val declarations =
@@ -126,14 +131,22 @@ private fun List<ToolDescription>.toVertexTools(): List<Tool> {
     )
 }
 
-private fun GenerateContentConfig.Builder.withThinkingConfig(thinkingConfig: ThinkingConfig?): GenerateContentConfig.Builder =
+private fun GenerateContentConfig.Builder.withThinkingConfig(
+    thinkingConfig: ThinkingConfig?,
+    modelIdentifier: ModelIdentifier,
+): GenerateContentConfig.Builder =
     apply {
-        thinkingConfig?.let {
+        thinkingConfig?.takeIf { it.thinkingBudget != null || it.thinkingLevel != null }?.let {
             thinkingConfig(
                 com.google.genai.types.ThinkingConfig
                     .builder()
-                    .thinkingBudget(it.thinkingBudget)
-                    .build(),
+                    .apply {
+                        it.thinkingBudget?.let { budget -> thinkingBudget(budget) }
+                        it.thinkingLevel?.let { level ->
+                            val resolvedLevel = (modelIdentifier as? VertexAIModelIdentifier)?.resolveThinkingLevel(level) ?: level
+                            thinkingLevel(resolvedLevel.name)
+                        }
+                    }.build(),
             )
         }
     }
@@ -141,6 +154,22 @@ private fun GenerateContentConfig.Builder.withThinkingConfig(thinkingConfig: Thi
 private fun GenerateContentConfig.Builder.withMaxOutputTokens(maxOutputTokens: Int?): GenerateContentConfig.Builder =
     apply {
         maxOutputTokens?.let { maxOutputTokens(it) }
+    }
+
+private fun GenerateContentConfig.Builder.withSampling(
+    generationSettings: GenerationSettings,
+    modelIdentifier: ModelIdentifier,
+): GenerateContentConfig.Builder =
+    apply {
+        val supportsSampling = (modelIdentifier as? VertexAIModelIdentifier)?.supportsSampling() ?: true
+        val resolvedTemperature =
+            if (supportsSampling) generationSettings.temperature ?: GenerationSettings.DEFAULT_TEMPERATURE else generationSettings.temperature
+        val resolvedTopP = if (supportsSampling) generationSettings.topP ?: GenerationSettings.DEFAULT_TOP_P else generationSettings.topP
+        val resolvedTopK = if (supportsSampling) generationSettings.topK ?: GenerationSettings.DEFAULT_TOP_K else generationSettings.topK
+        resolvedTemperature?.let { temperature(it) }
+        resolvedTopP?.let { topP(it) }
+        resolvedTopK?.let { topK(it.toFloat()) }
+        if (supportsSampling) candidateCount(1)
     }
 
 private fun getToolParametersJson(toolDescription: ToolDescription): String =

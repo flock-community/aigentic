@@ -5,9 +5,13 @@ import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.GenerationSettings
+import community.flock.aigentic.core.model.ThinkingConfig
+import community.flock.aigentic.core.model.ThinkingLevel
 import community.flock.aigentic.gemini.client.geminiJson
 import community.flock.aigentic.gemini.client.model.BlobContent
 import community.flock.aigentic.gemini.client.model.Part
+import community.flock.aigentic.gemini.model.GeminiModelIdentifier
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -24,7 +28,7 @@ class GeminiRequestMapperKtTest :
                 val mimeType = MimeType.PNG
                 val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
 
-                createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null)
+                createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
                     .contents[0]
                     .parts[0]
                     .shouldBeInstanceOf<Part.Blob>()
@@ -38,7 +42,7 @@ class GeminiRequestMapperKtTest :
                 val mimeType = MimeType.PNG
                 val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
 
-                createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null)
+                createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
                     .contents[0]
                     .parts[0]
                     .shouldBeInstanceOf<Part.Blob>()
@@ -50,28 +54,426 @@ class GeminiRequestMapperKtTest :
             it("should set max output tokens when configured") {
                 val generationSettings = GenerationSettings.DEFAULT.copy(maxOutputTokens = 65536)
 
-                createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null)
+                createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini2_5Flash)
                     .generationConfig
                     .maxOutputTokens shouldBe 65536
             }
 
             it("should omit max output tokens when not configured") {
-                createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null)
+                createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
                     .generationConfig
                     .maxOutputTokens shouldBe null
             }
 
             it("should include max_output_tokens in the serialized request body when configured") {
                 val generationSettings = GenerationSettings.DEFAULT.copy(maxOutputTokens = 65536)
-                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null)
+                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini2_5Flash)
 
                 geminiJson.encodeToString(request) shouldContain "\"max_output_tokens\":65536"
             }
 
             it("should not serialize a max_output_tokens key when not configured") {
-                val request = createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null)
+                val request = createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
 
                 geminiJson.encodeToString(request) shouldNotContain "max_output_tokens"
+            }
+
+            it("should serialize thinkingLevel and omit thinkingBudget when a level is configured") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                    )
+                val request =
+                    createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_5Flash)
+
+                geminiJson.encodeToString(request) shouldContain "\"thinkingLevel\":\"low\""
+                geminiJson.encodeToString(request) shouldNotContain "thinkingBudget"
+            }
+
+            it("should serialize thinkingBudget and omit thinkingLevel when a budget is configured") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+                val request =
+                    createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini2_5Flash)
+
+                geminiJson.encodeToString(request) shouldContain "\"thinkingBudget\":1024"
+                geminiJson.encodeToString(request) shouldNotContain "thinkingLevel"
+            }
+
+            it("should allow thinkingBudget on a 2.5 model") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini2_5Flash)
+                    .generationConfig
+                    .thinkingConfig
+                    ?.thinkingBudget shouldBe 1024
+            }
+
+            it("should throw when thinkingBudget is configured on a 3.x model") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                shouldThrow<Exception> {
+                    createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_5Flash)
+                }.message shouldContain "only supported on Gemini 2.x models"
+            }
+
+            it("should throw when thinkingLevel is configured on a 2.5 model") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                    )
+
+                shouldThrow<Exception> {
+                    createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini2_5Flash)
+                }.message shouldContain "not supported on Gemini 2.x models"
+            }
+
+            it("should map thinkingLevel MINIMAL to low on gemini-3.7-flash") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
+                    )
+                val request =
+                    createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_7Flash)
+
+                geminiJson.encodeToString(request) shouldContain "\"thinkingLevel\":\"low\""
+            }
+
+            it("should map thinkingLevel MINIMAL to low on gemini-3.1-pro-preview") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
+                    )
+                val request =
+                    createGenerateContentRequest(
+                        emptyList(),
+                        emptyList(),
+                        generationSettings,
+                        null,
+                        GeminiModelIdentifier.Gemini3_1ProPreview,
+                    )
+
+                geminiJson.encodeToString(request) shouldContain "\"thinkingLevel\":\"low\""
+            }
+
+            it("should allow thinkingLevel MINIMAL on gemini-3.6-flash") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
+                    )
+
+                createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_6Flash)
+                    .generationConfig
+                    .thinkingConfig
+                    ?.thinkingLevel shouldBe "minimal"
+            }
+
+            it("should throw when thinkingLevel is configured on a Custom gemini-2.x model") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                    )
+
+                shouldThrow<Exception> {
+                    createGenerateContentRequest(
+                        emptyList(),
+                        emptyList(),
+                        generationSettings,
+                        null,
+                        GeminiModelIdentifier.Custom("gemini-2.5-x"),
+                    )
+                }.message shouldContain "not supported on Gemini 2.x models"
+            }
+
+            it("should allow thinkingLevel on a Custom non-gemini-2.x model") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                    )
+
+                createGenerateContentRequest(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    GeminiModelIdentifier.Custom("my-model"),
+                ).generationConfig
+                    .thinkingConfig
+                    ?.thinkingLevel shouldBe "low"
+            }
+
+            it("should not include a thinkingConfig key when not configured") {
+                val request = createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
+
+                geminiJson.encodeToString(request) shouldNotContain "thinkingConfig"
+            }
+
+            it("should not include a thinkingConfig key when a ThinkingConfig with both fields null is configured") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(thinkingConfig = ThinkingConfig())
+                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini2_5Flash)
+
+                geminiJson.encodeToString(request) shouldNotContain "thinkingConfig"
+            }
+
+            it("should allow thinkingBudget on a Custom gemini-2.x model") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                createGenerateContentRequest(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    GeminiModelIdentifier.Custom("gemini-2.5-x"),
+                ).generationConfig
+                    .thinkingConfig
+                    ?.thinkingBudget shouldBe 1024
+            }
+
+            it("should throw when thinkingBudget is configured on a Custom gemini-3.x model") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                shouldThrow<Exception> {
+                    createGenerateContentRequest(
+                        emptyList(),
+                        emptyList(),
+                        generationSettings,
+                        null,
+                        GeminiModelIdentifier.Custom("gemini-3.9-flash"),
+                    )
+                }.message shouldContain "only supported on Gemini 2.x models"
+            }
+
+            it("should allow thinkingBudget on a Custom identifier with major version 1") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                createGenerateContentRequest(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    GeminiModelIdentifier.Custom("gemini-1.5-pro"),
+                ).generationConfig
+                    .thinkingConfig
+                    ?.thinkingBudget shouldBe 1024
+            }
+
+            it("should allow thinkingLevel on a Custom identifier that has no version match") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                    )
+
+                createGenerateContentRequest(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    GeminiModelIdentifier.Custom("my-proxy"),
+                ).generationConfig
+                    .thinkingConfig
+                    ?.thinkingLevel shouldBe "low"
+            }
+
+            it("should allow thinkingBudget on a Custom identifier with the models/ prefix") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                createGenerateContentRequest(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    GeminiModelIdentifier.Custom("models/gemini-2.5-flash"),
+                ).generationConfig
+                    .thinkingConfig
+                    ?.thinkingBudget shouldBe 1024
+            }
+
+            it("should throw when thinkingLevel is configured on a Custom identifier with the models/ prefix") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                    )
+
+                shouldThrow<Exception> {
+                    createGenerateContentRequest(
+                        emptyList(),
+                        emptyList(),
+                        generationSettings,
+                        null,
+                        GeminiModelIdentifier.Custom("models/gemini-2.5-flash"),
+                    )
+                }.message shouldContain "not supported on Gemini 2.x models"
+            }
+
+            it("should allow thinkingLevel on a Custom identifier with major version 4") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
+                    )
+
+                createGenerateContentRequest(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    GeminiModelIdentifier.Custom("gemini-4.0-pro"),
+                ).generationConfig
+                    .thinkingConfig
+                    ?.thinkingLevel shouldBe "minimal"
+            }
+
+            it("should throw when thinkingBudget is configured on a Custom identifier with major version 4") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                shouldThrow<Exception> {
+                    createGenerateContentRequest(
+                        emptyList(),
+                        emptyList(),
+                        generationSettings,
+                        null,
+                        GeminiModelIdentifier.Custom("gemini-4.0-pro"),
+                    )
+                }.message shouldContain "only supported on Gemini 2.x models"
+            }
+
+            it("should allow thinkingBudget on a Custom identifier that has no version match") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingBudget = 1024),
+                    )
+
+                createGenerateContentRequest(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    GeminiModelIdentifier.Custom("gemini-exp-1206"),
+                ).generationConfig
+                    .thinkingConfig
+                    ?.thinkingBudget shouldBe 1024
+            }
+
+            it("should include default sampling parameters for a Gemini 2.x model when not configured") {
+                val request = createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
+                val json = geminiJson.encodeToString(request)
+
+                json shouldContain "\"temperature\":0.0"
+                json shouldContain "\"top_p\":0.1"
+                json shouldContain "\"top_k\":1"
+                json shouldContain "\"candidate_count\":1"
+            }
+
+            it("should omit sampling parameters for a Gemini 3.x model when not configured") {
+                val request = createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini3_5Flash)
+                val json = geminiJson.encodeToString(request)
+
+                json shouldNotContain "temperature"
+                json shouldNotContain "top_p"
+                json shouldNotContain "top_k"
+                json shouldNotContain "candidate_count"
+            }
+
+            it("should include an explicitly configured temperature for a Gemini 3.x model and still omit topP/topK") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(temperature = 0.5f)
+                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_5Flash)
+                val json = geminiJson.encodeToString(request)
+
+                json shouldContain "\"temperature\":0.5"
+                json shouldNotContain "top_p"
+                json shouldNotContain "top_k"
+            }
+
+            it("should omit sampling parameters for a Custom Gemini 4.x model when not configured") {
+                val request =
+                    createGenerateContentRequest(
+                        emptyList(),
+                        emptyList(),
+                        GenerationSettings.DEFAULT,
+                        null,
+                        GeminiModelIdentifier.Custom("gemini-4.0-pro"),
+                    )
+                val json = geminiJson.encodeToString(request)
+
+                json shouldNotContain "temperature"
+                json shouldNotContain "top_p"
+                json shouldNotContain "top_k"
+                json shouldNotContain "candidate_count"
+            }
+
+            it("should include default sampling parameters for a Custom identifier without a version match when not configured") {
+                val request =
+                    createGenerateContentRequest(
+                        emptyList(),
+                        emptyList(),
+                        GenerationSettings.DEFAULT,
+                        null,
+                        GeminiModelIdentifier.Custom("my-proxy"),
+                    )
+                val json = geminiJson.encodeToString(request)
+
+                json shouldContain "\"temperature\":0.0"
+                json shouldContain "\"top_p\":0.1"
+                json shouldContain "\"top_k\":1"
+                json shouldContain "\"candidate_count\":1"
+            }
+
+            it("should send an explicit temperature, topK and topP for a Gemini 2.5 model exactly as configured") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(temperature = 0.5f, topK = 5, topP = 0.9f)
+                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini2_5Flash)
+                val json = geminiJson.encodeToString(request)
+
+                json shouldContain "\"temperature\":0.5"
+                json shouldContain "\"top_k\":5"
+                json shouldContain "\"top_p\":0.9"
+            }
+
+            it("should send an explicit topP and topK for a Gemini 3.5 model") {
+                val generationSettings = GenerationSettings.DEFAULT.copy(topK = 5, topP = 0.9f)
+                val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_5Flash)
+                val json = geminiJson.encodeToString(request)
+
+                json shouldContain "\"top_k\":5"
+                json shouldContain "\"top_p\":0.9"
+            }
+
+            it("should allow thinkingLevel on a Custom gemini-exp-1206 identifier") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.LOW),
+                    )
+
+                createGenerateContentRequest(
+                    emptyList(),
+                    emptyList(),
+                    generationSettings,
+                    null,
+                    GeminiModelIdentifier.Custom("gemini-exp-1206"),
+                ).generationConfig
+                    .thinkingConfig
+                    ?.thinkingLevel shouldBe "low"
             }
         }
     })

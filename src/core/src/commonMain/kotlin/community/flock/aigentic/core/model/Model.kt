@@ -1,8 +1,10 @@
 package community.flock.aigentic.core.model
 
+import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
+import kotlin.jvm.JvmOverloads
 
 sealed interface Authentication {
     data class APIKey(
@@ -31,9 +33,9 @@ data class ModelResponse(
 )
 
 data class GenerationSettings(
-    val temperature: Float,
-    val topK: Int,
-    val topP: Float,
+    val temperature: Float?,
+    val topK: Int?,
+    val topP: Float?,
     val thinkingConfig: ThinkingConfig?,
     val maxOutputTokens: Int? = null,
 ) {
@@ -44,17 +46,33 @@ data class GenerationSettings(
 
         val DEFAULT =
             GenerationSettings(
-                temperature = DEFAULT_TEMPERATURE,
-                topK = DEFAULT_TOP_K,
-                topP = DEFAULT_TOP_P,
+                temperature = null,
+                topK = null,
+                topP = null,
                 thinkingConfig = null,
             )
     }
 }
 
-data class ThinkingConfig(
-    val thinkingBudget: Int? = null,
-)
+enum class ThinkingLevel {
+    MINIMAL,
+    LOW,
+    MEDIUM,
+    HIGH,
+}
+
+data class ThinkingConfig
+    @JvmOverloads
+    constructor(
+        val thinkingBudget: Int? = null,
+        val thinkingLevel: ThinkingLevel? = null,
+    ) {
+        init {
+            if (thinkingBudget != null && thinkingLevel != null) {
+                aigenticException("'thinkingBudget' and 'thinkingLevel' are mutually exclusive")
+            }
+        }
+    }
 
 data class Usage(
     val inputTokenCount: Int,
