@@ -15,6 +15,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
+import kotlinx.serialization.json.JsonElement
 
 @AigenticParameter("Test response parameter")
 data class TestResponse(
@@ -40,6 +41,16 @@ class AgentConfigTest :
                     task.instructions.size shouldBe 1
                     task.instructions.first().text shouldBe "Instruction description"
                 }
+            }
+
+            it("should use an explicit response parameter without deriving one from a self-referential output type") {
+                val responseParameter = getParameter<TestResponse>()
+
+                agent<Unit, JsonElement> {
+                    model(mockk(relaxed = true))
+                    task("Task description") {}
+                    this.responseParameter = responseParameter
+                }.responseParameter shouldBe responseParameter
             }
 
             it("should build agent with multiple tools") {
