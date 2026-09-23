@@ -32,6 +32,7 @@ kotlin {
                 implementation(libs.kotest.runner.junit5)
                 implementation(libs.kotlin.reflect)
                 implementation(libs.mockk)
+                implementation(libs.ktor.client.mock)
             }
         }
     }
