@@ -82,6 +82,7 @@ internal fun createGenerateContentRequest(
                                     it.name,
                                     Json.decodeFromString(it.arguments),
                                 ),
+                                thoughtSignature = it.thoughtSignature,
                             )
                         }
                     }

@@ -19,6 +19,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
@@ -48,9 +49,11 @@ class GeminiClient(
                     NONE -> KtorLogLevel.NONE
                     LogLevel.DEBUG -> KtorLogLevel.ALL
                 }
+            sanitizeHeader { it == API_KEY_HEADER }
         }
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = config.numberOfRetriesOnServerErrors)
+            retryOnException(maxRetries = config.numberOfRetriesOnNetworkErrors, retryOnTimeout = true)
             exponentialDelay()
         }
         install(HttpTimeout) {
@@ -70,6 +73,7 @@ class GeminiClient(
         val response =
             ktor.post {
                 url(config.generateContentUrl(modelIdentifier))
+                header(API_KEY_HEADER, config.apiKey.key)
                 setBody(request)
                 contentType(ContentType.Application.Json)
             }
@@ -87,6 +91,9 @@ class GeminiClient(
         }
     }
 
-    private fun GeminiApiConfig.generateContentUrl(modelIdentifier: GeminiModelIdentifier) =
-        "$baseUrl/${modelIdentifier.stringValue}:generateContent?key=${apiKey.key}"
+    private fun GeminiApiConfig.generateContentUrl(modelIdentifier: GeminiModelIdentifier) = "$baseUrl/${modelIdentifier.stringValue}:generateContent"
+
+    private companion object {
+        const val API_KEY_HEADER = "x-goog-api-key"
+    }
 }

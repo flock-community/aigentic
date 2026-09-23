@@ -25,6 +25,7 @@ sealed interface Part {
     @Serializable
     data class FunctionCall(
         val functionCall: FunctionCallContent,
+        val thoughtSignature: String? = null,
     ) : Part
 
     @Serializable

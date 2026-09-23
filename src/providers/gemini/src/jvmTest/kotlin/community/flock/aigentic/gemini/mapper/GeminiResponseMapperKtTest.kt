@@ -132,5 +132,38 @@ class GeminiResponseMapperKtTest :
                     .shouldBeInstanceOf<Message.StructuredOutput>()
                     .response shouldBe """{"answer": "complete"}"""
             }
+
+            it("should keep the thought signature of a function call") {
+                val json =
+                    """
+                    {
+                      "candidates": [
+                        {
+                          "content": {
+                            "role": "model",
+                            "parts": [
+                              { "functionCall": { "name": "lookup", "args": {} }, "thoughtSignature": "sig-abc" }
+                            ]
+                          },
+                          "finishReason": "STOP"
+                        }
+                      ],
+                      "usageMetadata": {
+                        "promptTokenCount": 10,
+                        "candidatesTokenCount": 5,
+                        "totalTokenCount": 15
+                      }
+                    }
+                    """.trimIndent()
+
+                geminiJson
+                    .decodeFromString<GenerateContentResponse>(json)
+                    .toModelResponse(false)
+                    .message
+                    .shouldBeInstanceOf<Message.ToolCalls>()
+                    .toolCalls
+                    .single()
+                    .thoughtSignature shouldBe "sig-abc"
+            }
         }
     })
