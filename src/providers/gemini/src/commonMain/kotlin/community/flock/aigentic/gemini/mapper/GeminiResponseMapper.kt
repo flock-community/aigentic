@@ -59,6 +59,7 @@ private fun Content.toToolCallsMessage(): Message =
                 id = ToolCallId(generateRandomString(20)),
                 name = it.functionCall.name,
                 arguments = Json.encodeToString(it.functionCall.args),
+                thoughtSignature = it.thoughtSignature,
             )
         },
     )

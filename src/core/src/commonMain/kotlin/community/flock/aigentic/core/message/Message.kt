@@ -73,6 +73,7 @@ data class ToolCall(
     val id: ToolCallId,
     val name: String,
     val arguments: String,
+    val thoughtSignature: String? = null,
 )
 
 enum class MimeType(

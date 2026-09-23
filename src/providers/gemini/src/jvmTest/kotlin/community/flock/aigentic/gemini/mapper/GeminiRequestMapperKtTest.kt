@@ -4,6 +4,8 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
+import community.flock.aigentic.core.message.ToolCall
+import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
@@ -70,6 +72,25 @@ class GeminiRequestMapperKtTest :
                 val request = createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini2_5Flash)
 
                 geminiJson.encodeToString(request) shouldContain "\"max_output_tokens\":65536"
+            }
+
+            it("should echo the thought signature on a replayed function call") {
+                val toolCalls =
+                    Message.ToolCalls(
+                        listOf(ToolCall(ToolCallId("1"), "lookup", "{}", thoughtSignature = "sig-abc")),
+                    )
+                val request =
+                    createGenerateContentRequest(listOf(toolCalls), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
+
+                geminiJson.encodeToString(request) shouldContain "\"thoughtSignature\":\"sig-abc\""
+            }
+
+            it("should not serialize a thoughtSignature key when the function call has none") {
+                val toolCalls = Message.ToolCalls(listOf(ToolCall(ToolCallId("1"), "lookup", "{}")))
+                val request =
+                    createGenerateContentRequest(listOf(toolCalls), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
+
+                geminiJson.encodeToString(request) shouldNotContain "thoughtSignature"
             }
 
             it("should not serialize a max_output_tokens key when not configured") {
