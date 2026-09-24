@@ -58,7 +58,7 @@ google-gen-ai = { module = "com.google.genai:google-genai", version.ref = "googl
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-spotless = { id = "com.diffplug.gradle.spotless", version = "8.4.0" }
+spotless = { id = "com.diffplug.gradle.spotless", version = "8.6.0" }
 dokka = { id = "org.jetbrains.dokka", version = "1.8.20" }
 kotest-multiplatform = { id = "io.kotest", version.ref = "kotest" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
