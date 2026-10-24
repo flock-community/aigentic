@@ -47,10 +47,11 @@ private fun Content.toMessage(isStructuredOutput: Boolean): Message =
     }
 
 private fun Content.toStructuredOutputMessage(): Message =
-    when (val part = parts.first()) {
-        is Part.Text -> Message.StructuredOutput(part.text)
-        else -> aigenticException("No text candidate found with structured output response.")
-    }
+    parts
+        .filterIsInstance<Part.Text>()
+        .takeIf { it.isNotEmpty() }
+        ?.let { textParts -> Message.StructuredOutput(textParts.joinToString("") { it.text }) }
+        ?: aigenticException("No text candidate found with structured output response.")
 
 private fun Content.toToolCallsMessage(): Message =
     Message.ToolCalls(

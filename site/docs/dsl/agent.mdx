@@ -247,6 +247,8 @@ println("Token usage: ${run.tokenUsage()}")
 
 The `response` property contains the type you specified when creating the agent, and `AgentRun` gives you access to timing information, token usage, and the complete conversation history.
 
+`start` doesn't throw when something goes wrong during the run, like a failed model request or a tool that throws. You get an `Outcome.Fatal` with the error message instead, and the run is still sent to the platform when you configured one. Cancelling the coroutine still cancels the run.
+
 ## More Examples
 
 For more examples and reference implementations, check out the [Aigentic Initializr repository](https://github.com/flock-community/aigentic-initializr). This repository contains various agent configurations and use cases that demonstrate different aspects of the Aigentic DSL:

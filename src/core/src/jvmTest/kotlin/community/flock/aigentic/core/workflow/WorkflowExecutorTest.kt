@@ -3,6 +3,7 @@ package community.flock.aigentic.core.workflow
 import community.flock.aigentic.core.agent.WorkflowRun
 import community.flock.aigentic.core.agent.test.util.TestData.finishedTaskWithResponseToolCall
 import community.flock.aigentic.core.agent.test.util.TestData.stuckWithTaskToolCall
+import community.flock.aigentic.core.agent.test.util.createMockModelWithException
 import community.flock.aigentic.core.agent.test.util.toModelResponse
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.annotations.AigenticParameter
@@ -15,6 +16,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.io.IOException
 
 @AigenticParameter
 data class WorkflowInput(
@@ -125,6 +127,29 @@ class WorkflowExecutorTest :
 
                 verifyWorkflowResult(result, 1)
             }
+
+            it("should stop at first agent when first agent throws a non-Aigentic exception") {
+
+                val firstAgent =
+                    agent<WorkflowInput, FirstResult> {
+                        model(createMockModelWithException(IOException("Connection closed")))
+                        task("Process input") {}
+                    }
+
+                val secondAgent =
+                    agent<FirstResult, FinalResult> {
+                        model(createMockModel(FinalResult("final result")))
+                        task("Generate output") {}
+                    }
+
+                val workflow = firstAgent thenProcess secondAgent
+                val result = workflow.start(WorkflowInput("test"))
+
+                result.outcome.shouldBeInstanceOf<Outcome.Fatal>().message shouldBe "Connection closed"
+                result.agentRuns.last() shouldBe result.agentRuns[0]
+
+                verifyWorkflowResult(result, 1)
+            }
         }
 
         describe("5-agent workflows") {
@@ -199,11 +224,6 @@ private fun createMockModel(result: FinalResult): Model =
             listOf(
                 finishedTaskWithResponseToolCall(result),
             ).toModelResponse()
-    }
-
-private fun createMockModelWithException(exception: Exception): Model =
-    mockk<Model>().also { mock ->
-        coEvery { mock.sendRequest(any(), any(), any()) } throws exception
     }
 
 fun createMockModelWithStuck(): Model =

@@ -78,6 +78,23 @@ Aigentic supports several LLM providers out of the box:
   </TabItem>
 </Tabs>
 
+## Gemini timeouts
+
+The Gemini provider streams every response, so data keeps arriving while the model writes a long answer. Two timeouts control how long Aigentic waits:
+
+- `requestTimeout(ms)`: the maximum time for the whole request, including the stream. Raise it when a long structured output takes more than 5 minutes.
+- `socketTimeout(ms)`: the maximum time without any data. The model sends nothing while it thinks, which can take more than a minute on a high thinking level. Unless you set it, the socket timeout is the same as the request timeout.
+
+```kotlin
+geminiModel {
+    apiKey("your-api-key")
+    modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
+    requestTimeout(10 * 60_000)
+}
+```
+
+Without either setting, both timeouts are 5 minutes. When a request still fails, for example because of a timeout or a dropped connection, the run ends with `Outcome.Fatal` instead of throwing an exception.
+
 ## Thinking configuration
 
 Reasoning models let you control how much they think before answering. Aigentic exposes this through two `generationConfig` DSL functions: `thinkingBudget(tokens)` and `thinkingLevel(level)`. They are mutually exclusive; configuring both throws an `AigenticException`. Leaving both unset uses the model's default behaviour.
@@ -108,6 +125,7 @@ agent<String, Answer> {
     | Model | Default level | Supported levels |
     | --- | --- | --- |
     | `gemini-2.5-pro` / `gemini-2.5-flash` / `gemini-2.5-flash-lite` | n/a | `thinkingBudget` only |
+    | `gemini-3.8-flash` | medium | LOW, MEDIUM, HIGH (MINIMAL maps to LOW) |
     | `gemini-3.7-flash` | medium | LOW, MEDIUM, HIGH (MINIMAL maps to LOW) |
     | `gemini-3.6-flash` | medium | MINIMAL, LOW, MEDIUM, HIGH |
     | `gemini-3.5-flash` | medium | MINIMAL, LOW, MEDIUM, HIGH |
@@ -116,7 +134,7 @@ agent<String, Answer> {
     | `gemini-3.1-flash-lite` | minimal | MINIMAL, LOW, MEDIUM, HIGH |
     | `gemini-3-flash-preview` | high | MINIMAL, LOW, MEDIUM, HIGH |
 
-    `ThinkingLevel` is an aigentic-level concept; each provider maps it to what the underlying model supports. `MINIMAL` maps to the lowest level the model supports: `low` on `gemini-3.7-flash` and `gemini-3.1-pro-preview`, since those two models don't have a MINIMAL level of their own.
+    `ThinkingLevel` is an aigentic-level concept; each provider maps it to what the underlying model supports. `MINIMAL` maps to the lowest level the model supports: `low` on `gemini-3.8-flash`, `gemini-3.7-flash` and `gemini-3.1-pro-preview`, since those models don't have a MINIMAL level of their own.
 
     For a `Custom(identifier)` model identifier, Aigentic infers the same rules from the identifier's major version number, parsed with `(?:^|/)gemini-(\d+)` (so `"gemini-2.5-flash"`, `"models/gemini-2.5-flash"`, and a full resource path like `"publishers/google/models/gemini-2.5-flash"` or `"projects/.../locations/.../publishers/google/models/gemini-2.5-flash"` all match): a major version of 2 or lower only supports `thinkingBudget()` (a `thinkingLevel()` throws), a major version of 3 or higher only supports `thinkingLevel()` with all four levels, `MINIMAL` forwarded as-is (a `thinkingBudget()` throws). An identifier with no version match (a tuned endpoint, a proxy name, or an experimental name like `gemini-exp-1206`) is passed through without validation — both `thinkingBudget()` and `thinkingLevel()` are accepted as-is.
   </TabItem>
@@ -138,7 +156,7 @@ agent<String, Answer> {
 }`}
     </CodeBlock>
 
-    Same rules as Gemini: 2.x models only support `thinkingBudget()`, 3.x models only support `thinkingLevel()`, using the same model → default level → supported levels table above, the same `Custom(identifier)` major-version rules, and the same MINIMAL-maps-to-LOW behavior on `gemini-3.7-flash` and `gemini-3.1-pro-preview`.
+    Same rules as Gemini: 2.x models only support `thinkingBudget()`, 3.x models only support `thinkingLevel()`, using the same model → default level → supported levels table above, the same `Custom(identifier)` major-version rules, and the same MINIMAL-maps-to-LOW behavior on `gemini-3.8-flash`, `gemini-3.7-flash` and `gemini-3.1-pro-preview`.
   </TabItem>
 
   <TabItem value="OpenAI" label="OpenAI">

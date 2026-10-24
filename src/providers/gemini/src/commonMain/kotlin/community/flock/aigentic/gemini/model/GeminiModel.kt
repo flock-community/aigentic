@@ -21,6 +21,8 @@ import community.flock.aigentic.gemini.mapper.toModelResponse
 sealed class GeminiModelIdentifier(
     override val stringValue: String,
 ) : ModelIdentifier {
+    data object Gemini3_8Flash : GeminiModelIdentifier("gemini-3.8-flash")
+
     data object Gemini3_7Flash : GeminiModelIdentifier("gemini-3.7-flash")
 
     data object Gemini3_6Flash : GeminiModelIdentifier("gemini-3.6-flash")
@@ -63,6 +65,7 @@ internal fun GeminiModelIdentifier.capability(): ModelCapability =
             ModelCapability(supportsThinkingBudget = true, supportedThinkingLevels = null, supportsSampling = true)
         }
 
+        GeminiModelIdentifier.Gemini3_8Flash,
         GeminiModelIdentifier.Gemini3_7Flash,
         GeminiModelIdentifier.Gemini3_1ProPreview,
         -> {
@@ -121,7 +124,7 @@ internal fun GeminiModelIdentifier.supportsSampling(): Boolean = capability().su
 
 /**
  * MINIMAL is an aigentic-level concept expressing "think as little as possible". Models that
- * don't have a MINIMAL level of their own (gemini-3.7-flash, gemini-3.1-pro-preview) fall back to
+ * don't have a MINIMAL level of their own (gemini-3.8-flash, gemini-3.7-flash, gemini-3.1-pro-preview) fall back to
  * their lowest supported level, LOW, instead of failing.
  */
 internal fun GeminiModelIdentifier.resolveThinkingLevel(level: ThinkingLevel): ThinkingLevel {

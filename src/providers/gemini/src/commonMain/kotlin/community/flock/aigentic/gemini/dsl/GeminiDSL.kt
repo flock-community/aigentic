@@ -6,6 +6,7 @@ import community.flock.aigentic.core.dsl.GenerationConfig
 import community.flock.aigentic.core.dsl.builderPropertyMissingErrorMessage
 import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.LogLevel
+import community.flock.aigentic.gemini.client.config.GeminiApiConfig
 import community.flock.aigentic.gemini.model.GeminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
@@ -51,22 +52,14 @@ class GeminiModelConfig : Config<GeminiModel> {
                 checkNotNull(apiKey, builderPropertyMissingErrorMessage("apiKey", "geminiModel { apiKey() }")),
             )
 
+        val defaults = GeminiApiConfig(authentication)
         val geminiClient =
-            if (requestTimeoutMillis != null || socketTimeoutMillis != null) {
-                // Custom timeouts
-                GeminiModel.defaultGeminiClient(
-                    apiKeyAuthentication = authentication,
-                    logLevel = logLevel,
-                    requestTimeoutMillis = requestTimeoutMillis ?: (60_000 * 5),
-                    socketTimeoutMillis = socketTimeoutMillis ?: (60_000 + 5),
-                )
-            } else {
-                // Default timeouts van GeminiApiConfig
-                GeminiModel.defaultGeminiClient(
-                    apiKeyAuthentication = authentication,
-                    logLevel = logLevel,
-                )
-            }
+            GeminiModel.defaultGeminiClient(
+                apiKeyAuthentication = authentication,
+                logLevel = logLevel,
+                requestTimeoutMillis = requestTimeoutMillis ?: defaults.requestTimeoutMillis,
+                socketTimeoutMillis = socketTimeoutMillis ?: requestTimeoutMillis ?: defaults.socketTimeoutMillis,
+            )
 
         return GeminiModel(
             authentication = authentication,
