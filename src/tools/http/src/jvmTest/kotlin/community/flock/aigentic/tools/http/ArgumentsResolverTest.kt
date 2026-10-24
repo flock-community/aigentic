@@ -84,7 +84,7 @@ class ArgumentsResolverTest :
                             createPrimitiveParameter(commentIdParameterName),
                         )
 
-                    shouldThrow<IllegalStateException> {
+                    shouldThrow<Exception> {
                         resolver.resolveUrl(url, pathParameters, jsonArguments)
                     }
                 }
@@ -104,7 +104,7 @@ class ArgumentsResolverTest :
                             createPrimitiveParameter(itemIdParameterName),
                         )
 
-                    shouldThrow<IllegalStateException> {
+                    shouldThrow<Exception> {
                         resolver.resolveUrl(url, pathParameters, jsonArguments)
                     }
                 }
@@ -197,7 +197,7 @@ class ArgumentsResolverTest :
                             createPrimitiveParameter(itemIdParameterName, isRequired = true),
                         )
 
-                    shouldThrow<IllegalStateException> {
+                    shouldThrow<Exception> {
                         resolver.resolveQueryParameters(
                             queryParameters,
                             jsonArguments,

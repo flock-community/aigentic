@@ -18,7 +18,7 @@ import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.platform.Platform
-import community.flock.aigentic.core.platform.getRuns
+import community.flock.aigentic.core.platform.PlatformClient
 import community.flock.aigentic.core.tool.createTool
 import community.flock.aigentic.platform.TestData.finishedTaskToolCall
 import community.flock.aigentic.platform.testing.model.FailureReason
@@ -29,6 +29,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
@@ -87,7 +88,8 @@ class TestExecutorTest :
                 testReport.errors.size shouldBe 0
                 testReport.failures.size shouldBe 0
 
-                coVerify(exactly = 1) { platformMock.getRuns<Unit>(any()) }
+                val platformClientMock = platformMock.client
+                coVerify(exactly = 1) { platformClientMock.getRuns(any()) }
                 coVerify(exactly = 4) { modelMock.sendRequest(any(), any(), any()) }
             }
 
@@ -275,21 +277,26 @@ fun createMockModel(responses: List<ToolCall>): Model =
         coEvery { sendRequest(any(), any(), any()) } returnsMany responses.toModelResponse()
     }
 
-fun createMockPlatform(messages: List<Message>): Platform =
-    mockk {
-        coEvery { getRuns<Unit>(any()) } returns
-            listOf(
-                RunId("some-run-id") to
-                    AgentRun(
-                        startedAt = Clock.System.now(),
-                        finishedAt = Clock.System.now(),
-                        messages = messages,
-                        outcome = Outcome.Finished("Finished the task", null),
-                        modelRequests = emptyList(),
-                        systemPromptMessage = Message.SystemPrompt("Test system prompt"),
-                    ),
-            )
+fun createMockPlatform(messages: List<Message>): Platform {
+    val platformClient =
+        mockk<PlatformClient> {
+            coEvery { getRuns(any()) } returns
+                listOf(
+                    RunId("some-run-id") to
+                        AgentRun(
+                            startedAt = Clock.System.now(),
+                            finishedAt = Clock.System.now(),
+                            messages = messages,
+                            outcome = Outcome.Finished("Finished the task", null),
+                            modelRequests = emptyList(),
+                            systemPromptMessage = Message.SystemPrompt("Test system prompt"),
+                        ),
+                )
+        }
+    return mockk {
+        every { client } returns platformClient
     }
+}
 
 fun createRegressionTest(
     platform: Platform,
