@@ -49,6 +49,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
+import kotlin.coroutines.cancellation.CancellationException
 
 suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(vararg attachments: Attachment): AgentRun<O> = start(null, *attachments)
 
@@ -68,16 +69,31 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(
             val platformRunId = publishRun(agent, run, state, expected)
             run.copy(platformRunId = platformRunId)
         } catch (e: AigenticException) {
-            logger.error(e.message)
-            state.events.emit(AgentStatus.Fatal(e.message))
-            val run = (state to Outcome.Fatal(e.message)).toRun<O>()
-            val platformRunId = publishRun(agent, run, state, expected)
-            run.copy(platformRunId = platformRunId)
+            fatalRun(agent, state, expected, logger, e.message)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            fatalRun(agent, state, expected, logger, e.message ?: e::class.simpleName ?: "Unknown error")
         } finally {
             delay(10) // Allow some time for the logging to finish
             logging.cancelAndJoin()
         }
     }
+
+@PublishedApi
+internal suspend inline fun <reified I : Any, reified O : Any> fatalRun(
+    agent: Agent<I, O>,
+    state: State,
+    expected: Expected<O>?,
+    logger: Logger,
+    message: String,
+): AgentRun<O> {
+    logger.error(message)
+    state.events.emit(AgentStatus.Fatal(message))
+    val run = (state to Outcome.Fatal(message)).toRun<O>()
+    val platformRunId = publishRun(agent, run, state, expected)
+    return run.copy(platformRunId = platformRunId)
+}
 
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> publishRun(
