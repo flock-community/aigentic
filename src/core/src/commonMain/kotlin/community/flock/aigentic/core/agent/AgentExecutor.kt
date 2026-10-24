@@ -9,12 +9,14 @@ import community.flock.aigentic.core.agent.message.correctionMessage
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.state.State
 import community.flock.aigentic.core.agent.state.addConfigContextMessage
+import community.flock.aigentic.core.agent.state.addEvent
 import community.flock.aigentic.core.agent.state.addExampleMessage
 import community.flock.aigentic.core.agent.state.addExampleRunId
 import community.flock.aigentic.core.agent.state.addModelRequestInfo
 import community.flock.aigentic.core.agent.state.addRunContextMessage
 import community.flock.aigentic.core.agent.state.addRunExecutionMessage
 import community.flock.aigentic.core.agent.state.addSystemPromptMessage
+import community.flock.aigentic.core.agent.state.completeStatus
 import community.flock.aigentic.core.agent.state.getStatus
 import community.flock.aigentic.core.agent.state.toRun
 import community.flock.aigentic.core.agent.status.AgentStatus
@@ -42,9 +44,7 @@ import community.flock.aigentic.core.platform.sendRun
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.util.withStartFinishTiming
 import kotlinx.coroutines.async
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -61,7 +61,7 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(
     coroutineScope {
         val agent = this@start
         val state = State()
-        state.events.emit(AgentStatus.Started)
+        state.addEvent(AgentStatus.Started)
         val logging = async { state.getStatus().map { it.text }.collect(::println) }
         try {
             val run = executeAction(Initialize(state, agent, input, attachments.toList())).toRun()
@@ -72,13 +72,13 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(
         } catch (e: Exception) {
             val message = e.message ?: e::class.simpleName ?: "Unknown error"
             logger.error(message)
-            state.events.emit(AgentStatus.Fatal(message))
+            state.addEvent(AgentStatus.Fatal(message))
             val run = (state to Outcome.Fatal(message)).toRun<O>()
             val platformRunId = publishRun(agent, run, state, expected)
             run.copy(platformRunId = platformRunId)
         } finally {
-            delay(10) // Allow some time for the logging to finish
-            logging.cancelAndJoin()
+            state.completeStatus()
+            logging.join()
         }
     }
 
@@ -96,23 +96,23 @@ internal suspend inline fun <reified I : Any, reified O : Any> publishRun(
         onSuccess = { result ->
             when (result) {
                 is RunSentResult.Success -> {
-                    state.events.emit(AgentStatus.PublishedRunSuccess)
+                    state.addEvent(AgentStatus.PublishedRunSuccess)
                     result.runId
                 }
 
                 RunSentResult.Unauthorized -> {
-                    state.events.emit(AgentStatus.PublishedRunUnauthorized)
+                    state.addEvent(AgentStatus.PublishedRunUnauthorized)
                     null
                 }
 
                 is RunSentResult.Error -> {
-                    state.events.emit(AgentStatus.PublishedRunError(result.message))
+                    state.addEvent(AgentStatus.PublishedRunError(result.message))
                     null
                 }
             }
         },
         onFailure = { exception ->
-            state.events.emit(AgentStatus.PublishedRunError(exception.message ?: "Unknown error"))
+            state.addEvent(AgentStatus.PublishedRunError(exception.message ?: "Unknown error"))
             null
         },
     )

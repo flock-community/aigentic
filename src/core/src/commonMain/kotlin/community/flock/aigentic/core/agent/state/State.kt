@@ -8,10 +8,10 @@ import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -25,6 +25,8 @@ data class State(
     internal val messages: MutableSharedFlow<Message> = MutableSharedFlow(replay = 1000),
 ) {
     val messagesAccessor = Messages(state = this)
+
+    internal val statuses = Channel<AgentStatus>(Channel.UNLIMITED)
 }
 
 class Messages(
@@ -47,18 +49,32 @@ class Messages(
 }
 
 @PublishedApi
-internal fun State.getStatus() = merge(messagesAccessor.asFlow().flatMapConcat { it.toStatus().asFlow() }, events)
+internal fun State.getStatus(): Flow<AgentStatus> = statuses.consumeAsFlow()
 
 @PublishedApi
-internal suspend fun State.addRunExecutionMessage(message: Message) = this.messages.emit(message)
-
-suspend fun State.addConfigContextMessage(message: Message) = this.messages.emit(message)
+internal fun State.completeStatus() = statuses.close()
 
 @PublishedApi
-internal suspend fun State.addRunContextMessage(message: Message) = this.messages.emit(message)
+internal suspend fun State.addEvent(status: AgentStatus) {
+    events.emit(status)
+    statuses.trySend(status)
+}
+
+private suspend fun State.addMessage(message: Message) {
+    messages.emit(message)
+    message.toStatus().forEach { statuses.trySend(it) }
+}
 
 @PublishedApi
-internal suspend fun State.addExampleMessage(message: Message) = this.messages.emit(message)
+internal suspend fun State.addRunExecutionMessage(message: Message) = addMessage(message)
+
+suspend fun State.addConfigContextMessage(message: Message) = addMessage(message)
+
+@PublishedApi
+internal suspend fun State.addRunContextMessage(message: Message) = addMessage(message)
+
+@PublishedApi
+internal suspend fun State.addExampleMessage(message: Message) = addMessage(message)
 
 fun State.addSystemPromptMessage(message: Message.SystemPrompt) {
     this.systemPromptMessage = message

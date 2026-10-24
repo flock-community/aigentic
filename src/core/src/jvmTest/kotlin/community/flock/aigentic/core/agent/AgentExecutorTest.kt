@@ -1,6 +1,7 @@
 package community.flock.aigentic.core.agent
 
 import community.flock.aigentic.core.agent.message.SystemPromptBuilder
+import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.test.util.TestData.finishedTaskToolCall
 import community.flock.aigentic.core.agent.test.util.TestData.modelFinishTaskDirectly
 import community.flock.aigentic.core.agent.test.util.TestData.modelStuckDirectly
@@ -26,6 +27,7 @@ import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.model.Usage
 import community.flock.aigentic.core.platform.Platform
+import community.flock.aigentic.core.platform.RunSentResult
 import community.flock.aigentic.core.platform.sendRun
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.createTool
@@ -43,7 +45,9 @@ import io.mockk.verify
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.PrintStream
 import kotlin.coroutines.cancellation.CancellationException
 
 @AigenticParameter
@@ -507,6 +511,38 @@ class AgentExecutorTest :
                 agent.start().apply {
                     outcome.shouldBeInstanceOf<Finished<Unit>>()
                 }
+            }
+
+            it("should log all statuses in order before returning") {
+
+                val platform =
+                    mockk<Platform>().apply {
+                        coEvery { sendRun(any(), any<Agent<Unit, Unit>>()) } returns RunSentResult.Success(RunId("run-id"))
+                    }
+
+                val agent =
+                    agent {
+                        platform(platform)
+                        model(modelFinishTaskDirectly)
+                        task("Execute some task") {}
+                        addTool(mockk(relaxed = true))
+                    }
+
+                val output = ByteArrayOutputStream()
+                val originalOut = System.out
+                System.setOut(PrintStream(output, true, Charsets.UTF_8))
+                try {
+                    agent.start()
+                } finally {
+                    System.setOut(originalOut)
+                }
+
+                output.toString(Charsets.UTF_8).lines().filter { it.isNotBlank() } shouldBe
+                    listOf(
+                        AgentStatus.Started.text,
+                        AgentStatus.Finished(finishedTaskToolCall.arguments).text,
+                        AgentStatus.PublishedRunSuccess.text,
+                    )
             }
         }
 
