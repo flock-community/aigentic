@@ -83,7 +83,7 @@ Aigentic supports several LLM providers out of the box:
 The Gemini provider streams every response, so data keeps arriving while the model writes a long answer. Two timeouts control how long Aigentic waits:
 
 - `requestTimeout(ms)`: the maximum time for the whole request, including the stream. Raise it when a long structured output takes more than 5 minutes.
-- `socketTimeout(ms)`: the maximum time without any data. The model sends nothing while it thinks, so this has to be longer than its thinking time. When you only set `requestTimeout`, the socket timeout gets the same value.
+- `socketTimeout(ms)`: the maximum time without any data. The model sends nothing while it thinks, which can take more than a minute on a high thinking level. Unless you set it, the socket timeout is the same as the request timeout.
 
 ```kotlin
 geminiModel {
@@ -93,7 +93,7 @@ geminiModel {
 }
 ```
 
-Without either setting, the request timeout is 5 minutes and the socket timeout is 60 seconds. When a request still fails, for example because of a timeout or a dropped connection, the run ends with `Outcome.Fatal` instead of throwing an exception.
+Without either setting, both timeouts are 5 minutes. When a request still fails, for example because of a timeout or a dropped connection, the run ends with `Outcome.Fatal` instead of throwing an exception.
 
 ## Thinking configuration
 
