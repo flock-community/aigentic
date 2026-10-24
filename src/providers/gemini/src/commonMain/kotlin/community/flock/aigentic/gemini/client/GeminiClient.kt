@@ -20,13 +20,16 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
 import io.ktor.client.request.header
-import io.ktor.client.request.post
+import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.io.IOException
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import io.ktor.client.plugins.logging.LogLevel as KtorLogLevel
 
@@ -70,28 +73,35 @@ class GeminiClient(
     ): GenerateContentResponse {
         rateLimiter.consume()
 
-        val response =
-            ktor.post {
-                url(config.generateContentUrl(modelIdentifier))
-                header(API_KEY_HEADER, config.apiKey.key)
-                setBody(request)
-                contentType(ContentType.Application.Json)
-            }
-
-        return if (response.status.isSuccess()) {
-            response.body()
-        } else {
-            val errorDetails = response.body<ErrorResponse>().error
-            aigenticException(
-                "Received error response from Gemini, " +
-                    "http status: ${response.status}, " +
-                    "error code: ${errorDetails.status}, " +
-                    "message: ${errorDetails.message}",
-            )
+        return try {
+            ktor
+                .preparePost {
+                    url(config.streamGenerateContentUrl(modelIdentifier))
+                    header(API_KEY_HEADER, config.apiKey.key)
+                    setBody(request)
+                    contentType(ContentType.Application.Json)
+                }.execute { response ->
+                    if (response.status.isSuccess()) {
+                        response.bodyAsChannel().readGenerateContentChunks().merge()
+                    } else {
+                        val errorDetails = response.body<ErrorResponse>().error
+                        aigenticException(
+                            "Received error response from Gemini, " +
+                                "http status: ${response.status}, " +
+                                "error code: ${errorDetails.status}, " +
+                                "message: ${errorDetails.message}",
+                        )
+                    }
+                }
+        } catch (e: IOException) {
+            aigenticException("Gemini request failed: ${e.message ?: e::class.simpleName}", e)
+        } catch (e: SerializationException) {
+            aigenticException("Could not parse the Gemini response: ${e.message}", e)
         }
     }
 
-    private fun GeminiApiConfig.generateContentUrl(modelIdentifier: GeminiModelIdentifier) = "$baseUrl/${modelIdentifier.stringValue}:generateContent"
+    private fun GeminiApiConfig.streamGenerateContentUrl(modelIdentifier: GeminiModelIdentifier) =
+        "$baseUrl/${modelIdentifier.stringValue}:streamGenerateContent?alt=sse"
 
     private companion object {
         const val API_KEY_HEADER = "x-goog-api-key"

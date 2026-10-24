@@ -133,6 +133,34 @@ class GeminiResponseMapperKtTest :
                     .response shouldBe """{"answer": "complete"}"""
             }
 
+            it("should join a structured output response that is split over several text parts") {
+                val json =
+                    """
+                    {
+                      "candidates": [
+                        {
+                          "content": {
+                            "role": "model",
+                            "parts": [
+                              { "text": "{\"answer\": " },
+                              { "text": "\"complete\"}" }
+                            ]
+                          },
+                          "finishReason": "STOP"
+                        }
+                      ],
+                      "usageMetadata": {}
+                    }
+                    """.trimIndent()
+
+                geminiJson
+                    .decodeFromString<GenerateContentResponse>(json)
+                    .toModelResponse(true)
+                    .message
+                    .shouldBeInstanceOf<Message.StructuredOutput>()
+                    .response shouldBe """{"answer": "complete"}"""
+            }
+
             it("should keep the thought signature of a function call") {
                 val json =
                     """
