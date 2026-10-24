@@ -23,7 +23,12 @@ kotlin {
                 implementation(libs.kotest.runner.junit5)
                 implementation(libs.kotlin.reflect)
                 implementation(libs.mockk)
+                implementation(libs.ktor.client.cio)
             }
         }
     }
+}
+
+tasks.named<Test>("jvmTest") {
+    useJUnitPlatform()
 }
