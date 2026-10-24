@@ -4,6 +4,7 @@ import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.agent.test.util.TestData.finishedTaskToolCall
 import community.flock.aigentic.core.agent.test.util.TestData.modelFinishTaskDirectly
 import community.flock.aigentic.core.agent.test.util.TestData.modelStuckDirectly
+import community.flock.aigentic.core.agent.test.util.createMockModelWithException
 import community.flock.aigentic.core.agent.test.util.encode
 import community.flock.aigentic.core.agent.test.util.toModelResponse
 import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
@@ -550,10 +551,7 @@ class AgentExecutorTest :
 
             it("should finish with a published Fatal result when model throws another exception") {
 
-                val modelMock =
-                    mockk<Model>().apply {
-                        coEvery { sendRequest(any(), any(), any()) } throws IOException("Connection closed")
-                    }
+                val modelMock = createMockModelWithException(IOException("Connection closed"))
                 val platform = mockk<Platform>(relaxed = true)
                 val loggerMock = mockk<Logger>(relaxed = true)
 
@@ -576,10 +574,7 @@ class AgentExecutorTest :
 
             it("should use the exception type as Fatal message when the exception has no message") {
 
-                val modelMock =
-                    mockk<Model>().apply {
-                        coEvery { sendRequest(any(), any(), any()) } throws IllegalStateException()
-                    }
+                val modelMock = createMockModelWithException(IllegalStateException())
 
                 agent {
                     model(modelMock)
@@ -594,10 +589,7 @@ class AgentExecutorTest :
 
             it("should propagate cancellation") {
 
-                val modelMock =
-                    mockk<Model>().apply {
-                        coEvery { sendRequest(any(), any(), any()) } throws CancellationException("Cancelled")
-                    }
+                val modelMock = createMockModelWithException(CancellationException("Cancelled"))
 
                 shouldThrow<CancellationException> {
                     agent {

@@ -19,7 +19,6 @@ import community.flock.aigentic.core.agent.state.getStatus
 import community.flock.aigentic.core.agent.state.toRun
 import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.tool.Outcome
-import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.logging.Logger
 import community.flock.aigentic.core.logging.SimpleLogger
@@ -68,32 +67,20 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(
             val run = executeAction(Initialize(state, agent, input, attachments.toList())).toRun()
             val platformRunId = publishRun(agent, run, state, expected)
             run.copy(platformRunId = platformRunId)
-        } catch (e: AigenticException) {
-            fatalRun(agent, state, expected, logger, e.message)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            fatalRun(agent, state, expected, logger, e.message ?: e::class.simpleName ?: "Unknown error")
+            val message = e.message ?: e::class.simpleName ?: "Unknown error"
+            logger.error(message)
+            state.events.emit(AgentStatus.Fatal(message))
+            val run = (state to Outcome.Fatal(message)).toRun<O>()
+            val platformRunId = publishRun(agent, run, state, expected)
+            run.copy(platformRunId = platformRunId)
         } finally {
             delay(10) // Allow some time for the logging to finish
             logging.cancelAndJoin()
         }
     }
-
-@PublishedApi
-internal suspend inline fun <reified I : Any, reified O : Any> fatalRun(
-    agent: Agent<I, O>,
-    state: State,
-    expected: Expected<O>?,
-    logger: Logger,
-    message: String,
-): AgentRun<O> {
-    logger.error(message)
-    state.events.emit(AgentStatus.Fatal(message))
-    val run = (state to Outcome.Fatal(message)).toRun<O>()
-    val platformRunId = publishRun(agent, run, state, expected)
-    return run.copy(platformRunId = platformRunId)
-}
 
 @PublishedApi
 internal suspend inline fun <reified I : Any, reified O : Any> publishRun(

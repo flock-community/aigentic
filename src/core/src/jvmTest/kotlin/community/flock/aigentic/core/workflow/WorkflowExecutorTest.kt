@@ -3,6 +3,7 @@ package community.flock.aigentic.core.workflow
 import community.flock.aigentic.core.agent.WorkflowRun
 import community.flock.aigentic.core.agent.test.util.TestData.finishedTaskWithResponseToolCall
 import community.flock.aigentic.core.agent.test.util.TestData.stuckWithTaskToolCall
+import community.flock.aigentic.core.agent.test.util.createMockModelWithException
 import community.flock.aigentic.core.agent.test.util.toModelResponse
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.annotations.AigenticParameter
@@ -223,11 +224,6 @@ private fun createMockModel(result: FinalResult): Model =
             listOf(
                 finishedTaskWithResponseToolCall(result),
             ).toModelResponse()
-    }
-
-private fun createMockModelWithException(exception: Exception): Model =
-    mockk<Model>().also { mock ->
-        coEvery { mock.sendRequest(any(), any(), any()) } throws exception
     }
 
 fun createMockModelWithStuck(): Model =
