@@ -19,7 +19,6 @@ import community.flock.aigentic.core.agent.state.getStatus
 import community.flock.aigentic.core.agent.state.toRun
 import community.flock.aigentic.core.agent.status.AgentStatus
 import community.flock.aigentic.core.agent.tool.Outcome
-import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.logging.Logger
 import community.flock.aigentic.core.logging.SimpleLogger
@@ -49,6 +48,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
+import kotlin.coroutines.cancellation.CancellationException
 
 suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(vararg attachments: Attachment): AgentRun<O> = start(null, *attachments)
 
@@ -67,10 +67,13 @@ suspend inline fun <reified I : Any, reified O : Any> Agent<I, O>.start(
             val run = executeAction(Initialize(state, agent, input, attachments.toList())).toRun()
             val platformRunId = publishRun(agent, run, state, expected)
             run.copy(platformRunId = platformRunId)
-        } catch (e: AigenticException) {
-            logger.error(e.message)
-            state.events.emit(AgentStatus.Fatal(e.message))
-            val run = (state to Outcome.Fatal(e.message)).toRun<O>()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            val message = e.message ?: e::class.simpleName ?: "Unknown error"
+            logger.error(message)
+            state.events.emit(AgentStatus.Fatal(message))
+            val run = (state to Outcome.Fatal(message)).toRun<O>()
             val platformRunId = publishRun(agent, run, state, expected)
             run.copy(platformRunId = platformRunId)
         } finally {

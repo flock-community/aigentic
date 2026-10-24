@@ -104,6 +104,20 @@ class RequestMapperTest :
                     .toString() shouldBe "LOW"
             }
 
+            it("should map thinkingLevel MINIMAL to LOW on gemini-3.8-flash") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
+                    )
+
+                createGenerateConfig(emptyList(), emptyList(), generationSettings, null, VertexAIModelIdentifier.Gemini3_8Flash)
+                    .thinkingConfig()
+                    .get()
+                    .thinkingLevel()
+                    .get()
+                    .toString() shouldBe "LOW"
+            }
+
             it("should map thinkingLevel MINIMAL to LOW on gemini-3.7-flash") {
                 val generationSettings =
                     GenerationSettings.DEFAULT.copy(

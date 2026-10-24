@@ -4,6 +4,7 @@ import community.flock.aigentic.core.agent.message.SystemPromptBuilder
 import community.flock.aigentic.core.agent.test.util.TestData.finishedTaskToolCall
 import community.flock.aigentic.core.agent.test.util.TestData.modelFinishTaskDirectly
 import community.flock.aigentic.core.agent.test.util.TestData.modelStuckDirectly
+import community.flock.aigentic.core.agent.test.util.createMockModelWithException
 import community.flock.aigentic.core.agent.test.util.encode
 import community.flock.aigentic.core.agent.test.util.toModelResponse
 import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
@@ -28,6 +29,7 @@ import community.flock.aigentic.core.platform.Platform
 import community.flock.aigentic.core.platform.sendRun
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.createTool
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -42,6 +44,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.io.IOException
+import kotlin.coroutines.cancellation.CancellationException
 
 @AigenticParameter
 data class NewsEventInput(
@@ -544,6 +547,59 @@ class AgentExecutorTest :
                 }.start(logger = loggerMock)
 
                 verify { loggerMock.error("Model exception") }
+            }
+
+            it("should finish with a published Fatal result when model throws another exception") {
+
+                val modelMock = createMockModelWithException(IOException("Connection closed"))
+                val platform = mockk<Platform>(relaxed = true)
+                val loggerMock = mockk<Logger>(relaxed = true)
+
+                val agent =
+                    agent {
+                        platform(platform)
+                        model(modelMock)
+                        task("Summarize the retrieved news events") {
+                            addInstruction("Fetch top 10 news events")
+                        }
+                        addTool(mockk<Tool>(relaxed = true))
+                    }
+
+                val run = agent.start(logger = loggerMock)
+
+                run.outcome.shouldBeInstanceOf<Fatal>().message shouldBe "Connection closed"
+                verify { loggerMock.error("Connection closed") }
+                coVerify { platform.sendRun(match { it.outcome == Fatal("Connection closed") }, agent) }
+            }
+
+            it("should use the exception type as Fatal message when the exception has no message") {
+
+                val modelMock = createMockModelWithException(IllegalStateException())
+
+                agent {
+                    model(modelMock)
+                    task("Summarize the retrieved news events") {
+                        addInstruction("Fetch top 10 news events")
+                    }
+                    addTool(mockk<Tool>(relaxed = true))
+                }.start().apply {
+                    outcome.shouldBeInstanceOf<Fatal>().message shouldBe "IllegalStateException"
+                }
+            }
+
+            it("should propagate cancellation") {
+
+                val modelMock = createMockModelWithException(CancellationException("Cancelled"))
+
+                shouldThrow<CancellationException> {
+                    agent {
+                        model(modelMock)
+                        task("Summarize the retrieved news events") {
+                            addInstruction("Fetch top 10 news events")
+                        }
+                        addTool(mockk<Tool>(relaxed = true))
+                    }.start()
+                }
             }
 
             // Implement more in https://aigentic.youtrack.cloud/issue/AIGENTIC-29/Improve-Aigentic-client-Add-error-handling

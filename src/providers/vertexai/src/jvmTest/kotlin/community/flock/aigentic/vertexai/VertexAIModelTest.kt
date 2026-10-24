@@ -20,6 +20,7 @@ class VertexAIModelTest :
         describe("VertexAIModelIdentifier") {
 
             it("should expose the correct wire identifiers") {
+                VertexAIModelIdentifier.Gemini3_8Flash.stringValue shouldBe "gemini-3.8-flash"
                 VertexAIModelIdentifier.Gemini3_7Flash.stringValue shouldBe "gemini-3.7-flash"
                 VertexAIModelIdentifier.Gemini3_6Flash.stringValue shouldBe "gemini-3.6-flash"
                 VertexAIModelIdentifier.Gemini3_5FlashLite.stringValue shouldBe "gemini-3.5-flash-lite"
