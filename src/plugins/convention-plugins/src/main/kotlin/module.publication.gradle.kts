@@ -48,7 +48,14 @@ val isSigningEnabled: Boolean = System.getenv("ENABLE_GRADLE_SIGNING")?.toBoolea
 
 if(isSigningEnabled) {
     signing {
-        useGpgCmd()
+        // CI signs in memory: unlike the gpg binary, Gradle's signer does not refuse an expired key.
+        val signingKey = System.getenv("GPG_PRIVATE_KEY")
+        val signingPassphrase = System.getenv("GPG_PASSPHRASE")
+        if (signingKey != null && signingPassphrase != null) {
+            useInMemoryPgpKeys(signingKey, signingPassphrase)
+        } else {
+            useGpgCmd()
+        }
         sign(publishing.publications)
     }
 }
