@@ -157,6 +157,17 @@ class GeminiRequestMapperKtTest :
                 }.message shouldContain "not supported on Gemini 2.x models"
             }
 
+            it("should map thinkingLevel MINIMAL to low on gemini-3.8-flash") {
+                val generationSettings =
+                    GenerationSettings.DEFAULT.copy(
+                        thinkingConfig = ThinkingConfig(thinkingLevel = ThinkingLevel.MINIMAL),
+                    )
+                val request =
+                    createGenerateContentRequest(emptyList(), emptyList(), generationSettings, null, GeminiModelIdentifier.Gemini3_8Flash)
+
+                geminiJson.encodeToString(request) shouldContain "\"thinkingLevel\":\"low\""
+            }
+
             it("should map thinkingLevel MINIMAL to low on gemini-3.7-flash") {
                 val generationSettings =
                     GenerationSettings.DEFAULT.copy(

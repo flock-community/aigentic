@@ -18,6 +18,7 @@ class GeminiModelTest :
         describe("GeminiModelIdentifier") {
 
             it("should expose the correct wire identifiers") {
+                GeminiModelIdentifier.Gemini3_8Flash.stringValue shouldBe "gemini-3.8-flash"
                 GeminiModelIdentifier.Gemini3_7Flash.stringValue shouldBe "gemini-3.7-flash"
                 GeminiModelIdentifier.Gemini3_6Flash.stringValue shouldBe "gemini-3.6-flash"
                 GeminiModelIdentifier.Gemini3_5FlashLite.stringValue shouldBe "gemini-3.5-flash-lite"
