@@ -27,7 +27,7 @@ plugins {
 
 val wirespecKotlin = tasks.register<CompileWirespecTask>("wirespec-kotlin") {
     input = layout.projectDirectory.dir("./wirespec")
-    output = layout.buildDirectory.dir("generated")
+    output = layout.buildDirectory.dir("generated/wirespec")
     packageName = "community.flock.aigentic.gateway.wirespec"
     emitterClass = KotlinSerializableEmitter::class.java
     shared = true
