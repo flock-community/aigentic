@@ -15,11 +15,14 @@ import community.flock.aigentic.gemini.client.model.GenerateContentRequest
 import community.flock.aigentic.gemini.client.model.GenerationConfig
 import community.flock.aigentic.gemini.client.model.HarmBlockThreshold
 import community.flock.aigentic.gemini.client.model.HarmCategory
+import community.flock.aigentic.gemini.client.model.MediaResolution
+import community.flock.aigentic.gemini.client.model.MediaResolutionLevel
 import community.flock.aigentic.gemini.client.model.Part
 import community.flock.aigentic.gemini.client.model.Role
 import community.flock.aigentic.gemini.client.model.SafetySettings
 import community.flock.aigentic.gemini.client.model.ThinkingConfig
 import community.flock.aigentic.gemini.client.model.Tool
+import community.flock.aigentic.gemini.model.GeminiMediaResolution
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import community.flock.aigentic.gemini.model.resolveThinkingLevel
 import community.flock.aigentic.gemini.model.supportsSampling
@@ -37,6 +40,7 @@ internal fun createGenerateContentRequest(
     generationSettings: GenerationSettings,
     structuredResponseParameter: Parameter?,
     modelIdentifier: GeminiModelIdentifier,
+    mediaResolution: GeminiMediaResolution? = null,
 ): GenerateContentRequest =
     GenerateContentRequest(
         systemInstruction = getSystemInstruction(messages),
@@ -46,13 +50,19 @@ internal fun createGenerateContentRequest(
                 when (message) {
                     is Message.Url -> {
                         listOf(
-                            Part.FileDataPart(FileDataContent(mimeType = message.mimeType.value, fileUri = message.url)),
+                            Part.FileDataPart(
+                                FileDataContent(mimeType = message.mimeType.value, fileUri = message.url),
+                                mediaResolution = mediaResolution?.toMediaResolution(),
+                            ),
                         )
                     }
 
                     is Message.Base64 -> {
                         listOf(
-                            Part.Blob(BlobContent(mimeType = message.mimeType.value, data = formatBase64Content(message))),
+                            Part.Blob(
+                                BlobContent(mimeType = message.mimeType.value, data = formatBase64Content(message)),
+                                mediaResolution = mediaResolution?.toMediaResolution(),
+                            ),
                         )
                     }
 
@@ -114,6 +124,16 @@ private fun defaultSafetySettings(): List<SafetySettings> =
             threshold = HarmBlockThreshold.BLOCK_NONE,
         )
     }
+
+private fun GeminiMediaResolution.toMediaResolution(): MediaResolution =
+    MediaResolution(
+        when (this) {
+            GeminiMediaResolution.Low -> MediaResolutionLevel.MEDIA_RESOLUTION_LOW
+            GeminiMediaResolution.Medium -> MediaResolutionLevel.MEDIA_RESOLUTION_MEDIUM
+            GeminiMediaResolution.High -> MediaResolutionLevel.MEDIA_RESOLUTION_HIGH
+            GeminiMediaResolution.UltraHigh -> MediaResolutionLevel.MEDIA_RESOLUTION_ULTRA_HIGH
+        },
+    )
 
 private fun formatBase64Content(message: Message.Base64) = message.base64Content.substringAfter("base64,")
 

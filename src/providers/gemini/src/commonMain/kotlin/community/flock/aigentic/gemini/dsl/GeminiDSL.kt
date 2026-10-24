@@ -7,6 +7,7 @@ import community.flock.aigentic.core.dsl.builderPropertyMissingErrorMessage
 import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.gemini.client.config.GeminiApiConfig
+import community.flock.aigentic.gemini.model.GeminiMediaResolution
 import community.flock.aigentic.gemini.model.GeminiModel
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 
@@ -18,6 +19,7 @@ class GeminiModelConfig : Config<GeminiModel> {
     private var modelIdentifier: GeminiModelIdentifier? = null
     private var generationConfig: GenerationConfig = GenerationConfig()
     private var logLevel: LogLevel = LogLevel.NONE
+    private var mediaResolution: GeminiMediaResolution? = null
 
     private var requestTimeoutMillis: Long? = null
     private var socketTimeoutMillis: Long? = null
@@ -36,6 +38,10 @@ class GeminiModelConfig : Config<GeminiModel> {
 
     fun GeminiModelConfig.logLevel(level: LogLevel) {
         this.logLevel = level
+    }
+
+    fun GeminiModelConfig.mediaResolution(resolution: GeminiMediaResolution) {
+        this.mediaResolution = resolution
     }
 
     fun GeminiModelConfig.requestTimeout(timeoutMillis: Long) {
@@ -67,6 +73,7 @@ class GeminiModelConfig : Config<GeminiModel> {
             generationSettings = generationConfig.build(),
             logLevel = logLevel,
             geminiClient = geminiClient,
+            mediaResolution = mediaResolution,
         )
     }
 }

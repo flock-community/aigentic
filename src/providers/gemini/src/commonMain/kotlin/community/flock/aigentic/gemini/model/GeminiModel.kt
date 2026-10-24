@@ -48,10 +48,18 @@ sealed class GeminiModelIdentifier(
     ) : GeminiModelIdentifier(identifier)
 }
 
+enum class GeminiMediaResolution {
+    Low,
+    Medium,
+    High,
+    UltraHigh,
+}
+
 internal data class ModelCapability(
     val supportsThinkingBudget: Boolean,
     val supportedThinkingLevels: Set<ThinkingLevel>?,
     val supportsSampling: Boolean,
+    val supportsPartMediaResolution: Boolean,
 )
 
 private val geminiMajorVersionRegex = Regex("(?:^|/)gemini-(\\d+)")
@@ -62,7 +70,12 @@ internal fun GeminiModelIdentifier.capability(): ModelCapability =
         GeminiModelIdentifier.Gemini2_5Flash,
         GeminiModelIdentifier.Gemini2_5FlashLite,
         -> {
-            ModelCapability(supportsThinkingBudget = true, supportedThinkingLevels = null, supportsSampling = true)
+            ModelCapability(
+                supportsThinkingBudget = true,
+                supportedThinkingLevels = null,
+                supportsSampling = true,
+                supportsPartMediaResolution = false,
+            )
         }
 
         GeminiModelIdentifier.Gemini3_8Flash,
@@ -73,6 +86,7 @@ internal fun GeminiModelIdentifier.capability(): ModelCapability =
                 supportsThinkingBudget = false,
                 supportedThinkingLevels = setOf(ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH),
                 supportsSampling = false,
+                supportsPartMediaResolution = true,
             )
         }
 
@@ -86,6 +100,7 @@ internal fun GeminiModelIdentifier.capability(): ModelCapability =
                 supportsThinkingBudget = false,
                 supportedThinkingLevels = ThinkingLevel.entries.toSet(),
                 supportsSampling = false,
+                supportsPartMediaResolution = true,
             )
         }
 
@@ -102,11 +117,17 @@ internal fun GeminiModelIdentifier.capability(): ModelCapability =
                         supportsThinkingBudget = true,
                         supportedThinkingLevels = ThinkingLevel.entries.toSet(),
                         supportsSampling = true,
+                        supportsPartMediaResolution = true,
                     )
                 }
 
                 majorVersion <= 2 -> {
-                    ModelCapability(supportsThinkingBudget = true, supportedThinkingLevels = null, supportsSampling = true)
+                    ModelCapability(
+                        supportsThinkingBudget = true,
+                        supportedThinkingLevels = null,
+                        supportsSampling = true,
+                        supportsPartMediaResolution = false,
+                    )
                 }
 
                 else -> {
@@ -114,6 +135,7 @@ internal fun GeminiModelIdentifier.capability(): ModelCapability =
                         supportsThinkingBudget = false,
                         supportedThinkingLevels = ThinkingLevel.entries.toSet(),
                         supportsSampling = false,
+                        supportsPartMediaResolution = true,
                     )
                 }
             }
@@ -157,15 +179,28 @@ internal fun validateGeminiThinkingConfig(
     }
 }
 
+internal fun validateGeminiMediaResolution(
+    modelIdentifier: GeminiModelIdentifier,
+    mediaResolution: GeminiMediaResolution?,
+) {
+    if (mediaResolution != null && !modelIdentifier.capability().supportsPartMediaResolution) {
+        aigenticException(
+            "mediaResolution is not supported on Gemini 2.x models, use a Gemini 3 or newer model instead of ${modelIdentifier.stringValue}",
+        )
+    }
+}
+
 class GeminiModel(
     val authentication: Authentication.APIKey,
     override val modelIdentifier: GeminiModelIdentifier,
     override val generationSettings: GenerationSettings,
     private val logLevel: LogLevel = LogLevel.NONE,
     private val geminiClient: GeminiClient = defaultGeminiClient(authentication, logLevel),
+    val mediaResolution: GeminiMediaResolution? = null,
 ) : Model {
     init {
         validateGeminiThinkingConfig(modelIdentifier, generationSettings)
+        validateGeminiMediaResolution(modelIdentifier, mediaResolution)
     }
 
     override suspend fun sendRequest(
@@ -175,7 +210,15 @@ class GeminiModel(
     ): ModelResponse =
         geminiClient
             .generateContent(
-                request = createGenerateContentRequest(messages, tools, generationSettings, structuredOutputParameter, modelIdentifier),
+                request =
+                    createGenerateContentRequest(
+                        messages,
+                        tools,
+                        generationSettings,
+                        structuredOutputParameter,
+                        modelIdentifier,
+                        mediaResolution,
+                    ),
                 modelIdentifier = modelIdentifier,
             ).toModelResponse(structuredOutputParameter != null)
 

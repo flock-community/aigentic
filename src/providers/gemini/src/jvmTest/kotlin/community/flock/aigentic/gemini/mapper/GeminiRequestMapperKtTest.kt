@@ -11,7 +11,10 @@ import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
 import community.flock.aigentic.gemini.client.geminiJson
 import community.flock.aigentic.gemini.client.model.BlobContent
+import community.flock.aigentic.gemini.client.model.MediaResolution
+import community.flock.aigentic.gemini.client.model.MediaResolutionLevel
 import community.flock.aigentic.gemini.client.model.Part
+import community.flock.aigentic.gemini.model.GeminiMediaResolution
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -51,6 +54,58 @@ class GeminiRequestMapperKtTest :
                     .run {
                         this.inlineData shouldBe BlobContent(mimeType = mimeType.value, data = "iVBORw0KGgoAAA==")
                     }
+            }
+
+            it("should set the media resolution on every media part when configured") {
+                val messages =
+                    listOf(
+                        Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION),
+                        Message.Url(Sender.Agent, "https://example.com/scan.pdf", MimeType.PDF, MessageCategory.EXECUTION),
+                    )
+                val parts =
+                    createGenerateContentRequest(
+                        messages,
+                        emptyList(),
+                        GenerationSettings.DEFAULT,
+                        null,
+                        GeminiModelIdentifier.Gemini3_8Flash,
+                        GeminiMediaResolution.UltraHigh,
+                    ).contents.flatMap { it.parts }
+                val ultraHigh = MediaResolution(MediaResolutionLevel.MEDIA_RESOLUTION_ULTRA_HIGH)
+
+                parts[0].shouldBeInstanceOf<Part.Blob>().mediaResolution shouldBe ultraHigh
+                parts[1].shouldBeInstanceOf<Part.FileDataPart>().mediaResolution shouldBe ultraHigh
+            }
+
+            it("should serialize every media resolution as its Gemini level") {
+                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+
+                mapOf(
+                    GeminiMediaResolution.Low to "MEDIA_RESOLUTION_LOW",
+                    GeminiMediaResolution.Medium to "MEDIA_RESOLUTION_MEDIUM",
+                    GeminiMediaResolution.High to "MEDIA_RESOLUTION_HIGH",
+                    GeminiMediaResolution.UltraHigh to "MEDIA_RESOLUTION_ULTRA_HIGH",
+                ).forEach { (resolution, level) ->
+                    val request =
+                        createGenerateContentRequest(
+                            listOf(base64Message),
+                            emptyList(),
+                            GenerationSettings.DEFAULT,
+                            null,
+                            GeminiModelIdentifier.Gemini3_8Flash,
+                            resolution,
+                        )
+
+                    geminiJson.encodeToString(request) shouldContain "\"mediaResolution\":{\"level\":\"$level\"}"
+                }
+            }
+
+            it("should not serialize a mediaResolution key when not configured") {
+                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+                val request =
+                    createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini3_8Flash)
+
+                geminiJson.encodeToString(request) shouldNotContain "mediaResolution"
             }
 
             it("should set max output tokens when configured") {
