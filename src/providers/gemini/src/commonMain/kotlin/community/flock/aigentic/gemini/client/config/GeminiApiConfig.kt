@@ -7,6 +7,6 @@ data class GeminiApiConfig(
     val baseUrl: String = "https://generativelanguage.googleapis.com/v1beta/models",
     val numberOfRetriesOnServerErrors: Int = 1,
     val numberOfRetriesOnNetworkErrors: Int = 2,
-    val requestTimeoutMillis: Long = 60_000,
+    val requestTimeoutMillis: Long = 60_000 * 5,
     val socketTimeoutMillis: Long = 60_000,
 )
