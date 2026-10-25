@@ -2,7 +2,6 @@ import clsx from "clsx";
 import Link from "@docusaurus/Link";
 import Layout from "@theme/Layout";
 import Heading from "@theme/Heading";
-import "../css/custom.css";
 import styles from "./index.module.css";
 import { JSX, type ReactNode } from "react";
 import CyclingBlurText from "../components/CyclingBlurText";
@@ -40,13 +39,13 @@ function HomepageHeader() {
   return (
     <header className={clsx("hero hero--primary", styles.heroBanner)}>
       <div className="container">
-        <div className={clsx("hero__title hero-heading", styles.heroHeading)}>
+        <h1 className={clsx("hero__title hero-heading", styles.heroHeading)}>
           <CyclingBlurText
             phrases={['production-ready', 'reliable', 'LLM-agnostic']}
             prefix="Aigentic helps you build"
             suffix="AI agents faster"
           />
-        </div>
+        </h1>
         <p className={clsx("hero__subtitle", styles.heroSubtitle)}>
           A Kotlin DSL for AI agents that are typed, testable and work with any model
         </p>
@@ -109,7 +108,7 @@ export default function Home(): JSX.Element {
         <section className="how">
           <div className={clsx("container", styles.sectionIntro)}>
             <SectionTitle centered>From first agent to production</SectionTitle>
-            <p>Swap models, read documents, chain agents and test the results.</p>
+            <p>Connect your APIs, read documents, chain agents and test the results.</p>
           </div>
           <div className="container">
             <ProductionStory />
@@ -119,8 +118,8 @@ export default function Home(): JSX.Element {
           <div className="container">
             <SectionTitle>Pick the modules you need</SectionTitle>
             <p className={styles.lead}>
-              Everything is on Maven Central under <code>community.flock.aigentic</code>. Start with core and
-              one provider, then add what your agent needs.
+              Everything is on Maven Central under <code>community.flock.aigentic</code>. Start with core, one
+              provider and a Ktor engine such as <code>ktor-client-cio</code>, then add what your agent needs.
             </p>
             <ModuleMap />
           </div>

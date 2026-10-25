@@ -1,46 +1,17 @@
-export const providerExamples = [
-  {
-    label: "OpenAI",
-    code: `agent<String, Answer> {
-    openAIModel {
-        apiKey("YOUR_API_KEY")
-        modelIdentifier(OpenAIModelIdentifier.GPT5_5)
-    }
-    task("Answer questions about Kotlin") {}
-}`,
-  },
-  {
-    label: "Gemini",
-    code: `agent<String, Answer> {
+export const openApiExample = `val orderAgent = agent<String, Answer> {
     geminiModel {
         apiKey("YOUR_API_KEY")
         modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
     }
-    task("Answer questions about Kotlin") {}
-}`,
-  },
-  {
-    label: "Ollama",
-    code: `agent<String, Answer> {
-    ollamaModel {
-        apiUrl("http://localhost:11434/v1/")
-        modelIdentifier(OpenAIModelIdentifier.Custom("llama3"))
+    task("Answer questions about customer orders") {
+        addInstruction("Look up the order before you answer")
     }
-    task("Answer questions about Kotlin") {}
-}`,
-  },
-  {
-    label: "VertexAI",
-    code: `agent<String, Answer> {
-    vertexAIModel {
-        project("YOUR_PROJECT_ID")
-        location("europe-west4")
-        modelIdentifier(VertexAIModelIdentifier.Gemini3_5Flash)
+    openApiTools(File("orders-api.json").readText()) {
+        addHeader(Header.Bearer("YOUR_API_TOKEN"))
     }
-    task("Answer questions about Kotlin") {}
-}`,
-  },
-];
+}
+
+val run = orderAgent.start("Where is order 1042?")`;
 
 export const invoiceExtractorExample = `@AigenticParameter
 data class InvoiceLine(val description: String, val total: Double)

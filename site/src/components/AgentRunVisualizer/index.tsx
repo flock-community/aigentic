@@ -45,21 +45,6 @@ const PROVIDERS: Provider[] = [
     usage: { input: 398, output: 41 },
   },
   {
-    label: "Ollama",
-    model: "Llama 3",
-    block: [
-      "    ollamaModel {",
-      '        apiUrl("http://localhost:11434/v1/")',
-      '        modelIdentifier(OpenAIModelIdentifier.Custom("llama3"))',
-      "    }",
-    ],
-    imports: [
-      "community.flock.aigentic.ollama.dsl.ollamaModel",
-      "community.flock.aigentic.openai.model.OpenAIModelIdentifier",
-    ],
-    usage: { input: 455, output: 52 },
-  },
-  {
     label: "VertexAI",
     model: "Gemini 3.5 Flash on Vertex",
     block: [
@@ -74,6 +59,21 @@ const PROVIDERS: Provider[] = [
       "community.flock.aigentic.vertexai.dsl.vertexAIModel",
     ],
     usage: { input: 409, output: 37 },
+  },
+  {
+    label: "Ollama",
+    model: "Llama 3",
+    block: [
+      "    ollamaModel {",
+      '        apiUrl("http://localhost:11434/v1/")',
+      '        modelIdentifier(OpenAIModelIdentifier.Custom("llama3"))',
+      "    }",
+    ],
+    imports: [
+      "community.flock.aigentic.ollama.dsl.ollamaModel",
+      "community.flock.aigentic.openai.model.OpenAIModelIdentifier",
+    ],
+    usage: { input: 455, output: 52 },
   },
 ];
 
@@ -105,7 +105,7 @@ const snippetLines = (block: string[]) => [
   '        addInstruction("Use getWeather for live data")',
   "    }",
   '    addTool("getWeather") { req: WeatherRequest ->',
-  "        weatherApi.current(req.city)",
+  "        currentWeather(req.city)",
   "    }",
   "}",
   "",
@@ -141,7 +141,8 @@ const copyText = (provider: Provider, lines: string[]) =>
   [...COMMON_IMPORTS, ...provider.imports]
     .sort()
     .map((path) => `import ${path}`)
-    .join("\n") + `\n\n${lines.join("\n")}\n`;
+    .join("\n") +
+  `\n\n${lines.join("\n")}\n\n// Replace with a call to a real weather API\nfun currentWeather(city: String) = "14.0°C, light rain in $city"\n`;
 
 const useTypewriter = (text: string, active: boolean) => {
   const [count, setCount] = useState(text.length);
@@ -221,9 +222,11 @@ export default function AgentRunVisualizer() {
   const choose = (index: number) => {
     setProviderIndex(index);
     setPinned(true);
-    if (reduceMotion) return;
+    if (reduceMotion || !playing) {
+      setStep(FINAL_STEP);
+      return;
+    }
     started.current = true;
-    setPlaying(true);
     setRunCount((count) => count + 1);
     setStep(0);
   };
@@ -275,7 +278,7 @@ export default function AgentRunVisualizer() {
           </div>
         </div>
 
-        <div className={styles.pane}>
+        <div className={clsx(styles.pane, styles.codePane)}>
           <div className={styles.paneHeader}>
             <span className={styles.fileName}>WeatherAgent.kt</span>
           </div>
@@ -284,6 +287,7 @@ export default function AgentRunVisualizer() {
             activeLines={activeLinesFor(step, lines, provider.block.length)}
             swap={{ key: providerIndex, lines: range(MODEL_START, provider.block.length), animate: !reduceMotion }}
             minLines={MAX_LINES}
+            followActive
           />
         </div>
 

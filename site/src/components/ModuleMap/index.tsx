@@ -15,8 +15,8 @@ const GROUPS: Group[] = [
   {
     title: "Pick a provider",
     modules: [
-      { name: "openai", text: "OpenAI models." },
       { name: "gemini", text: "Google Gemini models." },
+      { name: "openai", text: "OpenAI models." },
       { name: "vertexai", text: "Gemini on Google Cloud VertexAI. JVM only." },
       { name: "ollama", text: "Local models through Ollama." },
     ],
@@ -44,12 +44,9 @@ export default function ModuleMap() {
   const version = useAigenticVersion();
   return (
     <div className={styles.map}>
-      {GROUPS.map((group, index) => (
+      {GROUPS.map((group) => (
         <section key={group.title} className={styles.group}>
-          <header className={styles.groupHeader}>
-            <span className={styles.groupNumber}>{String(index + 1).padStart(2, "0")}</span>
-            <h3>{group.title}</h3>
-          </header>
+          <h3 className={styles.groupTitle}>{group.title}</h3>
           <ul className={styles.modules}>
             {group.modules.map((module) => (
               <li key={module.name} className={styles.module}>

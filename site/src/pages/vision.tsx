@@ -92,19 +92,12 @@ export default function VisionPage() {
           <div className={styles.today}>
             <p>
               Build and Run need only the core library and a provider. Record, Tag and Replay use the{" "}
-              <code>platform</code> module and the hosted Aigentic platform.
-            </p>
-            <div className={styles.actions}>
-              <Link className={styles.primary} to="/docs/getting-started">
-                Build your first agent
-              </Link>
-              <Link
-                className={styles.secondary}
-                to="https://github.com/flock-community/aigentic/tree/main/src/examples/testing"
-              >
+              <code>platform</code> module and the hosted Aigentic platform.{" "}
+              <Link to="https://github.com/flock-community/aigentic/tree/main/src/examples/testing">
                 See the testing example
-              </Link>
-            </div>
+              </Link>{" "}
+              for a regression test in code.
+            </p>
           </div>
         </section>
       </main>

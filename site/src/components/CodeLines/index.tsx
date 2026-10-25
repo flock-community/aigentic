@@ -1,5 +1,6 @@
+import { useEffect, useRef } from "react";
 import clsx from "clsx";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { Highlight } from "prism-react-renderer";
 import { usePrismTheme } from "@docusaurus/theme-common";
 import styles from "./styles.module.css";
@@ -15,15 +16,37 @@ type CodeLinesProps = {
   activeLines?: number[];
   swap?: Swap;
   minLines?: number;
+  followActive?: boolean;
   className?: string;
 };
 
-export default function CodeLines({ code, activeLines = [], swap, minLines, className }: CodeLinesProps) {
+export default function CodeLines({
+  code,
+  activeLines = [],
+  swap,
+  minLines,
+  followActive = false,
+  className,
+}: CodeLinesProps) {
   const prismTheme = usePrismTheme();
+  const preRef = useRef<HTMLPreElement>(null);
+  const reduceMotion = useReducedMotion();
+  const firstActive = activeLines[0];
+
+  useEffect(() => {
+    const pre = preRef.current;
+    if (!followActive || !pre || firstActive === undefined || pre.scrollHeight <= pre.clientHeight) return;
+    const line = pre.querySelector<HTMLElement>(`[data-line="${firstActive}"]`);
+    if (!line) return;
+    pre.scrollTo({ top: line.offsetTop - pre.clientHeight / 3, behavior: reduceMotion ? "auto" : "smooth" });
+  }, [followActive, firstActive, reduceMotion]);
+
   return (
     <Highlight theme={prismTheme} code={code} language="kotlin">
       {({ tokens, getLineProps, getTokenProps }) => (
         <pre
+          ref={preRef}
+          tabIndex={0}
           className={clsx(styles.code, className)}
           style={minLines ? { minHeight: `calc(${minLines} * 1.65em + 32px)` } : undefined}
         >
@@ -34,6 +57,7 @@ export default function CodeLines({ code, activeLines = [], swap, minLines, clas
               return (
                 <div
                   key={lineIndex}
+                  data-line={lineIndex}
                   {...lineProps}
                   className={clsx(lineClassName, styles.line, activeLines.includes(lineIndex) && styles.lineActive)}
                 >

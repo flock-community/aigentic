@@ -7,7 +7,7 @@
   --viz-text: #ecebe8;
   --viz-muted: #8f8f8f;
   --viz-faint: #4d4d4d;
-  --viz-pending: #6b6b6b;
+  --viz-pending: #858585;
   --viz-mono: var(--ifm-font-family-monospace);
 
   container-type: inline-size;
@@ -226,7 +226,7 @@
   display: block;
   margin-bottom: 8px;
   font-size: 13px;
-  color: var(--viz-muted);
+  color: #b3b3b3;
   transition: color 0.3s ease;
 }
 
@@ -428,6 +428,23 @@
 
   .toolbarLabel {
     display: none;
+  }
+
+  .codePane pre {
+    max-height: 360px;
+    min-height: 0 !important;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .providerButton,
+  .toggle {
+    height: 44px;
+  }
+
+  .toggle {
+    width: 44px;
   }
 }
 

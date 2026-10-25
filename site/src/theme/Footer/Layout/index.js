@@ -25,6 +25,7 @@ export default function FooterLayout({ style, links, logo, copyright }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="navbar__item navbar__link header-github-link"
+                aria-label="Aigentic on GitHub"
               >
                 <svg
                   width="22"

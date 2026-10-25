@@ -43,3 +43,13 @@
   padding: 0;
   justify-content: center;
 }
+
+@media (max-width: 640px) {
+  .button {
+    height: 44px;
+  }
+
+  .compact {
+    width: 44px;
+  }
+}

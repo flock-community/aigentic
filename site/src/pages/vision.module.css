@@ -163,42 +163,10 @@
     padding: 1px 6px;
     color: #f0bc42;
   }
-}
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.primary,
-.secondary {
-  display: inline-block;
-  padding: 12px 24px;
-  border: 1px solid #f0bc42;
-  border-radius: 5px;
-  font-size: 17px;
-  text-decoration: none !important;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.primary {
-  background: #f0bc42;
-  color: #101010;
-}
-
-.primary:hover {
-  background: transparent;
-  color: #f0bc42;
-}
-
-.secondary {
-  color: #f0bc42;
-}
-
-.secondary:hover {
-  background: #f0bc42;
-  color: #101010;
+  a {
+    color: #f0bc42;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 }

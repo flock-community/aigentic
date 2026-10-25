@@ -10,26 +10,28 @@ type CopyButtonProps = {
 };
 
 export default function CopyButton({ text, label = "Copy", compact = false, className }: CopyButtonProps) {
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
+  const copied = status === "copied";
 
   useEffect(() => {
-    if (!copied) return;
-    const timer = setTimeout(() => setCopied(false), 2000);
+    if (status === "idle") return;
+    const timer = setTimeout(() => setStatus("idle"), 2000);
     return () => clearTimeout(timer);
-  }, [copied]);
+  }, [status]);
 
   const copy = () =>
-    navigator.clipboard
-      ?.writeText(text)
-      .then(() => setCopied(true))
-      .catch(() => setCopied(false));
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject())
+      .then(() => setStatus("copied"))
+      .catch(() => setStatus("failed"));
+
+  const statusLabel = status === "copied" ? "Copied" : status === "failed" ? "Couldn't copy" : label;
 
   return (
     <button
       type="button"
       className={clsx(styles.button, compact && styles.compact, copied && styles.copied, className)}
       onClick={copy}
-      aria-label={compact ? `${copied ? "Copied" : label}: ${text}` : undefined}
+      aria-label={compact ? `${statusLabel}: ${text}` : undefined}
     >
       <svg viewBox="0 0 16 16" aria-hidden="true">
         {copied ? (
@@ -41,7 +43,7 @@ export default function CopyButton({ text, label = "Copy", compact = false, clas
           </>
         )}
       </svg>
-      {!compact && <span aria-live="polite">{copied ? "Copied" : label}</span>}
+      {!compact && <span aria-live="polite">{statusLabel}</span>}
     </button>
   );
 }

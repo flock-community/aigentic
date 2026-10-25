@@ -25,7 +25,7 @@ function Footer() {
   return (
     <>
       {!isDocsPage && (
-        <section className="start-aigentic">
+        <section className="start-aigentic" aria-label="Start with Aigentic">
           <div className="container">
             <div className="row">
               <div className="col col--12">

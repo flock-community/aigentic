@@ -15,8 +15,6 @@
   justify-content: center;
   min-height: 72vh;
   padding: 40px 0;
-  opacity: 0.35;
-  transition: opacity 0.4s ease;
 
   p {
     font-size: 17px;
@@ -32,8 +30,12 @@
   min-height: 85vh;
 }
 
-.stepActive {
-  opacity: 1;
+.stepActive .stepTitle {
+  color: white;
+}
+
+.stepTitle {
+  color: white;
 }
 
 .stepNumber {
@@ -49,12 +51,13 @@
   font-size: 40px;
   font-weight: 500;
   line-height: 1.1;
-  color: white;
+  color: #7d7d7d;
+  transition: color 0.4s ease;
 }
 
 .stepLink {
   align-self: flex-start;
-  margin-top: 4px;
+  padding: 8px 0;
   color: #f0bc42;
   font-size: 17px;
   text-decoration: underline;
@@ -103,45 +106,6 @@
   color: #8f8f8f;
 }
 
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tab {
-  height: 30px;
-  padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-  background: transparent;
-  color: #ecebe8;
-  font-family: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  transition:
-    color 0.2s ease,
-    background-color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.tab:hover {
-  border-color: #f0bc42;
-  color: #f0bc42;
-}
-
-.tab:focus-visible {
-  outline: 2px solid #f0bc42;
-  outline-offset: 2px;
-}
-
-.tabActive,
-.tabActive:hover {
-  border-color: #f0bc42;
-  background: #f0bc42;
-  color: #101010;
-}
-
 .panelBody {
   max-height: min(620px, calc(100vh - 200px));
   overflow-y: auto;
@@ -162,7 +126,10 @@
   .step:last-child {
     min-height: 0;
     padding: 32px 0;
-    opacity: 1;
+  }
+
+  .stepTitle {
+    color: white;
   }
 
   .stepTitle {
@@ -180,7 +147,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .step,
+  .stepTitle,
   .stepLink {
     transition: none;
   }

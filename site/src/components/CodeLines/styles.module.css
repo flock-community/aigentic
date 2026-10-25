@@ -1,4 +1,5 @@
 .code {
+  position: relative;
   flex: 1;
   margin: 0;
   padding: 16px 0;
@@ -8,6 +9,11 @@
   font-size: 13.5px;
   line-height: 1.65;
   overflow-x: auto;
+}
+
+.code:focus-visible {
+  outline: 2px solid #f0bc42;
+  outline-offset: -2px;
 }
 
 .code code {
@@ -34,12 +40,16 @@
   border-left-color: #f0bc42;
 }
 
+.lineActive .lineNumber {
+  color: #f0bc42;
+}
+
 .lineNumber {
   flex: none;
   width: 44px;
   padding-right: 16px;
   text-align: right;
-  color: #4d4d4d;
+  color: #837e78;
   user-select: none;
 }
 

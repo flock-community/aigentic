@@ -39,25 +39,12 @@
   }
 }
 
-.groupHeader {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 18px;
-
-  h3 {
-    margin: 0;
-    font-family: "Funnel Display", sans-serif;
-    font-size: 21px;
-    font-weight: 500;
-    color: white;
-  }
-}
-
-.groupNumber {
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 13px;
-  color: #f0bc42;
+.groupTitle {
+  margin: 0 0 18px;
+  font-family: "Funnel Display", sans-serif;
+  font-size: 21px;
+  font-weight: 500;
+  color: white;
 }
 
 .modules {
@@ -98,6 +85,7 @@
 
 .groupLink {
   margin-top: auto;
+  padding: 8px 0;
   align-self: flex-start;
   color: #f0bc42;
   font-size: 15px;

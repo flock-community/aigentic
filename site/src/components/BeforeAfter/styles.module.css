@@ -52,7 +52,6 @@
   border-radius: 12px;
   background: #121212;
   overflow: hidden;
-  opacity: 0.75;
 
   pre {
     font-size: 12.5px;
@@ -60,7 +59,6 @@
 }
 
 .highlighted .frame {
-  opacity: 1;
   background:
     linear-gradient(#121212, #121212) padding-box,
     linear-gradient(160deg, #f0bc42, rgba(240, 188, 66, 0.08) 45%, #101010) border-box;

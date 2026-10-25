@@ -35,9 +35,9 @@ const CyclingBlurText: React.FC<CyclingBlurTextProps> = ({
   const words = currentPhrase.split(' ');
 
   return (
-    <div className={className}>
-      <div className={styles.prefixText}>{prefix}</div>
-      <div className={styles.dynamicContainer}>
+    <span className={`${styles.root} ${className}`}>
+      <span className={styles.prefixText}>{prefix}</span>
+      <span className={styles.dynamicContainer}>
         <AnimatePresence mode="wait">
           <motion.span
             key={phraseIndex}
@@ -59,9 +59,9 @@ const CyclingBlurText: React.FC<CyclingBlurTextProps> = ({
             ))}
           </motion.span>
         </AnimatePresence>
-      </div>
-      <div className={styles.suffixText}>{suffix}</div>
-    </div>
+      </span>
+      <span className={styles.suffixText}>{suffix}</span>
+    </span>
   );
 };
 

@@ -28,7 +28,7 @@ while (true) {
     messages += reply
     val call = reply.toolCalls?.firstOrNull() ?: break
     val args = Json.decodeFromString<WeatherRequest>(call.function.arguments)
-    messages += ToolMessage(call.id, weatherApi.current(args.city))
+    messages += ToolMessage(call.id, currentWeather(args.city))
 }
 
 // Hope the last reply is valid JSON in the right shape
@@ -44,11 +44,11 @@ val weatherAgent = agent<String, Weather> {
     }
     task("Answer questions about the weather") {}
     addTool("getWeather") { req: WeatherRequest ->
-        weatherApi.current(req.city)
+        currentWeather(req.city)
     }
 }
 
-val outcome = weatherAgent.start("Weather in Amsterdam?").outcome`;
+val run = weatherAgent.start("Weather in Amsterdam?")`;
 
 const COLUMNS = [
   {
@@ -65,7 +65,7 @@ const COLUMNS = [
   },
   {
     title: "With Aigentic",
-    note: "Complete agent",
+    note: "Same agent",
     code: WITH_AIGENTIC,
     points: [
       "Schemas come from your data classes",

@@ -1,14 +1,21 @@
+.root {
+  display: block;
+}
+
 .prefixText {
+  display: block;
   margin-bottom: 0;
   line-height: 1.1;
 }
 
 .suffixText {
+  display: block;
   margin-top: 0;
   line-height: 1.1;
 }
 
 .dynamicContainer {
+  display: block;
   margin-top: 0.75rem;
   margin-bottom: 0.25rem;
   line-height: 1.1;

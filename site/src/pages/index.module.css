@@ -41,13 +41,12 @@ body {
 }
 
 .heroHeading {
+  margin: 0;
+  line-height: 1.65;
   font-size: 74px;
   font-weight: 500;
   color: white;
   font-family: "Funnel Display", sans-serif;
-  span {
-    color: #f0bc42;
-  }
 
   @media (max-width: 1440px) {
     font-size: 62px;
