@@ -187,6 +187,16 @@ suspend fun processLegalDocument(apiKey: String) {
 }
 ```
 
+Each agent in the chain logs when it starts, followed by your own output:
+
+```text title="Output"
+🚀 Agent started!
+🚀 Agent started!
+🚀 Agent started!
+Document processed successfully!
+Summary: …
+```
+
 ## Error Handling
 
 If any agent in the workflow fails or gets stuck, the entire workflow stops at that point. The `WorkflowRun` will contain information about:
