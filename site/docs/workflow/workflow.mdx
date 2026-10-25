@@ -23,6 +23,8 @@ This creates a workflow where:
 2. `secondAgent` processes the output from `firstAgent`
 3. `thirdAgent` processes the output from `secondAgent`
 
+A workflow chains at most five agents.
+
 ## Type Safety
 
 Workflows are fully type-safe. The output type of each agent must match the input type of the next agent in the workflow:
@@ -114,6 +116,15 @@ workflowRun.agentRuns.forEach { agentRun ->
 Here's a practical example that processes legal documents through multiple stages:
 
 ```kotlin
+import community.flock.aigentic.core.agent.Attachment
+import community.flock.aigentic.core.agent.tool.Outcome
+import community.flock.aigentic.core.annotations.AigenticParameter
+import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.core.dsl.thenProcess
+import community.flock.aigentic.core.workflow.start
+import community.flock.aigentic.gemini.dsl.geminiModel
+import community.flock.aigentic.gemini.model.GeminiModelIdentifier
+
 @AigenticParameter
 data class RedactedDocument(val redactedText: String)
 
@@ -127,7 +138,7 @@ data class ComplianceReport(
 @AigenticParameter
 data class LegalSummary(val summary: String)
 
-suspend fun processLegalDocument(apiKey: String) {
+suspend fun processLegalDocument(apiKey: String, documentText: String) {
     // Create agents for each step
     val documentRedactor = agent<String, RedactedDocument> {
         geminiModel {
@@ -199,13 +210,10 @@ Summary: …
 
 ## Error Handling
 
-If any agent in the workflow fails or gets stuck, the entire workflow stops at that point. The `WorkflowRun` will contain information about:
+If any agent in the workflow fails or gets stuck, the entire workflow stops at that point:
 
-- Which agent failed
-- The reason for failure
-- All successfully completed agent runs up to the failure point
-
-This gives you detailed information to debug and fix workflow issues.
+- `outcome` is the `Stuck` or `Fatal` outcome of the agent that stopped, with its reason or error message.
+- `agentRuns` holds every agent run up to and including the one that stopped, so you can see where it went wrong.
 
 ## Best Practices
 

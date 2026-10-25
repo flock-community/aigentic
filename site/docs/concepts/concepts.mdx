@@ -22,6 +22,8 @@ When you call `start()`, Aigentic does the following:
 
 `start()` doesn't throw when something goes wrong during the run. A failed model request or a tool that throws ends the run with `Outcome.Fatal`, so you handle errors with a `when` instead of a `try`.
 
+Configuration mistakes are different: a missing model or task throws as soon as you build the agent with `agent { }`, before you can start it.
+
 ## The parts of an agent
 
 **Agent.** `agent<I, O> { }` builds an agent that takes an `I` and gives back an `O`. Both are your own types, usually data classes annotated with `@AigenticParameter`. [Agents](/docs/dsl/agent)

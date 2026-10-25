@@ -38,12 +38,13 @@ Key features:
 
 #### Importance of Descriptions
 
-The `description` property in `@AigenticParameter` significantly improves LLM interactions. This description is included in the tool schemas sent to the LLM, giving it context about:
-- The overall purpose of the parameter object
-- How this object fits into the tool's functionality
-- Any special considerations for using this parameter type
+The `description` property in `@AigenticParameter` is sent with the agent's output type, so the LLM knows what the object it returns is for.
 
-Good descriptions help the LLM better understand when and how to use your tools, resulting in improved agent performance.
+Where descriptions end up:
+
+- **Agent output type**: the `@AigenticParameter` description is sent with the response schema.
+- **Tool input type**: only the properties are sent, as the tool's arguments. Describe the tool itself in the `description` of `createTool` or `addTool`.
+- **Nested object**: the `@Description` on the property that holds it is sent.
 
 ### @Description
 
@@ -67,7 +68,7 @@ Clear property descriptions help the LLM create more accurate parameter objects,
 
 ### Optional properties
 
-Make a property nullable (`T?`) when its value can be missing. Aigentic tells the LLM it can leave the property out or return `null`, and both end up as `null` in your object. Non-nullable properties stay required.
+Make a property nullable (`T?`) when its value can be missing. Aigentic tells the LLM the property can be `null`, and on Gemini and VertexAI it can also leave the property out. Both end up as `null` in your object. Non-nullable properties stay required.
 
 ```kotlin
 @AigenticParameter
@@ -123,7 +124,7 @@ When creating tools for Aigentic agents, follow these best practices:
 
 1. **Clear Descriptions**: Provide clear and concise descriptions for your tools using the `@AigenticParameter` and `@Description` annotations
 2. **Type Safety**: Use strongly typed input and output types
-3. **Error Handling**: Implement robust error handling
+3. **Error Handling**: A tool that throws ends the run with `Outcome.Fatal`. Return an error value instead when the model should be able to recover
 4. **Idempotency**: Make tools idempotent when possible
 5. **Security**: Validate inputs and handle sensitive data carefully
 
@@ -133,11 +134,10 @@ val emailTool = createTool<EmailRequest, EmailResponse>(
     name = "sendEmail",
     description = "Send an email to a recipient"
 ) { request ->
-    // Validate input
-    require(request.to.isNotEmpty()) { "Recipient email cannot be empty" }
-    require(request.subject.isNotEmpty()) { "Email subject cannot be empty" }
+    // Return validation errors to the model instead of throwing
+    if (request.to.isEmpty()) return@createTool EmailResponse(success = false, error = "Recipient email cannot be empty")
+    if (request.subject.isEmpty()) return@createTool EmailResponse(success = false, error = "Email subject cannot be empty")
 
-    // Execute with error handling
     runCatching {
         val result = emailService.sendEmail(
             to = request.to,
