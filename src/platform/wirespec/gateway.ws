@@ -27,7 +27,8 @@ type ConfigDto {
     temperature: Number?,
     thinkingBudget: Integer?,
     maxOutputTokens: Integer?,
-    mediaResolution: String?
+    mediaResolution: String?,
+    thinkingLevel: String?
 }
 
 type TaskDto {
