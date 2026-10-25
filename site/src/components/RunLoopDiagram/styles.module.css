@@ -1,0 +1,160 @@
+.diagram {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) 40px minmax(0, 1.3fr) 40px minmax(0, 1.1fr);
+  align-items: center;
+  gap: 8px;
+  margin: 32px 0;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+
+    .arrow {
+      justify-self: center;
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.box {
+  height: 100%;
+  padding: 18px 18px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: #141414;
+
+  p {
+    margin: 8px 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #9f9f9f;
+  }
+
+  code {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #e6e1d6;
+    font-size: 14px;
+  }
+}
+
+.agent {
+  background:
+    linear-gradient(#141414, #141414) padding-box,
+    linear-gradient(160deg, #f0bc42, rgba(240, 188, 66, 0.1) 50%, #101010) border-box;
+  border-color: transparent;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #9f9f9f;
+
+  code {
+    color: #f0bc42;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.parts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 14px;
+  margin: 0;
+
+  dt {
+    font-weight: 500;
+    color: white;
+    font-size: 14px;
+  }
+
+  dd {
+    margin: 0;
+    font-size: 14px;
+    color: #9f9f9f;
+  }
+}
+
+.loop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  margin-top: 14px !important;
+  border-top: 1px dashed rgba(240, 188, 66, 0.3);
+  color: #e6e1d6 !important;
+
+  svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    stroke: #f0bc42;
+  }
+}
+
+.outcomes {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0 !important;
+  list-style: none !important;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+
+  li::before {
+    display: none !important;
+  }
+
+  span {
+    font-size: 13px;
+    color: #9f9f9f;
+  }
+}
+
+.arrow {
+  width: 40px;
+  height: 14px;
+  stroke: #f0bc42;
+}
+
+.workflow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 24px 0;
+
+  .arrow {
+    width: 28px;
+  }
+}
+
+.type,
+.step {
+  padding: 6px 10px !important;
+  border-radius: 8px;
+  font-size: 13.5px !important;
+}
+
+.type {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: #141414 !important;
+  color: #e6e1d6;
+}
+
+.step {
+  border: 1px solid rgba(240, 188, 66, 0.4) !important;
+  background: rgba(240, 188, 66, 0.08) !important;
+  color: #f0bc42;
+}
