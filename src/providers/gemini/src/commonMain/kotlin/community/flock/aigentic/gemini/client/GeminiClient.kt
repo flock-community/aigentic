@@ -11,7 +11,6 @@ import community.flock.aigentic.gemini.client.ratelimit.RateLimiter
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
@@ -23,7 +22,9 @@ import io.ktor.client.request.header
 import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
@@ -84,13 +85,7 @@ class GeminiClient(
                     if (response.status.isSuccess()) {
                         response.bodyAsChannel().readGenerateContentChunks().merge()
                     } else {
-                        val errorDetails = response.body<ErrorResponse>().error
-                        aigenticException(
-                            "Received error response from Gemini, " +
-                                "http status: ${response.status}, " +
-                                "error code: ${errorDetails.status}, " +
-                                "message: ${errorDetails.message}",
-                        )
+                        aigenticException(response.errorMessage())
                     }
                 }
         } catch (e: IOException) {
@@ -100,10 +95,23 @@ class GeminiClient(
         }
     }
 
+    /**
+     * The error Gemini answered with. The streaming endpoint sends its JSON error with content type
+     * `text/event-stream`, which content negotiation can't decode, so the body is read as text and
+     * decoded here; a body that is not Gemini's error JSON is shown as it is.
+     */
+    private suspend fun HttpResponse.errorMessage(): String {
+        val body = bodyAsText()
+        val error = runCatching { geminiJson.decodeFromString<ErrorResponse>(body.trim().removePrefix("data:")).error }.getOrNull()
+        val details = error?.let { "error code: ${it.status}, message: ${it.message}" } ?: "body: ${body.take(MAX_ERROR_BODY_LENGTH)}"
+        return "Received error response from Gemini, http status: $status, $details"
+    }
+
     private fun GeminiApiConfig.streamGenerateContentUrl(modelIdentifier: GeminiModelIdentifier) =
         "$baseUrl/${modelIdentifier.stringValue}:streamGenerateContent?alt=sse"
 
     private companion object {
         const val API_KEY_HEADER = "x-goog-api-key"
+        const val MAX_ERROR_BODY_LENGTH = 500
     }
 }
