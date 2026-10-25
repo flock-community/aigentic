@@ -9,6 +9,11 @@ import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
+import community.flock.aigentic.core.tool.Parameter
+import community.flock.aigentic.core.tool.ParameterType
+import community.flock.aigentic.core.tool.PrimitiveValue
+import community.flock.aigentic.core.tool.ToolDescription
+import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.gemini.client.geminiJson
 import community.flock.aigentic.gemini.client.model.BlobContent
 import community.flock.aigentic.gemini.client.model.MediaResolution
@@ -22,6 +27,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import io.kotest.matchers.types.shouldBeInstanceOf
+import kotlinx.serialization.json.Json
 
 class GeminiRequestMapperKtTest :
     DescribeSpec({
@@ -561,6 +567,81 @@ class GeminiRequestMapperKtTest :
                 ).generationConfig
                     .thinkingConfig
                     ?.thinkingLevel shouldBe "low"
+            }
+        }
+
+        describe("optional parameters") {
+
+            val optionalParameters =
+                listOf(
+                    Parameter.Primitive("name", null, isRequired = true, type = ParameterType.Primitive.String),
+                    Parameter.Primitive("age", null, isRequired = false, type = ParameterType.Primitive.Integer),
+                    Parameter.Complex.Enum(
+                        name = "unit",
+                        description = null,
+                        isRequired = false,
+                        default = PrimitiveValue.String("MM"),
+                        values = listOf(PrimitiveValue.String("MM"), PrimitiveValue.String("CM")),
+                        valueType = ParameterType.Primitive.String,
+                    ),
+                    Parameter.Complex.Object(
+                        name = "size",
+                        description = null,
+                        isRequired = false,
+                        parameters = listOf(Parameter.Primitive("value", null, isRequired = true, type = ParameterType.Primitive.Number)),
+                    ),
+                    Parameter.Complex.Array(
+                        name = "tags",
+                        description = null,
+                        isRequired = false,
+                        itemDefinition = Parameter.Primitive("Item", null, isRequired = true, type = ParameterType.Primitive.String),
+                    ),
+                )
+
+            val expectedSchema =
+                Json.parseToJsonElement(
+                    """
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string" },
+                        "age": { "type": "integer", "nullable": true },
+                        "unit": { "type": "string", "nullable": true, "enum": ["MM", "CM"] },
+                        "size": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": { "value": { "type": "number" } },
+                          "required": ["value"]
+                        },
+                        "tags": { "type": "array", "nullable": true, "items": { "type": "string" } }
+                      },
+                      "required": ["name"]
+                    }
+                    """,
+                )
+
+            it("should mark optional fields of the response schema nullable and leave them out of required") {
+                val responseParameter = Parameter.Complex.Object("Extraction", null, isRequired = true, parameters = optionalParameters)
+
+                createGenerateContentRequest(emptyList(), emptyList(), GenerationSettings.DEFAULT, responseParameter, GeminiModelIdentifier.Gemini2_5Flash)
+                    .generationConfig
+                    .responseSchema shouldBe expectedSchema
+            }
+
+            it("should mark optional tool parameters nullable and leave them out of required") {
+                val tool =
+                    object : ToolDescription {
+                        override val name = ToolName("extract")
+                        override val description: String? = null
+                        override val parameters = optionalParameters
+                    }
+
+                createGenerateContentRequest(emptyList(), listOf(tool), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
+                    .tools
+                    ?.single()
+                    ?.functionDeclarations
+                    ?.single()
+                    ?.parameters shouldBe expectedSchema
             }
         }
     })

@@ -65,6 +65,21 @@ Property descriptions greatly enhance LLM interactions. Each property descriptio
 
 Clear property descriptions help the LLM create more accurate parameter objects, reducing errors and making your tools work better. Adding more context through descriptions helps the LLM understand how to use your tools properly.
 
+### Optional properties
+
+Make a property nullable (`T?`) when its value can be missing. Aigentic tells the LLM it can leave the property out or return `null`, and both end up as `null` in your object. Non-nullable properties stay required.
+
+```kotlin
+@AigenticParameter
+data class Invoice(
+    val invoiceNumber: String,
+    @Description("The total amount, null when the invoice doesn't mention it")
+    val total: Double?,
+)
+```
+
+This helps extraction agents most: instead of making up a placeholder like `0` or `""`, the LLM can return `null` when the source doesn't contain the value. If an optional nested object has a property that can also be missing, make that property nullable too.
+
 ## Creating Tools
 
 Aigentic provides several ways to create tools:

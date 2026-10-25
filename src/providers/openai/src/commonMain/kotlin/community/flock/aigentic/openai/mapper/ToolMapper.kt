@@ -1,19 +1,17 @@
 package community.flock.aigentic.openai.mapper
 
 import com.aallam.openai.api.chat.Tool
+import com.aallam.openai.api.core.Parameters
 import community.flock.aigentic.core.tool.ToolDescription
-import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
-import kotlinx.serialization.json.put
+import community.flock.aigentic.providers.jsonschema.SchemaDialect
+import community.flock.aigentic.providers.jsonschema.toObjectSchema
 
 internal fun ToolDescription.toOpenAITool(): Tool {
     val toolParameters =
         if (parameters.isEmpty()) {
-            com.aallam.openai.api.core.Parameters.Empty
+            Parameters.Empty
         } else {
-            com.aallam.openai.api.core.Parameters.buildJsonObject {
-                put("type", "object")
-                emitPropertiesAndRequired(parameters)
-            }
+            Parameters(parameters.toObjectSchema(SchemaDialect.OPENAI_JSON_SCHEMA))
         }
 
     return Tool.function(
