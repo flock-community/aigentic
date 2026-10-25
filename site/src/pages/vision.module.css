@@ -2,76 +2,203 @@
   background-color: #101010;
   background-image: url("/img/vision-bg.png");
   background-size: 100%;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
   background-repeat: no-repeat;
+  color: white;
 }
 
 .visionSection {
-  max-width: 1023px;
+  max-width: 1200px;
   margin: 0 auto;
-  width: 96%;
-  padding: 210px 0px 175px;
-  text-align: center;
-  @media (max-width: 1440px) {
-    padding: 150px 0px 90px;
-  }
-  @media (max-width: 1024px) {
-    padding: 100px 0px 50px;
-  }
-  @media (max-width: 767px) {
-    padding: 120px 0px 30px;
-    padding-top: 100px;
-  }
-}
+  width: 92%;
+  padding: 180px 0 140px;
 
-.visionContent {
-  display: flex;
-  flex-direction: column;
+  @media (max-width: 1024px) {
+    padding: 120px 0 80px;
+  }
 }
 
 .title {
+  margin: 0 0 24px;
   font-family: "Funnel Display", sans-serif;
   font-weight: 500;
-  font-size: 74px;
-  line-height: 104%;
-  letter-spacing: -0.03em;
-  text-align: center;
+  font-size: 64px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   color: #ffffff;
-  margin: 0%;
-  margin-bottom: 30px;
-  span {
-    color: #f0bc42;
-  }
+
   @media (max-width: 1024px) {
     font-size: 48px;
   }
+
   @media (max-width: 767px) {
-    font-size: 42px;
+    font-size: 38px;
   }
 }
 
-.subtitle {
-  font-family: "Funnel Display", sans-serif;
-  font-weight: 500;
-  font-size: 74px;
-  line-height: 104%;
-  letter-spacing: -0.03em;
-  text-align: center;
+.lead {
+  max-width: 640px;
+  margin: 0 0 64px;
+  font-size: 20px;
+  line-height: 1.6;
+  color: #9f9f9f;
+
+  @media (max-width: 767px) {
+    font-size: 17px;
+  }
+}
+
+.loop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr) 56px minmax(0, 1fr);
+  grid-template-rows: auto 56px auto;
+  grid-template-areas:
+    "build a1 run a2 record"
+    "a6 . . . a3"
+    "improve a5 replay a4 tag";
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (max-width: 996px) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas: none;
+    gap: 16px;
+
+    .step {
+      grid-area: auto !important;
+    }
+
+    .arrowItem {
+      display: none;
+    }
+  }
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(20, 20, 20, 0.92);
+
+  h2 {
+    margin: 6px 0 8px;
+    font-family: "Funnel Display", sans-serif;
+    font-size: 26px;
+    font-weight: 500;
+    color: white;
+  }
+
+  p {
+    margin: 0 0 16px;
+    font-size: 16px;
+    line-height: 1.55;
+    color: #9f9f9f;
+  }
+
+  code {
+    align-self: flex-start;
+    margin-top: auto;
+    padding: 2px 8px;
+    border: 1px solid rgba(240, 188, 66, 0.3);
+    background: rgba(240, 188, 66, 0.08);
+    color: #f0bc42;
+    font-size: 13.5px;
+  }
+}
+
+.number {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 13px;
   color: #f0bc42;
 }
 
-.paragraph {
-  font-family: "DM Sans", sans-serif;
-  font-weight: 400;
-  font-size: 18px;
-  line-height: 160%;
-  letter-spacing: -0.01em;
-  color: #9f9f9f;
-  @media (max-width: 767px) {
+.arrowItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow {
+  width: 40px;
+  height: 16px;
+  stroke: #f0bc42;
+}
+
+.left {
+  transform: rotate(180deg);
+}
+
+.down {
+  transform: rotate(90deg);
+}
+
+.up {
+  transform: rotate(-90deg);
+}
+
+.today {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 48px;
+  padding: 24px 28px;
+  border: 1px solid rgba(240, 188, 66, 0.25);
+  border-radius: 12px;
+  background: rgba(240, 188, 66, 0.04);
+
+  p {
+    max-width: 620px;
+    margin: 0;
     font-size: 16px;
-    line-height: 140%;
+    line-height: 1.6;
+    color: #c9c9c9;
   }
+
+  code {
+    padding: 1px 6px;
+    color: #f0bc42;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.primary,
+.secondary {
+  display: inline-block;
+  padding: 12px 24px;
+  border: 1px solid #f0bc42;
+  border-radius: 5px;
+  font-size: 17px;
+  text-decoration: none !important;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.primary {
+  background: #f0bc42;
+  color: #101010;
+}
+
+.primary:hover {
+  background: transparent;
+  color: #f0bc42;
+}
+
+.secondary {
+  color: #f0bc42;
+}
+
+.secondary:hover {
+  background: #f0bc42;
+  color: #101010;
 }
