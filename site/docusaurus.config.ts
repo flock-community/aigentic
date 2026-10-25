@@ -2,6 +2,9 @@ import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
+const AIGENTIC_VERSION = "0.11.0";
+const KTOR_VERSION = "3.4.3";
+
 const config: Config = {
   title: "Aigentic",
   tagline: "Build and integrate AI agents with Kotlin",
@@ -17,7 +20,7 @@ const config: Config = {
     locales: ["en"],
   },
   customFields: {
-    version: "0.9.1",
+    version: AIGENTIC_VERSION,
   },
   presets: [
     [
@@ -72,9 +75,7 @@ const config: Config = {
         content:
           "A Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications",
       },
-      { property: "og:image", content: "/img/og-image.png" },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://aigentic.io/" },
     ],
     stylesheets: [
       {
@@ -82,8 +83,7 @@ const config: Config = {
         type: "text/css",
       },
     ],
-    // Replace with your project's social card
-    image: "img/aigentic-logo-fixed.svg",
+    image: "img/og-image.png",
     navbar: {
       title: "",
       logo: {
@@ -171,13 +171,9 @@ const config: Config = {
   markdown: {
     format: "mdx",
     preprocessor: ({ fileContent }) => {
-      const variables = {
-        AIGENTIC_VERSION: "0.0.0-SNAPSHOT",
-      };
-      return fileContent.replaceAll(
-        "{{AIGENTIC_VERSION}}",
-        variables.AIGENTIC_VERSION,
-      );
+      return fileContent
+        .replaceAll("{{AIGENTIC_VERSION}}", AIGENTIC_VERSION)
+        .replaceAll("{{KTOR_VERSION}}", KTOR_VERSION);
     },
   },
 };

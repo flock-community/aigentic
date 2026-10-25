@@ -66,7 +66,7 @@ body {
 }
 
 .main-wrapper {
-  overflow: hidden;
+  overflow: clip;
 }
 
 .designFirstContent {
@@ -438,7 +438,7 @@ table tr:nth-child(2n) {
   z-index: -1;
   left: 0;
   top: 0;
-  background-image: url("/img/footer-card-bg.png");
+  background-image: url("/img/footer-card-bg.webp");
   background-size: cover;
 }
 
@@ -788,11 +788,6 @@ table tr:nth-child(2n) {
   }
 }
 
-.custom-code-block {
-  max-height: 640px;
-  overflow-y: auto;
-}
-
 .DocSearch-Hit[aria-selected=true] a {
   background-color: #2a2a2a !important;
 }
@@ -809,4 +804,9 @@ table tr:nth-child(2n) {
 
 .DocSearch-Hit[aria-selected=true] mark {
   color: #f0bc42 !important;
+}
+
+.language-text code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

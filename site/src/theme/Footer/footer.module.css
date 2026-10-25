@@ -371,7 +371,7 @@ table tr:nth-child(2n) {
   z-index: -1;
   left: 0;
   top: 0;
-  background-image: url("/img/footer-card-bg.png");
+  background-image: url("/img/footer-card-bg.webp");
   background-size: cover;
 }
 
