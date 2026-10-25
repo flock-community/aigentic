@@ -17,6 +17,7 @@ It provides 2 main dsl:
 
 Required imports:
 - community.flock.aigentic.core.agent.start
+- community.flock.aigentic.core.agent.tokenUsage
 - community.flock.aigentic.core.agent.tool.Outcome
 - community.flock.aigentic.core.annotations.AigenticParameter
 - community.flock.aigentic.core.dsl.agent
@@ -68,8 +69,8 @@ suspend fun main() {
         is Outcome.Fatal -> println("Error: ${outcome.message}")
     }
 
-    // Print token usage summary to monitor resource consumption
-    println(run.getTokenUsageSummary())
+    // Print token usage to monitor resource consumption
+    println("Token usage: ${run.tokenUsage()}")
 }
 ```
 
