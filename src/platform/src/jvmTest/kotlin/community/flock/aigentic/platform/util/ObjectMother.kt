@@ -14,35 +14,38 @@ import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import kotlin.time.Clock
 
-fun createAgent(settings: GenerationSettings = GenerationSettings.DEFAULT) =
-    Agent<Unit, String>(
-        platform = null,
-        customSystemPromptBuilder = null,
-        model =
-            object : Model {
-                override val modelIdentifier: ModelIdentifier =
-                    object : ModelIdentifier {
-                        override val stringValue: String = "test-model-identifier"
-                    }
-                override val generationSettings = settings
-
-                override suspend fun sendRequest(
-                    messages: List<Message>,
-                    tools: List<ToolDescription>,
-                    structuredOutputParameter: Parameter?,
-                ): ModelResponse {
-                    TODO("Not yet implemented")
+fun createAgent(
+    settings: GenerationSettings = GenerationSettings.DEFAULT,
+    mediaResolution: String? = null,
+) = Agent<Unit, String>(
+    platform = null,
+    customSystemPromptBuilder = null,
+    model =
+        object : Model {
+            override val modelIdentifier: ModelIdentifier =
+                object : ModelIdentifier {
+                    override val stringValue: String = "test-model-identifier"
                 }
-            },
-        task =
-            Task(
-                description = "description",
-                instructions = listOf(Instruction("Some instruction")),
-            ),
-        contexts = emptyList(),
-        tools = emptyMap(),
-        tags = emptyList(),
-    )
+            override val generationSettings = settings
+            override val mediaResolutionLevel = mediaResolution
+
+            override suspend fun sendRequest(
+                messages: List<Message>,
+                tools: List<ToolDescription>,
+                structuredOutputParameter: Parameter?,
+            ): ModelResponse {
+                TODO("Not yet implemented")
+            }
+        },
+    task =
+        Task(
+            description = "description",
+            instructions = listOf(Instruction("Some instruction")),
+        ),
+    contexts = emptyList(),
+    tools = emptyMap(),
+    tags = emptyList(),
+)
 
 fun createAgentRun(): AgentRun<String> {
     val systemPrompt = Message.SystemPrompt("You are a helpful agent")
