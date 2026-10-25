@@ -34,15 +34,17 @@ The `AgentConfig` class provides several methods for configuring an agent:
 
 ```kotlin
 agent {
-    model(openAIModel {
+    openAIModel {
         apiKey("your-api-key")
         modelIdentifier(OpenAIModelIdentifier.GPT4O)
         generationConfig {
             temperature(0.5f)
         }
-    })
+    }
 }
 ```
+
+Each provider function, like `openAIModel { }`, sets the agent's model. To use your own `Model` implementation, pass it to `model(...)`, see [Bring your own model](./providers#bring-your-own-model).
 
 See [Providers](./providers#thinking-configuration) for `thinkingBudget()` and `thinkingLevel()`, the reasoning-effort options available in `generationConfig`.
 
@@ -99,7 +101,7 @@ agent {
 
 The system prompt defines the agent's behavior, capabilities, and personality. It's the first message sent to the LLM and sets the foundation for how the agent will operate.
 
-Aigentic provides a sensible default system prompt through the `DefaultSystemPromptBuilder`, which includes instructions about:
+Aigentic provides a default system prompt through `AgenticSystemPromptBuilder`, or `StructuredOutputPromptBuilder` when the agent has an output type and no tools. The default includes instructions about:
 - The agent's purpose and mode of operation
 - How to use tools
 - Task description and specific instructions
@@ -110,7 +112,7 @@ You only need to override the system prompt when you want to customize the agent
 ```kotlin
 
 val customSystemPromptBuilder = object : SystemPromptBuilder {
-        override fun buildSystemPrompt(agent: Agent): Message.SystemPrompt {
+        override fun <I : Any, O : Any> buildSystemPrompt(agent: Agent<I, O>): Message.SystemPrompt {
             return Message.SystemPrompt("""
                 You are a specialized customer service agent for a tech company.
 
@@ -132,7 +134,7 @@ agent {
 }
 ```
 
-The `SystemPromptBuilder` interface has a single method `buildSystemPrompt(agent: Agent)` that returns a `Message.SystemPrompt`. This gives you access to the agent's configuration, including its task, instructions, and tools, allowing you to create a highly customized system prompt.
+The `SystemPromptBuilder` interface has a single method `buildSystemPrompt(agent: Agent<I, O>)` that returns a `Message.SystemPrompt`. This gives you access to the agent's configuration, including its task, instructions, and tools, allowing you to create a highly customized system prompt.
 
 ### Configuring Response Format
 
@@ -159,6 +161,8 @@ val myAgent = agent {
     // Agent configuration
 }
 ```
+
+An agent without an output type needs at least one tool. Building it without one throws `Cannot build Agent, property 'tools' is missing`.
 
 When using the generic types approach, the agent will automatically be configured to handle the specified input and output types.
 
@@ -222,7 +226,11 @@ You can also specify input data along with attachments:
 @AigenticParameter
 data class ProcessingRequest(val instruction: String)
 
-val run = agent.start(
+val documentAgent = agent<ProcessingRequest, Answer> {
+    // Agent configuration
+}
+
+val run = documentAgent.start(
     ProcessingRequest("Please summarize this document"),
     Attachment.Base64.pdf(documentBase64)
 )
@@ -257,6 +265,26 @@ Token usage: TokenUsage(inputTokens=312, outputTokens=41, thinkingOutputTokens=0
 The `response` property contains the type you specified when creating the agent, and `AgentRun` gives you access to timing information, token usage, and the complete conversation history.
 
 `start` doesn't throw when something goes wrong during the run, like a failed model request or a tool that throws. You get an `Outcome.Fatal` with the error message instead, and the run is still sent to the platform when you configured one. Cancelling the coroutine still cancels the run.
+
+The error is also logged. By default that prints `Error: <message>`. To send it to your own logging, pass a `Logger` from `community.flock.aigentic.core.logging`: `agent.start("What is Kotlin?", logger = myLogger)`.
+
+### Sending runs to the platform
+
+Add `platform { }` to send every run to the Aigentic platform. There you can review runs, tag the good ones and replay them as [regression tests](https://github.com/flock-community/aigentic/tree/main/src/examples/testing). Flock hosts the platform and gives access on request.
+
+```kotlin
+import community.flock.aigentic.platform.dsl.platform
+
+val agent = agent<String, Answer> {
+    // Agent configuration
+    platform {
+        name("weather-agent")
+        secret("YOUR_PLATFORM_SECRET")
+    }
+}
+```
+
+This needs the `platform` module, see [Installation](/docs/getting-started#installation).
 
 ## More Examples
 

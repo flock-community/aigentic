@@ -76,10 +76,16 @@ Aigentic supports several LLM providers out of the box:
     // ...
 }`}
     </CodeBlock>
+
+    The VertexAI provider runs on the JVM only. It doesn't take an API key: it signs in with Google Application Default Credentials, for example after `gcloud auth application-default login`.
   </TabItem>
 </Tabs>
 
-## Gemini timeouts
+`ollamaModel` connects to `http://localhost:11434/v1/` unless you set `apiUrl()`.
+
+Add `logLevel(LogLevel.DEBUG)` to `geminiModel` or `openAIModel` to log every HTTP request and response, which helps when a provider returns an error you don't understand. `LogLevel` is in `community.flock.aigentic.core.model`.
+
+## Timeouts
 
 The Gemini provider streams every response, so data keeps arriving while the model writes a long answer. Two timeouts control how long Aigentic waits:
 
@@ -94,7 +100,14 @@ geminiModel {
 }
 ```
 
-Without either setting, both timeouts are 5 minutes. When a request still fails, for example because of a timeout or a dropped connection, the run ends with `Outcome.Fatal` instead of throwing an exception.
+Without either setting, both timeouts are 5 minutes. Gemini retries a request once after a server error and up to twice after a network error or a timeout, so a run can take longer than `requestTimeout`. Gemini also sends at most 50 requests per minute per model and waits when it reaches that limit.
+
+The other providers:
+
+- VertexAI: `requestTimeout(ms)`, 5 minutes by default. VertexAI doesn't stream, so there's no `socketTimeout`.
+- OpenAI and Ollama: a fixed socket timeout of 60 seconds.
+
+When a request still fails, for example because of a timeout or a dropped connection, the run ends with `Outcome.Fatal` instead of throwing an exception.
 
 ## Attachment resolution
 
@@ -124,7 +137,7 @@ agent<String, Answer> {
     | `LOW` | 280 | 280 |
     | `MEDIUM` | 560 | 560 |
     | `HIGH` | 1120 | 1120 |
-    | `ULTRA_HIGH` | 2240 | not documented |
+    | `ULTRA_HIGH` | 2240 | 1120 (sent as `HIGH`) |
 
     These are the counts Gemini documents for Gemini 3 models. A PDF page with a text layer also counts the tokens of that text. Gemini accepts `ULTRA_HIGH` for images only and rejects it on a PDF with `400 INVALID_ARGUMENT`, so with `ULTRA_HIGH` a PDF attachment is sent at `HIGH`, the highest level Gemini accepts for it.
 
@@ -176,13 +189,17 @@ agent<String, Answer> {
   </TabItem>
 </Tabs>
 
+Ollama has no resolution setting, and like OpenAI it doesn't support PDF attachments yet.
+
 ## Thinking configuration
 
 Reasoning models let you control how much they think before answering. Aigentic exposes this through two `generationConfig` DSL functions: `thinkingBudget(tokens)` and `thinkingLevel(level)`. They are mutually exclusive; configuring both throws an `AigenticException`. Leaving both unset uses the model's default behaviour.
 
-Migrating from `0.11.0`: `thinkingBudget()` on a Gemini or VertexAI 3.x model identifier used to be forwarded as-is; it now throws an `AigenticException` (use `thinkingLevel()` instead). `thinkingBudget()` on an OpenAI or Ollama model used to be silently ignored; it now throws too.
+Migrating from `0.11.0`: `thinkingBudget()` on a Gemini or VertexAI 3.x model identifier used to be forwarded as-is; it now throws an `AigenticException` (use `thinkingLevel()` instead). `thinkingBudget()` on an OpenAI or Ollama model used to be silently ignored; it now throws too. Sampling defaults are no longer sent to Gemini and VertexAI 3.x models or to OpenAI reasoning models, and an explicit `temperature()` or `topP()` on an OpenAI reasoning model now throws, see [Sampling parameters](#sampling-parameters).
 
-Model/identifier and thinking-level errors (an unsupported combination, or a level that isn't allowed on that model) are raised client-side as soon as the model is built — for example inside `geminiModel { ... }`, before any request is ever sent — not later when the agent runs.
+Thinking errors, like `thinkingBudget()` on a model that only supports `thinkingLevel()`, are raised as soon as the model is built, for example inside `geminiModel { ... }`. You get them before any request is sent, not later when the agent runs. Every `ThinkingLevel` works on a model that supports `thinkingLevel()`: a level the model doesn't have is mapped to one it does, as described below.
+
+`AigenticException` is internal to Aigentic, so catch `Exception` if you want to handle these errors yourself.
 
 <Tabs>
   <TabItem value="Gemini" label="Gemini">
@@ -310,6 +327,10 @@ On Gemini and VertexAI 3.x models, an explicitly set `topK()`/`topP()` is forwar
 
 Like the thinking-configuration errors above, an OpenAI reasoning model rejecting an explicit `temperature()`/`topP()` is raised client-side as soon as the model is built, not later when the agent runs.
 
+## Output length
+
+`maxOutputTokens(tokens)` in `generationConfig` caps how many tokens the model writes per response. Leave it unset to use the provider's limit. When Gemini stops at the limit, the run ends with `Outcome.Fatal` and a message that tells you to raise it.
+
 ## Structured output (Gemini & Vertex AI)
 
 You don’t need structured output to use output types. With any provider you can define `agent<Input, Output>` and Aigentic will parse the model’s response into your `Output` type in the normal chat/tool‑calling flow.
@@ -354,6 +375,7 @@ All model implementations in Aigentic implement the `Model` interface, which def
 interface Model {
     val modelIdentifier: ModelIdentifier
     val generationSettings: GenerationSettings
+    val mediaResolutionLevel: String? get() = null
 
     suspend fun sendRequest(
         messages: List<Message>,
@@ -363,7 +385,7 @@ interface Model {
 }
 ```
 
-You can implement this interface to connect to your own model.
+You can implement this interface to connect to your own model. Override `mediaResolutionLevel` if your model reads attachments at a configurable resolution, so it's reported to the platform with each run.
 
 :::caution Breaking change in 0.12.0
 `GenerationSettings.temperature`, `topK` and `topP` changed from `Float`/`Int`/`Float` to `Float?`/`Int?`/`Float?`. If your custom `Model` implementation reads these fields directly (e.g. `generationSettings.temperature.toDouble()`), update it to handle `null` — it now means "not configured" rather than a provider-specific default.

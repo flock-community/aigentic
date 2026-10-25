@@ -8,7 +8,7 @@ sidebar_position: 0
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-Aigentic is a Kotlin Multiplatform library for building AI agents with a typed DSL. You'll have a working agent in three steps. The rest of this page covers every module, Maven, and adding tools.
+Aigentic is a Kotlin Multiplatform library for building AI agents with a typed DSL. You'll have a working agent in three steps. The rest of this page covers the other modules, Maven, and adding tools.
 
 ## Your first agent in 3 steps
 
@@ -94,7 +94,7 @@ Aigentic can be added to your project using either Gradle or Maven build tools.
 <Tabs>
 <TabItem value="gradle" label="Gradle">
 
-### Kotlin Multiplatform
+### Kotlin (JVM)
 
 Add the following to your `build.gradle.kts` file:
 
@@ -120,6 +120,9 @@ dependencies {
     // Tools modules (optional)
     implementation("community.flock.aigentic:http:{{AIGENTIC_VERSION}}")
     implementation("community.flock.aigentic:openapi:{{AIGENTIC_VERSION}}")
+
+    // Platform module (optional): send runs to the Aigentic platform and run regression tests
+    implementation("community.flock.aigentic:platform:{{AIGENTIC_VERSION}}")
 
     // Choose one of the following Ktor client engines depending on your platform
     implementation("io.ktor:ktor-client-cio:{{KTOR_VERSION}}")         // Ktor's CIO engine
@@ -217,6 +220,13 @@ Add the following to your `pom.xml` file:
         <version>${aigentic.version}</version>
     </dependency>
 
+    <!-- Platform module (optional) -->
+    <dependency>
+        <groupId>community.flock.aigentic</groupId>
+        <artifactId>platform-jvm</artifactId>
+        <version>${aigentic.version}</version>
+    </dependency>
+
     <!-- Ktor Client Engine (REQUIRED) - Choose one -->
     <dependency>
         <groupId>io.ktor</groupId>
@@ -267,7 +277,7 @@ For detailed information about engine features, which one to choose and alternat
 
 ## Add a tool
 
-Tools let an agent call your code. Here the agent gets a `getWeather` tool and decides on its own when to call it:
+Tools let an agent call your code. Here the agent gets a `getWeather` tool and decides on its own when to call it. It uses the imports from step 2, plus `community.flock.aigentic.core.annotations.Description`:
 
 ```kotlin
 // Describe the agents response type
@@ -305,7 +315,8 @@ suspend fun main() {
 
         // Add a weather tool
         addTool("getWeather", "Get the current weather for a location") { req: WeatherQuestion ->
-            WeatherClient.requestWeather(req.city, req.country)
+            // Replace with a call to a real weather API
+            WeatherResponse(temperature = 14.0, conditions = "Light rain", location = req.city)
         }
     }
 

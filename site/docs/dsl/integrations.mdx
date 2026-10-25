@@ -37,6 +37,8 @@ Well-documented OpenAPI specifications help your agents use APIs more accurately
 To integrate an OpenAPI specification with your agent, use the `openApiTools` function:
 
 ```kotlin
+import community.flock.aigentic.tools.openapi.dsl.openApiTools
+
 agent<Input, Output> {
     // Configure your model
     openAIModel {
@@ -108,6 +110,8 @@ In this example, the agent uses the Hacker News API to retrieve stories and then
 Many APIs require authentication. Aigentic provides a flexible way to add authentication headers to your OpenAPI requests using the `oasHeaderConfig` parameter:
 
 ```kotlin
+import community.flock.aigentic.tools.http.Header
+
 openApiTools(
     oasJson = openApiSpecificationJson,
     oasHeaderConfig = {
@@ -178,6 +182,16 @@ Under the hood, the OpenAPI integration performs the following steps:
 5. **Response Processing**: The HTTP response is processed and returned to the agent which can act on it.
 
 This process allows your agent to interact with any API that provides an OpenAPI specification, without requiring you to manually define tools for each endpoint.
+
+A few things to check in your specification:
+
+- It declares exactly one entry in `servers`.
+- Every operation has an `operationId`. It becomes the tool name.
+- The operation's `description` is sent to the LLM, its `summary` isn't.
+- Header and cookie parameters are ignored. Use `addHeader` for headers the API needs.
+- Only `application/json` request bodies are supported.
+
+When the LLM leaves an optional argument or request body field empty, Aigentic leaves it out of the request, so the API never receives `null` for it.
 
 ## Use Cases
 
