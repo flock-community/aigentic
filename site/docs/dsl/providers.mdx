@@ -55,6 +55,7 @@ Aigentic supports several LLM providers out of the box:
       {`agent<String, Answer> {
     ollamaModel {
         apiUrl("http://localhost:11434/v1/")
+        modelIdentifier(OpenAIModelIdentifier.Custom("llama3"))
         generationConfig {
             // Use default settings
         }
@@ -171,7 +172,7 @@ agent<String, Answer> {
 
     `ORIGINAL` is only available from gpt-5.4 on. Setting it on an older model throws an `AigenticException` as soon as the model is built. A `Custom` identifier is passed through as-is.
 
-    `imageDetail()` only applies to images. OpenAI only offers a detail setting for PDFs in its Responses API, and Aigentic uses Chat Completions.
+    `imageDetail()` only applies to images. The OpenAI provider doesn't support PDF attachments yet, see [Running an Agent with Attachments](./agent#running-an-agent-with-attachments).
   </TabItem>
 </Tabs>
 

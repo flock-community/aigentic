@@ -83,6 +83,7 @@ agent<String, Answer> {
     // Ollama model
     ollamaModel {
         apiUrl("http://localhost:11434/v1/")
+        modelIdentifier(OpenAIModelIdentifier.Custom("llama3"))
     }
     // ...
 }

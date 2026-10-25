@@ -15,10 +15,12 @@ import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessage
 import community.flock.aigentic.openai.model.OpenAIImageDetail
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.be
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.beInstanceOf
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.json.Json
@@ -96,6 +98,17 @@ class OpenAIMapperTest :
                         .shouldBeInstanceOf<ImagePart>()
                         .imageUrl
                         .detail shouldBe detail
+                }
+            }
+
+            it("should throw for base64 and url PDF attachments") {
+                listOf(
+                    Message.Base64(Sender.Agent, "JVBERi0=", MimeType.PDF, MessageCategory.RUN_CONTEXT),
+                    Message.Url(Sender.Agent, "https://example.com/invoice.pdf", MimeType.PDF, MessageCategory.RUN_CONTEXT),
+                ).forEach { message ->
+                    shouldThrow<Exception> {
+                        message.toOpenAIMessage()
+                    }.message shouldContain "PDF attachments are not supported on OpenAI-compatible models"
                 }
             }
 
