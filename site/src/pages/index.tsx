@@ -1,30 +1,53 @@
 import clsx from "clsx";
 import Link from "@docusaurus/Link";
 import Layout from "@theme/Layout";
-import CodeBlock from "@theme/CodeBlock";
 import Heading from "@theme/Heading";
-import "../css/custom.css";
 import styles from "./index.module.css";
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-import { JSX } from "react";
-import {weatherAgent, workflowExample, invoiceExtractorExample} from "../code/examples";
+import { JSX, type ReactNode } from "react";
 import CyclingBlurText from "../components/CyclingBlurText";
+import AgentRunVisualizer from "../components/AgentRunVisualizer";
+import BeforeAfter from "../components/BeforeAfter";
+import ProductionStory from "../components/ProductionStory";
+import PixelMark from "../components/PixelMark";
+import StartSection from "../components/StartSection";
+
+const dslPoints = [
+  {
+    token: "agent<I, O>",
+    text: "Typed input in, typed output out. Your data classes tell the model what to return.",
+  },
+  {
+    token: "addTool",
+    text: "Tools are plain Kotlin lambdas. The agent decides when to call them.",
+  },
+  {
+    token: "run.outcome",
+    text: "Every run ends as Finished, Stuck or Fatal, so errors come back as values.",
+  },
+];
+
+function SectionTitle({ children, centered = false }: { children: ReactNode; centered?: boolean }) {
+  return (
+    <Heading as="h2" className={clsx(styles.heading2, styles.sectionTitle, centered && styles.sectionTitleCentered)}>
+      <PixelMark />
+      {children}
+    </Heading>
+  );
+}
 
 function HomepageHeader() {
   return (
     <header className={clsx("hero hero--primary", styles.heroBanner)}>
       <div className="container">
-        <div className={clsx("hero__title hero-heading", styles.heroHeading)}>
+        <h1 className={clsx("hero__title hero-heading", styles.heroHeading)}>
           <CyclingBlurText
             phrases={['production-ready', 'reliable', 'LLM-agnostic']}
             prefix="Aigentic helps you build"
             suffix="AI agents faster"
           />
-        </div>
+        </h1>
         <p className={clsx("hero__subtitle", styles.heroSubtitle)}>
-          Streamline your LLM development journey with a powerful Kotlin DSL for building
-          and integrating AI agents into applications
+          A Kotlin DSL for AI agents that are typed, testable and work with any model
         </p>
         <div className={styles.buttons}>
           <Link
@@ -49,515 +72,81 @@ export default function Home(): JSX.Element {
   return (
     <Layout
       title="Aigentic: Kotlin DSL for AI Agents"
-      description="Streamline your LLM development journey with a powerful Kotlin DSL for building and integrating AI agents into applications"
+      description="A Kotlin DSL for AI agents that are typed, testable and work with any model"
     >
       <HomepageHeader />
       <main className={clsx(styles.page)}>
         <section className="designFirstContent designFirstContent-blur pt-0">
           <div className="container">
-            <div className="row row--align-center">
-              <div className="col col--5">
-                <div className="designFirstContent-left">
-                  <Heading as="h2" className={clsx(styles.heading2)}>
-                    <span className="primary-text-color">Intuitive</span> Kotlin{" "}
-                    <br />
-                    DSL{" "}
-                  </Heading>
-                  <p>
-                    Building and integrating AI agents into applications can be complex and challenging.
-                    Aigentic streamlines this process with a powerful Kotlin DSL that helps you:
-                  </p>
-                  <ul className={styles.listItemGroup}>
-                    <li className={clsx(styles.listItem)}>
-                      Rapidly create and deploy LLM agents
-                    </li>
-                    <li className={clsx(styles.listItem)}>
-                      Seamlessly integrate with multiple LLM providers
-                    </li>
-                    <li className={clsx(styles.listItem)}>
-                      Easily define and manage agent tools and capabilities
-                    </li>
-                    <li className={clsx(styles.listItem)}>
-                      Efficiently handle message processing and context management
-                    </li>
-                    <li className={clsx(styles.listItem)}>
-                      Transition smoothly from proof of concept to production
-                    </li>
-                    <li className={clsx(styles.listItem)}>
-                      Iterate quickly based on real-world feedback
-                    </li>
-                  </ul>
-                </div>
+            <div className={clsx("row", styles.dslIntro)}>
+              <div className="col col--6">
+                <SectionTitle>Intuitive Kotlin DSL</SectionTitle>
+                <p className={styles.lead}>
+                  Describe the task, give the agent tools, and get a Kotlin data class back.
+                  Here's a complete agent and what happens when it runs.
+                </p>
               </div>
-              <div className="col col--7">
-                <div className="card-nospace">
-                  <img
-                    src="/img/signal-2025-04-27-175547.png"
-                    alt="aigentic-kotlin-dsl"
-                  />
-                </div>
+              <div className="col col--6">
+                <ul className={styles.points}>
+                  {dslPoints.map(({ token, text }) => (
+                    <li key={token}>
+                      <code>{token}</code>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
+            </div>
+            <AgentRunVisualizer />
+            <div className={styles.centeredAction}>
+              <Link className={clsx(styles.button, styles.buttonPrimary)} to="/docs/getting-started">
+                Build your first agent
+              </Link>
             </div>
           </div>
         </section>
-        <section className="designFirstContent">
+        <section className="other-capabilites other-capabilites-shadow">
           <div className="container">
-            <div className="row row--align-center">
-              <div className="col col--7">
-                <div className="card card-border-bottom card-nospace">
-                  <CodeBlock
-                    language="kotlin"
-                    title="InvoiceExtractor.kt"
-                    className="custom-code-block"
-                  >
-                    {invoiceExtractorExample}
-                  </CodeBlock>
-                </div>
-              </div>
+            <SectionTitle>Why Aigentic</SectionTitle>
+            <p className={styles.lead}>
+              Most agent libraries help you build the demo. Aigentic is built for what comes after: typed agents in
+              your existing Kotlin code, any provider, and regression tests from real runs. Here's the same weather
+              agent written both ways.
+            </p>
+            <BeforeAfter />
+            <div className={clsx("row row--align-center", styles.talk)}>
               <div className="col col--5">
-                <div className="designFirstContent-right">
-                  <Heading as="h2" className={clsx(styles.heading2)}>
-                    Why <span className="primary-text-color">Aigentic</span>
-                  </Heading>
-                  <p>
-                    Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for building
-                    and integrating AI agents into applications. It streamlines the process of creating,
-                    deploying, and managing LLM agents within your ecosystem.
-                  </p>
-                  <p>
-                    By offering a model-agnostic approach, Aigentic supports multiple LLM providers
-                    including OpenAI, Gemini, Ollama, VertexAI, and more. This flexibility allows you to choose
-                    the best model for your specific use case without being locked into a single provider.
-                  </p>
-                  <p>
-                    Additionally, Aigentic bridges the gap between proof of concept and production-ready
-                    applications, enabling rapid iteration and improvement based on real-world feedback.
-                    In short, Aigentic accelerates AI development, reduces complexity, and enables
-                    integration with existing systems.
-                  </p>
-                </div>
+                <Heading as="h3">Built by Flock, in the open</Heading>
+                <p>
+                  Aigentic is open source. Watch the talk for a walkthrough, or start from the Initializr to get a
+                  project with the right dependencies.
+                </p>
               </div>
-            </div>
-          </div>
-        </section>
-        <section className="steps">
-          <div className="container">
-            <div className="grid grid-cols-3">
-              <div className="card card-border-left">
-                <div className="icon-box">
-                  <svg
-                    width="28"
-                    height="28"
-                    viewBox="0 0 28 28"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M18.6673 24.5L18.6673 22.1667C18.6673 20.929 18.1757 19.742 17.3005 18.8668C16.4253 17.9917 15.2383 17.5 14.0007 17.5L7.00065 17.5C5.76297 17.5 4.57599 17.9917 3.70082 18.8668C2.82565 19.742 2.33398 20.929 2.33398 22.1667L2.33398 24.5"
-                      stroke="#101010"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M10.5007 12.8333C13.078 12.8333 15.1673 10.744 15.1673 8.16667C15.1673 5.58934 13.078 3.5 10.5007 3.5C7.92332 3.5 5.83398 5.58934 5.83398 8.16667C5.83398 10.744 7.92332 12.8333 10.5007 12.8333Z"
-                      stroke="#101010"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M25.668 24.5007L25.668 22.1673C25.6672 21.1334 25.3231 20.1289 24.6896 19.3117C24.0561 18.4945 23.1691 17.9108 22.168 17.6523"
-                      stroke="#101010"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M18.668 3.65234C19.6718 3.90936 20.5615 4.49316 21.1969 5.31171C21.8322 6.13025 22.1771 7.13698 22.1771 8.17318C22.1771 9.20938 21.8322 10.2161 21.1969 11.0346C20.5615 11.8532 19.6718 12.437 18.668 12.694"
-                      stroke="#101010"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+              <div className="col col--7">
+                <div className={styles.video}>
+                  <iframe
+                    src="https://www.youtube.com/embed/MitNJPjN_SQ?si=W2GDiyoaVmTdWX7M"
+                    title="Aigentic talk on YouTube"
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  ></iframe>
                 </div>
-                <p>Create and deploy AI agents with intuitive Kotlin DSL</p>
-              </div>
-              <div className="card">
-                <div className="icon-box">
-                  <svg
-                    width="28"
-                    height="28"
-                    viewBox="0 0 28 28"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10.5 3.5H5.83333C4.54467 3.5 3.5 4.54467 3.5 5.83333V10.5C3.5 11.7887 4.54467 12.8333 5.83333 12.8333H10.5C11.7887 12.8333 12.8333 11.7887 12.8333 10.5V5.83333C12.8333 4.54467 11.7887 3.5 10.5 3.5Z"
-                      stroke="black"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M8.16602 12.832V17.4987C8.16602 18.1175 8.41185 18.711 8.84943 19.1486C9.28702 19.5862 9.88051 19.832 10.4993 19.832H15.166"
-                      stroke="black"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M22.166 15.168H17.4993C16.2107 15.168 15.166 16.2126 15.166 17.5013V22.168C15.166 23.4566 16.2107 24.5013 17.4993 24.5013H22.166C23.4547 24.5013 24.4993 23.4566 24.4993 22.168V17.5013C24.4993 16.2126 23.4547 15.168 22.166 15.168Z"
-                      stroke="black"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <p>Integrate with multiple LLM providers seamlessly</p>
-              </div>
-              <div className="card card-border-right">
-                <div className="icon-box">
-                  <svg
-                    width="28"
-                    height="28"
-                    viewBox="0 0 28 28"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M11.667 2.33203H16.3337"
-                      stroke="black"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M14 16.332L17.5 12.832"
-                      stroke="black"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M14.0003 25.6667C19.155 25.6667 23.3337 21.488 23.3337 16.3333C23.3337 11.1787 19.155 7 14.0003 7C8.84567 7 4.66699 11.1787 4.66699 16.3333C4.66699 21.488 8.84567 25.6667 14.0003 25.6667Z"
-                      stroke="black"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <p>Accelerate from proof of concept to production</p>
               </div>
             </div>
           </div>
         </section>
         <section className="how">
-          <div className="section-header">
-            <div className="container">
-              <Heading as="h2" className={clsx(styles.heading2)}>
-                <span className="primary-text-color">How</span>
-              </Heading>
-            </div>
+          <div className={clsx("container", styles.sectionIntro)}>
+            <SectionTitle centered>From first agent to production</SectionTitle>
+            <p>Connect your APIs, read documents, chain agents and test the results.</p>
           </div>
-          <div className="inner-section" id="how-design">
-            <div className="container">
-              <div className="row row--align-center">
-                <div className="col col--6">
-                  <div>
-                    <Heading as="h2" className={clsx(styles.heading2)}>
-                      Define
-                    </Heading>
-                    <p>
-                      Aigentic provides an intuitive Kotlin DSL for defining AI agents with clear,
-                      concise syntax. This approach allows you to specify agent behavior, tools,
-                      and capabilities in a type-safe manner. The DSL abstracts away the complexity
-                      of working with different LLM providers while giving you full control over
-                      your agent's functionality.
-                    </p>
-                    <Link
-                      className={clsx(
-                        "button-link",
-                        styles.button,
-                        styles.buttonPrimary,
-                      )}
-                      to="/docs/getting-started"
-                    >
-                      Explore the DSL
-                    </Link>
-                  </div>
-                </div>
-                <div className="col col--6 code-block-col">
-                  <div className="card card-border-bottom card-nospace">
-                    <CodeBlock
-                      language="kotlin"
-                      title="WeatherAgent.kt"
-                      className="custom-code-block"
-                    >
-                      {weatherAgent}
-                    </CodeBlock>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="inner-section" id="how-integrate">
-            <div className="container">
-              <div className="row row--align-center">
-                <div className="col col--6 code-block-col">
-                  <div>
-                    <Tabs>
-                      <TabItem value="OpenAI" label="OpenAI">
-                        <CodeBlock language="kotlin">{`val model = openAIModel {
-      apiKey("YOUR_API_KEY")
-      modelIdentifier(OpenAIModelIdentifier.GPT4Turbo)
-  }`}</CodeBlock>
-                      </TabItem>
-
-                      <TabItem value="Gemini" label="Gemini">
-                        <CodeBlock language="kotlin">{`val model = geminiModel {
-    apiKey("YOUR_API_KEY")
-    modelIdentifier(GeminiModelIdentifier.Gemini2_5FlashPreview)
-}`}</CodeBlock>
-                      </TabItem>
-
-                      <TabItem value="Ollama" label="Ollama">
-                        <CodeBlock language="kotlin">{`val model = ollamaModel {
-    apiUrl("http://localhost:11434/v1/")
-}`}</CodeBlock>
-                      </TabItem>
-
-                      <TabItem value="VertexAI" label="VertexAI">
-                        <CodeBlock language="kotlin">{`val model = vertexAIModel {
-    project("YOUR_PROJECT_ID")
-    location("YOUR_LOCATION")
-    modelIdentifier(VertexAIModelIdentifier.Gemini2_0Flash)
-}`}</CodeBlock>
-                      </TabItem>
-                    </Tabs>
-                  </div>
-                </div>
-                <div className="col col--6">
-                  <div>
-                    <Heading as="h2" className={clsx(styles.heading2)}>
-                      Providers
-                    </Heading>
-                    <p>
-                      Aigentic is designed to be model-agnostic, allowing you to seamlessly
-                      integrate with various LLM providers including OpenAI, Gemini, Ollama, VertexAI,
-                      or your own. This flexibility enables you to choose the best model for your
-                      specific use case without being locked into a single provider. You can
-                      switch between providers with minimal code changes.
-                    </p>
-                    <Link
-                      className={clsx(
-                        "button-link",
-                        styles.button,
-                        styles.buttonPrimary,
-                      )}
-                      to="/docs/dsl/providers"
-                    >
-                      Explore Providers
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="inner-section" id="how-deploy">
-            <div className="container">
-              <div className="row row--align-center">
-                <div className="col col--6">
-                  <div className="how-content">
-                    <Heading as="h2" className={clsx(styles.heading2)}>
-                      Validate
-                    </Heading>
-                    <p>
-                      Aigentic bridges the gap between proof of concept and production-ready
-                      applications. With its Kotlin Multiplatform foundation, you can validate
-                      your AI agents across different platforms and environments. Aigentic
-                      provides tools for monitoring, logging, and managing your agents in
-                      production, enabling you to iterate quickly based on real-world feedback.
-                    </p>
-                    <Link
-                      className={clsx(
-                        "button-link",
-                        styles.button,
-                        styles.buttonPrimary,
-                      )}
-                      to="/vision"
-                    >
-                      Vision
-                    </Link>
-                  </div>
-                </div>
-                <div className="col col--6 code-block-col">
-                  <img src="/img/validate.png" alt="Deployment Diagram" />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="inner-section" id="how-workflow">
-            <div className="container">
-              <div className="row row--align-center">
-                <div className="col col--6 code-block-col">
-                  <div className="card card-border-bottom card-nospace">
-                    <CodeBlock
-                      language="kotlin"
-                      title="DocumentWorkflow.kt"
-                      className="custom-code-block"
-                    >
-                      {workflowExample}
-                    </CodeBlock>
-                  </div>
-                </div>
-                <div className="col col--6">
-                  <div>
-                    <Heading as="h2" className={clsx(styles.heading2)}>
-                      Workflows
-                    </Heading>
-                    <p>
-                      For complex tasks that require multiple processing steps, Aigentic workflows help you chain agents together. Each agent processes the output from the previous agent, creating seamless workflows of AI-powered agents.
-                    </p>
-                    <p>
-                      Workflows are fully type-safe, ensuring that agent outputs match the inputs of the next agent in the chain. This approach helps you break down complex problems into focused, manageable steps.
-                    </p>
-                    <Link
-                      className={clsx(
-                        "button-link",
-                        styles.button,
-                        styles.buttonPrimary,
-                      )}
-                      to="/docs/workflow"
-                    >
-                      Explore Workflows
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section className="other-capabilites other-capabilites-shadow ">
           <div className="container">
-            <div className="row row--align-center">
-              <div className="col col--6">
-                <Heading as="h2" className={clsx(styles.heading2)}>
-                  Key <span>capabilities</span>
-                </Heading>
-              </div>
-              <div className="col col--6">
-                <div className="card card-other card-border-bottom">
-                  <Heading as="h4" className={clsx(styles.heading2)}>
-                    LLM Providers
-                  </Heading>
-                  <p>
-                    Aigentic supports multiple LLM providers, giving you flexibility and choice.
-                  </p>
-                  <p>
-                    <span>Supported:</span> OpenAI, Gemini, Ollama, VertexAI, or your own
-                  </p>
-                </div>
-              </div>
-              <div className="col col--6">
-                <div className="card card-other card-border-bottom">
-                  <Heading as="h4" className={clsx(styles.heading2)}>
-                    Multiplatform
-                  </Heading>
-                  <p>Built with Kotlin Multiplatform for cross-platform compatibility.</p>
-                  <p>
-                    <span>Platforms:</span> JVM, JavaScript, Node, Native
-                  </p>
-                </div>
-              </div>
-              <div className="col col--6">
-                <div className="card card-other card-border-bottom">
-                  <Heading as="h4" className={clsx(styles.heading2)}>
-                    Integrations
-                  </Heading>
-                  <p>Aigentic includes a variety of built-in tools for common agent integrations.</p>
-                  <p>
-                    <span>Included:</span> HTTP tools, OpenAPI tools
-                  </p>
-                </div>
-              </div>
-              <div className="col col--6">
-                <div className="card card-other card-border-bottom">
-                  <Heading as="h4" className={clsx(styles.heading2)}>
-                    Context
-                  </Heading>
-                  <p>
-                    Efficient handling of conversation context and message history.
-                  </p>
-                  <p>
-                    <span>Features:</span> Memory management, Context caching
-                  </p>
-                </div>
-              </div>
-              <div className="col col--6">
-                <div className="card card-other card-border-bottom">
-                  <Heading as="h4" className={clsx(styles.heading2)}>
-                    Validation
-                  </Heading>
-                  <p>Comprehensive testing utilities for AI agent development.</p>
-                  <p>
-                    <span>Features:</span> Mock LLM responses, Test fixtures, Scenario testing
-                  </p>
-                </div>
-              </div>
-              <div className="col col--6">
-                <div className="card card-other card-border-bottom">
-                  <Heading as="h4" className={clsx(styles.heading2)}>
-                    Workflow Chaining
-                  </Heading>
-                  <p>Chain multiple agents together to create powerful multi-step processing pipelines.</p>
-                  <p>
-                    <span>Features:</span> Type-safe chaining, Multi-agent orchestration, Complex task decomposition
-                  </p>
-                </div>
-              </div>
-            </div>
+            <ProductionStory />
           </div>
         </section>
-        <section className="other-capabilites">
-          <div className="container">
-            <div className="row row--align-center">
-              <div className="col col--6">
-                <Heading as="h2" className={clsx(styles.heading2)}>
-                  Why <span>Aigentic</span>
-                </Heading>
-                <p>
-                  Choosing Aigentic means selecting a powerful, flexible library designed
-                  for developers who want to build production-ready AI applications with
-                  Kotlin's type safety and expressiveness.
-                </p>
-                <p>
-                  Our commitment to ongoing innovation and quality ensures that
-                  Aigentic not only meets current demands but also evolves with
-                  emerging AI technologies and best practices.
-                </p>
-                <p>
-                  By actively engaging in the open-source community and
-                  maintaining transparent development processes, we ensure that
-                  Aigentic remains at the forefront of AI agent development. Our focus on
-                  developer experience, performance, and reliability provides you with a
-                  framework that elevates your AI projects to new heights.
-                </p>
-              </div>
-              <div className="col col--1"></div>
-              <div className="col col--5">
-                <iframe width="530" height="315" src="https://www.youtube.com/embed/MitNJPjN_SQ?si=W2GDiyoaVmTdWX7M"
-                        title="YouTube video player" frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerPolicy="strict-origin-when-cross-origin"
-                        allowFullScreen></iframe>
-              </div>
-            </div>
-          </div>
-        </section>
+        <StartSection showModules />
       </main>
     </Layout>
   );

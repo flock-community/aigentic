@@ -1,0 +1,45 @@
+---
+id: concepts
+title: Core concepts
+sidebar_position: 0.5
+---
+
+import { RunLoopDiagram, WorkflowDiagram } from "@site/src/components/RunLoopDiagram";
+
+Aigentic has a small set of ideas. Once you know how they fit together, the rest of the docs are details.
+
+<RunLoopDiagram />
+
+## What happens in a run
+
+When you call `start()`, Aigentic does the following:
+
+1. Sends your task, instructions, context and input to the model.
+2. The model either answers or asks to call one of your tools.
+3. When it calls a tool, Aigentic runs your Kotlin code and sends the result back to the model.
+4. This repeats until the model finishes the task or says it's stuck.
+5. You get a run back. Its `outcome` is `Finished`, `Stuck` or `Fatal`.
+
+`start()` doesn't throw when something goes wrong during the run. A failed model request or a tool that throws ends the run with `Outcome.Fatal`, so you handle errors with a `when` instead of a `try`.
+
+## The parts of an agent
+
+**Agent.** `agent<I, O> { }` builds an agent that takes an `I` and gives back an `O`. Both are your own types, usually data classes annotated with `@AigenticParameter`. [Agents](/docs/dsl/agent)
+
+**Task.** What the agent should do, plus instructions on how to do it. This is your prompt, split into small, readable lines. [Defining tasks](/docs/dsl/agent#defining-tasks)
+
+**Model.** The LLM behind the agent. Each provider has its own block, like `geminiModel { }` or `openAIModel { }`, and switching providers only changes that block. [Providers](/docs/dsl/providers)
+
+**Tools.** Kotlin functions the model can call, like looking up the weather or saving an invoice. The input type tells the model which arguments to send. [Tools](/docs/dsl/tools)
+
+**Context.** Fixed information the agent gets on every run, like a policy document or a product catalogue. Files that change per request go in as attachments instead. [Adding context](/docs/dsl/agent#adding-context)
+
+**Run and outcome.** `start()` returns a run with the outcome, the full message history and the token usage. [Processing results](/docs/dsl/agent#processing-agent-results)
+
+## Workflows
+
+A workflow chains agents with `thenProcess`. The output type of one agent must be the input type of the next, so the compiler checks the chain for you.
+
+<WorkflowDiagram />
+
+[Workflows](/docs/workflow)

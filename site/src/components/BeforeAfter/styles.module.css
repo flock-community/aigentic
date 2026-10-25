@@ -1,0 +1,99 @@
+.comparison {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 32px;
+  margin-top: 40px;
+
+  @media (max-width: 996px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-family: "Funnel Display", sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+    color: #8f8f8f;
+  }
+
+  span {
+    font-size: 14px;
+    color: #7d7d7d;
+  }
+}
+
+.highlighted .header h3 {
+  color: white;
+}
+
+.highlighted .header span {
+  color: #9f9f9f;
+}
+
+.frame {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #121212;
+  overflow: hidden;
+
+  pre {
+    font-size: 12.5px;
+  }
+}
+
+.highlighted .frame {
+  background:
+    linear-gradient(#121212, #121212) padding-box,
+    linear-gradient(160deg, #f0bc42, rgba(240, 188, 66, 0.08) 45%, #101010) border-box;
+  border-color: transparent;
+  box-shadow: 0 40px 120px -60px rgba(240, 188, 66, 0.35);
+
+  pre {
+    font-size: 13.5px;
+  }
+}
+
+.points {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 16px;
+    color: #8f8f8f;
+  }
+}
+
+.highlighted .points li {
+  color: #ecebe8;
+}
+
+.dash {
+  flex: none;
+  width: 10px;
+  height: 2px;
+  background: #5a5a5a;
+}

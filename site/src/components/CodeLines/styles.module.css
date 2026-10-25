@@ -1,0 +1,76 @@
+.code {
+  position: relative;
+  flex: 1;
+  margin: 0;
+  padding: 16px 0;
+  border-radius: 0;
+  background: transparent !important;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 13.5px;
+  line-height: 1.65;
+  overflow-x: auto;
+}
+
+.code:focus-visible {
+  outline: 2px solid #f0bc42;
+  outline-offset: -2px;
+}
+
+.code code {
+  display: block;
+  min-width: max-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: inherit;
+}
+
+.line {
+  display: flex;
+  min-height: 1.65em;
+  padding-right: 20px;
+  border-left: 2px solid transparent;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.lineActive {
+  background-color: rgba(240, 188, 66, 0.09);
+  border-left-color: #f0bc42;
+}
+
+.lineActive .lineNumber {
+  color: #f0bc42;
+}
+
+.lineNumber {
+  flex: none;
+  width: 44px;
+  padding-right: 16px;
+  text-align: right;
+  color: #837e78;
+  user-select: none;
+}
+
+.lineContent {
+  display: inline-block;
+  white-space: pre;
+}
+
+@media (max-width: 640px) {
+  .code {
+    font-size: 12.5px;
+  }
+
+  .lineNumber {
+    width: 36px;
+    padding-right: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line {
+    transition: none;
+  }
+}

@@ -247,6 +247,13 @@ println("Execution time: ${run.finishedAt - run.startedAt}")
 println("Token usage: ${run.tokenUsage()}")
 ```
 
+```text title="Output"
+🚀 Agent started!
+The agent's answer is: Kotlin is a statically typed language for the JVM, JavaScript and native platforms.
+Execution time: 1.842016s
+Token usage: TokenUsage(inputTokens=312, outputTokens=41, thinkingOutputTokens=0, cachedInputTokens=0)
+```
+
 The `response` property contains the type you specified when creating the agent, and `AgentRun` gives you access to timing information, token usage, and the complete conversation history.
 
 `start` doesn't throw when something goes wrong during the run, like a failed model request or a tool that throws. You get an `Outcome.Fatal` with the error message instead, and the run is still sent to the platform when you configured one. Cancelling the coroutine still cancels the run.

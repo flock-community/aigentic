@@ -20,7 +20,7 @@ body {
   position: relative;
   overflow: hidden;
   background-color: #101010;
-  background-image: url("/img/hero-image.png");
+  background-image: url("/img/hero-image.webp");
   background-size: 100%;
   background-position: bottom;
   align-items: flex-start;
@@ -41,13 +41,12 @@ body {
 }
 
 .heroHeading {
+  margin: 0;
+  line-height: 1.65;
   font-size: 74px;
   font-weight: 500;
   color: white;
   font-family: "Funnel Display", sans-serif;
-  span {
-    color: #f0bc42;
-  }
 
   @media (max-width: 1440px) {
     font-size: 62px;
@@ -168,4 +167,136 @@ body {
 
 .listItem::marker {
   color: #f0bc42;
+}
+
+.dslIntro {
+  align-items: flex-start;
+  margin-bottom: 48px;
+
+  h2 {
+    max-width: none;
+  }
+}
+
+.lead {
+  max-width: 520px;
+  margin-bottom: 0;
+  font-size: 19px;
+  line-height: 1.6;
+}
+
+.points {
+  display: grid;
+  gap: 18px;
+  max-width: none !important;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 128px 1fr;
+    gap: 16px;
+    align-items: baseline;
+    margin: 0 !important;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  li:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  code {
+    justify-self: start;
+    padding: 2px 8px;
+    border: 1px solid rgba(240, 188, 66, 0.3);
+    background: rgba(240, 188, 66, 0.08);
+    color: #f0bc42;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  span {
+    color: #c9c9c9;
+  }
+
+  @media (max-width: 475px) {
+    li {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+  }
+}
+
+.centeredAction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.sectionIntro {
+  text-align: center;
+  padding-bottom: 32px;
+
+  p {
+    margin: 0 auto;
+    max-width: 520px;
+    font-size: 19px;
+  }
+
+  @media (max-width: 996px) {
+    padding-bottom: 0;
+  }
+}
+
+.video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #141414;
+
+  iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  @media (max-width: 996px) {
+    margin-top: 24px;
+  }
+}
+
+.sectionTitle svg {
+  width: 0.7em;
+  height: 0.7em;
+  margin-right: 0.3em;
+  vertical-align: -0.04em;
+}
+
+.sectionTitleCentered {
+  text-align: center;
+}
+
+.talk {
+  margin-top: 72px;
+
+  h3 {
+    margin-bottom: 12px;
+    font-family: "Funnel Display", sans-serif;
+    font-size: 26px;
+    font-weight: 500;
+    color: white;
+  }
+
+  p {
+    font-size: 17px;
+  }
 }
