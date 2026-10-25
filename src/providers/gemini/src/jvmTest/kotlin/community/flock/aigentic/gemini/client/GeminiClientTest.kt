@@ -162,6 +162,28 @@ class GeminiClientTest :
                     "Received error response from Gemini, http status: 400 Bad Request, error code: INVALID_ARGUMENT, message: Invalid thinking level."
             }
 
+            it("should map an error response the streaming endpoint sends as text/event-stream") {
+                val engine =
+                    MockEngine {
+                        respond(
+                            """{"error":{"code":402,"message":"Your prepayment credits are depleted.","status":"RESOURCE_EXHAUSTED"}}""",
+                            status = HttpStatusCode.PaymentRequired,
+                            headers = sseHeaders,
+                        )
+                    }
+
+                shouldThrow<Exception> { generate(engine) }.message shouldBe
+                    "Received error response from Gemini, http status: 402 Payment Required, error code: RESOURCE_EXHAUSTED, " +
+                    "message: Your prepayment credits are depleted."
+            }
+
+            it("should show an error body that is not Gemini's error JSON") {
+                val engine = MockEngine { respond("model not found", status = HttpStatusCode.NotFound) }
+
+                shouldThrow<Exception> { generate(engine) }.message shouldBe
+                    "Received error response from Gemini, http status: 404 Not Found, body: model not found"
+            }
+
             it("should wrap transport failures") {
                 val engine = MockEngine { throw EOFException("Failed to parse HTTP response: the server prematurely closed the connection") }
 
