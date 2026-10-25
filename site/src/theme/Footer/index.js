@@ -33,9 +33,8 @@ function Footer() {
                       Start with <span>Aigentic</span>
                     </Heading>
                     <p>
-                      Streamline your LLM development journey with a powerful Kotlin DSL for building
-                      and integrating AI agents into applications. Choose the right tools for your
-                      specific needs.
+                      Add the dependency, describe a task and run your first agent. Or start from
+                      the Initializr and get a project with everything set up.
                     </p>
                   </div>
                   <div className="icon-item-group">
@@ -152,6 +151,12 @@ function Footer() {
                       to="/docs/getting-started"
                     >
                       Get started
+                    </Link>
+                    <Link
+                      className="footer-action-secondary"
+                      to="https://github.com/flock-community/aigentic-initializr"
+                    >
+                      Initializr
                     </Link>
                   </div>
                 </div>
