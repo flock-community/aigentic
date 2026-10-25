@@ -53,6 +53,7 @@ jobs:
 
       # Gradle caches dependencies per repository URL, so the cache is built through the same
       # Maven Central mirror the cloud sessions use; otherwise the sessions would miss it.
+      # The cloud setup script linked from the README inlines a copy of this init script: keep them in sync.
       - name: Resolve dependencies
         run: |
           ./gradlew resolveAllDependencies --no-configuration-cache \
