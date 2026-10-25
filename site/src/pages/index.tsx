@@ -6,10 +6,10 @@ import styles from "./index.module.css";
 import { JSX, type ReactNode } from "react";
 import CyclingBlurText from "../components/CyclingBlurText";
 import AgentRunVisualizer from "../components/AgentRunVisualizer";
-import ModuleMap from "../components/ModuleMap";
 import BeforeAfter from "../components/BeforeAfter";
 import ProductionStory from "../components/ProductionStory";
 import PixelMark from "../components/PixelMark";
+import StartSection from "../components/StartSection";
 
 const dslPoints = [
   {
@@ -105,31 +105,13 @@ export default function Home(): JSX.Element {
             </div>
           </div>
         </section>
-        <section className="how">
-          <div className={clsx("container", styles.sectionIntro)}>
-            <SectionTitle centered>From first agent to production</SectionTitle>
-            <p>Connect your APIs, read documents, chain agents and test the results.</p>
-          </div>
-          <div className="container">
-            <ProductionStory />
-          </div>
-        </section>
         <section className="other-capabilites other-capabilites-shadow">
-          <div className="container">
-            <SectionTitle>Pick the modules you need</SectionTitle>
-            <p className={styles.lead}>
-              Everything is on Maven Central under <code>community.flock.aigentic</code>. Start with core, one
-              provider and a Ktor engine such as <code>ktor-client-cio</code>, then add what your agent needs.
-            </p>
-            <ModuleMap />
-          </div>
-        </section>
-        <section className="other-capabilites">
           <div className="container">
             <SectionTitle>Why Aigentic</SectionTitle>
             <p className={styles.lead}>
-              Getting an agent demo running is easy. Getting it into production, next to the rest of your code, is
-              the hard part. Here's the same weather agent written both ways.
+              Most agent libraries help you build the demo. Aigentic is built for what comes after: typed agents in
+              your existing Kotlin code, any provider, and regression tests from real runs. Here's the same weather
+              agent written both ways.
             </p>
             <BeforeAfter />
             <div className={clsx("row row--align-center", styles.talk)}>
@@ -155,6 +137,16 @@ export default function Home(): JSX.Element {
             </div>
           </div>
         </section>
+        <section className="how">
+          <div className={clsx("container", styles.sectionIntro)}>
+            <SectionTitle centered>From first agent to production</SectionTitle>
+            <p>Connect your APIs, read documents, chain agents and test the results.</p>
+          </div>
+          <div className="container">
+            <ProductionStory />
+          </div>
+        </section>
+        <StartSection showModules />
       </main>
     </Layout>
   );

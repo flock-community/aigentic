@@ -58,13 +58,14 @@
 
 .module {
   margin: 0;
+}
 
-  p {
-    margin: 4px 0 0;
-    font-size: 15px;
-    line-height: 1.55;
-    color: #9f9f9f;
-  }
+.map .module p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  text-align: left;
+  color: #9f9f9f;
 }
 
 .moduleHeader {
