@@ -28,7 +28,7 @@ class RequestMapperTest :
 
         describe("VertexAI Request Mapper") {
 
-            it("should set the media resolution on every media part when configured") {
+            it("should set the media resolution on every media part when configured, with HIGH for a PDF at ULTRA_HIGH") {
                 val messages =
                     listOf(
                         Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION),
@@ -44,7 +44,8 @@ class RequestMapperTest :
                             .level()
                             .get()
                             .knownEnum()
-                    } shouldBe List(2) { PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_ULTRA_HIGH }
+                    } shouldBe
+                    listOf(PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_ULTRA_HIGH, PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_HIGH)
             }
 
             it("should serialize every media resolution as its Gemini level") {

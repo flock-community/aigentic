@@ -126,7 +126,7 @@ agent<String, Answer> {
     | `HIGH` | 1120 | 1120 |
     | `ULTRA_HIGH` | 2240 | not documented |
 
-    These are the counts Gemini documents for Gemini 3 models. A PDF page with a text layer also counts the tokens of that text. Gemini only documents `ULTRA_HIGH` for images, so for PDFs `HIGH` is the highest documented level.
+    These are the counts Gemini documents for Gemini 3 models. A PDF page with a text layer also counts the tokens of that text. Gemini accepts `ULTRA_HIGH` for images only and rejects it on a PDF with `400 INVALID_ARGUMENT`, so with `ULTRA_HIGH` a PDF attachment is sent at `HIGH`, the highest level Gemini accepts for it.
 
     Gemini only supports a media resolution per file on Gemini 3 and newer models. Setting `mediaResolution()` on a Gemini 2.x model, or on a `Custom` identifier with major version 2 or lower, throws an `AigenticException` as soon as the model is built. A `Custom` identifier without a version match is passed through as-is.
   </TabItem>

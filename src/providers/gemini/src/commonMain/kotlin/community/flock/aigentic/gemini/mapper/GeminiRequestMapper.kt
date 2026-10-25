@@ -1,6 +1,7 @@
 package community.flock.aigentic.gemini.mapper
 
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.tool.Parameter
@@ -53,7 +54,7 @@ internal fun createGenerateContentRequest(
                         listOf(
                             Part.FileDataPart(
                                 FileDataContent(mimeType = message.mimeType.value, fileUri = message.url),
-                                mediaResolution = mediaResolution?.toMediaResolution(),
+                                mediaResolution = mediaResolution?.toMediaResolution(message.mimeType),
                             ),
                         )
                     }
@@ -62,7 +63,7 @@ internal fun createGenerateContentRequest(
                         listOf(
                             Part.Blob(
                                 BlobContent(mimeType = message.mimeType.value, data = formatBase64Content(message)),
-                                mediaResolution = mediaResolution?.toMediaResolution(),
+                                mediaResolution = mediaResolution?.toMediaResolution(message.mimeType),
                             ),
                         )
                     }
@@ -126,13 +127,28 @@ private fun defaultSafetySettings(): List<SafetySettings> =
         )
     }
 
-private fun GeminiMediaResolution.toMediaResolution(): MediaResolution =
+/**
+ * The level for a media part of [mimeType]. Gemini accepts ULTRA_HIGH for images only and answers a PDF
+ * part with ULTRA_HIGH with 400 INVALID_ARGUMENT, so a PDF gets HIGH, the highest level it accepts.
+ */
+private fun GeminiMediaResolution.toMediaResolution(mimeType: MimeType): MediaResolution =
     MediaResolution(
         when (this) {
-            GeminiMediaResolution.LOW -> MediaResolutionLevel.MEDIA_RESOLUTION_LOW
-            GeminiMediaResolution.MEDIUM -> MediaResolutionLevel.MEDIA_RESOLUTION_MEDIUM
-            GeminiMediaResolution.HIGH -> MediaResolutionLevel.MEDIA_RESOLUTION_HIGH
-            GeminiMediaResolution.ULTRA_HIGH -> MediaResolutionLevel.MEDIA_RESOLUTION_ULTRA_HIGH
+            GeminiMediaResolution.LOW -> {
+                MediaResolutionLevel.MEDIA_RESOLUTION_LOW
+            }
+
+            GeminiMediaResolution.MEDIUM -> {
+                MediaResolutionLevel.MEDIA_RESOLUTION_MEDIUM
+            }
+
+            GeminiMediaResolution.HIGH -> {
+                MediaResolutionLevel.MEDIA_RESOLUTION_HIGH
+            }
+
+            GeminiMediaResolution.ULTRA_HIGH -> {
+                if (mimeType == MimeType.PDF) MediaResolutionLevel.MEDIA_RESOLUTION_HIGH else MediaResolutionLevel.MEDIA_RESOLUTION_ULTRA_HIGH
+            }
         },
     )
 

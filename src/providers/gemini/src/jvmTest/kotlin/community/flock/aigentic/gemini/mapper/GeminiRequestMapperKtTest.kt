@@ -62,7 +62,7 @@ class GeminiRequestMapperKtTest :
                     }
             }
 
-            it("should set the media resolution on every media part when configured") {
+            it("should set the media resolution on every media part when configured, with HIGH for a PDF at ULTRA_HIGH") {
                 val messages =
                     listOf(
                         Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION),
@@ -77,10 +77,10 @@ class GeminiRequestMapperKtTest :
                         GeminiModelIdentifier.Gemini3_8Flash,
                         GeminiMediaResolution.ULTRA_HIGH,
                     ).contents.flatMap { it.parts }
-                val ultraHigh = MediaResolution(MediaResolutionLevel.MEDIA_RESOLUTION_ULTRA_HIGH)
 
-                parts[0].shouldBeInstanceOf<Part.Blob>().mediaResolution shouldBe ultraHigh
-                parts[1].shouldBeInstanceOf<Part.FileDataPart>().mediaResolution shouldBe ultraHigh
+                // Gemini accepts ULTRA_HIGH for images only: the PDF gets HIGH, the highest level it accepts
+                parts[0].shouldBeInstanceOf<Part.Blob>().mediaResolution shouldBe MediaResolution(MediaResolutionLevel.MEDIA_RESOLUTION_ULTRA_HIGH)
+                parts[1].shouldBeInstanceOf<Part.FileDataPart>().mediaResolution shouldBe MediaResolution(MediaResolutionLevel.MEDIA_RESOLUTION_HIGH)
             }
 
             it("should serialize every media resolution as its Gemini level") {

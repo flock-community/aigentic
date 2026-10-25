@@ -14,6 +14,7 @@ import com.google.genai.types.SafetySetting
 import com.google.genai.types.Schema
 import com.google.genai.types.Tool
 import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ModelIdentifier
@@ -46,7 +47,7 @@ internal fun createRequestContents(
                     listOf(
                         Part
                             .fromBytes(Base64.getDecoder().decode(message.base64Content), message.mimeType.value)
-                            .withMediaResolution(mediaResolution),
+                            .withMediaResolution(mediaResolution, message.mimeType),
                     )
                 }
 
@@ -84,7 +85,7 @@ internal fun createRequestContents(
                 }
 
                 is Message.Url -> {
-                    listOf(Part.fromUri(message.url, message.mimeType.value).withMediaResolution(mediaResolution))
+                    listOf(Part.fromUri(message.url, message.mimeType.value).withMediaResolution(mediaResolution, message.mimeType))
                 }
             }
 
@@ -95,17 +96,32 @@ internal fun createRequestContents(
             .build()
     }
 
-private fun Part.withMediaResolution(mediaResolution: VertexAIMediaResolution?): Part =
+private fun Part.withMediaResolution(
+    mediaResolution: VertexAIMediaResolution?,
+    mimeType: MimeType,
+): Part =
     mediaResolution
-        ?.let { toBuilder().mediaResolution(PartMediaResolution.builder().level(it.toPartMediaResolutionLevel())).build() }
+        ?.let { toBuilder().mediaResolution(PartMediaResolution.builder().level(it.toPartMediaResolutionLevel(mimeType))).build() }
         ?: this
 
-private fun VertexAIMediaResolution.toPartMediaResolutionLevel(): PartMediaResolutionLevel.Known =
+/** As for Gemini: ULTRA_HIGH is accepted for images only, so a PDF gets HIGH, the highest level it accepts. */
+private fun VertexAIMediaResolution.toPartMediaResolutionLevel(mimeType: MimeType): PartMediaResolutionLevel.Known =
     when (this) {
-        VertexAIMediaResolution.LOW -> PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_LOW
-        VertexAIMediaResolution.MEDIUM -> PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_MEDIUM
-        VertexAIMediaResolution.HIGH -> PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_HIGH
-        VertexAIMediaResolution.ULTRA_HIGH -> PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_ULTRA_HIGH
+        VertexAIMediaResolution.LOW -> {
+            PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_LOW
+        }
+
+        VertexAIMediaResolution.MEDIUM -> {
+            PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_MEDIUM
+        }
+
+        VertexAIMediaResolution.HIGH -> {
+            PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_HIGH
+        }
+
+        VertexAIMediaResolution.ULTRA_HIGH -> {
+            if (mimeType == MimeType.PDF) PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_HIGH else PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_ULTRA_HIGH
+        }
     }
 
 internal fun createGenerateConfig(
