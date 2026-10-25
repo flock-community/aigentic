@@ -47,6 +47,7 @@ import community.flock.aigentic.gateway.wirespec.model.ToolCallsMessageDto
 import community.flock.aigentic.gateway.wirespec.model.ToolDto
 import community.flock.aigentic.gateway.wirespec.model.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.model.UrlMessageDto
+import community.flock.aigentic.providers.jsonschema.SchemaDialect
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -61,6 +62,7 @@ private fun Parameter.toJsonSchemaString(): String =
                 is Parameter.Complex.Object -> this@toJsonSchemaString.parameters
                 else -> listOf(this@toJsonSchemaString)
             },
+            SchemaDialect.JSON_SCHEMA,
         )
     }.toString()
 

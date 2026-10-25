@@ -7,7 +7,7 @@ import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.core.tool.getStringValue
-import kotlinx.serialization.json.Json
+import community.flock.aigentic.core.util.modelOutputJson
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
@@ -34,7 +34,7 @@ internal inline fun <reified O : Any> finishedTaskTool(responseParameter: Parame
             val response =
                 responseParameter?.let {
                     val json = arguments.getValue(it.name)
-                    Json.decodeFromJsonElement<O>(json)
+                    modelOutputJson.decodeFromJsonElement<O>(json)
                 }
             Finished(description, response)
         }

@@ -42,6 +42,7 @@ import community.flock.aigentic.core.platform.addToEvaluationSet
 import community.flock.aigentic.core.platform.getRuns
 import community.flock.aigentic.core.platform.sendRun
 import community.flock.aigentic.core.tool.Parameter
+import community.flock.aigentic.core.util.modelOutputJson
 import community.flock.aigentic.core.util.withStartFinishTiming
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -235,7 +236,7 @@ internal suspend inline fun <reified I : Any, reified O : Any> ProcessModelRespo
         }
 
         is Message.StructuredOutput -> {
-            val response = Json.decodeFromJsonElement<O>(responseMessage.asJson())
+            val response = modelOutputJson.decodeFromJsonElement<O>(responseMessage.asJson())
             val outcome = Outcome.Finished("Finished", response)
             Finished(state, agent, outcome)
         }

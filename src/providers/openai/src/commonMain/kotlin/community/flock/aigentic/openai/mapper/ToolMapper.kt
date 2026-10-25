@@ -2,6 +2,7 @@ package community.flock.aigentic.openai.mapper
 
 import com.aallam.openai.api.chat.Tool
 import community.flock.aigentic.core.tool.ToolDescription
+import community.flock.aigentic.providers.jsonschema.SchemaDialect
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.json.put
 
@@ -12,7 +13,7 @@ internal fun ToolDescription.toOpenAITool(): Tool {
         } else {
             com.aallam.openai.api.core.Parameters.buildJsonObject {
                 put("type", "object")
-                emitPropertiesAndRequired(parameters)
+                emitPropertiesAndRequired(parameters, SchemaDialect.OPENAI_JSON_SCHEMA)
             }
         }
 

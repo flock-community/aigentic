@@ -20,6 +20,7 @@ import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
+import community.flock.aigentic.providers.jsonschema.SchemaDialect
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import community.flock.aigentic.vertexai.VertexAIMediaResolution
 import community.flock.aigentic.vertexai.VertexAIModelIdentifier
@@ -201,7 +202,7 @@ private fun getToolParametersJson(toolDescription: ToolDescription): String =
     } else {
         buildJsonObject {
             put("type", "object")
-            emitPropertiesAndRequired(toolDescription.parameters)
+            emitPropertiesAndRequired(toolDescription.parameters, SchemaDialect.OPENAPI_SCHEMA)
         }
     }.let { Json.encodeToString(it) }
 
@@ -243,6 +244,7 @@ private fun Parameter.getStructuredResponseSchema(): JsonObject =
                     is Parameter.Complex.Object -> responseParam.parameters
                     else -> listOf(responseParam)
                 },
+                SchemaDialect.JSON_SCHEMA,
             )
         }
     }

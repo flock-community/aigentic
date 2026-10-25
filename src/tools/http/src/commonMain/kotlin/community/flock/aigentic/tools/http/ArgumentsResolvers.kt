@@ -4,7 +4,9 @@ import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.tool.Parameter
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmInline
@@ -66,7 +68,7 @@ class DefaultRequestBodyArgumentsResolver : RequestBodyArgumentsResolver {
         callArguments: JsonObject,
     ): ResolvedRequestBody? {
         val parameterValue = requestBodyParameter.getParameterValue(callArguments)
-        return parameterValue?.let { ResolvedRequestBody(Json.encodeToString(it)) }
+        return parameterValue?.let { ResolvedRequestBody(Json.encodeToString(it.withoutNullFields())) }
     }
 }
 
@@ -104,10 +106,17 @@ class DefaultUrlArgumentsResolver : UrlArgumentsResolver {
 }
 
 fun Parameter.getParameterValue(arguments: JsonObject): JsonElement? {
-    val paramValue = arguments[name]
+    val paramValue = arguments[name]?.takeUnless { it is JsonNull }
     return when {
         paramValue == null && isRequired -> aigenticException("Param $name is required but is not present in call arguments! $arguments")
         paramValue != null -> paramValue
         else -> null
     }
 }
+
+private fun JsonElement.withoutNullFields(): JsonElement =
+    when (this) {
+        is JsonObject -> JsonObject(filterValues { it !is JsonNull }.mapValues { it.value.withoutNullFields() })
+        is JsonArray -> JsonArray(map { it.withoutNullFields() })
+        else -> this
+    }

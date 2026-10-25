@@ -27,6 +27,7 @@ import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import community.flock.aigentic.gemini.model.resolveThinkingLevel
 import community.flock.aigentic.gemini.model.supportsSampling
 import community.flock.aigentic.gemini.model.validateGeminiThinkingConfig
+import community.flock.aigentic.providers.jsonschema.SchemaDialect
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -183,6 +184,7 @@ private fun Parameter.getStructuredResponseSchema(): JsonObject? =
                     is Parameter.Complex.Object -> responseParam.parameters
                     else -> listOf(responseParam)
                 },
+                SchemaDialect.OPENAPI_SCHEMA,
             )
         }
     }
@@ -200,7 +202,7 @@ private fun List<ToolDescription>.toTools(): List<Tool> =
                         } else {
                             buildJsonObject {
                                 put("type", "object")
-                                emitPropertiesAndRequired(it.parameters)
+                                emitPropertiesAndRequired(it.parameters, SchemaDialect.OPENAPI_SCHEMA)
                             }
                         },
                 )
