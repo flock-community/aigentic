@@ -55,6 +55,7 @@ Aigentic supports several LLM providers out of the box:
       {`agent<String, Answer> {
     ollamaModel {
         apiUrl("http://localhost:11434/v1/")
+        modelIdentifier(OpenAIModelIdentifier.Custom("llama3"))
         generationConfig {
             // Use default settings
         }
