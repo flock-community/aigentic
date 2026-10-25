@@ -214,6 +214,8 @@ Available attachment factory functions:
 - **Base64 attachments**: `Attachment.Base64.pdf()`, `jpeg()`, `png()`, `webp()`, `heic()`, `heif()`
 - **URL attachments**: `Attachment.Url.pdf()`, `jpeg()`, `png()`, `webp()`, `heic()`, `heif()`
 
+**Note**: The OpenAI and Ollama providers don't support PDF attachments yet. A PDF in the attachments or the agent's context ends the run with `Outcome.Fatal` before any request is sent. Attach the pages as images instead, or use the Gemini or VertexAI provider. Progress is tracked in [#176](https://github.com/flock-community/aigentic/issues/176).
+
 You can also specify input data along with attachments:
 
 ```kotlin

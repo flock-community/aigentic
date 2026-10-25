@@ -44,6 +44,43 @@ class VertexAIModelTest :
                 }.message shouldContain "not supported on Gemini 2.x models"
             }
 
+            it("should throw when built with a media resolution on a Gemini 2.x model") {
+                shouldThrow<Exception> {
+                    VertexAIModel(
+                        modelIdentifier = VertexAIModelIdentifier.Gemini2_5Flash,
+                        generationSettings = GenerationSettings.DEFAULT,
+                        project = Project("project"),
+                        location = Location("location"),
+                        requestTimeoutMillis = 60_000,
+                        mediaResolution = VertexAIMediaResolution.HIGH,
+                    )
+                }.message shouldContain "mediaResolution is not supported on Gemini 2.x models"
+            }
+
+            it("should throw when a media resolution is configured on a Custom gemini-2.x identifier") {
+                shouldThrow<Exception> {
+                    validateVertexAIMediaResolution(
+                        VertexAIModelIdentifier.Custom("publishers/google/models/gemini-2.5-flash"),
+                        VertexAIMediaResolution.LOW,
+                    )
+                }.message shouldContain "mediaResolution is not supported on Gemini 2.x models"
+            }
+
+            it("should allow a media resolution on Gemini 3.x, Custom identifiers without a 2.x version and unrelated identifiers") {
+                shouldNotThrowAny {
+                    validateVertexAIMediaResolution(VertexAIModelIdentifier.Gemini3_8Flash, VertexAIMediaResolution.ULTRA_HIGH)
+                    validateVertexAIMediaResolution(VertexAIModelIdentifier.Custom("gemini-4.0-pro"), VertexAIMediaResolution.ULTRA_HIGH)
+                    validateVertexAIMediaResolution(VertexAIModelIdentifier.Custom("my-endpoint"), VertexAIMediaResolution.ULTRA_HIGH)
+                    validateVertexAIMediaResolution(OtherModelIdentifier, VertexAIMediaResolution.ULTRA_HIGH)
+                }
+            }
+
+            it("should allow no media resolution on a Gemini 2.x model") {
+                shouldNotThrowAny {
+                    validateVertexAIMediaResolution(VertexAIModelIdentifier.Gemini2_5Flash, null)
+                }
+            }
+
             it("should build successfully with a valid thinking configuration") {
                 shouldNotThrowAny {
                     validateVertexAIThinkingConfig(

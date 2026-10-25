@@ -6,6 +6,7 @@ import community.flock.aigentic.core.dsl.GenerationConfig
 import community.flock.aigentic.core.dsl.builderPropertyMissingErrorMessage
 import community.flock.aigentic.vertexai.Location
 import community.flock.aigentic.vertexai.Project
+import community.flock.aigentic.vertexai.VertexAIMediaResolution
 import community.flock.aigentic.vertexai.VertexAIModel
 import community.flock.aigentic.vertexai.VertexAIModelIdentifier
 
@@ -24,6 +25,7 @@ class VertexAIModelConfig : Config<VertexAIModel> {
     private var modelIdentifier: VertexAIModelIdentifier? = null
     private var generationConfig: GenerationConfig = GenerationConfig()
     private var requestTimeoutMillis: Long? = null
+    private var mediaResolution: VertexAIMediaResolution? = null
 
     fun VertexAIModelConfig.project(project: String) {
         this.project = project
@@ -45,6 +47,10 @@ class VertexAIModelConfig : Config<VertexAIModel> {
         this.requestTimeoutMillis = timeoutMillis
     }
 
+    fun VertexAIModelConfig.mediaResolution(resolution: VertexAIMediaResolution) {
+        this.mediaResolution = resolution
+    }
+
     override fun build(): VertexAIModel =
         VertexAIModel(
             project =
@@ -64,5 +70,6 @@ class VertexAIModelConfig : Config<VertexAIModel> {
                 ),
             generationSettings = generationConfig.build(),
             requestTimeoutMillis = requestTimeoutMillis ?: (60_000 * 5),
+            mediaResolution = mediaResolution,
         )
 }

@@ -79,6 +79,13 @@ sealed class OpenAIModelIdentifier(
     ) : OpenAIModelIdentifier(identifier)
 }
 
+enum class OpenAIImageDetail {
+    AUTO,
+    LOW,
+    HIGH,
+    ORIGINAL,
+}
+
 internal fun ModelIdentifier.usesMaxCompletionTokens(): Boolean =
     when (this) {
         is OpenAIModelIdentifier -> requiresMaxCompletionTokens()
@@ -201,6 +208,38 @@ private fun OpenAIModelIdentifier.minimumSupportedThinkingLevel(): ThinkingLevel
         -> ThinkingLevel.MINIMAL
     }
 
+private fun OpenAIModelIdentifier.supportsOriginalImageDetail(): Boolean =
+    when (this) {
+        OpenAIModelIdentifier.GPT5_5,
+        OpenAIModelIdentifier.GPT5_5Pro,
+        OpenAIModelIdentifier.GPT5_4,
+        OpenAIModelIdentifier.GPT5_4Pro,
+        OpenAIModelIdentifier.GPT5_4Mini,
+        OpenAIModelIdentifier.GPT5_4Nano,
+        is OpenAIModelIdentifier.Custom,
+        -> true
+
+        OpenAIModelIdentifier.GPT5,
+        OpenAIModelIdentifier.GPT5Mini,
+        OpenAIModelIdentifier.GPT5Nano,
+        OpenAIModelIdentifier.GPT4_1,
+        OpenAIModelIdentifier.GPT4_1Mini,
+        OpenAIModelIdentifier.GPT4_1Nano,
+        OpenAIModelIdentifier.GPT4O,
+        OpenAIModelIdentifier.GPT4OMini,
+        OpenAIModelIdentifier.GPT4Turbo,
+        OpenAIModelIdentifier.GPT3_5Turbo,
+        OpenAIModelIdentifier.O3Pro,
+        OpenAIModelIdentifier.O3,
+        OpenAIModelIdentifier.O4Mini,
+        OpenAIModelIdentifier.O3Mini,
+        OpenAIModelIdentifier.O1,
+        OpenAIModelIdentifier.O1Pro,
+        OpenAIModelIdentifier.GPT4OMiniSearchPreview,
+        OpenAIModelIdentifier.GPT4OSearchPreview,
+        -> false
+    }
+
 private fun OpenAIModelIdentifier.requiresMaxCompletionTokens(): Boolean =
     when (this) {
         OpenAIModelIdentifier.GPT5_5,
@@ -268,16 +307,30 @@ internal fun validateOpenAISamplingConfig(
     }
 }
 
+internal fun validateOpenAIImageDetail(
+    modelIdentifier: ModelIdentifier,
+    imageDetail: OpenAIImageDetail?,
+) {
+    val openAIModelIdentifier = modelIdentifier as? OpenAIModelIdentifier ?: return
+    if (imageDetail == OpenAIImageDetail.ORIGINAL && !openAIModelIdentifier.supportsOriginalImageDetail()) {
+        aigenticException(
+            "imageDetail ORIGINAL is only supported on gpt-5.4 and newer models, use HIGH for ${openAIModelIdentifier.stringValue}",
+        )
+    }
+}
+
 class OpenAIModel(
     val authentication: Authentication.APIKey,
     override val modelIdentifier: ModelIdentifier,
     override val generationSettings: GenerationSettings,
     logLevel: LogLevel = LogLevel.NONE,
     apiUrl: OpenAIApiUrl,
+    private val imageDetail: OpenAIImageDetail? = null,
 ) : Model {
     init {
         validateOpenAIThinkingConfig(modelIdentifier, generationSettings)
         validateOpenAISamplingConfig(modelIdentifier, generationSettings)
+        validateOpenAIImageDetail(modelIdentifier, imageDetail)
     }
 
     private val openAI: OpenAI = defaultOpenAI(authentication, apiUrl, logLevel)
@@ -295,6 +348,7 @@ class OpenAIModel(
                         tools = tools,
                         openAIModelIdentifier = modelIdentifier,
                         generationSettings = generationSettings,
+                        imageDetail = imageDetail,
                     ),
                 ).toModelResponse()
         } catch (e: OpenAIException) {

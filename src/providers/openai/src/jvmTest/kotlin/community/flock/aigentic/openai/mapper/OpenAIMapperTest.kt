@@ -9,9 +9,13 @@ import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessage
+import community.flock.aigentic.openai.model.OpenAIImageDetail
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.be
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.beInstanceOf
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -51,6 +55,68 @@ class OpenAIMapperTest :
                         this.imageUrl.url should be(base64Content)
                     }
                 }
+            }
+
+            it("should set the image detail on base64 and url images when configured") {
+                listOf(
+                    Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION),
+                    Message.Url(Sender.Agent, "https://example.com/receipt.jpeg", MimeType.JPEG, MessageCategory.EXECUTION),
+                ).forEach { message ->
+                    message
+                        .toOpenAIMessage(OpenAIImageDetail.ORIGINAL)
+                        .messageContent
+                        .shouldBeInstanceOf<ListContent>()
+                        .content
+                        .single()
+                        .shouldBeInstanceOf<ImagePart>()
+                        .imageUrl
+                        .detail shouldBe "original"
+                }
+            }
+
+            it("should map every image detail to its OpenAI value") {
+                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+
+                mapOf(
+                    OpenAIImageDetail.AUTO to "auto",
+                    OpenAIImageDetail.LOW to "low",
+                    OpenAIImageDetail.HIGH to "high",
+                    OpenAIImageDetail.ORIGINAL to "original",
+                ).forEach { (imageDetail, detail) ->
+                    base64Message
+                        .toOpenAIMessage(imageDetail)
+                        .messageContent
+                        .shouldBeInstanceOf<ListContent>()
+                        .content
+                        .single()
+                        .shouldBeInstanceOf<ImagePart>()
+                        .imageUrl
+                        .detail shouldBe detail
+                }
+            }
+
+            it("should throw for base64 and url PDF attachments") {
+                listOf(
+                    Message.Base64(Sender.Agent, "JVBERi0=", MimeType.PDF, MessageCategory.RUN_CONTEXT),
+                    Message.Url(Sender.Agent, "https://example.com/invoice.pdf", MimeType.PDF, MessageCategory.RUN_CONTEXT),
+                ).forEach { message ->
+                    shouldThrow<Exception> {
+                        message.toOpenAIMessage()
+                    }.message shouldContain "PDF attachments are not supported on OpenAI-compatible models"
+                }
+            }
+
+            it("should not set an image detail when not configured") {
+                Message
+                    .Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+                    .toOpenAIMessage()
+                    .messageContent
+                    .shouldBeInstanceOf<ListContent>()
+                    .content
+                    .single()
+                    .shouldBeInstanceOf<ImagePart>()
+                    .imageUrl
+                    .detail shouldBe null
             }
         }
     })

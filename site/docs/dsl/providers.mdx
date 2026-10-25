@@ -55,6 +55,7 @@ Aigentic supports several LLM providers out of the box:
       {`agent<String, Answer> {
     ollamaModel {
         apiUrl("http://localhost:11434/v1/")
+        modelIdentifier(OpenAIModelIdentifier.Custom("llama3"))
         generationConfig {
             // Use default settings
         }
@@ -94,6 +95,86 @@ geminiModel {
 ```
 
 Without either setting, both timeouts are 5 minutes. When a request still fails, for example because of a timeout or a dropped connection, the run ends with `Outcome.Fatal` instead of throwing an exception.
+
+## Attachment resolution
+
+Providers read every image and PDF page as a limited number of tokens. For dense documents or scans with small print, the default can be too little, and the model may misread a character, for example an 8 as a 6. Each provider has its own setting to read your files at a higher resolution, with its own levels.
+
+Aigentic sends the setting with every file the model gets: the attachments you pass to `start()` and the files in the agent's context. Without the setting, the provider's default stays.
+
+<Tabs>
+  <TabItem value="Gemini" label="Gemini">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.gemini.model.GeminiMediaResolution
+
+agent<String, Answer> {
+    geminiModel {
+        apiKey("your-api-key")
+        modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
+        mediaResolution(GeminiMediaResolution.HIGH)
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    By default, Gemini reads an image at 1120 tokens and a PDF page at 560.
+
+    | `GeminiMediaResolution` | Tokens per image | Tokens per PDF page |
+    | --- | --- | --- |
+    | `LOW` | 280 | 280 |
+    | `MEDIUM` | 560 | 560 |
+    | `HIGH` | 1120 | 1120 |
+    | `ULTRA_HIGH` | 2240 | not documented |
+
+    These are the counts Gemini documents for Gemini 3 models. A PDF page with a text layer also counts the tokens of that text. Gemini only documents `ULTRA_HIGH` for images, so for PDFs `HIGH` is the highest documented level.
+
+    Gemini only supports a media resolution per file on Gemini 3 and newer models. Setting `mediaResolution()` on a Gemini 2.x model, or on a `Custom` identifier with major version 2 or lower, throws an `AigenticException` as soon as the model is built. A `Custom` identifier without a version match is passed through as-is.
+  </TabItem>
+
+  <TabItem value="VertexAI" label="VertexAI">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.vertexai.VertexAIMediaResolution
+
+agent<String, Answer> {
+    vertexAIModel {
+        project("your-project-id")
+        location("your-location")
+        modelIdentifier(VertexAIModelIdentifier.Gemini3_8Flash)
+        mediaResolution(VertexAIMediaResolution.HIGH)
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    Vertex AI runs the same Gemini models, so `VertexAIMediaResolution` has the same levels, token counts and model rules as Gemini.
+  </TabItem>
+
+  <TabItem value="OpenAI" label="OpenAI">
+    <CodeBlock language="kotlin">
+      {`import community.flock.aigentic.openai.model.OpenAIImageDetail
+
+agent<String, Answer> {
+    openAIModel {
+        apiKey("your-api-key")
+        modelIdentifier(OpenAIModelIdentifier.GPT5_5)
+        imageDetail(OpenAIImageDetail.ORIGINAL)
+    }
+    // ...
+}`}
+    </CodeBlock>
+
+    | `OpenAIImageDetail` | What OpenAI does |
+    | --- | --- |
+    | `AUTO` | Picks the detail level itself, the same as leaving it unset |
+    | `LOW` | Reads a low-resolution version, for the fewest tokens |
+    | `HIGH` | Reads more detail, for small text and dense images |
+    | `ORIGINAL` | Reads the image at full resolution, up to 10.24 million pixels or 6000 pixels on the longest side |
+
+    `ORIGINAL` is only available from gpt-5.4 on. Setting it on an older model throws an `AigenticException` as soon as the model is built. A `Custom` identifier is passed through as-is.
+
+    `imageDetail()` only applies to images. The OpenAI provider doesn't support PDF attachments yet, see [Running an Agent with Attachments](./agent#running-an-agent-with-attachments).
+  </TabItem>
+</Tabs>
 
 ## Thinking configuration
 

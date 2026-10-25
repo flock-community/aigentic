@@ -10,10 +10,12 @@ import com.aallam.openai.api.core.Role
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
+import community.flock.aigentic.openai.model.OpenAIImageDetail
 import com.aallam.openai.api.chat.ToolCall as OpenAIToolCall
 
 object DomainMapper {
@@ -77,7 +79,7 @@ object DomainMapper {
 }
 
 object OpenAIMapper {
-    internal fun Message.toOpenAIMessage(): ChatMessage {
+    internal fun Message.toOpenAIMessage(imageDetail: OpenAIImageDetail? = null): ChatMessage {
         val role = mapChatTextRole()
         return when (this) {
             is Message.SystemPrompt -> {
@@ -97,11 +99,13 @@ object OpenAIMapper {
             }
 
             is Message.Url -> {
-                ChatMessage(role = role, listOf(ImagePart(url)))
+                mimeType.requireImage()
+                ChatMessage(role = role, listOf(ImagePart(url, imageDetail?.name?.lowercase())))
             }
 
             is Message.Base64 -> {
-                ChatMessage(role = role, listOf(ImagePart(formatDataUrl())))
+                mimeType.requireImage()
+                ChatMessage(role = role, listOf(ImagePart(formatDataUrl(), imageDetail?.name?.lowercase())))
             }
 
             is Message.ToolCalls -> {
@@ -120,6 +124,14 @@ object OpenAIMapper {
                     content = response.result,
                 )
             }
+        }
+    }
+
+    private fun MimeType.requireImage() {
+        if (this == MimeType.PDF) {
+            aigenticException(
+                "PDF attachments are not supported on OpenAI-compatible models yet, attach the pages as images or use the Gemini or VertexAI provider",
+            )
         }
     }
 

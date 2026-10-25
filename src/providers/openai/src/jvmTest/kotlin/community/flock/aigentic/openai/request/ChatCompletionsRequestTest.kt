@@ -1,13 +1,21 @@
 package community.flock.aigentic.openai.request
 
+import com.aallam.openai.api.chat.ImagePart
+import com.aallam.openai.api.chat.ListContent
+import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageCategory
+import community.flock.aigentic.core.message.MimeType
+import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
+import community.flock.aigentic.openai.model.OpenAIImageDetail
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 class ChatCompletionsRequestTest :
     DescribeSpec({
@@ -15,6 +23,27 @@ class ChatCompletionsRequestTest :
         val generationSettings = GenerationSettings.DEFAULT.copy(maxOutputTokens = 65536)
 
         describe("OpenAI Chat Completions Request") {
+
+            it("should send the configured image detail on image messages") {
+                val request =
+                    createChatCompletionsRequest(
+                        listOf(Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)),
+                        emptyList(),
+                        OpenAIModelIdentifier.GPT5_5,
+                        GenerationSettings.DEFAULT,
+                        OpenAIImageDetail.HIGH,
+                    )
+
+                request.messages
+                    .single()
+                    .messageContent
+                    .shouldBeInstanceOf<ListContent>()
+                    .content
+                    .single()
+                    .shouldBeInstanceOf<ImagePart>()
+                    .imageUrl
+                    .detail shouldBe "high"
+            }
 
             it("should send max completion tokens for reasoning models") {
                 val request =
