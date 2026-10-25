@@ -1,6 +1,6 @@
-import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
+import { aigenticTheme } from "./src/prism/aigenticTheme";
 
 const AIGENTIC_VERSION = "0.11.0";
 const KTOR_VERSION = "3.4.3";
@@ -147,8 +147,8 @@ const config: Config = {
       copyright: `© ${new Date().getFullYear()} Aigentic. All rights reserved.`,
     },
     prism: {
-      theme: prismThemes.vsLight,
-      darkTheme: prismThemes.vsDark,
+      theme: aigenticTheme,
+      darkTheme: aigenticTheme,
       // https://docusaurus.io/docs/markdown-features/code-blocks#supported-languages
       // Note: wirespec is not an official prism language, it's added through prism-include-languages.ts
       additionalLanguages: [

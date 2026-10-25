@@ -36,7 +36,7 @@
   --ifm-color-primary-lighter: #32d8b4;
   --ifm-color-primary-lightest: #4fddbf;
   --ifm-background-color: #101010 !important;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --docusaurus-highlighted-code-line-bg: rgba(240, 188, 66, 0.12);
   --ifm-navbar-link-hover-color: #f0bc42;
   --ifm-footer-link-hover-color: #f0bc42;
   --ifm-menu-color-active: #ffffff;
@@ -229,9 +229,7 @@ body {
 }
 
 .other-capabilites h2 {
-  font-size: 60px;
   font-weight: 500;
-  max-width: 474px;
 }
 
 .card-other {
@@ -678,9 +676,7 @@ table tr:nth-child(2n) {
     padding: 40px 0px;
   }
   .other-capabilites h2 {
-    font-size: 40px;
-    margin-bottom: 35px;
-    max-width: 100%;
+    margin-bottom: 20px;
   }
   .card-other h4 {
     font-size: 24px;
@@ -720,9 +716,6 @@ table tr:nth-child(2n) {
   }
   .other-capabilites {
     padding: 30px 0px;
-  }
-  .other-capabilites h2 {
-    font-size: 32px;
   }
   .table table tr th,
   .table table tr td {
@@ -809,4 +802,42 @@ table tr:nth-child(2n) {
 .language-text code {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.theme-code-block {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.markdown ul:not(.tabs):not(.contains-task-list) {
+  padding-left: 1.4rem;
+  list-style: none;
+}
+
+.markdown ul:not(.tabs):not(.contains-task-list) > li {
+  position: relative;
+}
+
+.markdown ul:not(.tabs):not(.contains-task-list) > li::before {
+  content: "";
+  position: absolute;
+  top: 0.62em;
+  left: -1.05rem;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: #f0bc42;
+  transform: rotate(-28deg);
+}
+
+.footer-cta-title svg {
+  width: 0.7em;
+  height: 0.7em;
+  margin-right: 0.3em;
+  vertical-align: -0.04em;
+}
+
+.footer-install {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
 }

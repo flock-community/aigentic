@@ -198,10 +198,11 @@
 .node {
   position: absolute;
   top: 4px;
-  left: 0;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
+  left: 1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  transform: rotate(-28deg);
   border: 1px solid rgba(255, 255, 255, 0.25);
   background: var(--viz-surface);
   transition:
@@ -326,7 +327,7 @@
 }
 
 .result {
-  color: #ce9178;
+  color: #eba57f;
 }
 
 .result::before {
