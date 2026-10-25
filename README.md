@@ -88,6 +88,38 @@ repositories {
 ./gradlew -q build
 ```
 
+### Claude Code cloud sessions
+
+A cloud session starts with an empty `~/.gradle` and downloads every dependency from Maven Central, which often
+answers with `429 Too Many Requests`. Two things avoid that:
+
+- [`maven-central-mirror.init.gradle.kts`](.github/gradle/maven-central-mirror.init.gradle.kts) routes Maven Central
+  traffic through Google's mirror, which doesn't throttle.
+- The [Gradle dependency cache](.github/workflows/gradle-dep-cache.yml) workflow publishes a Gradle
+  [read-only dependency cache](https://docs.gradle.org/current/userguide/dependency_caching.html#sec:shared-readonly-cache)
+  weekly as an asset of the `gradle-dep-cache` release. It's built through the mirror, because Gradle caches
+  dependencies per repository URL, so use the two together.
+
+To use them, in Claude Code (desktop or web) edit the settings of your cloud environment:
+
+- Environment variable: `GRADLE_RO_DEP_CACHE=/opt/gradle-ro-dep-cache`
+- Setup script:
+
+  ```bash
+  #!/bin/bash
+  mkdir -p ~/.gradle/init.d /opt/gradle-ro-dep-cache
+  curl -fsSL --retry 3 -o ~/.gradle/init.d/maven-central-mirror.init.gradle.kts \
+    https://raw.githubusercontent.com/flock-community/aigentic/main/.github/gradle/maven-central-mirror.init.gradle.kts \
+    || echo "Maven Central mirror not installed"
+  curl -fsSL --retry 3 https://github.com/flock-community/aigentic/releases/download/gradle-dep-cache/gradle-ro-dep-cache.tar.gz \
+    | tar -xz -C /opt/gradle-ro-dep-cache \
+    || echo "Gradle dependency cache not downloaded; Gradle falls back to the network"
+  ```
+
+The setup script's result is cached with the environment for about a week, so sessions don't download the cache each
+time. Dependencies missing from the cache are still downloaded as usual, through the mirror. An environment can use
+one read-only cache, so use a separate environment for another Gradle project that publishes its own.
+
 ## License
 
 Aigentic is released under the MIT License. See [LICENSE](LICENSE) for details.
