@@ -333,6 +333,8 @@ class OpenAIModel(
         validateOpenAIImageDetail(modelIdentifier, imageDetail)
     }
 
+    override val mediaResolutionLevel: String? get() = imageDetail?.name
+
     private val openAI: OpenAI = defaultOpenAI(authentication, apiUrl, logLevel)
 
     override suspend fun sendRequest(

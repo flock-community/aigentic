@@ -20,6 +20,12 @@ interface Model {
     val modelIdentifier: ModelIdentifier
     val generationSettings: GenerationSettings
 
+    /**
+     * The level this model reads attachments at, by the provider's own name (such as HIGH for Gemini or
+     * ORIGINAL for OpenAI), or null for the provider's default. Reported to the platform with each run.
+     */
+    val mediaResolutionLevel: String? get() = null
+
     suspend fun sendRequest(
         messages: List<Message>,
         tools: List<ToolDescription>,
