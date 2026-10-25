@@ -14,7 +14,7 @@ export const providerExamples = [
     code: `agent<String, Answer> {
     geminiModel {
         apiKey("YOUR_API_KEY")
-        modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
+        modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
     }
     task("Answer questions about Kotlin") {}
 }`,
@@ -35,7 +35,7 @@ export const providerExamples = [
     vertexAIModel {
         project("YOUR_PROJECT_ID")
         location("europe-west4")
-        modelIdentifier(VertexAIModelIdentifier.Gemini3_8Flash)
+        modelIdentifier(VertexAIModelIdentifier.Gemini3_5Flash)
     }
     task("Answer questions about Kotlin") {}
 }`,
@@ -57,7 +57,7 @@ data class Invoice(
 val invoiceExtractor = agent<Unit, Invoice> {
     geminiModel {
         apiKey("YOUR_API_KEY")
-        modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
+        modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
     }
     task("Extract the invoice from the attached PDF") {
         addInstruction("Include every line item")
@@ -79,7 +79,7 @@ data class Summary(val text: String)
 val analyzer = agent<Document, Analysis> {
     geminiModel {
         apiKey("YOUR_API_KEY")
-        modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
+        modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
     }
     task("Find the key topics and the overall tone") {}
 }

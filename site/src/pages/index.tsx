@@ -1,21 +1,15 @@
 import clsx from "clsx";
 import Link from "@docusaurus/Link";
 import Layout from "@theme/Layout";
-import CodeBlock from "@theme/CodeBlock";
 import Heading from "@theme/Heading";
 import "../css/custom.css";
 import styles from "./index.module.css";
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
 import { JSX } from "react";
-import {
-  invoiceExtractorExample,
-  providerExamples,
-  regressionTestExample,
-  workflowExample,
-} from "../code/examples";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import CyclingBlurText from "../components/CyclingBlurText";
 import AgentRunVisualizer from "../components/AgentRunVisualizer";
+import CopyButton from "../components/CopyButton";
+import ProductionStory from "../components/ProductionStory";
 
 const dslPoints = [
   {
@@ -64,6 +58,30 @@ const capabilities = [
     to: "/docs/workflow",
   },
 ];
+
+function InstallSnippet() {
+  const { siteConfig } = useDocusaurusContext();
+  const version = siteConfig.customFields?.version as string;
+  const dependencies = ["core", "gemini"]
+    .map((module) => `implementation("community.flock.aigentic:${module}:${version}")`)
+    .join("\n");
+  return (
+    <div className={styles.install}>
+      <div className={styles.installCode}>
+        <pre>
+          <code>{dependencies}</code>
+        </pre>
+        <CopyButton text={dependencies} />
+      </div>
+      <p>
+        Latest release v{version}.{" "}
+        <Link to={`https://github.com/flock-community/aigentic/releases/tag/v${version}`}>
+          Read the release notes
+        </Link>
+      </p>
+    </div>
+  );
+}
 
 function HomepageHeader() {
   return (
@@ -135,6 +153,7 @@ export default function Home(): JSX.Element {
               <Link className={clsx(styles.button, styles.buttonPrimary)} to="/docs/getting-started">
                 Build your first agent
               </Link>
+              <InstallSnippet />
             </div>
           </div>
         </section>
@@ -145,127 +164,8 @@ export default function Home(): JSX.Element {
             </Heading>
             <p>Swap models, read documents, chain agents and test the results.</p>
           </div>
-          <div className="inner-section" id="how-providers">
-            <div className="container">
-              <div className="row row--align-center">
-                <div className="col col--6 code-block-col">
-                  <Tabs>
-                    {providerExamples.map(({ label, code }) => (
-                      <TabItem key={label} value={label} label={label}>
-                        <CodeBlock language="kotlin">{code}</CodeBlock>
-                      </TabItem>
-                    ))}
-                  </Tabs>
-                </div>
-                <div className="col col--6">
-                  <Heading as="h2" className={clsx(styles.heading2)}>
-                    Providers
-                  </Heading>
-                  <p>
-                    Aigentic works with OpenAI, Gemini, VertexAI and Ollama, and you can plug in your
-                    own model. Switching providers means changing one block. Your task, tools and
-                    types stay the same.
-                  </p>
-                  <Link
-                    className={clsx("button-link", styles.button, styles.buttonPrimary)}
-                    to="/docs/dsl/providers"
-                  >
-                    Explore providers
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="inner-section" id="how-documents">
-            <div className="container">
-              <div className="row row--align-center">
-                <div className="col col--6">
-                  <Heading as="h2" className={clsx(styles.heading2)}>
-                    Structured data from documents
-                  </Heading>
-                  <p>
-                    Pass a PDF or an image to <code>start()</code> and get a typed data class back.
-                    Use <code>@Description</code> to tell the model what a field means. There's no
-                    JSON to parse and no tool to write. PDFs work with Gemini and VertexAI today.
-                  </p>
-                  <Link
-                    className={clsx("button-link", styles.button, styles.buttonPrimary)}
-                    to="/docs/dsl/agent"
-                  >
-                    Read about agents
-                  </Link>
-                </div>
-                <div className="col col--6 code-block-col">
-                  <div className="card card-border-bottom card-nospace">
-                    <CodeBlock language="kotlin" title="InvoiceExtractor.kt" className="custom-code-block">
-                      {invoiceExtractorExample}
-                    </CodeBlock>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="inner-section" id="how-workflow">
-            <div className="container">
-              <div className="row row--align-center">
-                <div className="col col--6 code-block-col">
-                  <div className="card card-border-bottom card-nospace">
-                    <CodeBlock language="kotlin" title="DocumentWorkflow.kt" className="custom-code-block">
-                      {workflowExample}
-                    </CodeBlock>
-                  </div>
-                </div>
-                <div className="col col--6">
-                  <Heading as="h2" className={clsx(styles.heading2)}>
-                    Workflows
-                  </Heading>
-                  <p>
-                    Chain agents with <code>thenProcess</code>. The output type of one agent is the
-                    input type of the next, so the compiler catches a broken chain before you run
-                    it. Each agent can use its own model.
-                  </p>
-                  <Link
-                    className={clsx("button-link", styles.button, styles.buttonPrimary)}
-                    to="/docs/workflow"
-                  >
-                    Explore workflows
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="inner-section" id="how-test">
-            <div className="container">
-              <div className="row row--align-center">
-                <div className="col col--6">
-                  <Heading as="h2" className={clsx(styles.heading2)}>
-                    Test before you ship
-                  </Heading>
-                  <p>
-                    Tag good runs on the Aigentic platform, then replay them as regression tests
-                    whenever you change a prompt or a model. Tool calls return the recorded results,
-                    so tests never touch your real systems.
-                  </p>
-                  <p>
-                    A failed model call doesn't throw. It comes back as <code>Outcome.Fatal</code>,
-                    and <code>run.tokenUsage()</code> tells you what each run cost.
-                  </p>
-                  <Link
-                    className={clsx("button-link", styles.button, styles.buttonPrimary)}
-                    to="https://github.com/flock-community/aigentic/tree/main/src/examples/testing"
-                  >
-                    See the testing example
-                  </Link>
-                </div>
-                <div className="col col--6 code-block-col">
-                  <div className="card card-border-bottom card-nospace">
-                    <CodeBlock language="kotlin" title="WeatherAgentTest.kt" className="custom-code-block">
-                      {regressionTestExample}
-                    </CodeBlock>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="container">
+            <ProductionStory />
           </div>
         </section>
         <section className="other-capabilites other-capabilites-shadow">

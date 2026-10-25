@@ -1,0 +1,38 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: transparent;
+  color: #9f9f9f;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.button:hover {
+  color: #f0bc42;
+  border-color: #f0bc42;
+}
+
+.button:focus-visible {
+  outline: 2px solid #f0bc42;
+  outline-offset: 2px;
+}
+
+.button svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+}
+
+.copied {
+  color: #f0bc42;
+  border-color: rgba(240, 188, 66, 0.5);
+}
