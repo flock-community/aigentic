@@ -11,6 +11,7 @@ import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessage
 import community.flock.aigentic.openai.mapper.toOpenAITool
+import community.flock.aigentic.openai.model.OpenAIImageDetail
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 import community.flock.aigentic.openai.model.resolveThinkingLevel
 import community.flock.aigentic.openai.model.supportsSampling
@@ -23,6 +24,7 @@ internal fun createChatCompletionsRequest(
     tools: List<ToolDescription>,
     openAIModelIdentifier: ModelIdentifier,
     generationSettings: GenerationSettings,
+    imageDetail: OpenAIImageDetail? = null,
 ): ChatCompletionRequest {
     validateOpenAIThinkingConfig(openAIModelIdentifier, generationSettings)
     validateOpenAISamplingConfig(openAIModelIdentifier, generationSettings)
@@ -38,7 +40,7 @@ internal fun createChatCompletionsRequest(
             if (openAIModelIdentifier.usesMaxCompletionTokens()) maxCompletionTokens = it else maxTokens = it
         }
         model = ModelId(openAIModelIdentifier.stringValue)
-        this.messages = messages.map { it.toOpenAIMessage() }
+        this.messages = messages.map { it.toOpenAIMessage(imageDetail) }
         this.tools = tools.map { it.toOpenAITool() }
         toolChoice = ToolChoice.Auto
         generationSettings.thinkingConfig?.thinkingLevel?.let { level ->

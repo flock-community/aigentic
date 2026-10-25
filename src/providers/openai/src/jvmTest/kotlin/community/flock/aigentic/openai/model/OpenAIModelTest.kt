@@ -73,6 +73,45 @@ class OpenAIModelTest :
                 }
             }
 
+            it("should throw when built with imageDetail ORIGINAL on a model older than gpt-5.4") {
+                shouldThrow<Exception> {
+                    OpenAIModel(
+                        authentication = Authentication.APIKey("key"),
+                        modelIdentifier = OpenAIModelIdentifier.GPT4O,
+                        generationSettings = GenerationSettings.DEFAULT,
+                        apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
+                        imageDetail = OpenAIImageDetail.ORIGINAL,
+                    )
+                }.message shouldContain "imageDetail ORIGINAL is only supported on gpt-5.4 and newer models"
+            }
+
+            it("should build successfully with imageDetail ORIGINAL on gpt-5.4") {
+                shouldNotThrowAny {
+                    OpenAIModel(
+                        authentication = Authentication.APIKey("key"),
+                        modelIdentifier = OpenAIModelIdentifier.GPT5_4,
+                        generationSettings = GenerationSettings.DEFAULT,
+                        apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
+                        imageDetail = OpenAIImageDetail.ORIGINAL,
+                    )
+                }
+            }
+
+            it("should allow every image detail except ORIGINAL on a model older than gpt-5.4") {
+                shouldNotThrowAny {
+                    listOf(OpenAIImageDetail.AUTO, OpenAIImageDetail.LOW, OpenAIImageDetail.HIGH).forEach {
+                        validateOpenAIImageDetail(OpenAIModelIdentifier.GPT4O, it)
+                    }
+                }
+            }
+
+            it("should not validate the image detail of a Custom or unrelated ModelIdentifier") {
+                shouldNotThrowAny {
+                    validateOpenAIImageDetail(OpenAIModelIdentifier.Custom("my-model"), OpenAIImageDetail.ORIGINAL)
+                    validateOpenAIImageDetail(OtherModelIdentifier, OpenAIImageDetail.ORIGINAL)
+                }
+            }
+
             it("should throw when built with an explicit temperature on a reasoning model") {
                 shouldThrow<Exception> {
                     OpenAIModel(
