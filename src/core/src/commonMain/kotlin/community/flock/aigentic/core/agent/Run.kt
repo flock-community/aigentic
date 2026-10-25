@@ -3,7 +3,7 @@ package community.flock.aigentic.core.agent
 import community.flock.aigentic.core.agent.state.ModelRequestInfo
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.message.Message
-import kotlinx.serialization.json.Json
+import community.flock.aigentic.core.util.modelOutputJson
 import kotlin.Deprecated
 import kotlin.ReplaceWith
 import kotlin.jvm.JvmInline
@@ -110,7 +110,7 @@ internal inline fun <reified O : Any> AgentRun<String>.decode(): AgentRun<O> {
                 is Outcome.Finished<String> -> {
                     Outcome.Finished(
                         description = currentOutcome.description,
-                        response = currentOutcome.response?.let { Json.decodeFromString<O>(it) },
+                        response = currentOutcome.response?.let { modelOutputJson.decodeFromString<O>(it) },
                     )
                 }
 

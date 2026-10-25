@@ -5,9 +5,11 @@ import http.createPrimitiveParameter
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
 
 class ArgumentsResolverTest :
     DescribeSpec({
@@ -133,6 +135,40 @@ class ArgumentsResolverTest :
                     jsonArguments,
                 ) shouldBe ResolvedRequestBody(""""{ \"someProperty\" : \"hello\" }"""")
             }
+
+            it("should leave out request body fields that are null") {
+                val bodyParameter =
+                    createObjectParameter(
+                        name = "body",
+                        parameters = listOf(createPrimitiveParameter("name"), createPrimitiveParameter("tag", isRequired = false)),
+                    )
+
+                val jsonArguments =
+                    buildJsonObject {
+                        putJsonObject("body") {
+                            put("name", "Rex")
+                            put("tag", JsonNull)
+                            putJsonObject("owner") {
+                                put("name", "Ann")
+                                put("email", JsonNull)
+                            }
+                        }
+                    }
+
+                resolver.resolveRequestBody(
+                    bodyParameter,
+                    jsonArguments,
+                ) shouldBe ResolvedRequestBody("""{"name":"Rex","owner":{"name":"Ann"}}""")
+            }
+
+            it("should not resolve a non-required request body that is null") {
+                val bodyParameter = createObjectParameter(name = "body", isRequired = false, parameters = emptyList())
+
+                resolver.resolveRequestBody(
+                    bodyParameter,
+                    buildJsonObject { put("body", JsonNull) },
+                ) shouldBe null
+            }
         }
 
         describe("DefaultQueryParametersArgumentsResolver") {
@@ -181,6 +217,24 @@ class ArgumentsResolverTest :
                         jsonArguments,
                     ) shouldBe ResolvedQueryParameters(emptyMap())
                 }
+
+                it("should leave out non-required query parameter arguments that are null") {
+
+                    val jsonArguments =
+                        buildJsonObject {
+                            put(itemIdParameterName, JsonNull)
+                        }
+
+                    val queryParameters =
+                        listOf(
+                            createPrimitiveParameter(itemIdParameterName, isRequired = false),
+                        )
+
+                    resolver.resolveQueryParameters(
+                        queryParameters,
+                        jsonArguments,
+                    ) shouldBe ResolvedQueryParameters(emptyMap())
+                }
             }
 
             describe("exceptions") {
@@ -190,6 +244,26 @@ class ArgumentsResolverTest :
                     val jsonArguments =
                         buildJsonObject {
                             put(commentIdParameterName, "456")
+                        }
+
+                    val queryParameters =
+                        listOf(
+                            createPrimitiveParameter(itemIdParameterName, isRequired = true),
+                        )
+
+                    shouldThrow<Exception> {
+                        resolver.resolveQueryParameters(
+                            queryParameters,
+                            jsonArguments,
+                        )
+                    }
+                }
+
+                it("should throw exception if parameter is required and argument is null") {
+
+                    val jsonArguments =
+                        buildJsonObject {
+                            put(itemIdParameterName, JsonNull)
                         }
 
                     val queryParameters =

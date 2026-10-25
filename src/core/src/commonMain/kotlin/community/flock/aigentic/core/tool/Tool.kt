@@ -1,5 +1,6 @@
 package community.flock.aigentic.core.tool
 
+import community.flock.aigentic.core.util.modelOutputJson
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -61,7 +62,7 @@ inline fun <reified I : Any, reified O : Any> createTool(
                 else -> listOf(param)
             }
         override val handler: suspend (toolArguments: JsonObject) -> String = {
-            val obj = Json.decodeFromJsonElement<I>(it)
+            val obj = modelOutputJson.decodeFromJsonElement<I>(it)
             val res = handlerFn(obj)
             when (res) {
                 is String -> res

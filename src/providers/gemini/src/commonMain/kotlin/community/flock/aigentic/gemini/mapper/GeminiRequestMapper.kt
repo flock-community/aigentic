@@ -27,9 +27,10 @@ import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import community.flock.aigentic.gemini.model.resolveThinkingLevel
 import community.flock.aigentic.gemini.model.supportsSampling
 import community.flock.aigentic.gemini.model.validateGeminiThinkingConfig
-import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
+import community.flock.aigentic.providers.jsonschema.SchemaDialect
+import community.flock.aigentic.providers.jsonschema.toObjectSchema
+import community.flock.aigentic.providers.jsonschema.toResponseSchema
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import community.flock.aigentic.core.model.ThinkingConfig as CoreThinkingConfig
@@ -163,7 +164,7 @@ private fun GenerationSettings.toGenerationConfig(
         candidateCount = if (supportsSampling) 1 else null,
         maxOutputTokens = maxOutputTokens,
         thinkingConfig = thinkingConfig?.takeIf { it.thinkingBudget != null || it.thinkingLevel != null }?.toThinkingConfig(modelIdentifier),
-        responseSchema = structuredResponseParameter?.getStructuredResponseSchema(),
+        responseSchema = structuredResponseParameter?.toResponseSchema(SchemaDialect.OPENAPI_SCHEMA),
         responseMimeType = structuredResponseParameter?.let { "application/json" },
     )
 }
@@ -174,19 +175,6 @@ private fun CoreThinkingConfig.toThinkingConfig(modelIdentifier: GeminiModelIden
         thinkingLevel = thinkingLevel?.let { modelIdentifier.resolveThinkingLevel(it) }?.name?.lowercase(),
     )
 
-private fun Parameter.getStructuredResponseSchema(): JsonObject? =
-    this.let { responseParam ->
-        buildJsonObject {
-            put("type", "object")
-            emitPropertiesAndRequired(
-                when (responseParam) {
-                    is Parameter.Complex.Object -> responseParam.parameters
-                    else -> listOf(responseParam)
-                },
-            )
-        }
-    }
-
 private fun List<ToolDescription>.toTools(): List<Tool> =
     listOf(
         Tool(
@@ -194,15 +182,7 @@ private fun List<ToolDescription>.toTools(): List<Tool> =
                 FunctionDeclaration(
                     name = it.name.value,
                     description = it.description ?: "",
-                    parameters =
-                        if (it.parameters.isEmpty()) {
-                            null
-                        } else {
-                            buildJsonObject {
-                                put("type", "object")
-                                emitPropertiesAndRequired(it.parameters)
-                            }
-                        },
+                    parameters = it.parameters.takeIf { it.isNotEmpty() }?.toObjectSchema(SchemaDialect.OPENAPI_SCHEMA),
                 )
             },
         ),

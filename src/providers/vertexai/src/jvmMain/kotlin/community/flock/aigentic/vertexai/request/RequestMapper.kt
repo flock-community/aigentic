@@ -20,7 +20,9 @@ import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
-import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
+import community.flock.aigentic.providers.jsonschema.SchemaDialect
+import community.flock.aigentic.providers.jsonschema.toObjectSchema
+import community.flock.aigentic.providers.jsonschema.toResponseSchema
 import community.flock.aigentic.vertexai.VertexAIMediaResolution
 import community.flock.aigentic.vertexai.VertexAIModelIdentifier
 import community.flock.aigentic.vertexai.fromJson
@@ -28,7 +30,6 @@ import community.flock.aigentic.vertexai.resolveThinkingLevel
 import community.flock.aigentic.vertexai.supportsSampling
 import community.flock.aigentic.vertexai.validateVertexAIThinkingConfig
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.util.Base64
@@ -126,7 +127,7 @@ internal fun createGenerateConfig(
         .apply {
             structuredOutputParameter?.let { param ->
                 responseMimeType("application/json")
-                responseJsonSchema(param.getStructuredResponseSchema().toJsonNode())
+                responseJsonSchema(param.toResponseSchema(SchemaDialect.JSON_SCHEMA).toJsonNode())
             }
         }.build()
 }
@@ -196,14 +197,7 @@ private fun GenerateContentConfig.Builder.withSampling(
     }
 
 private fun getToolParametersJson(toolDescription: ToolDescription): String =
-    if (toolDescription.parameters.isEmpty()) {
-        null
-    } else {
-        buildJsonObject {
-            put("type", "object")
-            emitPropertiesAndRequired(toolDescription.parameters)
-        }
-    }.let { Json.encodeToString(it) }
+    Json.encodeToString(toolDescription.parameters.takeIf { it.isNotEmpty() }?.toObjectSchema(SchemaDialect.OPENAPI_SCHEMA))
 
 private fun getSystemInstruction(messages: List<Message>): Content =
     messages
@@ -232,19 +226,6 @@ private fun Sender.toVertexRole(): String =
     when (this) {
         Sender.Agent -> "user"
         Sender.Model -> "model"
-    }
-
-private fun Parameter.getStructuredResponseSchema(): JsonObject =
-    this.let { responseParam ->
-        buildJsonObject {
-            put("type", "object")
-            emitPropertiesAndRequired(
-                when (responseParam) {
-                    is Parameter.Complex.Object -> responseParam.parameters
-                    else -> listOf(responseParam)
-                },
-            )
-        }
     }
 
 inline fun <reified T> T.toJsonNode(): JsonNode = JsonSerializable.stringToJsonNode(Json.encodeToString(this))
