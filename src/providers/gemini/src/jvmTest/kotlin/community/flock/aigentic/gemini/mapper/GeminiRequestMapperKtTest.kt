@@ -69,7 +69,7 @@ class GeminiRequestMapperKtTest :
                         GenerationSettings.DEFAULT,
                         null,
                         GeminiModelIdentifier.Gemini3_8Flash,
-                        GeminiMediaResolution.UltraHigh,
+                        GeminiMediaResolution.ULTRA_HIGH,
                     ).contents.flatMap { it.parts }
                 val ultraHigh = MediaResolution(MediaResolutionLevel.MEDIA_RESOLUTION_ULTRA_HIGH)
 
@@ -81,10 +81,10 @@ class GeminiRequestMapperKtTest :
                 val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
 
                 mapOf(
-                    GeminiMediaResolution.Low to "MEDIA_RESOLUTION_LOW",
-                    GeminiMediaResolution.Medium to "MEDIA_RESOLUTION_MEDIUM",
-                    GeminiMediaResolution.High to "MEDIA_RESOLUTION_HIGH",
-                    GeminiMediaResolution.UltraHigh to "MEDIA_RESOLUTION_ULTRA_HIGH",
+                    GeminiMediaResolution.LOW to "MEDIA_RESOLUTION_LOW",
+                    GeminiMediaResolution.MEDIUM to "MEDIA_RESOLUTION_MEDIUM",
+                    GeminiMediaResolution.HIGH to "MEDIA_RESOLUTION_HIGH",
+                    GeminiMediaResolution.ULTRA_HIGH to "MEDIA_RESOLUTION_ULTRA_HIGH",
                 ).forEach { (resolution, level) ->
                     val request =
                         createGenerateContentRequest(

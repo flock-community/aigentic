@@ -128,10 +128,10 @@ private fun defaultSafetySettings(): List<SafetySettings> =
 private fun GeminiMediaResolution.toMediaResolution(): MediaResolution =
     MediaResolution(
         when (this) {
-            GeminiMediaResolution.Low -> MediaResolutionLevel.MEDIA_RESOLUTION_LOW
-            GeminiMediaResolution.Medium -> MediaResolutionLevel.MEDIA_RESOLUTION_MEDIUM
-            GeminiMediaResolution.High -> MediaResolutionLevel.MEDIA_RESOLUTION_HIGH
-            GeminiMediaResolution.UltraHigh -> MediaResolutionLevel.MEDIA_RESOLUTION_ULTRA_HIGH
+            GeminiMediaResolution.LOW -> MediaResolutionLevel.MEDIA_RESOLUTION_LOW
+            GeminiMediaResolution.MEDIUM -> MediaResolutionLevel.MEDIA_RESOLUTION_MEDIUM
+            GeminiMediaResolution.HIGH -> MediaResolutionLevel.MEDIA_RESOLUTION_HIGH
+            GeminiMediaResolution.ULTRA_HIGH -> MediaResolutionLevel.MEDIA_RESOLUTION_ULTRA_HIGH
         },
     )
 

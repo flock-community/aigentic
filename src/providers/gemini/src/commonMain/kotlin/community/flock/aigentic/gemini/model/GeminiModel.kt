@@ -49,10 +49,10 @@ sealed class GeminiModelIdentifier(
 }
 
 enum class GeminiMediaResolution {
-    Low,
-    Medium,
-    High,
-    UltraHigh,
+    LOW,
+    MEDIUM,
+    HIGH,
+    ULTRA_HIGH,
 }
 
 internal data class ModelCapability(
@@ -196,7 +196,7 @@ class GeminiModel(
     override val generationSettings: GenerationSettings,
     private val logLevel: LogLevel = LogLevel.NONE,
     private val geminiClient: GeminiClient = defaultGeminiClient(authentication, logLevel),
-    val mediaResolution: GeminiMediaResolution? = null,
+    private val mediaResolution: GeminiMediaResolution? = null,
 ) : Model {
     init {
         validateGeminiThinkingConfig(modelIdentifier, generationSettings)

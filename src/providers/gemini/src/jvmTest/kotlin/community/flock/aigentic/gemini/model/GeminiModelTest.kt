@@ -81,7 +81,7 @@ class GeminiModelTest :
                     modelIdentifier = GeminiModelIdentifier.Gemini3_8Flash,
                     generationSettings = GenerationSettings.DEFAULT,
                     geminiClient = geminiClient,
-                    mediaResolution = GeminiMediaResolution.High,
+                    mediaResolution = GeminiMediaResolution.HIGH,
                 ).sendRequest(
                     listOf(Message.Base64(Sender.Agent, "JVBERi0=", MimeType.PDF, MessageCategory.EXECUTION)),
                     emptyList(),
@@ -103,22 +103,22 @@ class GeminiModelTest :
                         modelIdentifier = GeminiModelIdentifier.Gemini2_5Flash,
                         generationSettings = GenerationSettings.DEFAULT,
                         geminiClient = mockk<GeminiClient>(relaxed = true),
-                        mediaResolution = GeminiMediaResolution.High,
+                        mediaResolution = GeminiMediaResolution.HIGH,
                     )
                 }.message shouldContain "mediaResolution is not supported on Gemini 2.x models"
             }
 
             it("should throw when a media resolution is configured on a Custom gemini-2.x identifier") {
                 shouldThrow<Exception> {
-                    validateGeminiMediaResolution(GeminiModelIdentifier.Custom("models/gemini-2.5-flash"), GeminiMediaResolution.Low)
+                    validateGeminiMediaResolution(GeminiModelIdentifier.Custom("models/gemini-2.5-flash"), GeminiMediaResolution.LOW)
                 }.message shouldContain "mediaResolution is not supported on Gemini 2.x models"
             }
 
             it("should allow a media resolution on Gemini 3.x and Custom identifiers without a 2.x version") {
                 shouldNotThrowAny {
-                    validateGeminiMediaResolution(GeminiModelIdentifier.Gemini3_1FlashLite, GeminiMediaResolution.UltraHigh)
-                    validateGeminiMediaResolution(GeminiModelIdentifier.Custom("gemini-4.0-pro"), GeminiMediaResolution.UltraHigh)
-                    validateGeminiMediaResolution(GeminiModelIdentifier.Custom("my-proxy"), GeminiMediaResolution.UltraHigh)
+                    validateGeminiMediaResolution(GeminiModelIdentifier.Gemini3_1FlashLite, GeminiMediaResolution.ULTRA_HIGH)
+                    validateGeminiMediaResolution(GeminiModelIdentifier.Custom("gemini-4.0-pro"), GeminiMediaResolution.ULTRA_HIGH)
+                    validateGeminiMediaResolution(GeminiModelIdentifier.Custom("my-proxy"), GeminiMediaResolution.ULTRA_HIGH)
                 }
             }
 
