@@ -47,10 +47,18 @@ sealed class VertexAIModelIdentifier(
     ) : VertexAIModelIdentifier(identifier)
 }
 
+enum class VertexAIMediaResolution {
+    LOW,
+    MEDIUM,
+    HIGH,
+    ULTRA_HIGH,
+}
+
 internal data class ModelCapability(
     val supportsThinkingBudget: Boolean,
     val supportedThinkingLevels: Set<ThinkingLevel>?,
     val supportsSampling: Boolean,
+    val supportsPartMediaResolution: Boolean,
 )
 
 private val vertexAIMajorVersionRegex = Regex("(?:^|/)gemini-(\\d+)")
@@ -61,7 +69,12 @@ internal fun VertexAIModelIdentifier.capability(): ModelCapability =
         VertexAIModelIdentifier.Gemini2_5Flash,
         VertexAIModelIdentifier.Gemini2_5FlashLite,
         -> {
-            ModelCapability(supportsThinkingBudget = true, supportedThinkingLevels = null, supportsSampling = true)
+            ModelCapability(
+                supportsThinkingBudget = true,
+                supportedThinkingLevels = null,
+                supportsSampling = true,
+                supportsPartMediaResolution = false,
+            )
         }
 
         VertexAIModelIdentifier.Gemini3_8Flash,
@@ -72,6 +85,7 @@ internal fun VertexAIModelIdentifier.capability(): ModelCapability =
                 supportsThinkingBudget = false,
                 supportedThinkingLevels = setOf(ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH),
                 supportsSampling = false,
+                supportsPartMediaResolution = true,
             )
         }
 
@@ -85,6 +99,7 @@ internal fun VertexAIModelIdentifier.capability(): ModelCapability =
                 supportsThinkingBudget = false,
                 supportedThinkingLevels = ThinkingLevel.entries.toSet(),
                 supportsSampling = false,
+                supportsPartMediaResolution = true,
             )
         }
 
@@ -101,11 +116,17 @@ internal fun VertexAIModelIdentifier.capability(): ModelCapability =
                         supportsThinkingBudget = true,
                         supportedThinkingLevels = ThinkingLevel.entries.toSet(),
                         supportsSampling = true,
+                        supportsPartMediaResolution = true,
                     )
                 }
 
                 majorVersion <= 2 -> {
-                    ModelCapability(supportsThinkingBudget = true, supportedThinkingLevels = null, supportsSampling = true)
+                    ModelCapability(
+                        supportsThinkingBudget = true,
+                        supportedThinkingLevels = null,
+                        supportsSampling = true,
+                        supportsPartMediaResolution = false,
+                    )
                 }
 
                 else -> {
@@ -113,6 +134,7 @@ internal fun VertexAIModelIdentifier.capability(): ModelCapability =
                         supportsThinkingBudget = false,
                         supportedThinkingLevels = ThinkingLevel.entries.toSet(),
                         supportsSampling = false,
+                        supportsPartMediaResolution = true,
                     )
                 }
             }
@@ -157,6 +179,18 @@ internal fun validateVertexAIThinkingConfig(
     }
 }
 
+internal fun validateVertexAIMediaResolution(
+    modelIdentifier: ModelIdentifier,
+    mediaResolution: VertexAIMediaResolution?,
+) {
+    val vertexAIModelIdentifier = modelIdentifier as? VertexAIModelIdentifier ?: return
+    if (mediaResolution != null && !vertexAIModelIdentifier.capability().supportsPartMediaResolution) {
+        aigenticException(
+            "mediaResolution is not supported on Gemini 2.x models, use a Gemini 3 or newer model instead of ${vertexAIModelIdentifier.stringValue}",
+        )
+    }
+}
+
 @JvmInline
 value class Project(
     val value: String,
@@ -173,9 +207,11 @@ class VertexAIModel(
     project: Project,
     location: Location,
     requestTimeoutMillis: Long,
+    private val mediaResolution: VertexAIMediaResolution? = null,
 ) : Model {
     init {
         validateVertexAIThinkingConfig(modelIdentifier, generationSettings)
+        validateVertexAIMediaResolution(modelIdentifier, mediaResolution)
     }
 
     private val client: Client = defaultVertexAIClient(project, location, requestTimeoutMillis)
@@ -188,7 +224,7 @@ class VertexAIModel(
         client.async.models
             .generateContent(
                 modelIdentifier.stringValue,
-                createRequestContents(messages),
+                createRequestContents(messages, mediaResolution),
                 createGenerateConfig(messages, tools, generationSettings, structuredOutputParameter, modelIdentifier),
             ).await()
             .toModelResponse(structuredOutputParameter != null)

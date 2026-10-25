@@ -8,6 +8,8 @@ import com.google.genai.types.GenerateContentConfig
 import com.google.genai.types.HarmBlockThreshold
 import com.google.genai.types.HarmCategory
 import com.google.genai.types.Part
+import com.google.genai.types.PartMediaResolution
+import com.google.genai.types.PartMediaResolutionLevel
 import com.google.genai.types.SafetySetting
 import com.google.genai.types.Schema
 import com.google.genai.types.Tool
@@ -19,6 +21,7 @@ import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
+import community.flock.aigentic.vertexai.VertexAIMediaResolution
 import community.flock.aigentic.vertexai.VertexAIModelIdentifier
 import community.flock.aigentic.vertexai.fromJson
 import community.flock.aigentic.vertexai.resolveThinkingLevel
@@ -30,13 +33,20 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.util.Base64
 
-internal fun createRequestContents(messages: List<Message>): List<Content> =
+internal fun createRequestContents(
+    messages: List<Message>,
+    mediaResolution: VertexAIMediaResolution? = null,
+): List<Content> =
     messages.map { message ->
 
         val parts: List<Part> =
             when (message) {
                 is Message.Base64 -> {
-                    listOf(Part.fromBytes(Base64.getDecoder().decode(message.base64Content), message.mimeType.value))
+                    listOf(
+                        Part
+                            .fromBytes(Base64.getDecoder().decode(message.base64Content), message.mimeType.value)
+                            .withMediaResolution(mediaResolution),
+                    )
                 }
 
                 is Message.ExampleToolMessage -> {
@@ -73,7 +83,7 @@ internal fun createRequestContents(messages: List<Message>): List<Content> =
                 }
 
                 is Message.Url -> {
-                    listOf(Part.fromUri(message.url, message.mimeType.value))
+                    listOf(Part.fromUri(message.url, message.mimeType.value).withMediaResolution(mediaResolution))
                 }
             }
 
@@ -82,6 +92,19 @@ internal fun createRequestContents(messages: List<Message>): List<Content> =
             .role(message.sender.toVertexRole())
             .parts(parts)
             .build()
+    }
+
+private fun Part.withMediaResolution(mediaResolution: VertexAIMediaResolution?): Part =
+    mediaResolution
+        ?.let { toBuilder().mediaResolution(PartMediaResolution.builder().level(it.toPartMediaResolutionLevel())).build() }
+        ?: this
+
+private fun VertexAIMediaResolution.toPartMediaResolutionLevel(): PartMediaResolutionLevel.Known =
+    when (this) {
+        VertexAIMediaResolution.LOW -> PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_LOW
+        VertexAIMediaResolution.MEDIUM -> PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_MEDIUM
+        VertexAIMediaResolution.HIGH -> PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_HIGH
+        VertexAIMediaResolution.ULTRA_HIGH -> PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_ULTRA_HIGH
     }
 
 internal fun createGenerateConfig(
