@@ -47,22 +47,10 @@ import community.flock.aigentic.gateway.wirespec.model.ToolCallsMessageDto
 import community.flock.aigentic.gateway.wirespec.model.ToolDto
 import community.flock.aigentic.gateway.wirespec.model.ToolResultMessageDto
 import community.flock.aigentic.gateway.wirespec.model.UrlMessageDto
-import community.flock.aigentic.providers.jsonschema.emitPropertiesAndRequired
+import community.flock.aigentic.providers.jsonschema.SchemaDialect
+import community.flock.aigentic.providers.jsonschema.toResponseSchema
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-
-private fun Parameter.toJsonSchemaString(): String =
-    buildJsonObject {
-        put("type", "object")
-        emitPropertiesAndRequired(
-            when (this@toJsonSchemaString) {
-                is Parameter.Complex.Object -> this@toJsonSchemaString.parameters
-                else -> listOf(this@toJsonSchemaString)
-            },
-        )
-    }.toString()
 
 fun <I : Any, O : Any> AgentRun<O>.toDto(
     agent: Agent<I, O>,
@@ -90,7 +78,7 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                         )
                     },
                 exampleRunIds = exampleRunIds.map { it.value },
-                responseJsonSchema = agent.responseParameter?.toJsonSchemaString(),
+                responseJsonSchema = agent.responseParameter?.toResponseSchema(SchemaDialect.JSON_SCHEMA)?.toString(),
                 temperature =
                     agent.model.generationSettings.temperature
                         ?.toDouble(),

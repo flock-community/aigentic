@@ -8,6 +8,11 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
+import community.flock.aigentic.core.tool.Parameter
+import community.flock.aigentic.core.tool.ParameterType
+import community.flock.aigentic.core.tool.PrimitiveValue
+import community.flock.aigentic.core.tool.ToolDescription
+import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessage
 import community.flock.aigentic.openai.model.OpenAIImageDetail
 import io.kotest.assertions.throwables.shouldThrow
@@ -18,6 +23,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.beInstanceOf
 import io.kotest.matchers.types.shouldBeInstanceOf
+import kotlinx.serialization.json.Json
 
 class OpenAIMapperTest :
     DescribeSpec({
@@ -117,6 +123,63 @@ class OpenAIMapperTest :
                     .shouldBeInstanceOf<ImagePart>()
                     .imageUrl
                     .detail shouldBe null
+            }
+
+            it("should add null to the type of optional tool parameters and list every parameter in required") {
+                val tool =
+                    object : ToolDescription {
+                        override val name = ToolName("extract")
+                        override val description: String? = null
+                        override val parameters =
+                            listOf(
+                                Parameter.Primitive("name", null, isRequired = true, type = ParameterType.Primitive.String),
+                                Parameter.Primitive("age", null, isRequired = false, type = ParameterType.Primitive.Integer),
+                                Parameter.Complex.Enum(
+                                    name = "unit",
+                                    description = null,
+                                    isRequired = false,
+                                    default = PrimitiveValue.String("MM"),
+                                    values = listOf(PrimitiveValue.String("MM"), PrimitiveValue.String("CM")),
+                                    valueType = ParameterType.Primitive.String,
+                                ),
+                                Parameter.Complex.Object(
+                                    name = "size",
+                                    description = null,
+                                    isRequired = false,
+                                    parameters = listOf(Parameter.Primitive("value", null, isRequired = true, type = ParameterType.Primitive.Number)),
+                                ),
+                                Parameter.Complex.Array(
+                                    name = "tags",
+                                    description = null,
+                                    isRequired = false,
+                                    itemDefinition = Parameter.Primitive("Item", null, isRequired = true, type = ParameterType.Primitive.String),
+                                ),
+                            )
+                    }
+
+                tool
+                    .toOpenAITool()
+                    .function.parameters
+                    ?.schema shouldBe
+                    Json.parseToJsonElement(
+                        """
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": { "type": "string" },
+                            "age": { "type": ["integer", "null"] },
+                            "unit": { "type": ["string", "null"], "enum": ["MM", "CM", null] },
+                            "size": {
+                              "type": ["object", "null"],
+                              "properties": { "value": { "type": "number" } },
+                              "required": ["value"]
+                            },
+                            "tags": { "type": ["array", "null"], "items": { "type": "string" } }
+                          },
+                          "required": ["name", "age", "unit", "size", "tags"]
+                        }
+                        """,
+                    )
             }
         }
     })
