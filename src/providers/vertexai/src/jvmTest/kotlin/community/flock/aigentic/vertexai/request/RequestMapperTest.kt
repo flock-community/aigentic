@@ -1,8 +1,14 @@
 package community.flock.aigentic.vertexai.request
 
+import com.google.genai.types.PartMediaResolutionLevel
+import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageCategory
+import community.flock.aigentic.core.message.MimeType
+import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
+import community.flock.aigentic.vertexai.VertexAIMediaResolution
 import community.flock.aigentic.vertexai.VertexAIModelIdentifier
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -15,6 +21,48 @@ class RequestMapperTest :
     DescribeSpec({
 
         describe("VertexAI Request Mapper") {
+
+            it("should set the media resolution on every media part when configured") {
+                val messages =
+                    listOf(
+                        Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION),
+                        Message.Url(Sender.Agent, "gs://bucket/scan.pdf", MimeType.PDF, MessageCategory.EXECUTION),
+                    )
+
+                createRequestContents(messages, VertexAIMediaResolution.ULTRA_HIGH)
+                    .flatMap { it.parts().get() }
+                    .map {
+                        it
+                            .mediaResolution()
+                            .get()
+                            .level()
+                            .get()
+                            .knownEnum()
+                    } shouldBe List(2) { PartMediaResolutionLevel.Known.MEDIA_RESOLUTION_ULTRA_HIGH }
+            }
+
+            it("should serialize every media resolution as its Gemini level") {
+                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+
+                mapOf(
+                    VertexAIMediaResolution.LOW to "MEDIA_RESOLUTION_LOW",
+                    VertexAIMediaResolution.MEDIUM to "MEDIA_RESOLUTION_MEDIUM",
+                    VertexAIMediaResolution.HIGH to "MEDIA_RESOLUTION_HIGH",
+                    VertexAIMediaResolution.ULTRA_HIGH to "MEDIA_RESOLUTION_ULTRA_HIGH",
+                ).forEach { (resolution, level) ->
+                    createRequestContents(listOf(base64Message), resolution)
+                        .single()
+                        .toJson() shouldContain "\"mediaResolution\":{\"level\":\"$level\"}"
+                }
+            }
+
+            it("should not set a media resolution when not configured") {
+                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+
+                createRequestContents(listOf(base64Message))
+                    .single()
+                    .toJson() shouldNotContain "mediaResolution"
+            }
 
             it("should set max output tokens when configured") {
                 val generationSettings = GenerationSettings.DEFAULT.copy(maxOutputTokens = 65536)

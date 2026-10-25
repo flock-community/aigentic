@@ -14,6 +14,7 @@ import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
+import community.flock.aigentic.openai.model.OpenAIImageDetail
 import com.aallam.openai.api.chat.ToolCall as OpenAIToolCall
 
 object DomainMapper {
@@ -77,7 +78,7 @@ object DomainMapper {
 }
 
 object OpenAIMapper {
-    internal fun Message.toOpenAIMessage(): ChatMessage {
+    internal fun Message.toOpenAIMessage(imageDetail: OpenAIImageDetail? = null): ChatMessage {
         val role = mapChatTextRole()
         return when (this) {
             is Message.SystemPrompt -> {
@@ -97,11 +98,11 @@ object OpenAIMapper {
             }
 
             is Message.Url -> {
-                ChatMessage(role = role, listOf(ImagePart(url)))
+                ChatMessage(role = role, listOf(ImagePart(url, imageDetail?.name?.lowercase())))
             }
 
             is Message.Base64 -> {
-                ChatMessage(role = role, listOf(ImagePart(formatDataUrl())))
+                ChatMessage(role = role, listOf(ImagePart(formatDataUrl(), imageDetail?.name?.lowercase())))
             }
 
             is Message.ToolCalls -> {

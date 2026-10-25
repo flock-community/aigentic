@@ -8,6 +8,7 @@ import community.flock.aigentic.core.dsl.builderPropertyMissingErrorMessage
 import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.LogLevel
 import community.flock.aigentic.openai.model.OpenAIApiUrl
+import community.flock.aigentic.openai.model.OpenAIImageDetail
 import community.flock.aigentic.openai.model.OpenAIModel
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
 
@@ -24,6 +25,7 @@ class OpenAIModelConfig : Config<OpenAIModel> {
     private var modelIdentifier: OpenAIModelIdentifier? = null
     private var generationConfig: GenerationConfig = GenerationConfig()
     private var logLevel: LogLevel = LogLevel.NONE
+    private var imageDetail: OpenAIImageDetail? = null
 
     fun OpenAIModelConfig.apiKey(apiKey: String) {
         this.apiKey = apiKey
@@ -39,6 +41,10 @@ class OpenAIModelConfig : Config<OpenAIModel> {
 
     fun OpenAIModelConfig.logLevel(level: LogLevel) {
         this.logLevel = level
+    }
+
+    fun OpenAIModelConfig.imageDetail(detail: OpenAIImageDetail) {
+        this.imageDetail = detail
     }
 
     override fun build(): OpenAIModel =
@@ -58,5 +64,6 @@ class OpenAIModelConfig : Config<OpenAIModel> {
             generationSettings = generationConfig.build(),
             logLevel = logLevel,
             apiUrl = OpenAIApiUrl("https://api.openai.com/v1/"),
+            imageDetail = imageDetail,
         )
 }

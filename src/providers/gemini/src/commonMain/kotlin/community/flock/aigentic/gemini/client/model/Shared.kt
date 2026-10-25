@@ -31,11 +31,13 @@ sealed interface Part {
     @Serializable
     data class Blob(
         @SerialName("inline_data") val inlineData: BlobContent,
+        val mediaResolution: MediaResolution? = null,
     ) : Part
 
     @Serializable
     data class FileDataPart(
         @SerialName("file_data") val fileData: FileDataContent,
+        val mediaResolution: MediaResolution? = null,
     ) : Part
 
     @Serializable
@@ -69,6 +71,18 @@ data class FileDataContent(
     @SerialName("mime_type") val mimeType: String,
     @SerialName("file_uri") val fileUri: String,
 )
+
+@Serializable
+data class MediaResolution(
+    val level: MediaResolutionLevel,
+)
+
+enum class MediaResolutionLevel {
+    MEDIA_RESOLUTION_LOW,
+    MEDIA_RESOLUTION_MEDIUM,
+    MEDIA_RESOLUTION_HIGH,
+    MEDIA_RESOLUTION_ULTRA_HIGH,
+}
 
 object PartSerializer : JsonContentPolymorphicSerializer<Part>(Part::class) {
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<Part> {
