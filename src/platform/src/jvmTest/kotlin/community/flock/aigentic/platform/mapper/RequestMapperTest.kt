@@ -28,6 +28,20 @@ class RequestMapperTest :
                     .config.maxOutputTokens shouldBe null
             }
 
+            it("should map the model's media resolution onto the config when configured") {
+                val agent = createAgent(mediaResolution = "HIGH")
+
+                createAgentRun()
+                    .toDto(agent, serializer<String>())
+                    .config.mediaResolution shouldBe "HIGH"
+            }
+
+            it("should leave the media resolution empty when not configured") {
+                createAgentRun()
+                    .toDto(createAgent(), serializer<String>())
+                    .config.mediaResolution shouldBe null
+            }
+
             it("should default temperature to null when not configured") {
                 val agent = createAgent()
 

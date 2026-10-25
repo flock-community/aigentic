@@ -26,7 +26,8 @@ type ConfigDto {
     responseJsonSchema: String?,
     temperature: Number?,
     thinkingBudget: Integer?,
-    maxOutputTokens: Integer?
+    maxOutputTokens: Integer?,
+    mediaResolution: String?
 }
 
 type TaskDto {

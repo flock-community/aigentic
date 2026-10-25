@@ -214,6 +214,8 @@ class VertexAIModel(
         validateVertexAIMediaResolution(modelIdentifier, mediaResolution)
     }
 
+    override val mediaResolutionLevel: String? get() = mediaResolution?.name
+
     private val client: Client = defaultVertexAIClient(project, location, requestTimeoutMillis)
 
     override suspend fun sendRequest(

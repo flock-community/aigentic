@@ -89,6 +89,7 @@ fun <I : Any, O : Any> AgentRun<O>.toDto(
                 maxOutputTokens =
                     agent.model.generationSettings.maxOutputTokens
                         ?.toLong(),
+                mediaResolution = agent.model.mediaResolutionLevel,
             ),
         messages = messages.mapNotNull { it.toDto() },
         modelRequests = modelRequests.map { it.toDto() },

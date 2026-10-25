@@ -203,6 +203,8 @@ class GeminiModel(
         validateGeminiMediaResolution(modelIdentifier, mediaResolution)
     }
 
+    override val mediaResolutionLevel: String? get() = mediaResolution?.name
+
     override suspend fun sendRequest(
         messages: List<Message>,
         tools: List<ToolDescription>,

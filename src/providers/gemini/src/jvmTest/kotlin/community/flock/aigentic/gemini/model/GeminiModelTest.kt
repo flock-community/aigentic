@@ -96,6 +96,20 @@ class GeminiModelTest :
                     .mediaResolution shouldBe MediaResolution(MediaResolutionLevel.MEDIA_RESOLUTION_HIGH)
             }
 
+            it("should report its media resolution level by name, and none when not configured") {
+                fun model(mediaResolution: GeminiMediaResolution?) =
+                    GeminiModel(
+                        authentication = Authentication.APIKey("key"),
+                        modelIdentifier = GeminiModelIdentifier.Gemini3_8Flash,
+                        generationSettings = GenerationSettings.DEFAULT,
+                        geminiClient = mockk<GeminiClient>(),
+                        mediaResolution = mediaResolution,
+                    )
+
+                model(GeminiMediaResolution.ULTRA_HIGH).mediaResolutionLevel shouldBe "ULTRA_HIGH"
+                model(null).mediaResolutionLevel shouldBe null
+            }
+
             it("should throw when built with a media resolution on a Gemini 2.x model") {
                 shouldThrow<Exception> {
                     GeminiModel(
