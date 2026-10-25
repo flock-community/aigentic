@@ -1,5 +1,9 @@
 package community.flock.aigentic.openai.model
 
+import community.flock.aigentic.core.message.Message
+import community.flock.aigentic.core.message.MessageCategory
+import community.flock.aigentic.core.message.MimeType
+import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.model.Authentication
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ModelIdentifier
@@ -71,6 +75,24 @@ class OpenAIModelTest :
                             ),
                     )
                 }
+            }
+
+            it("should throw before sending a request when a PDF attachment is passed") {
+                val model =
+                    OpenAIModel(
+                        authentication = Authentication.APIKey("key"),
+                        modelIdentifier = OpenAIModelIdentifier.GPT5_5,
+                        generationSettings = GenerationSettings.DEFAULT,
+                        apiUrl = OpenAIApiUrl("http://127.0.0.1:9/v1/"),
+                    )
+
+                shouldThrow<Exception> {
+                    model.sendRequest(
+                        listOf(Message.Base64(Sender.Agent, "JVBERi0=", MimeType.PDF, MessageCategory.RUN_CONTEXT)),
+                        emptyList(),
+                        null,
+                    )
+                }.message shouldContain "PDF attachments are not supported on OpenAI-compatible models"
             }
 
             it("should throw when built with imageDetail ORIGINAL on a model older than gpt-5.4") {

@@ -10,6 +10,7 @@ import com.aallam.openai.api.core.Role
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
+import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
@@ -98,10 +99,12 @@ object OpenAIMapper {
             }
 
             is Message.Url -> {
+                mimeType.requireImage()
                 ChatMessage(role = role, listOf(ImagePart(url, imageDetail?.name?.lowercase())))
             }
 
             is Message.Base64 -> {
+                mimeType.requireImage()
                 ChatMessage(role = role, listOf(ImagePart(formatDataUrl(), imageDetail?.name?.lowercase())))
             }
 
@@ -121,6 +124,14 @@ object OpenAIMapper {
                     content = response.result,
                 )
             }
+        }
+    }
+
+    private fun MimeType.requireImage() {
+        if (this == MimeType.PDF) {
+            aigenticException(
+                "PDF attachments are not supported on OpenAI-compatible models yet, attach the pages as images or use the Gemini or VertexAI provider",
+            )
         }
     }
 
