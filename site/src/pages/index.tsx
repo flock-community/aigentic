@@ -50,7 +50,7 @@ const capabilities = [
   },
   {
     title: "Documents and images",
-    text: "Attach PDFs and images, and give agents fixed context like text and URLs.",
+    text: "Attach images on any provider and PDFs on Gemini and VertexAI, plus fixed context like text and URLs.",
     to: "/docs/dsl/agent",
   },
   {
@@ -186,7 +186,7 @@ export default function Home(): JSX.Element {
                   <p>
                     Pass a PDF or an image to <code>start()</code> and get a typed data class back.
                     Use <code>@Description</code> to tell the model what a field means. There's no
-                    JSON to parse and no tool to write.
+                    JSON to parse and no tool to write. PDFs work with Gemini and VertexAI today.
                   </p>
                   <Link
                     className={clsx("button-link", styles.button, styles.buttonPrimary)}
