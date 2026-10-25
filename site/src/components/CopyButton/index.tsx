@@ -5,10 +5,11 @@ import styles from "./styles.module.css";
 type CopyButtonProps = {
   text: string;
   label?: string;
+  compact?: boolean;
   className?: string;
 };
 
-export default function CopyButton({ text, label = "Copy", className }: CopyButtonProps) {
+export default function CopyButton({ text, label = "Copy", compact = false, className }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -24,7 +25,12 @@ export default function CopyButton({ text, label = "Copy", className }: CopyButt
       .catch(() => setCopied(false));
 
   return (
-    <button type="button" className={clsx(styles.button, copied && styles.copied, className)} onClick={copy}>
+    <button
+      type="button"
+      className={clsx(styles.button, compact && styles.compact, copied && styles.copied, className)}
+      onClick={copy}
+      aria-label={compact ? `${copied ? "Copied" : label}: ${text}` : undefined}
+    >
       <svg viewBox="0 0 16 16" aria-hidden="true">
         {copied ? (
           <path d="M3.5 8.5 6.5 11.5 12.5 4.5" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -35,7 +41,7 @@ export default function CopyButton({ text, label = "Copy", className }: CopyButt
           </>
         )}
       </svg>
-      <span aria-live="polite">{copied ? "Copied" : label}</span>
+      {!compact && <span aria-live="polite">{copied ? "Copied" : label}</span>}
     </button>
   );
 }

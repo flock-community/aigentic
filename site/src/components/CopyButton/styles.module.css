@@ -36,3 +36,10 @@
   color: #f0bc42;
   border-color: rgba(240, 188, 66, 0.5);
 }
+
+.compact {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  justify-content: center;
+}

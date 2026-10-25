@@ -239,49 +239,6 @@ body {
   margin-top: 40px;
 }
 
-.install {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  max-width: 100%;
-
-  p {
-    margin: 0;
-    font-size: 14px;
-  }
-
-  a {
-    color: #f0bc42;
-  }
-}
-
-.installCode {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: 100%;
-  padding: 10px 10px 10px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  background: #141414;
-
-  pre {
-    margin: 0;
-    padding: 0;
-    background: transparent;
-    overflow-x: auto;
-  }
-
-  code {
-    padding: 0;
-    border: 0;
-    background: transparent;
-    font-size: 13.5px;
-    color: #ecebe8;
-  }
-}
-
 .sectionIntro {
   text-align: center;
   padding-bottom: 32px;
@@ -294,64 +251,6 @@ body {
 
   @media (max-width: 996px) {
     padding-bottom: 0;
-  }
-}
-
-.capabilities {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-  margin-top: 40px;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.capability {
-  display: block;
-  padding: 28px 28px 24px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  background:
-    linear-gradient(#141414, #141414) padding-box,
-    linear-gradient(180deg, rgba(240, 188, 66, 0.7), #101010) border-box;
-  color: inherit;
-  text-decoration: none !important;
-  transition: background 0.2s ease;
-
-  h3 {
-    margin-bottom: 10px;
-    font-family: "Funnel Display", sans-serif;
-    font-size: 22px;
-    font-weight: 500;
-    color: white;
-  }
-
-  p {
-    margin: 0;
-    font-size: 16px;
-    line-height: 1.6;
-    color: #9f9f9f;
-  }
-
-  &:hover {
-    background:
-      linear-gradient(#181818, #181818) padding-box,
-      linear-gradient(180deg, #f0bc42, #101010) border-box;
-  }
-
-  &:hover h3 {
-    color: #f0bc42;
-  }
-
-  &:focus-visible {
-    outline: 2px solid #f0bc42;
-    outline-offset: 3px;
   }
 }
 
@@ -373,5 +272,32 @@ body {
 
   @media (max-width: 996px) {
     margin-top: 24px;
+  }
+}
+
+.sectionTitle svg {
+  width: 0.7em;
+  height: 0.7em;
+  margin-right: 0.3em;
+  vertical-align: -0.04em;
+}
+
+.sectionTitleCentered {
+  text-align: center;
+}
+
+.talk {
+  margin-top: 72px;
+
+  h3 {
+    margin-bottom: 12px;
+    font-family: "Funnel Display", sans-serif;
+    font-size: 26px;
+    font-weight: 500;
+    color: white;
+  }
+
+  p {
+    font-size: 17px;
   }
 }

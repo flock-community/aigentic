@@ -4,12 +4,13 @@ import Layout from "@theme/Layout";
 import Heading from "@theme/Heading";
 import "../css/custom.css";
 import styles from "./index.module.css";
-import { JSX } from "react";
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+import { JSX, type ReactNode } from "react";
 import CyclingBlurText from "../components/CyclingBlurText";
 import AgentRunVisualizer from "../components/AgentRunVisualizer";
-import CopyButton from "../components/CopyButton";
+import ModuleMap from "../components/ModuleMap";
+import BeforeAfter from "../components/BeforeAfter";
 import ProductionStory from "../components/ProductionStory";
+import PixelMark from "../components/PixelMark";
 
 const dslPoints = [
   {
@@ -26,60 +27,12 @@ const dslPoints = [
   },
 ];
 
-const capabilities = [
-  {
-    title: "LLM providers",
-    text: "OpenAI, Gemini, VertexAI and Ollama, or your own Model implementation.",
-    to: "/docs/dsl/providers",
-  },
-  {
-    title: "Kotlin Multiplatform",
-    text: "Run your agents on the JVM or on JavaScript with Node.js.",
-    to: "/docs/getting-started",
-  },
-  {
-    title: "Tools and integrations",
-    text: "Kotlin lambdas as tools, OpenAPI specs as tools, and Google Cloud Functions.",
-    to: "/docs/dsl/tools",
-  },
-  {
-    title: "Documents and images",
-    text: "Attach images on any provider and PDFs on Gemini and VertexAI, plus fixed context like text and URLs.",
-    to: "/docs/dsl/agent",
-  },
-  {
-    title: "Testing",
-    text: "Replay recorded runs as regression tests, with tool calls mocked from the recording.",
-    to: "https://github.com/flock-community/aigentic/tree/main/src/examples/testing",
-  },
-  {
-    title: "Workflows",
-    text: "Chain up to five agents, with types checked at every step.",
-    to: "/docs/workflow",
-  },
-];
-
-function InstallSnippet() {
-  const { siteConfig } = useDocusaurusContext();
-  const version = siteConfig.customFields?.version as string;
-  const dependencies = ["core", "gemini"]
-    .map((module) => `implementation("community.flock.aigentic:${module}:${version}")`)
-    .join("\n");
+function SectionTitle({ children, centered = false }: { children: ReactNode; centered?: boolean }) {
   return (
-    <div className={styles.install}>
-      <div className={styles.installCode}>
-        <pre>
-          <code>{dependencies}</code>
-        </pre>
-        <CopyButton text={dependencies} />
-      </div>
-      <p>
-        Latest release v{version}.{" "}
-        <Link to={`https://github.com/flock-community/aigentic/releases/tag/v${version}`}>
-          Read the release notes
-        </Link>
-      </p>
-    </div>
+    <Heading as="h2" className={clsx(styles.heading2, styles.sectionTitle, centered && styles.sectionTitleCentered)}>
+      <PixelMark />
+      {children}
+    </Heading>
   );
 }
 
@@ -95,8 +48,7 @@ function HomepageHeader() {
           />
         </div>
         <p className={clsx("hero__subtitle", styles.heroSubtitle)}>
-          Streamline your LLM development journey with a powerful Kotlin DSL for building
-          and integrating AI agents into applications
+          A Kotlin DSL for AI agents that are typed, testable and work with any model
         </p>
         <div className={styles.buttons}>
           <Link
@@ -121,7 +73,7 @@ export default function Home(): JSX.Element {
   return (
     <Layout
       title="Aigentic: Kotlin DSL for AI Agents"
-      description="Streamline your LLM development journey with a powerful Kotlin DSL for building and integrating AI agents into applications"
+      description="A Kotlin DSL for AI agents that are typed, testable and work with any model"
     >
       <HomepageHeader />
       <main className={clsx(styles.page)}>
@@ -129,9 +81,7 @@ export default function Home(): JSX.Element {
           <div className="container">
             <div className={clsx("row", styles.dslIntro)}>
               <div className="col col--6">
-                <Heading as="h2" className={clsx(styles.heading2)}>
-                  <span className="primary-text-color">Intuitive</span> Kotlin DSL
-                </Heading>
+                <SectionTitle>Intuitive Kotlin DSL</SectionTitle>
                 <p className={styles.lead}>
                   Describe the task, give the agent tools, and get a Kotlin data class back.
                   Here's a complete agent and what happens when it runs.
@@ -153,15 +103,12 @@ export default function Home(): JSX.Element {
               <Link className={clsx(styles.button, styles.buttonPrimary)} to="/docs/getting-started">
                 Build your first agent
               </Link>
-              <InstallSnippet />
             </div>
           </div>
         </section>
         <section className="how">
           <div className={clsx("container", styles.sectionIntro)}>
-            <Heading as="h2" className={clsx(styles.heading2)}>
-              From first agent to <span>production</span>
-            </Heading>
+            <SectionTitle centered>From first agent to production</SectionTitle>
             <p>Swap models, read documents, chain agents and test the results.</p>
           </div>
           <div className="container">
@@ -170,41 +117,31 @@ export default function Home(): JSX.Element {
         </section>
         <section className="other-capabilites other-capabilites-shadow">
           <div className="container">
-            <Heading as="h2" className={clsx(styles.heading2)}>
-              Key <span>capabilities</span>
-            </Heading>
-            <div className={styles.capabilities}>
-              {capabilities.map(({ title, text, to }) => (
-                <Link key={title} className={styles.capability} to={to}>
-                  <Heading as="h3">{title}</Heading>
-                  <p>{text}</p>
-                </Link>
-              ))}
-            </div>
+            <SectionTitle>Pick the modules you need</SectionTitle>
+            <p className={styles.lead}>
+              Everything is on Maven Central under <code>community.flock.aigentic</code>. Start with core and
+              one provider, then add what your agent needs.
+            </p>
+            <ModuleMap />
           </div>
         </section>
         <section className="other-capabilites">
           <div className="container">
-            <div className="row row--align-center">
-              <div className="col col--6">
-                <Heading as="h2" className={clsx(styles.heading2)}>
-                  Why <span>Aigentic</span>
-                </Heading>
+            <SectionTitle>Why Aigentic</SectionTitle>
+            <p className={styles.lead}>
+              Getting an agent demo running is easy. Getting it into production, next to the rest of your code, is
+              the hard part. Here's the same weather agent written both ways.
+            </p>
+            <BeforeAfter />
+            <div className={clsx("row row--align-center", styles.talk)}>
+              <div className="col col--5">
+                <Heading as="h3">Built by Flock, in the open</Heading>
                 <p>
-                  Getting an agent demo running is easy. Getting it into production, next to the rest
-                  of your code, is the hard part. Aigentic is built for that step.
-                </p>
-                <p>
-                  Agents are typed, so the compiler checks your inputs, outputs and tools. They're
-                  testable, so you can change a prompt without guessing. And they read like any other
-                  Kotlin code, so your team can review them.
-                </p>
-                <p>
-                  Aigentic is open source and built by Flock. Watch the talk for a walkthrough, or use
-                  the Initializr to start a project with the right dependencies.
+                  Aigentic is open source. Watch the talk for a walkthrough, or start from the Initializr to get a
+                  project with the right dependencies.
                 </p>
               </div>
-              <div className="col col--6">
+              <div className="col col--7">
                 <div className={styles.video}>
                   <iframe
                     src="https://www.youtube.com/embed/MitNJPjN_SQ?si=W2GDiyoaVmTdWX7M"

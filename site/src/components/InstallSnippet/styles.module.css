@@ -1,0 +1,44 @@
+.install {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+
+  a {
+    color: #f0bc42;
+  }
+}
+
+.install .note {
+  margin: 0;
+  font-size: 14px;
+  color: #9f9f9f;
+}
+
+.code {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  padding: 10px 10px 10px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: #141414;
+  text-align: left;
+
+  pre {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    overflow-x: auto;
+  }
+
+  code {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 13.5px;
+    color: #e6e1d6;
+  }
+}
