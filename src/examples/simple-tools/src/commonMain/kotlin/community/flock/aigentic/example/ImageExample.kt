@@ -26,7 +26,7 @@ suspend fun runItemCategorizeExample(
         agent {
             openAIModel {
                 apiKey(apiKey)
-                modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
+                modelIdentifier(OpenAIModelIdentifier.GPT5_4Mini)
             }
             task("Identify all items in the image and save each individual item") {}
             addTool("saveItem") { input: ItemName ->

@@ -16,7 +16,7 @@ suspend fun runAdministrativeAgentExample(apiKey: String) {
             geminiModel {
                 logLevel(LogLevel.DEBUG)
                 apiKey(apiKey)
-                modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+                modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
             }
             task("Retrieve all employees to inspect their hour status") {
                 addInstruction(

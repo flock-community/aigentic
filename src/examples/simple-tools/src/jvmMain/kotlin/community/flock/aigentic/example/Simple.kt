@@ -18,7 +18,7 @@ suspend fun main() {
             // Configure the model for the agent
             geminiModel {
                 apiKey("YOUR_API_KEY")
-                modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+                modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
             }
 
             // Configure the task for the agent

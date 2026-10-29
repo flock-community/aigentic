@@ -29,7 +29,7 @@ fun main() {
         agent { request ->
             openAIModel {
                 apiKey(getEnvVar("OPENAI_KEY"))
-                modelIdentifier(OpenAIModelIdentifier.GPT4OMini)
+                modelIdentifier(OpenAIModelIdentifier.GPT5_4Mini)
             }
             task("Greet the person with a warm and welcome message") {}
             addTool("greet") { message: String ->

@@ -32,7 +32,7 @@ suspend fun invoiceExtractorAgent(
         agent {
             geminiModel {
                 apiKey(apiKey)
-                modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+                modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
             }
             task("Extract the different invoice components") {
                 addInstruction("Please provide list of the invoice components")

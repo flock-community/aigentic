@@ -43,7 +43,7 @@ agent<Input, Output> {
     // Configure your model
     openAIModel {
         apiKey("your-api-key")
-        modelIdentifier(OpenAIModelIdentifier.GPT4O)
+        modelIdentifier(OpenAIModelIdentifier.GPT5_5)
     }
 
     // Define your agent's task
@@ -71,7 +71,7 @@ suspend fun runOpenAPIAgent(
         agent<Unit, HackerNewsAgentResponse> {
             openAIModel {
                 apiKey(openAIAPIKey)
-                modelIdentifier(OpenAIModelIdentifier.GPT4O)
+                modelIdentifier(OpenAIModelIdentifier.GPT5_5)
             }
             task("Send Hacker News stories about AI") {
                 addInstruction("Retrieve the top 10 Hacker News stories")
@@ -149,7 +149,7 @@ Here's an example of using the OpenAPI integration with authentication:
 agent<Unit, WeatherResponse> {
     openAIModel {
         apiKey("your-openai-api-key")
-        modelIdentifier(OpenAIModelIdentifier.GPT4O)
+        modelIdentifier(OpenAIModelIdentifier.GPT5_5)
     }
 
     task("Get weather information") {

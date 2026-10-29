@@ -61,7 +61,7 @@ suspend fun runWorkflowExample(apiKey: String) {
         agent<String, RedactedDocument> {
             geminiModel {
                 apiKey(apiKey)
-                modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+                modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
             }
             task("Redact sensitive information from legal documents") {
                 addInstruction("Replace all personal names with [REDACTED NAME]")
@@ -76,7 +76,7 @@ suspend fun runWorkflowExample(apiKey: String) {
         agent<RedactedDocument, ComplianceReport> {
             geminiModel {
                 apiKey(apiKey)
-                modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+                modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
             }
             task("Analyze legal document for compliance issues and risks") {
                 addInstruction("Evaluate the document for potential legal compliance issues")
@@ -91,7 +91,7 @@ suspend fun runWorkflowExample(apiKey: String) {
         agent<ComplianceReport, LegalSummary> {
             geminiModel {
                 apiKey(apiKey)
-                modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+                modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
             }
             task("Create a comprehensive legal document summary including compliance findings") {
                 addInstruction("Generate a summary that includes both document content and compliance analysis")

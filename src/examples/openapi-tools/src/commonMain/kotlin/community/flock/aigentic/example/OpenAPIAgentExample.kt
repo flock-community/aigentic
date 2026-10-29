@@ -19,7 +19,7 @@ suspend fun runOpenAPIAgent(
             tags("validated")
             openAIModel {
                 apiKey(openAIAPIKey)
-                modelIdentifier(OpenAIModelIdentifier.GPT4O)
+                modelIdentifier(OpenAIModelIdentifier.GPT5_5)
             }
             task("Send Hacker News stories about AI") {
                 addInstruction("Retrieve the top 10 Hacker News stories")
