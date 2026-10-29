@@ -18,7 +18,7 @@ suspend fun runStructuredResponseAgent(apiKey: String) {
         agent<String, Words> {
             geminiModel {
                 apiKey(apiKey)
-                modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+                modelIdentifier(GeminiModelIdentifier.Gemini3_8Flash)
                 logLevel(LogLevel.DEBUG)
             }
             task("Split the text in its individual words") {

@@ -40,7 +40,7 @@ suspend fun main() {
             // Configure the model for the agent, other models are also available
             openAIModel {
                 apiKey("YOUR_API_KEY")
-                modelIdentifier(OpenAIModelIdentifier.GPT4O)
+                modelIdentifier(OpenAIModelIdentifier.GPT5_5)
             }
 
             // Configure the task for the agent

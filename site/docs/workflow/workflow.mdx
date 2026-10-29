@@ -143,7 +143,7 @@ suspend fun processLegalDocument(apiKey: String, documentText: String) {
     val documentRedactor = agent<String, RedactedDocument> {
         geminiModel {
             apiKey(apiKey)
-            modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+            modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
         }
         task("Redact sensitive information from legal documents") {
             addInstruction("Replace all personal names with [REDACTED NAME]")
@@ -156,7 +156,7 @@ suspend fun processLegalDocument(apiKey: String, documentText: String) {
     val complianceChecker = agent<RedactedDocument, ComplianceReport> {
         geminiModel {
             apiKey(apiKey)
-            modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+            modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
         }
         task("Analyze legal document for compliance issues") {
             addInstruction("Evaluate the document for potential legal compliance issues")
@@ -168,7 +168,7 @@ suspend fun processLegalDocument(apiKey: String, documentText: String) {
     val summarizer = agent<ComplianceReport, LegalSummary> {
         geminiModel {
             apiKey(apiKey)
-            modelIdentifier(GeminiModelIdentifier.Gemini2_5Flash)
+            modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
         }
         task("Create a comprehensive summary") {
             addInstruction("Generate a summary including compliance findings")

@@ -35,7 +35,7 @@ data class WeatherResponse(
 val agent = agent<String, WeatherResponse> {
     openAIModel {
         apiKey("YOUR_API_KEY")
-        modelIdentifier(OpenAIModelIdentifier.GPT4O)
+        modelIdentifier(OpenAIModelIdentifier.GPT5_5)
     }
     
     task("Provide weather information") {
