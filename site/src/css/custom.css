@@ -436,8 +436,14 @@ table tr:nth-child(2n) {
   z-index: -1;
   left: 0;
   top: 0;
-  background-image: url("/img/footer-card-bg.webp");
-  background-size: cover;
+  background-image:
+    radial-gradient(ellipse 60% 70% at 0% 100%, rgba(240, 188, 66, 0.1), transparent 70%),
+    radial-gradient(ellipse 45% 55% at 100% 0%, rgba(240, 188, 66, 0.06), transparent 70%),
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1.3px);
+  background-size:
+    auto,
+    auto,
+    12px 12px;
 }
 
 .footerLogoLink_DDai {
