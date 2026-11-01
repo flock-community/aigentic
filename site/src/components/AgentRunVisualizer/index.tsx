@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
-import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useInView } from "motion/react";
+import useHydratedReducedMotion from "@site/src/hooks/useHydratedReducedMotion";
 import CodeLines from "../CodeLines";
 import CopyButton from "../CopyButton";
 import styles from "./styles.module.css";
@@ -188,7 +189,7 @@ const Thinking = () => (
 export default function AgentRunVisualizer() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { amount: 0.4 });
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydratedReducedMotion();
   const [step, setStep] = useState(FINAL_STEP);
   const [providerIndex, setProviderIndex] = useState(0);
   const [pinned, setPinned] = useState(false);
