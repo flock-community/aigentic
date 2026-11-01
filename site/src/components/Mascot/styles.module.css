@@ -1,0 +1,4 @@
+.portrait {
+  display: block;
+  pointer-events: none;
+}

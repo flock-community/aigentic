@@ -10,7 +10,7 @@ import sys
 import bpy
 import numpy as np
 
-ACTIONS = ["idle", "look_around", "tilt_curious", "nod_yes"]
+ACTIONS = ["idle", "look_around", "tilt_curious", "nod_yes", "wave", "cheer", "bow_greet"]
 FPS = 15
 ROTATION_SCALE = 16384
 TRANSLATION_SCALE = 4096

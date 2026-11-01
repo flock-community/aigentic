@@ -1,4 +1,5 @@
-import { createPoseClock, loadMascot, updatePose, type Mascot } from "./mascot";
+import { createPoseClock, loadMascot, updatePose, type Mascot } from "../Mascot/mascot";
+import { SHADING, createProjection, dotRadius, rasterize, type Projection } from "../Mascot/halftone";
 import type { HeroLayout } from "./layout";
 
 const TIMING = { build: 2500, hold: 16500, dissolve: 2500, swarm: 4500, stagger: 0.62, firstBuild: 2000 };
@@ -7,19 +8,7 @@ const DISSOLVE_START = TIMING.build + TIMING.hold;
 
 const FLOCK = { spread: 1.4, speed: 1.1, follow: 1.4, settlePull: 8, particleSize: 1.8 };
 
-const BIRD = {
-  dotScale: 0.75,
-  contrast: 0.65,
-  ambient: 0.28,
-  rimLight: 0.3,
-  baseYaw: -2.356,
-  rotationRange: (42 * Math.PI) / 180,
-  rotationRate: 0.35 * 0.17,
-  tilt: (2 * Math.PI) / 180,
-  perspective: 7,
-  center: 0.95,
-  footToCenter: 0.89,
-};
+const ROTATION = { baseYaw: -2.356, range: (42 * Math.PI) / 180, rate: 0.35 * 0.17 };
 
 const ADAPT = { warmup: 1500, samples: 90, slowInterval: 22, liteRatio: 1 };
 
@@ -68,8 +57,6 @@ type Flock = {
   specks: Buckets;
   flyers: Buckets;
 };
-
-type Projection = { x: Float32Array; y: Float32Array; depth: Float32Array };
 
 export type FlockHero = {
   resize: (layout: HeroLayout, pixelRatio: number) => void;
@@ -200,77 +187,6 @@ function createFlock(count: number, layout: HeroLayout, time: number): Flock {
     flock.y[i] = p.y;
   }
   return flock;
-}
-
-function rasterize(mascot: Mascot, grid: Grid, layout: HeroLayout, seconds: number, light: number[], projection: Projection) {
-  const { gap, cols, rows, depth: zb, shade } = grid;
-  const midY = layout.footY - BIRD.footToCenter * layout.scale;
-  const yaw = BIRD.baseYaw + Math.sin(seconds * BIRD.rotationRate) * BIRD.rotationRange;
-  const cy = Math.cos(yaw);
-  const sy = Math.sin(yaw);
-  const cp = Math.cos(BIRD.tilt);
-  const sp = Math.sin(BIRD.tilt);
-  const [lx, ld, lu] = light;
-  const { positions: p, triangles, normals, albedo } = mascot;
-  const { x: px, y: py, depth: pd } = projection;
-  for (let i = 0; i < mascot.vertexCount; i++) {
-    const xr = p[i * 3] * cy - p[i * 3 + 1] * sy;
-    const yr = p[i * 3] * sy + p[i * 3 + 1] * cy;
-    const zc = p[i * 3 + 2] - BIRD.center;
-    const d = yr * cp - zc * sp;
-    const up = yr * sp + zc * cp;
-    const s = BIRD.perspective / (BIRD.perspective + d);
-    px[i] = layout.birdX + xr * layout.scale * s;
-    py[i] = midY - up * layout.scale * s;
-    pd[i] = d;
-  }
-  const half = gap / 2;
-  for (let t = 0; t < mascot.triangleCount; t++) {
-    const nx = normals[t * 3];
-    const ny = normals[t * 3 + 1];
-    const nz = normals[t * 3 + 2];
-    const nxr = nx * cy - ny * sy;
-    const nyr = nx * sy + ny * cy;
-    const nd = nyr * cp - nz * sp;
-    if (nd >= 0) continue;
-    const nu = nyr * sp + nz * cp;
-    const a = triangles[t * 3];
-    const b = triangles[t * 3 + 1];
-    const c = triangles[t * 3 + 2];
-    const ax = px[a];
-    const ay = py[a];
-    const bx = px[b];
-    const by = py[b];
-    const qx = px[c];
-    const qy = py[c];
-    const area = (bx - ax) * (qy - ay) - (by - ay) * (qx - ax);
-    if (Math.abs(area) < 1e-6) continue;
-    const i0 = Math.max(0, Math.ceil((Math.min(ax, bx, qx) - half) / gap));
-    const i1 = Math.min(cols - 1, Math.floor((Math.max(ax, bx, qx) - half) / gap));
-    const j0 = Math.max(0, Math.ceil((Math.min(ay, by, qy) - half) / gap));
-    const j1 = Math.min(rows - 1, Math.floor((Math.max(ay, by, qy) - half) / gap));
-    if (i0 > i1 || j0 > j1) continue;
-    const lambert = Math.max(0, nxr * lx + nd * ld + nu * lu);
-    const lit = BIRD.ambient + (1 - BIRD.ambient) * lambert;
-    const rim = Math.pow(1 + nd, 3) * BIRD.rimLight;
-    const inverse = 1 / area;
-    for (let j = j0; j <= j1; j++) {
-      const y = half + j * gap;
-      for (let i = i0; i <= i1; i++) {
-        const x = half + i * gap;
-        const w0 = ((bx - x) * (qy - y) - (by - y) * (qx - x)) * inverse;
-        const w1 = ((qx - x) * (ay - y) - (qy - y) * (ax - x)) * inverse;
-        const w2 = 1 - w0 - w1;
-        if (w0 < -1e-4 || w1 < -1e-4 || w2 < -1e-4) continue;
-        const z = w0 * pd[a] + w1 * pd[b] + w2 * pd[c];
-        const idx = j * cols + i;
-        if (z < zb[idx]) {
-          zb[idx] = z;
-          shade[idx] = (w0 * albedo[a] + w1 * albedo[b] + w2 * albedo[c]) * lit + rim;
-        }
-      }
-    }
-  }
 }
 
 function shuffled(length: number) {
@@ -433,7 +349,7 @@ export function createFlockHero(
 
   const updateLight = (seconds: number) => {
     if (!layout) return;
-    const midY = layout.footY - BIRD.footToCenter * layout.scale;
+    const midY = layout.footY - SHADING.footToCenter * layout.scale;
     const [x, d, u] = pointer
       ? [(pointer.x - layout.birdX) / 420, -0.75, (midY - pointer.y) / 420]
       : [Math.sin(seconds * 0.3) * 0.7, -0.65, 0.5 + 0.25 * Math.cos(seconds * 0.3)];
@@ -445,10 +361,8 @@ export function createFlockHero(
   };
 
   const cellRadius = (g: Grid, idx: number) => {
-    const maxRadius = g.gap * 0.5 * BIRD.dotScale;
-    if (g.depth[idx] === Infinity) return maxRadius * 0.5;
-    const value = clamp01(g.shade[idx] * LOOK.intensity) * (1 - LOOK.textCalm + LOOK.textCalm * g.calm[idx]);
-    return maxRadius * Math.pow(Math.max(0, value), BIRD.contrast);
+    if (g.depth[idx] === Infinity) return dotRadius(g.gap, 1) * 0.5;
+    return dotRadius(g.gap, clamp01(g.shade[idx] * LOOK.intensity) * (1 - LOOK.textCalm + LOOK.textCalm * g.calm[idx]));
   };
 
   const render = (time: number, step: number) => {
@@ -464,7 +378,7 @@ export function createFlockHero(
     if (mascot && projection) {
       updatePose(mascot, poseClock, seconds);
       updateLight(seconds);
-      rasterize(mascot, g, l, seconds, light, projection);
+      rasterize(mascot, g, l, ROTATION.baseYaw + Math.sin(seconds * ROTATION.rate) * ROTATION.range, light, projection);
     }
 
     let phase = 0;
@@ -628,11 +542,7 @@ export function createFlockHero(
     .then((loaded) => {
       if (destroyed) return;
       mascot = loaded;
-      projection = {
-        x: new Float32Array(loaded.vertexCount),
-        y: new Float32Array(loaded.vertexCount),
-        depth: new Float32Array(loaded.vertexCount),
-      };
+      projection = createProjection(loaded);
       drawStill();
     })
     .catch(() => undefined);

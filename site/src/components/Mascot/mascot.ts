@@ -2,17 +2,21 @@ const MAGIC = 0x314d4741;
 const ROTATION_SCALE = 16384;
 const TRANSLATION_SCALE = 4096;
 const CROSSFADE_SECONDS = 0.6;
-const ACTIONS = ["idle", "look_around", "tilt_curious", "nod_yes"] as const;
+const ACTIONS = ["idle", "look_around", "tilt_curious", "nod_yes", "wave", "cheer", "bow_greet"] as const;
 
-type ActionName = (typeof ACTIONS)[number];
+export type ActionName = (typeof ACTIONS)[number];
 
-const PLAYLIST: ActionName[] = ["idle", "idle", "look_around", "idle", "tilt_curious", "idle", "nod_yes"];
+const CALM_PLAYLIST: ActionName[] = ["idle", "idle", "look_around", "idle", "tilt_curious", "idle", "nod_yes"];
+const cache = new Map<string, Promise<Mascot>>();
 
 const AMPLITUDE: Record<ActionName, number> = {
   idle: 0.85,
   look_around: 0.5,
   tilt_curious: 0.45,
   nod_yes: 0.4,
+  wave: 0.9,
+  cheer: 0.8,
+  bow_greet: 0.85,
 };
 
 type Action = {
@@ -51,10 +55,23 @@ const durationOf = (mascot: Mascot, name: ActionName) => mascot.actions[name].du
 
 export const createPoseClock = (): PoseClock => ({ index: 0, start: -1, previous: null });
 
-export async function loadMascot(url: string): Promise<Mascot> {
+export function restartPoseClock(clock: PoseClock) {
+  clock.index = 0;
+  clock.start = -1;
+  clock.previous = null;
+}
+
+async function fetchMascot(url: string): Promise<Mascot> {
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`Could not load the hero mascot (${response.status})`);
+  if (!response.ok) throw new Error(`Could not load the mascot (${response.status})`);
   return decodeMascot(await response.arrayBuffer());
+}
+
+export function loadMascot(url: string): Promise<Mascot> {
+  const pending = cache.get(url) ?? fetchMascot(url);
+  cache.set(url, pending);
+  pending.catch(() => cache.delete(url));
+  return pending;
 }
 
 function decodeMascot(buffer: ArrayBuffer): Mascot {
@@ -200,14 +217,14 @@ function computeNormals(mascot: Mascot) {
   }
 }
 
-export function updatePose(mascot: Mascot, clock: PoseClock, seconds: number) {
+export function updatePose(mascot: Mascot, clock: PoseClock, seconds: number, playlist: ActionName[] = CALM_PLAYLIST) {
   if (clock.start < 0) clock.start = seconds;
-  let name = PLAYLIST[clock.index % PLAYLIST.length];
+  let name = playlist[clock.index % playlist.length];
   if (seconds - clock.start >= durationOf(mascot, name)) {
     clock.previous = { name, start: clock.start, at: seconds };
     clock.index += 1;
     clock.start = seconds;
-    name = PLAYLIST[clock.index % PLAYLIST.length];
+    name = playlist[clock.index % playlist.length];
   }
   samplePose(mascot, name, seconds - clock.start, mascot.pose);
   const previous = clock.previous;
