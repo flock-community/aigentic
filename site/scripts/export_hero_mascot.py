@@ -1,7 +1,7 @@
 """Export the aigentic mascot from Blender into the binary the landing page hero loads.
 
-Usage (needs Blender's Python module: `pip install bpy` on Python 3.11):
-    python scripts/export_hero_mascot.py path/to/aigentic-bird.blend static/img/hero-mascot.bin
+Usage, from the site folder (needs Blender's Python module: `pip install bpy` on Python 3.11):
+    python scripts/export_hero_mascot.py path/to/aigentic-mascot.blend static/img/hero-mascot.bin
 """
 
 import struct
