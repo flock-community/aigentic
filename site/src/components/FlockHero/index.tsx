@@ -34,6 +34,7 @@ function textBounds(content: HTMLElement, origin: DOMRect): Rect {
 
 export default function FlockHero({ contentRef }: FlockHeroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const gridRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<FlockHeroEngine | null>(null);
   const visibleRef = useRef(false);
   const pausedRef = useRef(false);
@@ -43,12 +44,13 @@ export default function FlockHero({ contentRef }: FlockHeroProps) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    const grid = gridRef.current;
     const hero = canvas?.parentElement;
     const content = contentRef.current;
-    if (!canvas || !hero || !content) return undefined;
+    if (!canvas || !grid || !hero || !content) return undefined;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const flock = createFlockHero(canvas, mascotUrl, reducedMotion);
+    const flock = createFlockHero(canvas, grid, mascotUrl, reducedMotion);
     engineRef.current = flock;
     const relayout = () => {
       const box = hero.getBoundingClientRect();
@@ -94,6 +96,7 @@ export default function FlockHero({ contentRef }: FlockHeroProps) {
 
   return (
     <>
+      <canvas ref={gridRef} className={styles.canvas} aria-hidden="true" />
       <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
       {!reduceMotion && (
         <button

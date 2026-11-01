@@ -21,6 +21,8 @@ const BIRD = {
   footToCenter: 0.89,
 };
 
+const ADAPT = { warmup: 1500, samples: 90, slowInterval: 22, liteRatio: 1 };
+
 const LOOK = { intensity: 0.8, gridOpacity: 0.9, textCalm: 0.7, accent: "240,188,66" };
 
 type Point = { x: number; y: number };
@@ -34,7 +36,18 @@ type Grid = {
   calm: Float32Array;
   owner: Int32Array;
   visible: Float32Array;
-  background: HTMLCanvasElement;
+};
+
+type SwarmFrame = {
+  t: number;
+  x: number;
+  y: number;
+  cos: number;
+  sin: number;
+  sx: number;
+  sy: number;
+  drift: number;
+  spread: number;
 };
 
 type Buckets = { count: number[]; data: Float32Array[]; stride: number };
@@ -70,6 +83,7 @@ const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const smooth = (v: number) => v * v * (3 - 2 * v);
 const gaussian = () => Math.random() + Math.random() + Math.random() + Math.random() - 2;
 const target: Point = { x: 0, y: 0 };
+const swarm: SwarmFrame = { t: 0, x: 0, y: 0, cos: 1, sin: 0, sx: 0, sy: 0, drift: 0, spread: 0 };
 
 const createBuckets = (levels: number, items: number, stride: number): Buckets => ({
   count: new Array(levels).fill(0),
@@ -84,13 +98,12 @@ function calmAt(layout: HeroLayout, x: number, y: number) {
   return Math.min(text, 0.3 + 0.7 * clamp01((y - 30) / 90));
 }
 
-function buildGrid(layout: HeroLayout, pixelRatio: number): Grid {
+function buildGrid(layout: HeroLayout, pixelRatio: number, background: HTMLCanvasElement): Grid {
   const gap = layout.gap;
   const cols = Math.ceil(layout.width / gap);
   const rows = Math.ceil(layout.height / gap);
   const size = cols * rows;
   const calm = new Float32Array(size);
-  const background = document.createElement("canvas");
   background.width = Math.max(1, Math.round(layout.width * pixelRatio));
   background.height = Math.max(1, Math.round(layout.height * pixelRatio));
   const levels: number[][] = [[], [], [], []];
@@ -105,7 +118,7 @@ function buildGrid(layout: HeroLayout, pixelRatio: number): Grid {
   }
   const g = background.getContext("2d");
   if (g) {
-    g.scale(pixelRatio, pixelRatio);
+    g.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     levels.forEach((points, level) => {
       g.fillStyle = `rgba(255,255,255,${((0.03 + level * 0.011) * LOOK.intensity * LOOK.gridOpacity).toFixed(3)})`;
       for (let k = 0; k < points.length; k += 2) g.fillRect(points[k] - 0.7, points[k + 1] - 0.7, 1.4, 1.4);
@@ -120,15 +133,11 @@ function buildGrid(layout: HeroLayout, pixelRatio: number): Grid {
     calm,
     owner: new Int32Array(size).fill(-1),
     visible: new Float32Array(size),
-    background,
   };
 }
 
-function swarmTarget(flock: Flock, i: number, time: number, layout: HeroLayout): Point {
+function updateSwarmFrame(time: number, layout: HeroLayout) {
   const t = time * FLOCK.speed;
-  const ox = flock.offset[i * 3];
-  const oy = flock.offset[i * 3 + 1];
-  const oz = flock.offset[i * 3 + 2];
   const a1 = t * 0.00016 + 0.6;
   const a2 = t * 0.00033 + 1;
   const b1 = t * 0.00019 + 0.5;
@@ -140,13 +149,26 @@ function swarmTarget(flock: Flock, i: number, time: number, layout: HeroLayout):
   const angle = Math.atan2(vy, vx) * 0.6 + 0.2 * Math.sin(t * 0.00037 + 2);
   const sx = 210 + 80 * Math.sin(t * 0.00021 + 0.4);
   const sy = 66 + 34 * Math.sin(t * 0.00029 + 1.1);
-  const lx = ox * sx + 38 * Math.sin(oy * 3.1 - t * 0.0007) + oz * 30 * Math.cos(t * 0.0004);
-  const ly = oy * sy + 52 * Math.sin(ox * 2.6 + t * 0.0009) + 22 * oz * Math.sin(t * 0.0005 + ox);
-  const ca = Math.cos(angle);
-  const sa = Math.sin(angle);
-  const spread = FLOCK.spread * layout.flockScale;
-  target.x = (cx / 1440) * layout.width + spread * (lx * ca - ly * sa);
-  target.y = layout.swarmTop + (cy / 810) * layout.swarmHeight + spread * (lx * sa + ly * ca);
+  swarm.t = t;
+  swarm.x = (cx / 1440) * layout.width;
+  swarm.y = layout.swarmTop + (cy / 810) * layout.swarmHeight;
+  swarm.cos = Math.cos(angle);
+  swarm.sin = Math.sin(angle);
+  swarm.sx = sx;
+  swarm.sy = sy;
+  swarm.drift = 30 * Math.cos(t * 0.0004);
+  swarm.spread = FLOCK.spread * layout.flockScale;
+}
+
+function swarmTarget(flock: Flock, i: number): Point {
+  const ox = flock.offset[i * 3];
+  const oy = flock.offset[i * 3 + 1];
+  const oz = flock.offset[i * 3 + 2];
+  const t = swarm.t;
+  const lx = ox * swarm.sx + 38 * Math.sin(oy * 3.1 - t * 0.0007) + oz * swarm.drift;
+  const ly = oy * swarm.sy + 52 * Math.sin(ox * 2.6 + t * 0.0009) + 22 * oz * Math.sin(t * 0.0005 + ox);
+  target.x = swarm.x + swarm.spread * (lx * swarm.cos - ly * swarm.sin);
+  target.y = swarm.y + swarm.spread * (lx * swarm.sin + ly * swarm.cos);
   return target;
 }
 
@@ -167,12 +189,13 @@ function createFlock(count: number, layout: HeroLayout, time: number): Flock {
     specks: createBuckets(10, count, 2),
     flyers: createBuckets(6, count, 3),
   };
+  updateSwarmFrame(time, layout);
   for (let i = 0; i < count; i++) {
     flock.offset[i * 3] = gaussian() * 0.85;
     flock.offset[i * 3 + 1] = gaussian() * 0.95;
     flock.offset[i * 3 + 2] = gaussian();
     flock.rate[i] = 0.0032 + Math.random() * 0.004;
-    const p = swarmTarget(flock, i, time, layout);
+    const p = swarmTarget(flock, i);
     flock.x[i] = p.x;
     flock.y[i] = p.y;
   }
@@ -377,7 +400,12 @@ function pushDisc(buckets: Buckets, level: number, x: number, y: number, radius:
   buckets.data[level][(buckets.count[level] - 1) * buckets.stride + 2] = radius;
 }
 
-export function createFlockHero(canvas: HTMLCanvasElement, mascotUrl: string, reducedMotion: boolean): FlockHero {
+export function createFlockHero(
+  canvas: HTMLCanvasElement,
+  background: HTMLCanvasElement,
+  mascotUrl: string,
+  reducedMotion: boolean,
+): FlockHero {
   const ctx = canvas.getContext("2d");
   const poseClock = createPoseClock();
   const light = [-0.42, -0.56, 0.71];
@@ -391,6 +419,12 @@ export function createFlockHero(canvas: HTMLCanvasElement, mascotUrl: string, re
   let clock = 0;
   let last = 0;
   let frameId = 0;
+  let requestedRatio = 1;
+  let lite = false;
+  let skipFrame = false;
+  let pendingStep = 0;
+  let samples = 0;
+  let averageInterval = 16;
   let running = false;
   let destroyed = false;
   let cycleStart: number | null = null;
@@ -424,7 +458,6 @@ export function createFlockHero(canvas: HTMLCanvasElement, mascotUrl: string, re
     const l = layout;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(g.background, 0, 0);
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     g.depth.fill(Infinity);
     const seconds = time / 1000;
@@ -466,8 +499,8 @@ export function createFlockHero(canvas: HTMLCanvasElement, mascotUrl: string, re
     f.specks.count.fill(0);
     f.flyers.count.fill(0);
     if (!reducedMotion) {
+      updateSwarmFrame(time, l);
       for (let i = 0; i < f.count; i++) {
-        const swarm = swarmTarget(f, i, time, l);
         const role = f.role[i];
         const cell = f.cell[i];
         let weight = 0;
@@ -486,8 +519,13 @@ export function createFlockHero(canvas: HTMLCanvasElement, mascotUrl: string, re
           gx = g.gap / 2 + (cell % g.cols) * g.gap + f.jitterX[i];
           gy = g.gap / 2 + Math.floor(cell / g.cols) * g.gap + f.jitterY[i];
         }
-        const tx = swarm.x + (gx - swarm.x) * weight;
-        const ty = swarm.y + (gy - swarm.y) * weight;
+        let tx = gx;
+        let ty = gy;
+        if (weight < 1) {
+          const free = swarmTarget(f, i);
+          tx = free.x + (gx - free.x) * weight;
+          ty = free.y + (gy - free.y) * weight;
+        }
         if (step > 0) {
           const pull = Math.min(1, step * f.rate[i] * FLOCK.follow * (1 + FLOCK.settlePull * weight));
           f.x[i] += (tx - f.x[i]) * pull;
@@ -559,12 +597,27 @@ export function createFlockHero(canvas: HTMLCanvasElement, mascotUrl: string, re
     ctx.globalCompositeOperation = "source-over";
   };
 
+  const watchFrameRate = (interval: number) => {
+    if (lite || interval > 250 || clock < ADAPT.warmup) return;
+    averageInterval += (interval - averageInterval) * 0.05;
+    samples += 1;
+    if (samples < ADAPT.samples || averageInterval <= ADAPT.slowInterval) return;
+    lite = true;
+    if (layout) applyLayout(layout, Math.min(requestedRatio, ADAPT.liteRatio));
+  };
+
   const tick = (now: number) => {
     frameId = requestAnimationFrame(tick);
-    const step = last ? Math.min(64, now - last) : 16;
+    const interval = last ? now - last : 16;
     last = now;
+    pendingStep += Math.min(64, interval);
+    skipFrame = !skipFrame;
+    if (lite && skipFrame) return;
+    const step = Math.min(64, pendingStep);
+    pendingStep = 0;
     clock += step;
     render(clock, step);
+    watchFrameRate(interval);
   };
 
   const drawStill = () => {
@@ -584,25 +637,30 @@ export function createFlockHero(canvas: HTMLCanvasElement, mascotUrl: string, re
     })
     .catch(() => undefined);
 
+  const applyLayout = (next: HeroLayout, ratio: number) => {
+    const previous = grid;
+    layout = next;
+    pixelRatio = ratio;
+    canvas.width = Math.max(1, Math.round(next.width * ratio));
+    canvas.height = Math.max(1, Math.round(next.height * ratio));
+    grid = buildGrid(next, ratio, background);
+    const keepFlock = flock !== null && flock.count === next.flockCount;
+    if (!flock || !keepFlock) flock = createFlock(next.flockCount, next, clock);
+    if (keepFlock && previous && previous.cols === grid.cols && previous.gap === grid.gap) {
+      keepAssignments(flock, previous, grid);
+    } else {
+      flock.role.fill(-1);
+      flock.settled.fill(0);
+      cycleIndex = -1;
+      reboundIndex = -1;
+    }
+    drawStill();
+  };
+
   return {
     resize(next, ratio) {
-      const previous = grid;
-      layout = next;
-      pixelRatio = ratio;
-      canvas.width = Math.max(1, Math.round(next.width * ratio));
-      canvas.height = Math.max(1, Math.round(next.height * ratio));
-      grid = buildGrid(next, ratio);
-      const keepFlock = flock !== null && flock.count === next.flockCount;
-      if (!flock || !keepFlock) flock = createFlock(next.flockCount, next, clock);
-      if (keepFlock && previous && previous.cols === grid.cols && previous.gap === grid.gap) {
-        keepAssignments(flock, previous, grid);
-      } else {
-        flock.role.fill(-1);
-        flock.settled.fill(0);
-        cycleIndex = -1;
-        reboundIndex = -1;
-      }
-      drawStill();
+      requestedRatio = ratio;
+      applyLayout(next, lite ? Math.min(ratio, ADAPT.liteRatio) : ratio);
     },
     setPointer(next) {
       pointer = next;
@@ -611,6 +669,7 @@ export function createFlockHero(canvas: HTMLCanvasElement, mascotUrl: string, re
       if (running || reducedMotion || destroyed) return;
       running = true;
       last = 0;
+      pendingStep = 0;
       frameId = requestAnimationFrame(tick);
     },
     stop() {
