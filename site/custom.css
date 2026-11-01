@@ -86,6 +86,15 @@
   display: none;
 }
 
+@media (max-width: 768px) {
+  .navbarSearchContainer_Bca1 .DocSearch.DocSearch-Button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
 .DocSearch-Button-Container svg {
   width: 16px;
   height: 16px;

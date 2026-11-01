@@ -13,6 +13,21 @@ const BLUR_IN_DURATION = 0.8;
 const VISIBLE_PAUSE = 2500;
 const BLUR_OUT_DURATION = 0.4;
 const CYCLE_INTERVAL = BLUR_IN_DURATION * 1000 + VISIBLE_PAUSE + BLUR_OUT_DURATION * 1000;
+const PHRASE_STYLE = { display: 'inline-flex', flexWrap: 'wrap', justifyContent: 'center' } as const;
+
+const PhraseWords = ({ phrase }: { phrase: string }) => {
+  const words = phrase.split(' ');
+  return (
+    <>
+      {words.map((word, index) => (
+        <span key={index} style={{ color: '#101010' }}>
+          {word}
+          {index < words.length - 1 && '\u00A0'}
+        </span>
+      ))}
+    </>
+  );
+};
 
 const CyclingBlurText: React.FC<CyclingBlurTextProps> = ({
   phrases,
@@ -32,12 +47,16 @@ const CyclingBlurText: React.FC<CyclingBlurTextProps> = ({
   }, [phraseIndex, phrases.length]);
 
   const currentPhrase = phrases[phraseIndex];
-  const words = currentPhrase.split(' ');
 
   return (
     <span className={`${styles.root} ${className}`}>
       <span className={styles.prefixText}>{prefix}</span>
       <span className={styles.dynamicContainer}>
+        {phrases.map((phrase) => (
+          <span key={phrase} className={`${styles.highlightedText} ${styles.sizer}`} style={PHRASE_STYLE} aria-hidden="true">
+            <PhraseWords phrase={phrase} />
+          </span>
+        ))}
         <AnimatePresence mode="wait">
           <motion.span
             key={phraseIndex}
@@ -49,14 +68,9 @@ const CyclingBlurText: React.FC<CyclingBlurTextProps> = ({
               duration: BLUR_IN_DURATION,
               ease: 'easeOut',
             }}
-            style={{ display: 'inline-flex', flexWrap: 'wrap', justifyContent: 'center' }}
+            style={PHRASE_STYLE}
           >
-            {words.map((word, index) => (
-              <span key={index} style={{ color: '#101010' }}>
-                {word}
-                {index < words.length - 1 && '\u00A0'}
-              </span>
-            ))}
+            <PhraseWords phrase={currentPhrase} />
           </motion.span>
         </AnimatePresence>
       </span>

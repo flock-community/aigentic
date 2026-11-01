@@ -3,13 +3,14 @@ import Link from "@docusaurus/Link";
 import Layout from "@theme/Layout";
 import Heading from "@theme/Heading";
 import styles from "./index.module.css";
-import { JSX, type ReactNode } from "react";
+import { JSX, type ReactNode, useRef } from "react";
 import CyclingBlurText from "../components/CyclingBlurText";
 import AgentRunVisualizer from "../components/AgentRunVisualizer";
 import BeforeAfter from "../components/BeforeAfter";
 import ProductionStory from "../components/ProductionStory";
-import PixelMark from "../components/PixelMark";
+import FlockMark from "../components/FlockMark";
 import StartSection from "../components/StartSection";
+import FlockHero from "../components/FlockHero";
 
 const dslPoints = [
   {
@@ -29,16 +30,18 @@ const dslPoints = [
 function SectionTitle({ children, centered = false }: { children: ReactNode; centered?: boolean }) {
   return (
     <Heading as="h2" className={clsx(styles.heading2, styles.sectionTitle, centered && styles.sectionTitleCentered)}>
-      <PixelMark />
+      <FlockMark />
       {children}
     </Heading>
   );
 }
 
 function HomepageHeader() {
+  const contentRef = useRef<HTMLDivElement>(null);
   return (
     <header className={clsx("hero hero--primary", styles.heroBanner)}>
-      <div className="container">
+      <FlockHero contentRef={contentRef} />
+      <div ref={contentRef} className={clsx("container", styles.heroContent)}>
         <h1 className={clsx("hero__title hero-heading", styles.heroHeading)}>
           <CyclingBlurText
             phrases={['production-ready', 'reliable', 'LLM-agnostic']}

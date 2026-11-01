@@ -20,24 +20,25 @@ body {
   position: relative;
   overflow: hidden;
   background-color: #101010;
-  background-image: url("/img/hero-image.webp");
-  background-size: 100%;
-  background-position: bottom;
   align-items: flex-start;
-  background-repeat: no-repeat;
 
   @media (max-width: 1440px) {
     padding: 175px 0 175px;
-    background-position: right top;
-    background-size: 92%;
+  }
+  @media (max-width: 1199px) {
+    padding-bottom: clamp(340px, 42vw, 460px);
   }
   @media (max-width: 1024px) {
-    padding: 120px 0 120px;
+    padding-top: 120px;
   }
   @media (max-width: 767px) {
-    background-size: 130%;
-    padding: 100px 0 100px;
+    padding-top: 100px;
   }
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
 }
 
 .heroHeading {
