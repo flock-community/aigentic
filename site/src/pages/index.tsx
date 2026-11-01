@@ -8,7 +8,7 @@ import CyclingBlurText from "../components/CyclingBlurText";
 import AgentRunVisualizer from "../components/AgentRunVisualizer";
 import BeforeAfter from "../components/BeforeAfter";
 import ProductionStory from "../components/ProductionStory";
-import PixelMark from "../components/PixelMark";
+import FlockMark from "../components/FlockMark";
 import StartSection from "../components/StartSection";
 import FlockHero from "../components/FlockHero";
 
@@ -30,7 +30,7 @@ const dslPoints = [
 function SectionTitle({ children, centered = false }: { children: ReactNode; centered?: boolean }) {
   return (
     <Heading as="h2" className={clsx(styles.heading2, styles.sectionTitle, centered && styles.sectionTitleCentered)}>
-      <PixelMark />
+      <FlockMark />
       {children}
     </Heading>
   );

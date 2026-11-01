@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import CodeLines from "../CodeLines";
-import PixelMark from "../PixelMark";
+import FlockMark from "../FlockMark";
 import styles from "./styles.module.css";
 
 const BY_HAND = `// Simplified: one provider, one tool, happy path only
@@ -84,7 +84,7 @@ export default function BeforeAfter() {
         <div key={column.title} className={clsx(styles.column, column.highlighted && styles.highlighted)}>
           <div className={styles.header}>
             <h3>
-              {column.highlighted && <PixelMark />}
+              {column.highlighted && <FlockMark />}
               {column.title}
             </h3>
             <span>{column.note}</span>
@@ -95,7 +95,7 @@ export default function BeforeAfter() {
           <ul className={styles.points}>
             {column.points.map((point) => (
               <li key={point}>
-                {column.highlighted ? <PixelMark /> : <span className={styles.dash} aria-hidden="true" />}
+                {column.highlighted ? <FlockMark /> : <span className={styles.dash} aria-hidden="true" />}
                 {point}
               </li>
             ))}

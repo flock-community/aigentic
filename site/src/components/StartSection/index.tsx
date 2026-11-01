@@ -2,7 +2,7 @@ import Link from "@docusaurus/Link";
 import Heading from "@theme/Heading";
 import InstallSnippet from "../InstallSnippet";
 import ModuleMap from "../ModuleMap";
-import PixelMark from "../PixelMark";
+import FlockMark from "../FlockMark";
 import styles from "./styles.module.css";
 
 export default function StartSection({ showModules = false }: { showModules?: boolean }) {
@@ -14,7 +14,7 @@ export default function StartSection({ showModules = false }: { showModules?: bo
             <div className="card card-border-bottom card-footer">
               <div className="card-footer-header">
                 <Heading as="h2" className="footer-cta-title">
-                  <PixelMark />
+                  <FlockMark />
                   Start with Aigentic
                 </Heading>
                 {showModules ? (

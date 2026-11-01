@@ -1,4 +1,4 @@
-import PixelMark from "../PixelMark";
+import FlockMark from "../FlockMark";
 import styles from "./styles.module.css";
 
 const Arrow = () => (
@@ -18,7 +18,7 @@ export function RunLoopDiagram() {
       <Arrow />
       <div className={`${styles.box} ${styles.agent}`}>
         <span className={styles.label}>
-          <PixelMark />
+          <FlockMark />
           <code>agent&lt;I, O&gt;</code>
         </span>
         <dl className={styles.parts}>
