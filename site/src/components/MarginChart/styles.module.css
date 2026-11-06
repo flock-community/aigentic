@@ -21,6 +21,7 @@
     font-size: 18px;
     font-weight: 500;
     color: #ffffff;
+    text-wrap: balance;
   }
 
   span {
@@ -105,6 +106,14 @@
   bottom: 0;
   width: 1px;
   background: var(--grid);
+}
+
+.reference {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(240, 188, 66, 0.35);
 }
 
 .range {
@@ -201,6 +210,12 @@
   .value,
   .figure .table tbody th {
     font-size: 13px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-width: 1.5px;
   }
 }
 

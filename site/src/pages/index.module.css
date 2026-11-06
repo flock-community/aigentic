@@ -131,29 +131,37 @@ body {
   text-decoration: none !important;
   text-align: center;
   transition: background-color 0.2s cubic-bezier(0.08, 0.52, 0.52, 1);
-  border: 1px solid transparent;
+  border-width: 1px;
+  border-style: solid;
 
   @media (max-width: 475px) {
     font-size: 16px;
     padding: 8px 20px;
   }
+
+  &:focus-visible {
+    outline: 2px solid #f0bc42;
+    outline-offset: 3px;
+  }
 }
 
-.buttonPrimary {
+/* Colours on .button.variant: the minifier may reorder single-class rules, which once erased these borders. */
+.button.buttonPrimary {
+  border-color: #f0bc42;
   background-color: #f0bc42;
   color: #101010;
   &:hover {
-    border-color: #f0bc42;
     background-color: transparent;
     color: #f0bc42;
   }
 }
 
-.buttonDefault {
+.button.buttonDefault {
   border-color: #f0bc42;
+  background-color: transparent;
   color: #f0bc42;
   &:hover {
-    background-color: #d9be00;
+    background-color: #f0bc42;
     color: #101010;
   }
 }
@@ -303,46 +311,43 @@ body {
 }
 
 .platformSection {
-  padding-top: 24px;
-}
-
-.lifecycle {
-  margin: 8px 0 0;
+  padding-top: 40px;
 }
 
 .platformProof {
-  margin-top: 64px;
+  margin-top: 8px;
+
+  @media (max-width: 996px) {
+    margin-top: 40px;
+  }
 }
 
-.proofPoints {
-  display: grid;
-  gap: 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.proofText {
+  h3 {
+    margin-bottom: 14px;
+    font-family: "Funnel Display", sans-serif;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.25;
+    color: white;
+    text-wrap: balance;
+  }
 
-  li {
+  p {
+    max-width: 30rem;
     margin: 0;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
     font-size: 17px;
-    line-height: 1.55;
+    line-height: 1.6;
     color: #c9c9c9;
   }
 
-  li:first-child {
-    padding-top: 0;
-    border-top: 0;
-  }
-
-  strong {
-    font-weight: 500;
-    color: #ffffff;
+  @media (max-width: 996px) {
+    margin-bottom: 32px;
   }
 }
 
-.hosting {
-  margin: 20px 0 0;
+.proofText .hosting {
+  margin-top: 16px;
   font-size: 15px;
   color: #a8a8a8;
 }
@@ -352,16 +357,28 @@ body {
   flex-wrap: wrap;
   gap: 16px;
   margin-top: 28px;
+
+  @media (max-width: 475px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
-.shot {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  background: #141414;
+.lifecycle {
+  margin: 72px 0 0;
 
   @media (max-width: 996px) {
-    margin-top: 32px;
+    margin-top: 48px;
+  }
+}
+
+.guideLink {
+  margin: 16px 0 0;
+  font-size: 15px;
+
+  a {
+    color: #f0bc42;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 }

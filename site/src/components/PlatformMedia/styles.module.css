@@ -2,6 +2,17 @@
   margin: 24px 0 28px;
 }
 
+.zoom {
+  display: block;
+  border-radius: 12px;
+  cursor: zoom-in;
+
+  &:focus-visible {
+    outline: 2px solid #f0bc42;
+    outline-offset: 3px;
+  }
+}
+
 .media {
   display: block;
   width: 100%;

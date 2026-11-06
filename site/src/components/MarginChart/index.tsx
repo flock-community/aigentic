@@ -41,7 +41,11 @@ export default function MarginChart() {
               <td className={styles.plot} aria-hidden="true">
                 <div className={styles.track}>
                   {TICKS.map((tick) => (
-                    <span key={tick} className={styles.grid} style={{ left: position(tick) }} />
+                    <span
+                      key={tick}
+                      className={tick === MEASURED ? styles.reference : styles.grid}
+                      style={{ left: position(tick) }}
+                    />
                   ))}
                   <span
                     className={styles.range}
@@ -49,7 +53,7 @@ export default function MarginChart() {
                   />
                   <span className={styles.dot} style={{ left: position(MEASURED) }} />
                   <span className={styles.tooltip} style={{ left: position(MEASURED) }}>
-                    {inputs} inputs: {percent(low)} to {percent(high)}
+                    90% measured on {inputs} inputs: really {percent(low)} to {percent(high)}
                   </span>
                 </div>
               </td>

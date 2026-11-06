@@ -12,22 +12,9 @@ import FlockMark from "../components/FlockMark";
 import StartSection from "../components/StartSection";
 import FlockHero from "../components/FlockHero";
 import Lifecycle from "../components/Lifecycle";
-import useBaseUrl from "@docusaurus/useBaseUrl";
+import VersionComparison from "../components/VersionComparison";
 
-const platformPoints = [
-  {
-    title: "Every run",
-    text: "recorded with its input, tool calls, cost and config version.",
-  },
-  {
-    title: "Accuracy per field",
-    text: "against answers people confirmed, or that your process already has.",
-  },
-  {
-    title: "A fix assistant",
-    text: "that tries changes on your recorded inputs and proposes the best one, with its cost per run.",
-  },
-];
+const ACCESS_MAIL = "mailto:aigentic@flock.community?subject=Aigentic%20Platform%20access";
 
 const dslPoints = [
   {
@@ -89,7 +76,6 @@ function HomepageHeader() {
 }
 
 function PlatformSection() {
-  const screenshot = useBaseUrl("/img/platform/fix-assistant-result.png");
   return (
     <section className={clsx("how", styles.platformSection)}>
       <div className={clsx("container", styles.sectionIntro)}>
@@ -100,38 +86,34 @@ function PlatformSection() {
         </p>
       </div>
       <div className="container">
-        <Lifecycle className={styles.lifecycle} />
         <div className={clsx("row row--align-center", styles.platformProof)}>
-          <div className="col col--5">
-            <ul className={styles.proofPoints}>
-              {platformPoints.map(({ title, text }) => (
-                <li key={title}>
-                  <strong>{title}</strong> {text}
-                </li>
-              ))}
-            </ul>
-            <p className={styles.hosting}>Hosted by Flock in the EU, or in your own environment.</p>
+          <div className={clsx("col col--5", styles.proofText)}>
+            <Heading as="h3">Did the change make it better?</Heading>
+            <p>
+              Every run your agent publishes is recorded with its config version. Confirm the right answers once, and
+              each new version is scored on the same inputs: which fields improved, which inputs got fixed or broke,
+              and what a run costs.
+            </p>
+            <p className={styles.hosting}>
+              Hosted by Flock in the EU, or set up in your own environment. Access is on request.
+            </p>
             <div className={styles.proofActions}>
-              <Link className={clsx(styles.button, styles.buttonPrimary)} to="/docs/platform">
-                Explore the platform
+              <Link className={clsx(styles.button, styles.buttonPrimary)} to={ACCESS_MAIL}>
+                Request access
               </Link>
-              <Link className={clsx(styles.button, styles.buttonDefault)} to="/docs/lifecycle">
-                Read the guide
+              <Link className={clsx(styles.button, styles.buttonDefault)} to="/docs/platform">
+                Explore the platform
               </Link>
             </div>
           </div>
           <div className="col col--7">
-            <img
-              className={styles.shot}
-              src={screenshot}
-              alt="A fix assistant result on the Aigentic Platform: $.invoiceNumber goes from 70% to 90% correct, $.total stays at 80%, a run costs $0.0062 instead of $0.0039, with the fixed and regressed inputs per field."
-              width={1300}
-              height={824}
-              loading="lazy"
-              decoding="async"
-            />
+            <VersionComparison />
           </div>
         </div>
+        <Lifecycle compact className={styles.lifecycle} />
+        <p className={styles.guideLink}>
+          <Link to="/docs/lifecycle">Follow one agent from prototype to production</Link>
+        </p>
       </div>
     </section>
   );
@@ -141,7 +123,7 @@ export default function Home(): JSX.Element {
   return (
     <Layout
       title="Aigentic: Kotlin DSL for AI Agents"
-      description="Build typed AI agents in Kotlin, then measure how often they're right and fix what isn't on the Aigentic Platform."
+      description="Build typed AI agents in Kotlin. The Aigentic Platform measures how often they're right and helps you fix what isn't."
     >
       <HomepageHeader />
       <main className={clsx(styles.page)}>
@@ -206,16 +188,16 @@ export default function Home(): JSX.Element {
             </div>
           </div>
         </section>
+        <PlatformSection />
         <section className="how">
           <div className={clsx("container", styles.sectionIntro)}>
-            <SectionTitle centered>From first agent to production</SectionTitle>
+            <SectionTitle centered>What a real agent needs</SectionTitle>
             <p>Connect your APIs, read documents, chain agents and test the results.</p>
           </div>
           <div className="container">
             <ProductionStory />
           </div>
         </section>
-        <PlatformSection />
         <StartSection showModules />
       </main>
     </Layout>

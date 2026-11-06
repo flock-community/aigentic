@@ -25,7 +25,7 @@ The assistant works in rounds. You can follow every step live in the session's t
 5. **It repeats** with a better idea, until it can't improve the result any further.
 
 <PlatformVideo
-  src="/img/platform/fix-assistant.webm"
+  src="/img/platform/fix-assistant.mp4"
   poster="/img/platform/fix-assistant-done.png"
   width={1300}
   height={824}
@@ -75,6 +75,7 @@ When the assistant is done, the session page shows:
   alt="The result of a session: $.invoiceNumber goes from 70% to 90% and $.total stays at 80%, a run costs $0.0062 instead of $0.0039, and a table lists the fixed and regressed inputs per field."
   width={1300}
   height={824}
+  caption={<>Demo data on ten inputs. Two fixed inputs isn't proof yet: on a real golden set, see <a href="/docs/platform/measuring-well#is-the-new-version-really-better">how many changed inputs you need</a>.</>}
 />
 
 The platform never changes your agent. Copy the proposal into your code, deploy it, run it on the evaluation's inputs and [compare the two versions](/docs/platform/evaluations#compare-config-versions). The comparison now uses your real agent, with your real tools.
