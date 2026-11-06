@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # Connect an agent
 
-Connecting takes three steps: add the `platform` module, create the agent on the platform, and give your agent its name and secret. You need access to the platform first, see [Hosting and access](/docs/platform#hosting-and-access).
+You need access to the platform first, see [Hosting and access](/docs/platform#hosting-and-access).
 
 ## 1. Add the platform module
 
@@ -20,11 +20,11 @@ For Maven, use the `platform-jvm` artifact, see [Installation](/docs/getting-sta
 
 ## 2. Create the agent on the platform
 
-Sign in to the platform and create a new agent. Its name may contain lowercase letters, digits and hyphens, like `invoice-extractor`.
+Sign in to the platform and create an agent. Its name uses lowercase letters, digits and hyphens, like `invoice-extractor`.
 
-The platform then shows the agent's secret. It's shown only once, so store it the way you store your other secrets. Lost it? Generate a new one under **Settings → Agent Secret**. The old secret stops working right away, so update your application at the same time.
+The platform then shows the agent's secret, only once, so store it like your other secrets. Lost it? Generate a new one under **Settings → Agent Secret**. The old secret stops working right away, so update your application at the same time.
 
-Under **Settings → Users Management** you can share the agent with colleagues by their email address. Everyone you add sees the same runs and evaluations.
+Under **Settings → Users Management** you share the agent with colleagues by email address. Everyone you add sees the same runs and evaluations.
 
 ## 3. Add `platform { }` to your agent
 
@@ -52,9 +52,9 @@ val invoiceExtractor = agent<Unit, Invoice> {
 }
 ```
 
-The `name` must be the agent's name on the platform. When you run the platform in your own environment, also point the agent at it with `apiUrl("https://…")` inside `platform { }`.
+The `name` must match the agent's name on the platform. When you run the platform in your own environment, also set `apiUrl("https://…")` inside `platform { }`.
 
-Run the agent as usual, and each run shows up under **Runs** a moment after it finishes:
+Run the agent as usual. Each run shows up under **Runs** a moment after it finishes:
 
 ```kotlin
 val run = invoiceExtractor.start(Attachment.Base64.pdf(invoicePdf))

@@ -78,7 +78,7 @@ Open the evaluation's results. You see the accuracy of every output field and ev
 When a field falls short:
 
 - Open the inputs it went wrong on and look at the run: often the document explains the mistake.
-- Formatting differences, like `1.250,00` against `1250`, aren't mistakes. Give the field a [value normalizer](/docs/platform/evaluations#ignore-formatting-differences).
+- Formatting differences, like `1.250,00` against `1250`, aren't mistakes. Give the field a [value normalizer](/docs/platform/value-normalizers).
 - Start the [fix assistant](/docs/platform/fix-assistant). It tries changes to the task, and if needed the model or its settings, on the inputs you have ground truth for and proposes the best one with its cost per run.
 
 Apply the change in your code and run those inputs again. Every change becomes a new config version, so you compare the two field by field. Ship when the fields you care about are where they should be.

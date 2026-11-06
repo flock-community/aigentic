@@ -8,11 +8,11 @@ import { Screenshot } from "@site/src/components/PlatformMedia";
 
 # Runs, versions and costs
 
-Once your agent is [connected](/docs/platform/connect), every run lands on the platform. This page covers what you can do with them before you build an evaluation.
+Once your agent is [connected](/docs/platform/connect), every run lands on the platform.
 
 ## Runs
 
-The **Runs** page lists every run of the agent. Search, sort, and filter by tag or config version, and see at a glance which runs you haven't opened yet.
+The **Runs** page lists every run of the agent. Search, sort, filter by tag or config version, and see which runs you haven't opened yet.
 
 <Screenshot
   src="/img/platform/runs.png"
@@ -28,13 +28,13 @@ Open a run to see what happened, step by step:
 - the final response as JSON, or the reason the run got stuck or failed;
 - its config version, duration, token counts and cost.
 
-The previous and next buttons follow your filters and sort order. Filter on one config version, for example, and step through its runs one by one.
+The previous and next buttons follow your filters, so you can step through the runs of one config version.
 
 ### Tags
 
-Tags are labels you add to a run on its page, like `validated` or `edge-case`. Use them to:
+Add tags to a run on its page, like `validated` or `edge-case`. Use them to:
 
-- find runs back and filter the run list;
+- filter the run list;
 - pick runs for an [evaluation](/docs/platform/evaluations);
 - give your agent [example runs](/docs/platform/example-runs) to learn from.
 
@@ -48,9 +48,9 @@ Every run carries its config. When a run arrives with a config the platform hasn
 - the JSON schema of your output type;
 - the example runs the agent used.
 
-You don't create versions yourself: change your agent, deploy it, and its next run creates the version. The **Versions** page lists them. An LLM writes a short description of what changed compared to the version before, and you can edit or regenerate it. Pick two versions to see their prompts, tools and settings side by side.
+You don't create versions yourself: change your agent, deploy it, and its next run creates the version. The **Versions** page lists them, each with a short description of what changed, written by an LLM, that you can edit or regenerate. Pick two versions to see their prompts, tools and settings side by side.
 
-Versions are what make results comparable. The run list, the costs and every evaluation can be filtered on one version, so you can tell whether a change made the agent better, worse or more expensive.
+The run list, the costs and every evaluation can be filtered on one version, so you can tell whether a change made the agent better, worse or more expensive.
 
 ## Costs
 

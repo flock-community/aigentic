@@ -8,7 +8,7 @@ import MarginChart from "@site/src/components/MarginChart";
 
 # Measuring well
 
-The platform does the counting. What you decide is what goes into the count: which inputs you collect ground truth for, how many there are, and when a difference between two versions is real. This page gives you rules of thumb for each. No statistics background needed.
+The platform does the counting. You decide what goes into it: which inputs get ground truth, how many, and when a difference between two versions is real. Here are rules of thumb for each, no statistics background needed.
 
 ## Pick inputs like your real traffic
 
@@ -47,9 +47,9 @@ The [fix assistant](/docs/platform/fix-assistant) shows the fixed and regressed 
 ## Make the comparison fair
 
 - **Use the field type that fits.** A field with a fixed set of values, like a category or a country code, should be categorical. Its confusion matrix shows which values get mixed up, which is often the quickest route to a fix.
-- **Normalize formatting, not mistakes.** A [value normalizer](/docs/platform/evaluations#ignore-formatting-differences) that strips spaces from an IBAN is fine. One that strips everything but the digits also hides a wrong country code.
-- **Agree on the rules when people annotate.** Several annotators can each enter acceptable values, and all of them count. That's right for fields with more than one valid answer. When people disagree because the rule is unclear, write the rule down in the annotation comment, so the ground truth doesn't drift.
+- **Normalize formatting, not mistakes.** A [value normalizer](/docs/platform/value-normalizers#formatting-not-mistakes) that also hides real errors, like a wrong country code in an IBAN, makes the agent look better than it is.
+- **Agree on the rules when people annotate.** Every acceptable value any annotator enters counts, which is right for fields with more than one valid answer. When people disagree because a rule is unclear, write the rule down in the annotation comment, so the ground truth doesn't drift.
 
 ## Keep measuring in production
 
-Your ground truth covers a sample of inputs. Corrections from your own process, sent with [`addToEvaluationSet`](/docs/platform/ground-truth#later-when-someone-has-checked-the-result), show how the agent does on real traffic. Keep them in a separate evaluation and compare it with your main evaluation now and then. When production scores lower, your ground truth is missing a kind of input: add a few of the inputs that went wrong.
+Your ground truth covers a sample of inputs. Corrections from your own process, sent with [`addToEvaluationSet`](/docs/platform/ground-truth#later-when-someone-has-checked-the-result), show how the agent does on real traffic. Keep them in a separate evaluation and compare it with your main one now and then. When production scores lower, your ground truth is missing a kind of input: add a few of the inputs that went wrong.

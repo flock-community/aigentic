@@ -8,54 +8,41 @@ import { PlatformDiagram } from "@site/src/components/RunLoopDiagram";
 
 # Aigentic Platform
 
-Building an agent that works on ten examples is the easy part. The hard part is knowing how often it gets the answer right, and keeping it right while you change prompts and models. The Aigentic Platform takes care of that part.
-
-Your agent keeps running in your own code. Add `platform { }` and every run goes to the platform, where you can:
-
-- **See every run**: the input and attachments, every tool call, the result and what it cost.
-- **Measure accuracy**: confirm the right answer for each output field once, and the platform reports the accuracy per field and lists every error.
-- **Compare versions**: each change to the prompt, model or tools becomes a new config version. You see per field whether it got better or worse.
-- **Fix what's wrong**: the fix assistant reads the errors, tries changes against the same inputs and proposes the best one, with its accuracy and cost per run.
+Building an agent that works on ten examples is the easy part. The hard part is knowing how often it gets the answer right, and keeping it right while you change prompts and models. That's what the Aigentic Platform is for. Your agent keeps running in your own code: add `platform { }` and every run goes to the platform.
 
 <PlatformDiagram />
 
 ## How it works
 
 1. **Connect your agent.** Create the agent on the platform and add `platform { }` with its name and secret. [Connect an agent](/docs/platform/connect)
-2. **Let runs come in.** The platform records each run and recognizes each distinct config as a version. [Runs, versions and costs](/docs/platform/runs)
+2. **See every run.** The platform records each run with its input, tool calls, result and cost, and recognizes each distinct config as a version. [Runs, versions and costs](/docs/platform/runs)
 3. **Build an evaluation.** Pick runs and the output fields to score, then confirm the right values in the UI or send them from your code. [Evaluations](/docs/platform/evaluations) and [Ground truth from your code](/docs/platform/ground-truth)
-4. **Read the results.** See the accuracy per field and every error, and compare a version with the one before it.
-5. **Improve.** Change the agent yourself, or start the [fix assistant](/docs/platform/fix-assistant) and let it propose a change. Your next version is scored against the same ground truth, so you know whether it's better before you rely on it.
+4. **Read the results.** See the accuracy per field and every error, and per field whether a version did better or worse than the one before.
+5. **Improve.** Change the agent yourself, or let the [fix assistant](/docs/platform/fix-assistant) try changes on the same inputs and propose the best one, with its accuracy and cost per run. Your next version is scored against the same ground truth, so you know whether it's better before you rely on it.
 
-Want to see the whole journey with one agent? Read [From prototype to production](/docs/lifecycle).
+[From prototype to production](/docs/lifecycle) follows one agent through all of this.
 
 ## What it's built for
 
-The platform is built for **task agents**: one input goes in, the agent works on its own, possibly calling tools, and returns one structured result. Think of pulling fields out of invoices, classifying products or enriching records. The same inputs come back across versions, so accuracy can be measured and compared.
-
-That's why evaluations need an output type. Define your agent as `agent<Input, Output>` with an `@AigenticParameter` data class as `Output`, and the platform can score each of its fields.
+The platform is built for **task agents**: one input goes in, the agent works on its own, possibly calling tools, and returns one structured result. Think of pulling fields out of invoices, classifying products or enriching records. Define the agent as `agent<Input, Output>` with an `@AigenticParameter` data class as `Output`, and the platform scores each of its fields.
 
 It's not built for chatbots and other conversational agents:
 
-- A run is one task with one result. There's no conversation that spans several turns.
-- Accuracy compares JSON output fields with expected values. A free-text reply has no fields to compare, and there's no LLM-as-judge scoring.
-- The fix assistant replays recorded inputs. In a conversation, the next message depends on the previous answer, so it can't be replayed with a changed agent.
+- A run is one task with one result, not a conversation over several turns.
+- Accuracy compares JSON fields with expected values. There's no LLM-as-judge for free-text replies.
+- The fix assistant replays recorded inputs, and a conversation can't be replayed: each message depends on the previous answer.
 
 ## Your agent stays in your code
 
 The platform observes, measures and proposes. You decide what ships.
 
-- It doesn't host or run your agent, and it never changes your agent's config. A proposal from the fix assistant is something you copy into your code.
+- It doesn't host your agent or change its config. You copy a proposal from the fix assistant into your code yourself.
 - Runs are sent after they finish, including the ones that end `Stuck` or `Fatal`. When sending fails, your run still returns as normal.
-- The only place the platform runs your agent's task is the fix assistant. It tries its proposals on Gemini, on the inputs and tool results recorded in your runs. Your tools are never called.
+- The only thing it runs is the fix assistant's trials: your task on Gemini, with the inputs and tool results recorded in your runs. Your tools are never called.
 
 ## Hosting and access
 
-You can use the platform in two ways:
+- **Hosted by Flock**, in the EU, on Google Cloud in `europe-west4`.
+- **In your own environment**, when your runs and documents need to stay inside your own cloud or network. We set the platform up there with you.
 
-- **Hosted by Flock.** We run it for you in the EU, on Google Cloud in `europe-west4`, and give you access on request.
-- **In your own environment.** If your runs and documents need to stay inside your own cloud or network, we set the platform up there with you.
-
-Either way, email [aigentic@flock.community](mailto:aigentic@flock.community?subject=Aigentic%20Platform%20access) and we'll help you connect your first agent.
-
-You can also work with the platform from an AI assistant such as Claude, see [Use it from an AI assistant](/docs/platform/mcp).
+Either way, email [aigentic@flock.community](mailto:aigentic@flock.community?subject=Aigentic%20Platform%20access) and we'll help you connect your first agent. To work with the platform from an AI assistant such as Claude, see [Use it from an AI assistant](/docs/platform/mcp).
