@@ -130,8 +130,8 @@ export default function VersionComparison() {
         </tfoot>
       </table>
       <p className={styles.cost}>
-        Cost per run: $0.0039 <span aria-hidden="true">→</span>
-        <span className={styles.srOnly}> to </span> $0.0041 (+5%)
+        Cost per run: $0.0052 <span aria-hidden="true">→</span>
+        <span className={styles.srOnly}> to </span> $0.0055 (+6%)
       </p>
     </figure>
   );
