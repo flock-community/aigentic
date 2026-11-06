@@ -324,7 +324,7 @@ export default function AigenticPicture() {
                   </g>
                 );
               })}
-              <g ref={head} className={styles.pulse} transform={`translate(${headX} ${headY})`} style={{ opacity: f.head }}>
+              <g ref={head} transform={`translate(${headX} ${headY})`} style={{ opacity: f.head }}>
                 <circle className={styles.glow} r={16} />
                 <circle className={styles.head} r={6} />
               </g>
@@ -419,7 +419,10 @@ export default function AigenticPicture() {
                   )}
                   <span className={styles.short}>{CHANGES[i].short}</span>
                 </span>
-                <span className={styles.cost}>{COSTS[i]}</span>
+                <span className={styles.cost}>
+                  <span className={styles.long}>{COSTS[i]} per run</span>
+                  <span className={styles.short}>{COSTS[i]}/run</span>
+                </span>
               </li>
             ))}
           </ol>

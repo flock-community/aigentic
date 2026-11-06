@@ -78,10 +78,10 @@ export const CROSS_BOTTOM = ((CY + R + 26 - VIEW.y) / VIEW.height) * 100;
 export const SCORES = [71, 92, 95];
 export const CHANGES = [
   { long: "first version", short: "first version", code: false },
-  { long: "+ addInstruction(…)", short: "+ one instruction", code: true },
+  { long: "+\u00a0addInstruction(…)", short: "+ one instruction", code: true },
   { long: "mediaResolution(HIGH)", short: "+ sharper images", code: true },
 ];
-export const COSTS = ["$0.0039 per run", "$0.0040 per run", "$0.0052 per run"];
+export const COSTS = ["$0.0039", "$0.0040", "$0.0052"];
 export const GRID = [60, 80, 100];
 export const CHART = { width: 480, height: 212, base: 200, top: 40, low: 60, high: 100, xs: [80, 240, 400] };
 export const scoreY = (value: number) =>
@@ -151,10 +151,10 @@ const CONTENT: Center[][] = [
     { version: "v1", name: "Run", detail: "invoiceExtractor.\u200bstart(…)", note: "Inside your own app" },
     { version: "v1", name: "Record", detail: "run #118 · $0.0039", note: "Every run, with its cost" },
     { version: "v1", name: "Evaluate", detail: "$.total 71%", note: "Accuracy against your ground truth", score: true },
-    { version: "v1", name: "Improve", detail: "+ addInstruction(…)", note: "The fix assistant's best change" },
+    { version: "v1", name: "Improve", detail: "+\u00a0addInstruction(…)", note: "The fix assistant's best change" },
   ],
   [
-    changed("v2", "+ addInstruction(…)"),
+    changed("v2", "+\u00a0addInstruction(…)"),
     { version: "v2", name: "Run", detail: "invoiceExtractor.\u200bstart(…)", note: "Same inputs, new version" },
     { version: "v2", name: "Record", detail: "run #241 · $0.0040", note: "Every run, with its cost" },
     { version: "v2", name: "Evaluate", detail: "$.total 92%", note: "Up from 71%", score: true },
