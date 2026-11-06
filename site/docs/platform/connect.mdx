@@ -73,8 +73,6 @@ After a run finishes, Aigentic sends one record with:
 - **Every model request**: when it started and finished, and its input, output, thinking and cached tokens. The platform prices these as [costs](/docs/platform/runs#costs).
 - **The outcome**: `Finished` with the response, `Stuck` with the reason or `Fatal` with the error message.
 
-Attachments and context files are sent in full. That's what lets you see the document next to the output, and lets the fix assistant replay the run. Keep it in mind for documents with personal data.
-
 ## When sending fails
 
 Sending happens inside `start()`, after the run has finished. It never changes the run's outcome:
