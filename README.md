@@ -17,7 +17,7 @@ Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for buil
 - **Type-Safe Tools** with @AigenticParameter annotation
 - **Comprehensive Integration** with OpenAPI specifications
 - **Cross-Platform** - runs on the JVM and on Node.js, with TypeScript definitions (the VertexAI provider is JVM only)
-- **Aigentic Platform** - send every run to the platform hosted by Flock to track costs, measure accuracy per output field, compare versions and get proposed fixes ([docs](https://aigentic.io/docs/platform))
+- **Aigentic Platform** - send every run to the platform, hosted by Flock or in your own environment, to track costs, measure accuracy per output field, compare versions and get proposed fixes ([docs](https://aigentic.io/docs/platform))
 
 
 Create agents in a fully type-safe way:

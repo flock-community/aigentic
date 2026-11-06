@@ -92,8 +92,8 @@ export default function VisionPage() {
           <div className={styles.today}>
             <p>
               Build and Run need only the core library and a provider. Record, Evaluate and Fix use the{" "}
-              <code>platform</code> module and the Aigentic Platform. Flock hosts the platform and gives access on
-              request. <Link to="/docs/platform">Read the platform docs</Link>, or see how tagged runs become{" "}
+              <code>platform</code> module and the Aigentic Platform, hosted by Flock or in your own environment.{" "}
+              <Link to="/docs/platform">Read the platform docs</Link>, or see how tagged runs become{" "}
               <Link to="/docs/platform/regression-tests">regression tests</Link>.
             </p>
           </div>

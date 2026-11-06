@@ -32,7 +32,7 @@ const GROUPS: Group[] = [
     modules: [
       {
         name: "platform",
-        text: "Send runs to the Aigentic Platform to measure accuracy per field, compare versions and fix what's wrong. Hosted by Flock, access on request.",
+        text: "Send runs to the Aigentic Platform to measure accuracy per field, compare versions and fix what's wrong. Hosted by Flock or in your own environment.",
       },
       { name: "google-cloud-function", text: "Deploy an agent as a Google Cloud Function. Node.js only." },
     ],

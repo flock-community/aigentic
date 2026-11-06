@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # Connect an agent
 
-Connecting takes three steps: add the `platform` module, create the agent on the platform, and give your agent its name and secret. You need access to the platform first, see [Getting access](/docs/platform#getting-access).
+Connecting takes three steps: add the `platform` module, create the agent on the platform, and give your agent its name and secret. You need access to the platform first, see [Hosting and access](/docs/platform#hosting-and-access).
 
 ## 1. Add the platform module
 
@@ -52,7 +52,9 @@ val invoiceExtractor = agent<Unit, Invoice> {
 }
 ```
 
-The `name` must be the agent's name on the platform. Run the agent as usual, and each run shows up under **Runs** a moment after it finishes:
+The `name` must be the agent's name on the platform. When you run the platform in your own environment, also point the agent at it with `apiUrl("https://…")` inside `platform { }`.
+
+Run the agent as usual, and each run shows up under **Runs** a moment after it finishes:
 
 ```kotlin
 val run = invoiceExtractor.start(Attachment.Base64.pdf(invoicePdf))

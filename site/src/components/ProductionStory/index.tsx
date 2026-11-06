@@ -67,8 +67,8 @@ const STEPS: StoryStep[] = [
     body: (
       <p>
         Tag good runs on the Aigentic platform, then replay them as regression tests whenever you change a prompt or
-        a model. Tool calls return the recorded results, so tests never touch your real systems. Flock hosts the
-        platform and gives access on request.
+        a model. Tool calls return the recorded results, so tests never touch your real systems. The platform is
+        hosted by Flock or in your own environment.
       </p>
     ),
     link: { label: "Read about regression tests", to: "/docs/platform/regression-tests" },
