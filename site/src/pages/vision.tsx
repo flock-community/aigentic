@@ -93,8 +93,8 @@ export default function VisionPage() {
             <p>
               Build and Run need only the core library and a provider. Record, Evaluate and Fix use the{" "}
               <code>platform</code> module and the Aigentic Platform, hosted by Flock or in your own environment.{" "}
-              <Link to="/docs/platform">Read the platform docs</Link>, or see how tagged runs become{" "}
-              <Link to="/docs/platform/regression-tests">regression tests</Link>.
+              <Link to="/docs/platform">Read the platform docs</Link>, or{" "}
+              <Link to="/docs/lifecycle">follow one agent from prototype to production</Link>.
             </p>
           </div>
         </section>

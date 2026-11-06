@@ -21,6 +21,18 @@
   background: #141414;
 }
 
+/* On a phone, wide screenshots keep a readable size and scroll sideways instead of shrinking. */
+@media (max-width: 640px) {
+  .scroll {
+    overflow-x: auto;
+    border-radius: 12px;
+  }
+
+  .scroll .zoom {
+    min-width: 620px;
+  }
+}
+
 .caption {
   margin-top: 10px;
   font-size: 14px;

@@ -110,6 +110,6 @@ Sooner or later you change something: a new instruction for a supplier that keep
 2. Run the new version on the golden set.
 3. Compare it with the previous version, field by field, and look at the cost per run. Did the field you targeted improve? Did another one get worse? Does the cheaper model keep up?
 
-For agents that call tools, add a [regression test](/docs/platform/regression-tests) to your build. It replays runs you tagged as good and checks the tool calls, without touching your real systems.
+Not sure what to change? The [fix assistant](/docs/platform/fix-assistant) tries changes on your golden set and proposes the one that scores best.
 
 Then you're back at step 3: every version is scored against the same golden set, so you always know whether the agent got better or worse.

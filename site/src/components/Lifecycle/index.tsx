@@ -64,9 +64,9 @@ const PHASES: Phase[] = [
     name: "Improve",
     question: "Did the change make it better?",
     code: {
-      chip: "regressionTest { }",
-      to: "/docs/platform/regression-tests#regression-tests",
-      text: "Change a prompt or model, and replay trusted runs in CI.",
+      chip: "geminiModel { }",
+      to: "/docs/dsl/providers",
+      text: "Apply the proposal, or try another model. Its runs become the next version.",
     },
     platform: {
       chip: "Fix assistant",
@@ -88,15 +88,9 @@ const LoopIcon = () => (
   </svg>
 );
 
-type LifecycleProps = {
-  className?: string;
-  /* Only phase names, questions and chips: for the homepage, where the guide carries the detail. */
-  compact?: boolean;
-};
-
-export default function Lifecycle({ className, compact = false }: LifecycleProps) {
+export default function Lifecycle({ className }: { className?: string }) {
   return (
-    <figure className={clsx(styles.figure, compact && styles.compact, className)}>
+    <figure className={clsx(styles.figure, className)}>
       <div className={styles.lanes}>
         <span className={styles.frame} aria-hidden="true" />
         <span className={clsx(styles.laneLabel, styles.codeLabel)} aria-hidden="true">

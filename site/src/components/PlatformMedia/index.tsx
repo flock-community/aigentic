@@ -16,17 +16,19 @@ export function Screenshot({ src, alt, width, height, caption, narrow }: Screens
   const url = useBaseUrl(src);
   return (
     <figure className={styles.figure} style={narrow ? { maxWidth: width } : undefined}>
-      <a className={styles.zoom} href={url} target="_blank" rel="noopener" title="Open full size">
-        <img
-          className={styles.media}
-          src={url}
-          alt={alt}
-          width={width}
-          height={height}
-          loading="lazy"
-          decoding="async"
-        />
-      </a>
+      <div className={narrow ? undefined : styles.scroll}>
+        <a className={styles.zoom} href={url} target="_blank" rel="noopener" title="Open full size">
+          <img
+            className={styles.media}
+            src={url}
+            alt={alt}
+            width={width}
+            height={height}
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+      </div>
       {caption && <figcaption className={styles.caption}>{caption}</figcaption>}
     </figure>
   );

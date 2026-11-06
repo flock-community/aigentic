@@ -348,8 +348,20 @@ body {
 
 .proofText .hosting {
   margin-top: 16px;
-  font-size: 15px;
+  color: #e6e1d6;
+}
+
+.proofText .accessNote {
+  max-width: 28rem;
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.55;
   color: #a8a8a8;
+}
+
+.address {
+  color: #e6e1d6;
+  user-select: all;
 }
 
 .proofActions {
@@ -364,21 +376,3 @@ body {
   }
 }
 
-.lifecycle {
-  margin: 72px 0 0;
-
-  @media (max-width: 996px) {
-    margin-top: 48px;
-  }
-}
-
-.guideLink {
-  margin: 16px 0 0;
-  font-size: 15px;
-
-  a {
-    color: #f0bc42;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-}

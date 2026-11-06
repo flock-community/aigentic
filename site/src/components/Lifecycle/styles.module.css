@@ -287,10 +287,6 @@
     }
   }
 
-  .compact .cell p {
-    display: none;
-  }
-
   .platform {
     border-left-color: var(--amber-line);
   }
@@ -322,11 +318,12 @@
   .loop::before {
     content: "";
     position: absolute;
-    top: -5.5px;
+    top: -5.75px;
     left: -7px;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-right: 7px solid var(--amber);
+    width: 7px;
+    height: 10px;
+    background: var(--amber);
+    clip-path: polygon(0 50%, 100% 0, 100% 100%);
   }
 
   .loop::after {
@@ -422,11 +419,10 @@
 
   .loop::before {
     top: -7px;
-    left: -5.5px;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 0;
-    border-bottom: 7px solid var(--amber);
+    left: -5.75px;
+    width: 10px;
+    height: 7px;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
   }
 
   .loop::after {

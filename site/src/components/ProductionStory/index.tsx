@@ -4,12 +4,7 @@ import Link from "@docusaurus/Link";
 import Heading from "@theme/Heading";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import CodeLines from "../CodeLines";
-import {
-  invoiceExtractorExample,
-  openApiExample,
-  regressionTestExample,
-  workflowExample,
-} from "../../code/examples";
+import { goldenSetExample, invoiceExtractorExample, openApiExample, workflowExample } from "../../code/examples";
 import styles from "./styles.module.css";
 
 type StoryStep = {
@@ -63,18 +58,18 @@ const STEPS: StoryStep[] = [
     highlight: ["agent<Document, Analysis>", "agent<Analysis, Summary>", "thenProcess"],
   },
   {
-    title: "Test before you ship",
+    title: "Measure before you ship",
     body: (
       <p>
-        Tag good runs on the Aigentic platform, then replay them as regression tests whenever you change a prompt or
-        a model. Tool calls return the recorded results, so tests never touch your real systems. The platform is
-        hosted by Flock or in your own environment.
+        Run the agent on a golden set: real inputs with the answers you already know. The Aigentic Platform scores
+        every output field, so you see how often the agent is right, and whether your next prompt or model makes it
+        better or worse.
       </p>
     ),
-    link: { label: "Read about regression tests", to: "/docs/platform/regression-tests" },
-    file: "WeatherAgentTest.kt",
-    code: regressionTestExample,
-    highlight: ["regressionTest {", "agent(weatherAgent)", "tags(", "numberOfIterations(", "}.start()", "check("],
+    link: { label: "Follow an agent from prototype to production", to: "/docs/lifecycle" },
+    file: "GoldenSet.kt",
+    code: goldenSetExample,
+    highlight: ["platform {", "goldenSet.forEach", "expected = Expected("],
   },
 ];
 
