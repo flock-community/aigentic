@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import Link from "@docusaurus/Link";
+import useIsBrowser from "@docusaurus/useIsBrowser";
 import { useCallback, useEffect, useRef, useState } from "react";
 import useHydratedReducedMotion from "@site/src/hooks/useHydratedReducedMotion";
 import {
@@ -7,93 +8,113 @@ import {
   CHANGES,
   CHART,
   COSTS,
-  CX,
+  CROSS_BOTTOM,
+  CROSS_TOP,
   CY,
   DURATION,
-  GAP,
   GRID,
+  PEEKS,
   POINTS,
   R,
   SCORES,
-  START,
   STATIONS,
   STEPS,
   VIEW,
   arc,
+  finishedFrame,
   frameAt,
   point,
-  restFrame,
   scoreY,
   type Center,
   type Frame,
 } from "./timeline";
 import styles from "./styles.module.css";
 
-const REST_FRAME = restFrame();
+const FINISHED = finishedFrame();
+const CENTER_TOP = ((CY - VIEW.y) / VIEW.height) * 100;
 
 const DESCRIPTION =
-  "The Aigentic loop. Build and Run happen in your code with the Aigentic library. Record, Evaluate and Improve happen on the Aigentic Platform. Every run goes to the platform, and every improvement comes back to your code as the next version. In the example, $.total of an invoice extractor goes from 71% in version 1 to 92% in version 2 and 95% in version 3, on the same 120 invoices.";
+  "The Aigentic loop. Build and Run happen in your code with the Aigentic library. Record, Evaluate and Improve happen on the Aigentic Platform. Every run goes to the platform, and every improvement comes back to your code as the next version. In the example, the accuracy of $.total of an invoice extractor goes from 71% in version 1 to 92% in version 2 and 95% in version 3, on the same 120 invoices.";
 
-const PlayIcon = () => (
+/* waiting: ready to play once it scrolls into view; done: resting on the finished picture. */
+type Phase = "waiting" | "playing" | "paused" | "done";
+
+const Icon = ({ d }: { d: string }) => (
   <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-    <path d="M5 3.2v9.6l7.6-4.8z" fill="currentColor" />
+    <path d={d} fill="currentColor" />
   </svg>
 );
+const PLAY = "M5 3.2v9.6l7.6-4.8z";
+const PAUSE = "M4.2 3.2h2.6v9.6H4.2zM9.2 3.2h2.6v9.6H9.2z";
+const REPLAY =
+  "M8 2.5a5.5 5.5 0 1 1-5.2 3.7l1.4.5A4 4 0 1 0 8 4v2L4.8 3.25 8 .5z";
 
-const PauseIcon = () => (
-  <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-    <path d="M4.2 3.2h2.6v9.6H4.2zM9.2 3.2h2.6v9.6H9.2z" fill="currentColor" />
+const Arrow = ({ back = false }: { back?: boolean }) => (
+  <svg className={styles.arrow} viewBox="0 0 14 10" aria-hidden="true" focusable="false">
+    <path
+      d={back ? "M13 5H1.5M5 1 1 5l4 4" : "M1 5h11.5M9 1l4 4-4 4"}
+      fill="none"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 export default function AigenticPicture() {
+  const isBrowser = useIsBrowser();
   const reduceMotion = useHydratedReducedMotion();
+  const [phase, setPhase] = useState<Phase>("done");
   const [inView, setInView] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
-  const [userPaused, setUserPaused] = useState<boolean | null>(null);
-  const playing = inView && pageVisible && !(userPaused ?? reduceMotion);
+  const [step, setStep] = useState(-1);
+  const running = phase === "playing" && inView && pageVisible;
 
   const figure = useRef<HTMLElement>(null);
   const visual = useRef<HTMLDivElement>(null);
+  const ringSvg = useRef<SVGSVGElement>(null);
+  const chartSvg = useRef<SVGSVGElement>(null);
   const arcs = useRef<(SVGPathElement | null)[]>([]);
-  const head = useRef<SVGCircleElement>(null);
-  const glow = useRef<SVGCircleElement>(null);
+  const head = useRef<SVGGElement>(null);
   const stations = useRef<(SVGGElement | null)[]>([]);
   const evaluateNode = useRef<SVGCircleElement>(null);
   const swap = useRef<HTMLDivElement>(null);
   const version = useRef<HTMLSpanElement>(null);
-  const name = useRef<HTMLElement>(null);
+  const name = useRef<HTMLSpanElement>(null);
   const detail = useRef<HTMLElement>(null);
   const note = useRef<HTMLSpanElement>(null);
   const area = useRef<SVGPathElement>(null);
   const line = useRef<SVGPathElement>(null);
   const points = useRef<(SVGGElement | null)[]>([]);
   const dots = useRef<(SVGCircleElement | null)[]>([]);
-  const slots = useRef<(SVGGElement | null)[]>([]);
+  const versions = useRef<(HTMLLIElement | null)[]>([]);
+  const fills = useRef<(HTMLElement | null)[]>([]);
   const spark = useRef<HTMLSpanElement>(null);
-  const steps = useRef<(HTMLLIElement | null)[]>([]);
-  const time = useRef(START);
+  const time = useRef(DURATION);
   const started = useRef(false);
-  const shown = useRef<Center>(REST_FRAME.center);
+  const shownCenter = useRef<Center>(FINISHED.center);
+  const shownStep = useRef(FINISHED.step);
 
-  const apply = useCallback((frame: Frame) => {
-    if (visual.current) visual.current.style.opacity = String(frame.opacity);
+  const apply = useCallback((frame: Frame, withSpark: boolean) => {
     frame.arcs.forEach((d, i) => arcs.current[i]?.setAttribute("d", d));
     const [hx, hy] = point(frame.angle);
-    for (const circle of [head.current, glow.current]) {
-      circle?.setAttribute("cx", hx.toFixed(2));
-      circle?.setAttribute("cy", hy.toFixed(2));
+    if (head.current) {
+      head.current.setAttribute("transform", `translate(${hx.toFixed(2)} ${hy.toFixed(2)})`);
+      head.current.style.opacity = String(frame.head);
     }
     stations.current.forEach((g, i) => {
       g?.classList.toggle(styles.reached, frame.reached[i]);
       g?.classList.toggle(styles.active, frame.active === i);
     });
 
-    if (frame.center !== shown.current) {
-      shown.current = frame.center;
+    if (frame.center !== shownCenter.current) {
+      shownCenter.current = frame.center;
       if (version.current) version.current.textContent = frame.center.version;
       if (name.current) name.current.textContent = frame.center.name;
-      if (detail.current) detail.current.textContent = frame.center.detail;
+      if (detail.current) {
+        detail.current.textContent = frame.center.detail;
+        detail.current.classList.toggle(styles.score, Boolean(frame.center.score));
+      }
       if (note.current) note.current.textContent = frame.center.note;
       const el = swap.current;
       if (el) {
@@ -109,11 +130,11 @@ export default function AigenticPicture() {
       g?.classList.toggle(styles.landed, frame.landed[i]);
       g?.classList.toggle(styles.current, frame.current === i);
     });
-    slots.current.forEach((g, i) => g?.classList.toggle(styles.slotIn, frame.landed[i]));
+    versions.current.forEach((li, i) => li?.classList.toggle(styles.versionIn, frame.landed[i]));
 
     const sparkEl = spark.current;
     const target = frame.spark ? dots.current[frame.spark.lap] : null;
-    if (sparkEl && frame.spark && target && evaluateNode.current && visual.current) {
+    if (sparkEl && withSpark && frame.spark && target && evaluateNode.current && visual.current) {
       const box = visual.current.getBoundingClientRect();
       const centerOf = (el: Element) => {
         const r = el.getBoundingClientRect();
@@ -133,11 +154,30 @@ export default function AigenticPicture() {
       sparkEl.style.opacity = "0";
     }
 
-    steps.current.forEach((li, i) => {
-      li?.classList.toggle(styles.stepOn, frame.step === i);
-      li?.classList.toggle(styles.stepDone, frame.step > i);
-      li?.style.setProperty("--p", frame.step === i ? frame.stepProgress.toFixed(3) : "0");
-    });
+    fills.current.forEach((el, i) =>
+      el?.style.setProperty("--p", frame.step === i ? frame.stepProgress.toFixed(3) : "0"),
+    );
+    if (frame.step !== shownStep.current) {
+      shownStep.current = frame.step;
+      setStep(frame.step);
+    }
+  }, []);
+
+  /* SVG text keeps one rendered size however wide the drawing is: --k undoes the drawing's scale. */
+  useEffect(() => {
+    const scaled: [SVGSVGElement | null, number][] = [
+      [ringSvg.current, VIEW.width],
+      [chartSvg.current, CHART.width],
+    ];
+    const measure = () =>
+      scaled.forEach(([svg, width]) => {
+        const rendered = svg?.getBoundingClientRect().width ?? 0;
+        if (svg && rendered > 0) svg.style.setProperty("--k", (width / rendered).toFixed(3));
+      });
+    const observer = new ResizeObserver(measure);
+    scaled.forEach(([svg]) => svg && observer.observe(svg));
+    measure();
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -154,173 +194,196 @@ export default function AigenticPicture() {
     return () => document.removeEventListener("visibilitychange", onChange);
   }, []);
 
-  /* Until it first plays: the first frame when it will play by itself, the whole picture when motion is reduced. */
+  /* Before it first plays: the first frame when it will play by itself, the finished picture when motion is reduced. */
   useEffect(() => {
     if (started.current) return;
-    time.current = START;
-    apply(reduceMotion ? REST_FRAME : frameAt(START));
+    if (reduceMotion) {
+      time.current = DURATION;
+      apply(FINISHED, false);
+      setPhase("done");
+    } else {
+      time.current = 0;
+      apply(frameAt(0), false);
+      setPhase("waiting");
+    }
   }, [reduceMotion, apply]);
 
   useEffect(() => {
-    if (!playing) return undefined;
-    if (!started.current) {
-      started.current = true;
-      time.current = START;
-    }
+    if (phase === "waiting" && inView && !reduceMotion) setPhase("playing");
+  }, [phase, inView, reduceMotion]);
+
+  useEffect(() => {
+    if (!running) return undefined;
+    started.current = true;
     let raf = 0;
     let last = performance.now();
     const tick = (now: number) => {
-      time.current = (time.current + Math.min(0.1, (now - last) / 1000)) % DURATION;
+      time.current = Math.min(DURATION, time.current + Math.min(0.1, (now - last) / 1000));
       last = now;
-      apply(frameAt(time.current));
+      if (time.current >= DURATION) {
+        apply(FINISHED, false);
+        setPhase("done");
+        return;
+      }
+      apply(frameAt(time.current), true);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [playing, apply]);
+    return () => {
+      cancelAnimationFrame(raf);
+      if (spark.current) spark.current.style.opacity = "0";
+    };
+  }, [running, apply]);
 
-  const rest = REST_FRAME;
-  const [headX, headY] = point(rest.angle);
+  const togglePlay = () => {
+    if (phase === "playing") {
+      setPhase("paused");
+      return;
+    }
+    if (phase === "done") {
+      time.current = 0;
+      apply(frameAt(0), false);
+    }
+    started.current = true;
+    setPhase("playing");
+  };
+
+  const jumpTo = (i: number) => {
+    started.current = true;
+    time.current = PEEKS[i];
+    apply(frameAt(PEEKS[i]), false);
+    setPhase("paused");
+  };
+
+  const playLabel =
+    phase === "playing" ? "Pause the animation" : phase === "done" ? "Replay the animation" : "Play the animation";
+  const current = step >= 0 ? STEPS[step] : null;
+  const f = FINISHED;
+  const [headX, headY] = point(f.angle);
 
   return (
     <figure ref={figure} className={styles.figure}>
       <div ref={visual} className={styles.visual} role="img" aria-label={DESCRIPTION}>
         <div className={styles.ring}>
-          <svg viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.width} ${VIEW.height}`} aria-hidden="true" focusable="false">
-            <rect
-              className={styles.panelLib}
-              x={VIEW.x + 0.5}
-              y={VIEW.y + 0.5}
-              width={CX - GAP - VIEW.x - 0.5}
-              height={VIEW.height - 1}
-              rx={18}
-            />
-            <rect
-              className={styles.panelPlat}
-              x={CX + GAP}
-              y={VIEW.y + 0.5}
-              width={VIEW.x + VIEW.width - CX - GAP - 0.5}
-              height={VIEW.height - 1}
-              rx={18}
-            />
-            <text className={clsx(styles.zone, styles.zoneLib)} x={VIEW.x + 22} y={22}>
-              In your code
-            </text>
-            <text className={styles.zoneNote} x={VIEW.x + 22} y={42}>
-              Aigentic library
-            </text>
-            <text className={clsx(styles.zone, styles.zonePlat)} x={VIEW.x + VIEW.width - 22} y={22} textAnchor="end">
-              Aigentic Platform
-            </text>
-            <text className={styles.zoneNote} x={VIEW.x + VIEW.width - 22} y={42} textAnchor="end">
-              Hosted or in your own environment
-            </text>
-            <path className={clsx(styles.track, styles.trackLib)} d={arc(180, 360)} />
-            <path className={clsx(styles.track, styles.trackPlat)} d={arc(0, 180)} />
-            {ARC_RANGES.map(([from, , zone], i) => (
-              <path
-                key={from}
-                ref={(el) => {
-                  arcs.current[i] = el;
-                }}
-                className={clsx(styles.progress, zone === "lib" ? styles.progressLib : styles.progressPlat)}
-                d={rest.arcs[i]}
-              />
-            ))}
-            <text className={styles.cross} x={CX} y={CY - R - 18} textAnchor="middle">
-              every run →
-            </text>
-            <text className={styles.cross} x={CX} y={CY + R + 36} textAnchor="middle">
-              ← next version
-            </text>
-            {STATIONS.map((deg, i) => {
-              const [x, y] = point(deg);
-              const [lx, ly] = point(deg, R + 30);
-              const lib = deg % 360 >= 180;
-              return (
-                <g
-                  key={deg}
+          <div className={styles.panels}>
+            <span className={styles.panelLib} />
+            <span className={styles.panelPlat} />
+          </div>
+          <div className={styles.zones}>
+            <p className={styles.zoneLib}>
+              <strong>In your code</strong>
+              <span>Aigentic library</span>
+            </p>
+            <p className={styles.zonePlat}>
+              <strong>Aigentic Platform</strong>
+              <span>Hosted by Flock or in your own environment</span>
+            </p>
+          </div>
+          <div className={styles.art}>
+            <svg
+              ref={ringSvg}
+              className={styles.ringSvg}
+              viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.width} ${VIEW.height}`}
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path className={clsx(styles.track, styles.trackLib)} d={arc(180, 360)} />
+              <path className={clsx(styles.track, styles.trackPlat)} d={arc(0, 180)} />
+              {ARC_RANGES.map(([from, , zone], i) => (
+                <path
+                  key={from}
                   ref={(el) => {
-                    stations.current[i] = el;
+                    arcs.current[i] = el;
                   }}
-                  className={clsx(
-                    styles.station,
-                    lib ? styles.stationLib : styles.stationPlat,
-                    rest.reached[i] && styles.reached,
-                    rest.active === i && styles.active,
-                  )}
-                >
-                  <circle className={styles.halo} cx={x} cy={y} r={19} />
-                  <circle ref={i === 3 ? evaluateNode : undefined} className={styles.node} cx={x} cy={y} r={8} />
-                  <text className={styles.label} x={lx} y={ly + 8} textAnchor={lib ? "end" : "start"}>
-                    {STEPS[i].name}
-                  </text>
-                </g>
-              );
-            })}
-            <circle ref={glow} className={styles.glow} cx={headX} cy={headY} r={16} />
-            <circle ref={head} className={styles.head} cx={headX} cy={headY} r={6} />
-          </svg>
-          <div className={styles.center}>
-            <div ref={swap} className={styles.swap}>
-              <span ref={version} className={styles.pill}>
-                {rest.center.version}
-              </span>
-              <strong ref={name} className={styles.stepName}>
-                {rest.center.name}
-              </strong>
-              <code ref={detail} className={styles.detail}>
-                {rest.center.detail}
-              </code>
-              <span ref={note} className={styles.note}>
-                {rest.center.note}
-              </span>
+                  className={clsx(styles.progress, zone === "lib" ? styles.progressLib : styles.progressPlat)}
+                  d={f.arcs[i]}
+                />
+              ))}
+              {STATIONS.map((deg, i) => {
+                const [x, y] = point(deg);
+                const [lx, ly] = point(deg, R + 30);
+                const lib = deg % 360 >= 180;
+                return (
+                  <g
+                    key={deg}
+                    ref={(el) => {
+                      stations.current[i] = el;
+                    }}
+                    className={clsx(
+                      styles.station,
+                      lib ? styles.stationLib : styles.stationPlat,
+                      f.reached[i] && styles.reached,
+                      f.active === i && styles.active,
+                    )}
+                  >
+                    <circle className={styles.halo} cx={x} cy={y} r={19} />
+                    <circle ref={i === 3 ? evaluateNode : undefined} className={styles.node} cx={x} cy={y} r={8} />
+                    <text className={styles.label} x={lx} y={ly} dy="0.35em" textAnchor={lib ? "end" : "start"}>
+                      {STEPS[i].name}
+                    </text>
+                  </g>
+                );
+              })}
+              <g ref={head} className={styles.pulse} transform={`translate(${headX} ${headY})`} style={{ opacity: f.head }}>
+                <circle className={styles.glow} r={16} />
+                <circle className={styles.head} r={6} />
+              </g>
+            </svg>
+            <span className={styles.crossing} style={{ top: `${CROSS_TOP}%` }}>
+              every run <Arrow />
+            </span>
+            <span className={styles.crossing} style={{ top: `${CROSS_BOTTOM}%` }}>
+              <Arrow back /> next version
+            </span>
+            <div className={styles.center} style={{ top: `${CENTER_TOP}%` }}>
+              <div ref={swap} className={styles.swap}>
+                <span className={styles.meta}>
+                  <span ref={version} className={styles.pill}>
+                    {f.center.version}
+                  </span>
+                  <span ref={name} className={styles.stepName}>
+                    {f.center.name}
+                  </span>
+                </span>
+                <code ref={detail} className={clsx(styles.detail, f.center.score && styles.score)}>
+                  {f.center.detail}
+                </code>
+                <span ref={note} className={styles.note}>
+                  {f.center.note}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         <div className={styles.scores}>
           <p className={styles.scoresTitle}>
-            <code>$.total</code> per version, on the same 120 invoices
+            Accuracy of <code>$.total</code> per version, on the same 120 invoices
           </p>
-          <svg className={styles.chart} viewBox="0 0 480 290" aria-hidden="true" focusable="false">
+          <svg
+            ref={chartSvg}
+            className={styles.chart}
+            viewBox={`0 0 ${CHART.width} ${CHART.height}`}
+            aria-hidden="true"
+            focusable="false"
+          >
             {GRID.map((value) => (
               <g key={value}>
-                <line className={styles.gridLine} x1={CHART.left} x2={CHART.right} y1={scoreY(value)} y2={scoreY(value)} />
-                <text className={styles.axis} x={CHART.left - 8} y={scoreY(value) + 4} textAnchor="end">
+                <line className={styles.gridLine} x1={0} x2={CHART.width} y1={scoreY(value)} y2={scoreY(value)} />
+                <text className={styles.axis} x={0} y={scoreY(value)} dy="-0.55em">
                   {value}%
                 </text>
               </g>
             ))}
-            <path ref={area} className={styles.area} d={rest.area} />
-            <path ref={line} className={styles.line} d={rest.line} />
-            {SCORES.map((_, i) => (
-              <g
-                key={CHART.xs[i]}
-                ref={(el) => {
-                  slots.current[i] = el;
-                }}
-                className={clsx(styles.slot, rest.landed[i] && styles.slotIn)}
-              >
-                <rect className={styles.versionPill} x={CHART.xs[i] - 19} y={216} width={38} height={22} rx={11} />
-                <text className={styles.versionText} x={CHART.xs[i]} y={231.5} textAnchor="middle">
-                  v{i + 1}
-                </text>
-                <text className={styles.change} x={CHART.xs[i]} y={258} textAnchor="middle">
-                  {CHANGES[i]}
-                </text>
-                <text className={styles.cost} x={CHART.xs[i]} y={278} textAnchor="middle">
-                  {COSTS[i]}
-                </text>
-              </g>
-            ))}
+            <path ref={area} className={styles.area} d={f.area} />
+            <path ref={line} className={styles.line} d={f.line} />
             {POINTS.map((p, i) => (
               <g
                 key={p.x}
                 ref={(el) => {
                   points.current[i] = el;
                 }}
-                className={clsx(styles.point, rest.landed[i] && styles.landed, rest.current === i && styles.current)}
+                className={clsx(styles.point, f.landed[i] && styles.landed, f.current === i && styles.current)}
               >
                 <circle className={styles.halo} cx={p.x} cy={p.y} r={17} />
                 <circle
@@ -332,45 +395,107 @@ export default function AigenticPicture() {
                   cy={p.y}
                   r={7}
                 />
-                <text className={styles.value} x={p.x} y={p.y - 18} textAnchor="middle">
+                <text className={styles.value} x={p.x} y={p.y} dy="-1.1em" textAnchor="middle">
                   {SCORES[i]}%
                 </text>
               </g>
             ))}
           </svg>
+          <ol className={styles.versions}>
+            {SCORES.map((score, i) => (
+              <li
+                key={score}
+                ref={(el) => {
+                  versions.current[i] = el;
+                }}
+                className={clsx(styles.version, f.landed[i] && styles.versionIn)}
+              >
+                <span className={styles.versionPill}>v{i + 1}</span>
+                <span className={styles.change}>
+                  {CHANGES[i].code ? (
+                    <code className={styles.long}>{CHANGES[i].long}</code>
+                  ) : (
+                    <span className={styles.long}>{CHANGES[i].long}</span>
+                  )}
+                  <span className={styles.short}>{CHANGES[i].short}</span>
+                </span>
+                <span className={styles.cost}>{COSTS[i]}</span>
+              </li>
+            ))}
+          </ol>
         </div>
-        <span ref={spark} className={styles.spark} aria-hidden="true" />
+        <span ref={spark} className={styles.spark} />
       </div>
 
       <div className={styles.rail}>
-        <button
-          type="button"
-          className={styles.play}
-          onClick={() => setUserPaused(playing)}
-          aria-label={playing ? "Pause the animation" : "Play the animation"}
-        >
-          {playing ? <PauseIcon /> : <PlayIcon />}
-        </button>
-        <ol className={styles.steps} aria-label="The steps, each linking to its docs">
-          {STEPS.map((step, i) => (
-            <li
-              key={step.name}
-              ref={(el) => {
-                steps.current[i] = el;
-              }}
-              className={clsx(styles.step, step.zone === "plat" && styles.stepPlat)}
-            >
-              <Link className={styles.chip} to={step.to}>
+        {isBrowser && (
+          <button type="button" className={styles.play} onClick={togglePlay} aria-label={playLabel}>
+            <Icon d={phase === "playing" ? PAUSE : phase === "done" ? REPLAY : PLAY} />
+          </button>
+        )}
+        <ol className={styles.steps}>
+          {STEPS.map((s, i) => {
+            const chipClass = clsx(
+              styles.chip,
+              s.zone === "plat" && styles.chipPlat,
+              step === i && styles.chipOn,
+              step > i && styles.chipDone,
+            );
+            const content = (
+              <>
                 <span className={styles.number} aria-hidden="true">
-                  {i < 5 ? i + 1 : "↻"}
+                  {i + 1}
                 </span>
-                {step.name}
-                <i className={styles.fill} aria-hidden="true" />
-              </Link>
-            </li>
-          ))}
+                {s.name}
+                <i
+                  ref={(el) => {
+                    fills.current[i] = el;
+                  }}
+                  className={styles.fill}
+                  aria-hidden="true"
+                />
+              </>
+            );
+            return (
+              <li key={s.name}>
+                {isBrowser ? (
+                  <button
+                    type="button"
+                    className={chipClass}
+                    onClick={() => jumpTo(i)}
+                    aria-current={step === i ? "step" : undefined}
+                    aria-label={`Show step ${i + 1}, ${s.name}`}
+                  >
+                    {content}
+                  </button>
+                ) : (
+                  <span className={clsx(chipClass, styles.chipStatic)}>{content}</span>
+                )}
+              </li>
+            );
+          })}
         </ol>
       </div>
+      <p className={styles.docs}>
+        {current ? (
+          <>
+            <strong className={current.zone === "plat" ? styles.docsPlat : undefined}>{current.name}.</strong>{" "}
+            {current.text}{" "}
+            <Link className={styles.docsLink} to={current.to}>
+              {current.page}
+              <Arrow />
+            </Link>
+          </>
+        ) : (
+          <>
+            Each step has its own page in the docs. To follow one agent through all of them, read{" "}
+            <Link className={styles.docsLink} to="/docs/lifecycle">
+              From prototype to production
+              <Arrow />
+            </Link>
+          </>
+        )}
+      </p>
     </figure>
   );
 }

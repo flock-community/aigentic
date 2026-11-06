@@ -1,27 +1,31 @@
 /*
  * The whole of Aigentic as one loop: a ring split into your code (left) and the platform (right),
- * a pulse that walks Build → Run → Record → Evaluate → Improve, and a chart where every lap's score
- * lands as the next version. The server renders the complete picture; JavaScript animates it.
+ * a pulse that walks Build → Run → Record → Evaluate → Improve three times, and a chart where every
+ * lap's score lands as the next version. It plays once and rests on the finished picture.
+ *
+ * Text inside the SVGs is sized with --k, which the component sets to undo the drawing's scale, so a
+ * label renders at the same size on a phone and a wide screen.
  *
  * The CSS minifier reorders rules of equal specificity, so state rules always add a class
- * (.point.landed, .step.stepOn .chip) instead of relying on source order.
+ * (.point.landed, .chip.chipOn) instead of relying on source order.
  */
 
 .figure {
   --amber: #f0bc42;
-  --amber-line: rgba(240, 188, 66, 0.3);
-  --amber-tint: rgba(240, 188, 66, 0.07);
+  --amber-line: rgba(240, 188, 66, 0.32);
+  --plat-tint: rgba(240, 188, 66, 0.06);
+  --plat-line: rgba(240, 188, 66, 0.28);
   --text: #f3f1ec;
   --muted: #a9a59c;
   --soft: #8f8a80;
-  --line: rgba(255, 255, 255, 0.1);
+  --line: rgba(255, 255, 255, 0.12);
   --raised: #1b1a18;
   --node: #121212;
 
   container: aigentic / inline-size;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   margin: 40px 0 0;
 }
 
@@ -29,62 +33,92 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 28px;
-  align-items: center;
+  gap: 20px;
 }
 
 @container aigentic (min-width: 761px) {
   .visual {
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    gap: 44px;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: stretch;
   }
 }
 
-/* Ring */
+/* Ring: two zone panels with a gap between them, the ring drawn across both */
 
 .ring {
   position: relative;
-  container: ring / inline-size;
+  display: flex;
+  flex-direction: column;
 }
 
-.ring svg,
-.chart {
+.panels {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.panelLib {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.panelPlat {
+  border: 1px solid var(--plat-line);
+  border-radius: 16px;
+  background: var(--plat-tint);
+}
+
+.zones {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 16px 18px 0;
+}
+
+.zoneLib,
+.zonePlat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.zonePlat {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.zoneLib strong,
+.zonePlat strong {
+  font: 600 16px/1.25 var(--ifm-heading-font-family);
+}
+
+.zoneLib strong {
+  color: var(--text);
+}
+
+.zonePlat strong {
+  color: var(--amber);
+}
+
+.art {
+  position: relative;
+  container: art / inline-size;
+}
+
+.ringSvg {
   display: block;
   width: 100%;
   height: auto;
   overflow: visible;
-}
-
-.panelLib {
-  fill: rgba(255, 255, 255, 0.025);
-  stroke: rgba(255, 255, 255, 0.09);
-}
-
-.panelPlat {
-  fill: rgba(240, 188, 66, 0.06);
-  stroke: rgba(240, 188, 66, 0.28);
-}
-
-.zone {
-  font: 600 18px var(--ifm-heading-font-family);
-}
-
-.zoneLib {
-  fill: var(--text);
-}
-
-.zonePlat {
-  fill: var(--amber);
-}
-
-.zoneNote {
-  font: 400 14px var(--ifm-font-family-base);
-  fill: var(--muted);
-}
-
-.cross {
-  font: 400 15px var(--ifm-font-family-base);
-  fill: var(--muted);
 }
 
 .track,
@@ -94,11 +128,11 @@
 }
 
 .trackLib {
-  stroke: rgba(255, 255, 255, 0.12);
+  stroke: rgba(255, 255, 255, 0.14);
 }
 
 .trackPlat {
-  stroke: rgba(240, 188, 66, 0.22);
+  stroke: rgba(240, 188, 66, 0.24);
 }
 
 .progress {
@@ -115,7 +149,7 @@
 
 .node {
   fill: var(--node);
-  stroke: #55514a;
+  stroke: #7a756c;
   stroke-width: 2.5;
   transition: stroke 0.3s;
 }
@@ -140,7 +174,7 @@
 }
 
 .label {
-  font: 600 24px var(--ifm-heading-font-family);
+  font: 600 calc(17px * var(--k, 1.3)) var(--ifm-heading-font-family);
   fill: var(--soft);
   transition: fill 0.3s;
 }
@@ -149,41 +183,57 @@
   fill: var(--text);
 }
 
-.head {
-  fill: var(--amber);
-}
-
 .glow {
   fill: rgba(240, 188, 66, 0.22);
 }
 
-@container ring (max-width: 459px) {
+.head {
+  fill: var(--amber);
+}
+
+/* The two hand-offs, labelled across the gap */
+.crossing {
+  position: absolute;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border: 1px solid var(--amber-line);
+  border-radius: 999px;
+  background: #17150f;
+  color: var(--amber);
+  font: 500 13px/1.2 var(--ifm-font-family-base);
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+
+.arrow {
+  flex: none;
+  width: 14px;
+  height: 10px;
+  stroke: currentColor;
+}
+
+@container art (max-width: 459px) {
   .label {
-    font-size: 32px;
+    font-size: calc(15px * var(--k, 2));
   }
 
-  .zone {
-    font-size: 26px;
-  }
-
-  .zoneNote {
-    display: none;
-  }
-
-  .cross {
-    font-size: 23px;
+  .crossing {
+    padding: 3px 8px;
+    font-size: 12px;
   }
 }
 
-/* Center of the ring: the current step */
+/* Center of the ring: the detail of the current step leads, the step itself is a small label */
 
 .center {
   position: absolute;
   left: 50%;
-  top: 50%;
-  width: 42%;
-  transform: translate(-50%, -50%);
+  width: 46%;
   text-align: center;
+  transform: translate(-50%, -50%);
   pointer-events: none;
 }
 
@@ -191,11 +241,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.4cqw;
+  gap: max(4px, 1.3cqw);
 }
 
 .swapIn {
-  animation: swap-in 0.35s ease both;
+  animation: swap-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @keyframes swap-in {
@@ -205,9 +255,14 @@
   }
 }
 
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .pill {
-  display: inline-block;
-  padding: 4px 8px;
+  padding: 3px 7px;
   border: 1px solid var(--amber-line);
   border-radius: 999px;
   background: var(--node);
@@ -216,58 +271,76 @@
 }
 
 .stepName {
-  color: var(--text);
-  font: 600 clamp(20px, 6.2cqw, 40px)/1.05 var(--ifm-heading-font-family);
-  letter-spacing: -0.01em;
+  color: var(--muted);
+  font: 600 clamp(13px, 2.6cqw, 17px) / 1.2 var(--ifm-heading-font-family);
 }
 
 .detail {
   max-width: 100%;
-  overflow: hidden;
-  padding: 0.25em 0.6em;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--raised);
-  color: #e6e1d6;
-  font-size: clamp(10.5px, 2.2cqw, 14px);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #ece8de;
+  font: 500 clamp(13px, 2.9cqw, 18px) / 1.3 var(--ifm-font-family-monospace);
+  overflow-wrap: anywhere;
+}
+
+.detail.score {
+  color: var(--amber);
+  font-size: clamp(17px, 4.6cqw, 30px);
 }
 
 .note {
   color: var(--muted);
-  font-size: clamp(11.5px, 2.3cqw, 15px);
+  font-size: clamp(12px, 2.3cqw, 15px);
   line-height: 1.35;
 }
 
-/* Scores per version */
+/* Scores per version, in a panel of the platform's colour */
 
 .scores {
   container: scores / inline-size;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
+  padding: 18px 20px 16px;
+  border: 1px solid var(--plat-line);
+  border-radius: 16px;
+  background: var(--plat-tint);
 }
 
 .scoresTitle {
   margin: 0;
   color: var(--muted);
   font-size: 15px;
+  line-height: 1.45;
+}
+
+.scoresTitle code {
+  font-size: 13.5px;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
 }
 
 .gridLine {
-  stroke: rgba(255, 255, 255, 0.08);
+  stroke: rgba(255, 255, 255, 0.09);
   stroke-width: 1;
+  vector-effect: non-scaling-stroke;
 }
 
 .axis {
-  font: 400 12px var(--ifm-font-family-monospace);
+  font: 400 calc(12px * var(--k, 1.1)) var(--ifm-font-family-monospace);
   fill: var(--soft);
 }
 
 .area {
-  fill: var(--amber-tint);
+  fill: rgba(240, 188, 66, 0.08);
 }
 
 .line {
@@ -294,55 +367,76 @@
 }
 
 .value {
-  font: 600 17px var(--ifm-heading-font-family);
+  font: 600 calc(16px * var(--k, 1.1)) var(--ifm-heading-font-family);
   fill: var(--text);
+  paint-order: stroke;
+  stroke: #1c1912;
+  stroke-width: calc(5px * var(--k, 1.1));
+  stroke-linejoin: round;
 }
 
-.slot {
-  opacity: 0.3;
+.versions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.version {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 0 4px;
+  text-align: center;
+  opacity: 0.6;
   transition: opacity 0.35s;
 }
 
-.slot.slotIn {
+.version.versionIn {
   opacity: 1;
 }
 
 .versionPill {
-  fill: var(--node);
-  stroke: var(--amber-line);
-}
-
-.versionText {
-  font: 500 12px var(--ifm-font-family-monospace);
-  fill: var(--amber);
+  padding: 3px 9px;
+  border: 1px solid var(--amber-line);
+  border-radius: 999px;
+  color: var(--amber);
+  font: 500 12px/1 var(--ifm-font-family-monospace);
 }
 
 .change {
-  font: 400 11px var(--ifm-font-family-monospace);
-  fill: var(--muted);
+  color: #d6d1c6;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.change code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 12px;
+}
+
+.short {
+  display: none;
 }
 
 .cost {
-  font: 400 12px var(--ifm-font-family-base);
-  fill: var(--soft);
+  color: var(--soft);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
 }
 
-@container scores (max-width: 399px) {
-  .change {
+@container scores (max-width: 419px) {
+  .change .long {
     display: none;
   }
 
-  .value {
-    font-size: 22px;
-  }
-
-  .axis,
-  .cost {
-    font-size: 15px;
-  }
-
-  .versionText {
-    font-size: 14px;
+  .change .short {
+    display: inline;
   }
 }
 
@@ -363,7 +457,7 @@
   will-change: transform;
 }
 
-/* Step bar: caption, docs links and the play button in one row */
+/* Step bar: play, replay and a button per step */
 
 .rail {
   display: flex;
@@ -375,19 +469,24 @@
   display: grid;
   flex: none;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--raised);
   color: var(--text);
   cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.play:hover {
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .play svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
 }
 
 .steps {
@@ -402,42 +501,47 @@
 .chip {
   position: relative;
   display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 16px;
   overflow: hidden;
-  padding: 7px 13px 9px;
   border: 1px solid var(--line);
   border-radius: 999px;
+  background: transparent;
   color: var(--muted);
-  font-size: 14px;
-  font-weight: 500;
+  font: 500 14px/1 var(--ifm-font-family-base);
+  cursor: pointer;
   transition:
     color 0.25s,
     border-color 0.25s;
 }
 
-.chip:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-  color: var(--text);
-  text-decoration: none;
+.chip.chipStatic {
+  cursor: default;
 }
 
-.step.stepDone .chip {
+.chip:not(.chipOn):hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--text);
+}
+
+.chip.chipDone {
   color: #cfcac0;
 }
 
-.step.stepOn .chip {
-  border-color: rgba(255, 255, 255, 0.45);
+.chip.chipOn {
+  border-color: rgba(255, 255, 255, 0.5);
   color: var(--text);
 }
 
-.step.stepPlat.stepOn .chip {
+.chip.chipPlat.chipOn {
   border-color: var(--amber);
 }
 
 .number {
   color: var(--soft);
-  font: 500 11.5px var(--ifm-font-family-monospace);
+  font: 500 12px/1 var(--ifm-font-family-monospace);
 }
 
 .fill {
@@ -449,7 +553,7 @@
   background: var(--text);
 }
 
-.stepPlat .fill {
+.chipPlat .fill {
   background: var(--amber);
 }
 
@@ -457,6 +561,38 @@
 .play:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
+}
+
+/* One line about the current step, with its docs */
+
+.docs {
+  max-width: 72ch;
+  min-height: 3.2em;
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.docs strong {
+  color: var(--text);
+}
+
+.docs .docsPlat {
+  color: var(--amber);
+}
+
+.docsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.docsLink .arrow {
+  width: 13px;
+  height: 9px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -468,8 +604,9 @@
   .halo,
   .label,
   .point,
-  .slot,
-  .chip {
+  .version,
+  .chip,
+  .play {
     transition: none;
   }
 }
