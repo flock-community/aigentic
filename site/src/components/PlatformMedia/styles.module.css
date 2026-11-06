@@ -1,0 +1,41 @@
+.figure {
+  margin: 24px 0 28px;
+}
+
+.zoom {
+  display: block;
+  border-radius: 12px;
+  cursor: zoom-in;
+
+  &:focus-visible {
+    outline: 2px solid #f0bc42;
+    outline-offset: 3px;
+  }
+}
+
+.media {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: #141414;
+}
+
+/* On a phone, wide screenshots keep a readable size and scroll sideways instead of shrinking. */
+@media (max-width: 640px) {
+  .scroll {
+    overflow-x: auto;
+    border-radius: 12px;
+  }
+
+  .scroll .zoom {
+    min-width: 620px;
+  }
+}
+
+.caption {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #a8a8a8;
+}

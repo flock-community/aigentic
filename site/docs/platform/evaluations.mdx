@@ -1,0 +1,86 @@
+---
+id: evaluations
+title: Evaluations
+sidebar_position: 3
+---
+
+import { Screenshot } from "@site/src/components/PlatformMedia";
+
+# Evaluations
+
+An evaluation tells you how often your agent gets each output field right. You pick runs, choose the fields to score and confirm the right values once. The platform then reports the accuracy per field, lists every error and compares config versions. If you can say what the right invoice number is, you can build one.
+
+## Ground truth belongs to the input
+
+The right answer for an invoice doesn't change when you change your prompt. So the platform stores the values you confirm, the **ground truth**, per input: the input and attachments you passed to `start()`. Every run on that input, from any config version, is scored against the same ground truth.
+
+That's what makes versions comparable: confirm the answers once, then run each new version on the same inputs. [Measuring well](/docs/platform/measuring-well) helps you pick those inputs.
+
+## Create an evaluation
+
+Under **Evaluations**, start a new evaluation. The wizard asks for:
+
+1. **A name and description.**
+2. **The runs to evaluate.** Filter by date, tag, config version or run id, and select runs one by one or all at once. Their inputs make up the evaluation.
+3. **The fields to score**, as JSON paths into your output, like `$.invoiceNumber` or `$.items[*].sku`. The platform suggests paths from your output type. Each field gets a type:
+   - **Categorical** for a fixed set of values, like a country code. These fields also get a confusion matrix.
+   - **Numeric** for numbers, like a total.
+   - **Text** for everything else.
+
+   A field can also get a [value normalizer](/docs/platform/value-normalizers), so formatting differences like `12.500 km` and `12500` don't count as errors.
+
+You can change the runs and fields later.
+
+<Screenshot
+  src="/img/platform/select-runs.png"
+  alt="Selecting runs for an evaluation: the first four of six invoice runs are checked."
+  width={818}
+  height={406}
+/>
+
+### Lists
+
+A field inside a list, like `$.items[*].sku`, is scored per item. The platform first pairs each expected item with the output item that matches it best, so item order doesn't matter and a missing item counts as one error, not as a shifted list.
+
+<Screenshot
+  src="/img/platform/list-matching.png"
+  alt="Field accuracy for $.mechanical[*].value going from 25% to 100%: each annotated item is compared with the output item that matches it best, even when the output lists them in another order."
+  width={938}
+  height={367}
+/>
+
+When items look alike and get paired wrongly, give the list a key: the fields that identify an item, like `sku` for `$.items[*]`. Items with the same key are paired first. Output items without a match count as extra, so a made-up invoice line shows up as an error.
+
+## Annotate the runs
+
+The **Annotations** tab walks you through the inputs. For each one you see the input next to the value the agent extracted for every field. Mark each value as correct or incorrect, and enter the right value when it's wrong.
+
+<Screenshot
+  src="/img/platform/annotate.png"
+  alt="Annotating a run: the invoice text on the left; on the right the extracted invoice number marked correct, and the extracted total marked incorrect with the expected value $987.65 and a comment explaining the swapped digits."
+  width={977}
+  height={548}
+  caption={<>The <strong>via MCP</strong> tag marks values an AI assistant saved, until a person saves them on the platform.</>}
+/>
+
+- **More than one right answer?** Enter several acceptable values. A match with any of them counts as correct, for example when two codes are both valid.
+- **Should the field be empty?** Mark it as expected to be absent, like a purchase order number on an invoice that doesn't have one.
+- **Want to explain a choice?** Add a comment for the other annotators.
+
+Progress shows how many inputs are fully annotated and takes you to the next one. Several people can annotate the same evaluation, and every acceptable value anyone enters counts. Already know the right answers? Send them [from your code](/docs/platform/ground-truth) instead.
+
+## Read the results
+
+The **Evaluation Result** tab shows, for the config version you choose:
+
+- **the accuracy per field**: how often the extracted value matched the ground truth;
+- **every error**, with the extracted value next to the expected one;
+- **a confusion matrix** for categorical fields, so you see which values get mixed up.
+
+Open a field to see the inputs it went wrong on, and from there the run itself: its input, tool calls and response. The number tells you where to look; the run tells you what to change.
+
+### Compare config versions
+
+Pick another version to compare against, and every field shows whether it improved or regressed, and by how much. Each version is scored on its own runs for the evaluation's inputs, so you don't add new runs to the evaluation yourself.
+
+You see whether the new prompt fixed the field you targeted, whether it broke another one, and whether the cheaper model keeps up. When a field stays wrong and you're not sure why, start the [fix assistant](/docs/platform/fix-assistant).

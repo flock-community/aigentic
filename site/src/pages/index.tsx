@@ -6,11 +6,14 @@ import styles from "./index.module.css";
 import { JSX, type ReactNode, useRef } from "react";
 import CyclingBlurText from "../components/CyclingBlurText";
 import AgentRunVisualizer from "../components/AgentRunVisualizer";
-import BeforeAfter from "../components/BeforeAfter";
+import AigenticPicture from "../components/AigenticPicture";
 import ProductionStory from "../components/ProductionStory";
 import FlockMark from "../components/FlockMark";
 import StartSection from "../components/StartSection";
 import FlockHero from "../components/FlockHero";
+import VersionComparison from "../components/VersionComparison";
+
+const ACCESS_MAIL = "mailto:aigentic@flock.community?subject=Aigentic%20Platform%20access";
 
 const dslPoints = [
   {
@@ -50,7 +53,7 @@ function HomepageHeader() {
           />
         </h1>
         <p className={clsx("hero__subtitle", styles.heroSubtitle)}>
-          A Kotlin DSL for AI agents that are typed, testable and work with any model
+          A Kotlin DSL for typed AI agents that work with any model, and a platform that shows how often they're right
         </p>
         <div className={styles.buttons}>
           <Link
@@ -71,11 +74,56 @@ function HomepageHeader() {
   );
 }
 
+function PlatformSection() {
+  return (
+    <section className={clsx("how", styles.platformSection)}>
+      <div className={clsx("container", styles.sectionIntro)}>
+        <SectionTitle centered>Know how often it's right</SectionTitle>
+        <p>
+          A demo shows your agent can get it right. The Aigentic Platform shows how often it does, field by field, and
+          whether your last change made it better or worse.
+        </p>
+      </div>
+      <div className="container">
+        <div className={clsx("row row--align-center", styles.platformProof)}>
+          <div className={clsx("col col--5", styles.proofText)}>
+            <Heading as="h3">Did the change make it better?</Heading>
+            <p>
+              Every run your agent publishes is recorded with its config version. Confirm the right answers once, and
+              each new version is scored on the same inputs: which fields got better, which got worse, and what a run
+              costs.
+            </p>
+            <p className={styles.hosting}>
+              Hosted by Flock in the EU, or set up in your own environment.
+            </p>
+            <div className={styles.proofActions}>
+              <Link className={clsx(styles.button, styles.buttonPrimary)} to={ACCESS_MAIL}>
+                Request access
+              </Link>
+              <Link className={clsx(styles.button, styles.buttonDefault)} to="/docs/lifecycle">
+                See how it works
+              </Link>
+            </div>
+            <p className={styles.accessNote}>
+              Request access opens an email to <span className={styles.address}>aigentic@flock.community</span>. Tell
+              us what your agent does and where you'd like the platform to run, and we'll help you connect your first
+              agent.
+            </p>
+          </div>
+          <div className="col col--7">
+            <VersionComparison />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home(): JSX.Element {
   return (
     <Layout
       title="Aigentic: Kotlin DSL for AI Agents"
-      description="A Kotlin DSL for AI agents that are typed, testable and work with any model"
+      description="Build typed AI agents in Kotlin. The Aigentic Platform measures how often they're right and helps you fix what isn't."
     >
       <HomepageHeader />
       <main className={clsx(styles.page)}>
@@ -113,10 +161,10 @@ export default function Home(): JSX.Element {
             <SectionTitle>Why Aigentic</SectionTitle>
             <p className={styles.lead}>
               Most agent libraries help you build the demo. Aigentic is built for what comes after: typed agents in
-              your existing Kotlin code, any provider, and regression tests from real runs. Here's the same weather
-              agent written both ways.
+              your existing Kotlin code, any provider, and a platform that measures how often they're right. Here's
+              how the two work together, from your first agent to its next version.
             </p>
-            <BeforeAfter />
+            <AigenticPicture />
             <div className={clsx("row row--align-center", styles.talk)}>
               <div className="col col--5">
                 <Heading as="h3">Built by Flock, in the open</Heading>
@@ -140,10 +188,11 @@ export default function Home(): JSX.Element {
             </div>
           </div>
         </section>
+        <PlatformSection />
         <section className="how">
           <div className={clsx("container", styles.sectionIntro)}>
-            <SectionTitle centered>From first agent to production</SectionTitle>
-            <p>Connect your APIs, read documents, chain agents and test the results.</p>
+            <SectionTitle centered>What a real agent needs</SectionTitle>
+            <p>Connect your APIs, read documents, chain agents and measure the results.</p>
           </div>
           <div className="container">
             <ProductionStory />

@@ -54,7 +54,7 @@
   grid-template-areas:
     "build a1 run a2 record"
     "a6 . . . a3"
-    "improve a5 replay a4 tag";
+    "improve a5 fix a4 evaluate";
   margin: 0;
   padding: 0;
   list-style: none;
@@ -74,6 +74,20 @@
     }
   }
 }
+
+/* Grid areas live in this file, not in inline styles: the CSS minifier renames them, here and in the template alike. */
+.build { grid-area: build; }
+.run { grid-area: run; }
+.record { grid-area: record; }
+.evaluate { grid-area: evaluate; }
+.fix { grid-area: fix; }
+.improve { grid-area: improve; }
+.a1 { grid-area: a1; }
+.a2 { grid-area: a2; }
+.a3 { grid-area: a3; }
+.a4 { grid-area: a4; }
+.a5 { grid-area: a5; }
+.a6 { grid-area: a6; }
 
 .step {
   display: flex;

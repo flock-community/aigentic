@@ -7,7 +7,7 @@ const KTOR_VERSION = "3.4.3";
 
 const config: Config = {
   title: "Aigentic",
-  tagline: "Build and integrate AI agents with Kotlin",
+  tagline: "Build, measure and improve AI agents with Kotlin",
   favicon: "img/favicon.png", // TODO: Replace with Aigentic favicon
   url: "https://aigentic.io/", // TODO: Update with actual URL
   baseUrl: "/",
@@ -65,7 +65,7 @@ const config: Config = {
       {
         name: "description",
         content:
-          "A Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications",
+          "A Kotlin DSL for typed AI agents, and a platform that measures how often they're right and helps you fix what isn't",
       },
       {
         name: "algolia-site-verification",
@@ -75,7 +75,7 @@ const config: Config = {
       {
         property: "og:description",
         content:
-          "A Kotlin Multiplatform library that provides a powerful DSL for building and integrating AI agents into applications",
+          "A Kotlin DSL for typed AI agents, and a platform that measures how often they're right and helps you fix what isn't",
       },
       { property: "og:type", content: "website" },
     ],
@@ -107,6 +107,12 @@ const config: Config = {
           sidebarId: "docsSidebar",
           position: "left",
           label: "Docs",
+        },
+        {
+          to: "/docs/platform",
+          label: "Platform",
+          position: "left",
+          activeBasePath: "/docs/platform",
         },
         { to: "/blog", label: "Blog", position: "left" },
         {
@@ -143,6 +149,10 @@ const config: Config = {
             {
               label: "Docs",
               to: "/docs/getting-started",
+            },
+            {
+              label: "Platform",
+              to: "/docs/platform",
             },
             {
               label: "Blog",

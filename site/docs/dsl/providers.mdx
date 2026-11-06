@@ -184,7 +184,7 @@ Ollama has no resolution setting, and like OpenAI it doesn't support PDF attachm
 
 ## Thinking configuration
 
-Reasoning models let you control how much they think before answering. Aigentic exposes this through two `generationConfig` DSL functions: `thinkingBudget(tokens)` and `thinkingLevel(level)`. They are mutually exclusive; configuring both throws an `AigenticException`. Leaving both unset uses the model's default behaviour.
+Reasoning models let you control how much they think before answering. Aigentic exposes this through two `generationConfig` DSL functions: `thinkingBudget(tokens)` and `thinkingLevel(level)`. They are mutually exclusive; configuring both throws an `AigenticException`. Leaving both unset uses the model's default behavior.
 
 Migrating from `0.11.0`: `thinkingBudget()` on a Gemini or VertexAI 3.x model identifier used to be forwarded as-is; it now throws an `AigenticException` (use `thinkingLevel()` instead). `thinkingBudget()` on an OpenAI or Ollama model used to be silently ignored; it now throws too. Sampling defaults are no longer sent to Gemini and VertexAI 3.x models or to OpenAI reasoning models, and an explicit `temperature()` or `topP()` on an OpenAI reasoning model now throws, see [Sampling parameters](#sampling-parameters).
 

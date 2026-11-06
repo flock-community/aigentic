@@ -66,18 +66,19 @@ val summarizer = agent<Analysis, Summary> {
 val workflow = analyzer thenProcess summarizer
 val run = workflow.start(Document("Raw document text..."))`;
 
-export const regressionTestExample = `val weatherAgent = agent<String, Weather> {
-    // model, task and tools as above
+export const groundTruthExample = `val invoiceExtractor = agent<Unit, Invoice> {
+    // model and task as above
     platform {
-        name("weather-agent")
+        name("invoice-extractor")
         secret("YOUR_PLATFORM_SECRET")
     }
 }
 
-val report = regressionTest {
-    agent(weatherAgent)
-    tags("validated")
-    numberOfIterations(3)
-}.start()
-
-check(report.failures.isEmpty() && report.errors.isEmpty())`;
+// Real invoices, with the answers you already know
+groundTruth.forEach { (pdf, expected) ->
+    invoiceExtractor.start(
+        null,
+        Attachment.Base64.pdf(pdf),
+        expected = Expected("invoices-ground-truth", expected),
+    )
+}`;

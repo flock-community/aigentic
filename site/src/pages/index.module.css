@@ -131,29 +131,37 @@ body {
   text-decoration: none !important;
   text-align: center;
   transition: background-color 0.2s cubic-bezier(0.08, 0.52, 0.52, 1);
-  border: 1px solid transparent;
+  border-width: 1px;
+  border-style: solid;
 
   @media (max-width: 475px) {
     font-size: 16px;
     padding: 8px 20px;
   }
+
+  &:focus-visible {
+    outline: 2px solid #f0bc42;
+    outline-offset: 3px;
+  }
 }
 
-.buttonPrimary {
+/* Colours on .button.variant: the minifier may reorder single-class rules, which once erased these borders. */
+.button.buttonPrimary {
+  border-color: #f0bc42;
   background-color: #f0bc42;
   color: #101010;
   &:hover {
-    border-color: #f0bc42;
     background-color: transparent;
     color: #f0bc42;
   }
 }
 
-.buttonDefault {
+.button.buttonDefault {
   border-color: #f0bc42;
+  background-color: transparent;
   color: #f0bc42;
   &:hover {
-    background-color: #d9be00;
+    background-color: #f0bc42;
     color: #101010;
   }
 }
@@ -301,3 +309,70 @@ body {
     font-size: 17px;
   }
 }
+
+.platformSection {
+  padding-top: 40px;
+}
+
+.platformProof {
+  margin-top: 8px;
+
+  @media (max-width: 996px) {
+    margin-top: 40px;
+  }
+}
+
+.proofText {
+  h3 {
+    margin-bottom: 14px;
+    font-family: "Funnel Display", sans-serif;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.25;
+    color: white;
+    text-wrap: balance;
+  }
+
+  p {
+    max-width: 30rem;
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.6;
+    color: #c9c9c9;
+  }
+
+  @media (max-width: 996px) {
+    margin-bottom: 32px;
+  }
+}
+
+.proofText .hosting {
+  margin-top: 16px;
+  color: #e6e1d6;
+}
+
+.proofText .accessNote {
+  max-width: 28rem;
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #a8a8a8;
+}
+
+.address {
+  color: #e6e1d6;
+  user-select: all;
+}
+
+.proofActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 28px;
+
+  @media (max-width: 475px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+

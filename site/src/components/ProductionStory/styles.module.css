@@ -111,7 +111,8 @@
   overflow-y: auto;
 }
 
-.inlineCode {
+/* .frame.inlineCode: the CSS minifier may move a single-class rule above .frame's display: flex. */
+.frame.inlineCode {
   display: none;
 }
 
@@ -140,7 +141,7 @@
     display: none;
   }
 
-  .inlineCode {
+  .frame.inlineCode {
     display: flex;
     margin-top: 24px;
   }

@@ -1,0 +1,85 @@
+---
+id: connect
+title: Connect an agent
+sidebar_position: 1
+---
+
+# Connect an agent
+
+You need access to the platform first, see [Hosting and access](/docs/platform#hosting-and-access).
+
+## 1. Add the platform module
+
+```kotlin title="build.gradle.kts"
+dependencies {
+    implementation("community.flock.aigentic:platform:{{AIGENTIC_VERSION}}")
+}
+```
+
+For Maven, use the `platform-jvm` artifact, see [Installation](/docs/getting-started#installation).
+
+## 2. Create the agent on the platform
+
+Sign in to the platform and create an agent. Its name uses lowercase letters, digits and hyphens, like `invoice-extractor`.
+
+The platform then shows the agent's secret, only once, so store it like your other secrets. Lost it? Generate a new one under **Settings → Agent Secret**. The old secret stops working right away, so update your application at the same time.
+
+Under **Settings → Users Management** you share the agent with colleagues by email address. Everyone you add sees the same runs and evaluations.
+
+## 3. Add `platform { }` to your agent
+
+```kotlin title="InvoiceExtractor.kt"
+import community.flock.aigentic.platform.dsl.platform
+
+@AigenticParameter
+data class Invoice(
+    val invoiceNumber: String,
+    val total: Double?,
+)
+
+val invoiceExtractor = agent<Unit, Invoice> {
+    geminiModel {
+        apiKey(System.getenv("GEMINI_API_KEY"))
+        modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
+    }
+    task("Extract the invoice fields from the document") {
+        addInstruction("Return null for a field the invoice doesn't mention")
+    }
+    platform {
+        name("invoice-extractor")
+        secret(System.getenv("AIGENTIC_PLATFORM_SECRET"))
+    }
+}
+```
+
+The `name` must match the agent's name on the platform. When you run the platform in your own environment, also set `apiUrl("https://…")` inside `platform { }`.
+
+Run the agent as usual. Each run shows up under **Runs** a moment after it finishes:
+
+```kotlin
+val run = invoiceExtractor.start(Attachment.Base64.pdf(invoicePdf))
+```
+
+```text title="Output"
+🚀 Agent started!
+🏁 Agent finished! …
+🖨️ Published run to Aigentic platform!
+```
+
+## What gets sent
+
+After a run finishes, Aigentic sends one record with:
+
+- **The config**: task and instructions, system prompt, model and its settings (temperature, thinking, output limit, media resolution), the tool definitions and the JSON schema of your output type. The platform uses it to recognize [config versions](/docs/platform/runs#config-versions).
+- **Every message**: the input, the attachments and context files, the model's replies, each tool call with its result, and the final response.
+- **Every model request**: when it started and finished, and its input, output, thinking and cached tokens. The platform prices these as [costs](/docs/platform/runs#costs).
+- **The outcome**: `Finished` with the response, `Stuck` with the reason or `Fatal` with the error message.
+
+## When sending fails
+
+Sending happens inside `start()`, after the run has finished. It never changes the run's outcome:
+
+- A wrong name or secret prints `🔐 Could not publish run to Aigentic platform, agent unauthorized!`.
+- Any other problem prints `💥 Could not publish run to Aigentic platform: <reason>`. Server errors are retried three times first.
+
+Either way, `start()` returns your run as normal. `run.platformRunId` holds the run's id on the platform, or `null` when it wasn't sent. You need that id to [send the expected output later](/docs/platform/ground-truth#later-when-someone-has-checked-the-result).
