@@ -8,12 +8,12 @@ import MarginChart from "@site/src/components/MarginChart";
 
 # Measuring well
 
-The platform does the counting. What you decide is what goes into the count: which inputs make up your golden set, how many there are, and when a difference between two versions is real. This page gives you rules of thumb for each. No statistics background needed.
+The platform does the counting. What you decide is what goes into the count: which inputs you collect ground truth for, how many there are, and when a difference between two versions is real. This page gives you rules of thumb for each. No statistics background needed.
 
 ## Pick inputs like your real traffic
 
 - **Take them from production**, or from the documents you'll get in production. Made-up examples are cleaner than the real thing, so they flatter the agent.
-- **Keep the mix realistic.** If one in ten invoices is a scan, about one in ten in your golden set should be too. Want to stress-test the hard cases? Put them in a second evaluation, so the main one still tells you what production looks like.
+- **Keep the mix realistic.** If one in ten invoices is a scan, about one in ten of the inputs in your ground truth should be too. Want to stress-test the hard cases? Put them in a second evaluation, so the main one still tells you what production looks like.
 - **Include fields that should be empty**, like a purchase order number on an invoice without one, and mark them as expected to be absent. Otherwise you never find out whether the agent makes things up.
 - **Keep the set stable.** You can add inputs, but run every version you compare on the new ones too.
 
@@ -40,7 +40,7 @@ So don't just compare the percentages. Count the inputs that changed:
 - **Fixed**: wrong before, right now.
 - **Regressed**: right before, wrong now.
 
-When at least six inputs changed and nearly all of them moved the same way, the change is real. Nine fixed and one regressed is very unlikely to be chance. Seven fixed and three regressed could easily be. With only a handful of changed inputs you can't tell yet: add inputs, or run the version on the golden set again and see whether the result holds.
+When at least six inputs changed and nearly all of them moved the same way, the change is real. Nine fixed and one regressed is very unlikely to be chance. Seven fixed and three regressed could easily be. With only a handful of changed inputs you can't tell yet: add inputs, or run the version on the same inputs again and see whether the result holds.
 
 The [fix assistant](/docs/platform/fix-assistant) shows the fixed and regressed inputs per field for every change it tries.
 
@@ -52,4 +52,4 @@ The [fix assistant](/docs/platform/fix-assistant) shows the fixed and regressed 
 
 ## Keep measuring in production
 
-Your golden set is a sample. Corrections from your own process, sent with [`addToEvaluationSet`](/docs/platform/ground-truth#later-when-someone-has-checked-the-result), show how the agent does on real traffic. Keep them in a separate evaluation and compare it with the golden set now and then. When production scores lower, your golden set is missing a kind of input: add a few of the inputs that went wrong.
+Your ground truth covers a sample of inputs. Corrections from your own process, sent with [`addToEvaluationSet`](/docs/platform/ground-truth#later-when-someone-has-checked-the-result), show how the agent does on real traffic. Keep them in a separate evaluation and compare it with your main evaluation now and then. When production scores lower, your ground truth is missing a kind of input: add a few of the inputs that went wrong.

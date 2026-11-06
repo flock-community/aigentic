@@ -22,12 +22,12 @@ export default function MarginChart() {
     <figure className={styles.figure}>
       <figcaption className={styles.title}>
         <strong>Your agent scores 90%. How sure can you be?</strong>
-        <span>The range the real accuracy likely falls in (95% interval), by number of inputs in the golden set</span>
+        <span>The range the real accuracy likely falls in (95% interval), by number of inputs with ground truth</span>
       </figcaption>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th scope="col">Golden set</th>
+            <th scope="col">Ground truth</th>
             <th scope="col" className={styles.plotHead}>
               <span className={styles.srOnly}>Range on a scale from 70% to 100%</span>
             </th>

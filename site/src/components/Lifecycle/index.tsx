@@ -19,7 +19,7 @@ const PHASES: Phase[] = [
     platform: { chip: "Runs", to: "/docs/platform/runs#runs", text: "Connect early and see every run you try." },
   },
   {
-    name: "Golden set",
+    name: "Ground truth",
     question: "What's the right answer?",
     code: {
       chip: "Expected(…)",
@@ -41,7 +41,7 @@ const PHASES: Phase[] = [
       text: "Change the task or model until the numbers are there.",
     },
     platform: {
-      chip: "Evaluation result",
+      chip: "Evaluation Result",
       to: "/docs/platform/evaluations#read-the-results",
       text: "Accuracy per field and every error, for this version.",
     },
@@ -136,7 +136,7 @@ export default function Lifecycle({ className }: { className?: string }) {
         <LoopIcon />
         <span>
           <strong>Improve</strong> leads back to <strong>Validate</strong>: every new version is scored against the same
-          golden set.
+          ground truth.
         </span>
       </figcaption>
     </figure>

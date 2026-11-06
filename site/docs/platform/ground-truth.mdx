@@ -24,7 +24,7 @@ val run = invoiceExtractor.start(
     null,
     Attachment.Base64.pdf(invoicePdf),
     expected = Expected(
-        evaluationSet = "invoices-golden-set",
+        evaluationSet = "invoices-ground-truth",
         output = Invoice(invoiceNumber = "INV-2026-0042", total = 1250.0),
     ),
 )
@@ -47,7 +47,7 @@ invoice.platformRunId = run.platformRunId?.value
 invoice.platformRunId?.let { runId ->
     invoiceExtractor.addToEvaluationSet(
         runId = runId,
-        evaluationSet = "invoices-checked",
+        evaluationSet = "invoices-production",
         expected = approvedInvoice,
     )
 }

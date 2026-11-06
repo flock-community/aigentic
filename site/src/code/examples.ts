@@ -66,7 +66,7 @@ val summarizer = agent<Analysis, Summary> {
 val workflow = analyzer thenProcess summarizer
 val run = workflow.start(Document("Raw document text..."))`;
 
-export const goldenSetExample = `val invoiceExtractor = agent<Unit, Invoice> {
+export const groundTruthExample = `val invoiceExtractor = agent<Unit, Invoice> {
     // model and task as above
     platform {
         name("invoice-extractor")
@@ -75,10 +75,10 @@ export const goldenSetExample = `val invoiceExtractor = agent<Unit, Invoice> {
 }
 
 // Real invoices, with the answers you already know
-goldenSet.forEach { (pdf, expected) ->
+groundTruth.forEach { (pdf, expected) ->
     invoiceExtractor.start(
         null,
         Attachment.Base64.pdf(pdf),
-        expected = Expected("invoices-golden-set", expected),
+        expected = Expected("invoices-ground-truth", expected),
     )
 }`;

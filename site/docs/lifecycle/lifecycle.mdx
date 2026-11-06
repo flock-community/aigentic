@@ -47,9 +47,9 @@ val invoiceExtractor = agent<Unit, Invoice> {
 
 The output type matters later: the platform scores each of its fields. `platform { }` is optional this early, but it costs one block and you'll see every run you try, with its input, tool calls and response. See [Getting Started](/docs/getting-started) and [Connect an agent](/docs/platform/connect).
 
-## 2. Golden set: what's the right answer?
+## 2. Ground truth: what's the right answer?
 
-A few examples that look right tell you little. Collect a fixed set of real inputs, a **golden set**, and the right answer for each. Aim for a few dozen to a hundred invoices, including the awkward ones: scans, credit notes, foreign formats. [Measuring well](/docs/platform/measuring-well) explains how big it should be.
+A few examples that look right tell you little. Collect a fixed set of real inputs and the right answer for each: your **ground truth**. Aim for a few dozen to a hundred invoices, including the awkward ones: scans, credit notes, foreign formats. [Measuring well](/docs/platform/measuring-well) explains how many you need.
 
 Often the answers already exist, in your bookkeeping for example. Send them along with each run:
 
@@ -57,19 +57,19 @@ Often the answers already exist, in your bookkeeping for example. Send them alon
 @Serializable
 data class Labeled(val file: String, val expected: Invoice)
 
-val goldenSet = Json.decodeFromString<List<Labeled>>(File("golden-set/expected.json").readText())
+val groundTruth = Json.decodeFromString<List<Labeled>>(File("ground-truth/expected.json").readText())
 
-goldenSet.forEach { (file, expected) ->
-    val pdf = Base64.getEncoder().encodeToString(File("golden-set/$file").readBytes())
+groundTruth.forEach { (file, expected) ->
+    val pdf = Base64.getEncoder().encodeToString(File("ground-truth/$file").readBytes())
     invoiceExtractor.start(
         null,
         Attachment.Base64.pdf(pdf),
-        expected = Expected("invoices-golden-set", expected),
+        expected = Expected("invoices-ground-truth", expected),
     )
 }
 ```
 
-The platform puts these runs in an evaluation called `invoices-golden-set` and stores your answers as ground truth. No answers yet? Pick the runs on the platform and confirm the right value per field instead. See [Ground truth from your code](/docs/platform/ground-truth) and [Evaluations](/docs/platform/evaluations).
+The platform puts these runs in an evaluation called `invoices-ground-truth` and stores your answers as its ground truth. No answers yet? Pick the runs on the platform and confirm the right value per field instead. See [Ground truth from your code](/docs/platform/ground-truth) and [Evaluations](/docs/platform/evaluations).
 
 ## 3. Validate: is it good enough to ship?
 
@@ -79,9 +79,9 @@ When a field falls short:
 
 - Open the inputs it went wrong on and look at the run: often the document explains the mistake.
 - Formatting differences, like `1.250,00` against `1250`, aren't mistakes. Give the field a [value normalizer](/docs/platform/evaluations#ignore-formatting-differences).
-- Start the [fix assistant](/docs/platform/fix-assistant). It tries changes to the task, and if needed the model or its settings, on your golden set and proposes the best one with its cost per run.
+- Start the [fix assistant](/docs/platform/fix-assistant). It tries changes to the task, and if needed the model or its settings, on the inputs you have ground truth for and proposes the best one with its cost per run.
 
-Apply the change in your code and run the golden set again. Every change becomes a new config version, so you compare the two field by field. Ship when the fields you care about are where they should be.
+Apply the change in your code and run those inputs again. Every change becomes a new config version, so you compare the two field by field. Ship when the fields you care about are where they should be.
 
 ## 4. Go live: is it still right in production?
 
@@ -107,9 +107,9 @@ Every correction adds to the ground truth, so the accuracy of `invoices-producti
 Sooner or later you change something: a new instruction for a supplier that keeps going wrong, a newer model, or a cheaper one.
 
 1. Change the agent in your code. Its next run creates a new config version on the platform.
-2. Run the new version on the golden set.
+2. Run the new version on the inputs you have ground truth for.
 3. Compare it with the previous version, field by field, and look at the cost per run. Did the field you targeted improve? Did another one get worse? Does the cheaper model keep up?
 
-Not sure what to change? The [fix assistant](/docs/platform/fix-assistant) tries changes on your golden set and proposes the one that scores best.
+Not sure what to change? The [fix assistant](/docs/platform/fix-assistant) tries changes on those inputs and proposes the one that scores best.
 
-Then you're back at step 3: every version is scored against the same golden set, so you always know whether the agent got better or worse.
+Then you're back at step 3: every version is scored against the same ground truth, so you always know whether the agent got better or worse.

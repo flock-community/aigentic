@@ -17,7 +17,7 @@ type Step = {
 
 const ZONES: Record<Zone, { title: string; detail: string }> = {
   library: { title: "Aigentic library", detail: "In your code · open source" },
-  platform: { title: "Aigentic Platform", detail: "Hosted by Flock or in your environment" },
+  platform: { title: "Aigentic Platform", detail: "Hosted by Flock or in your own environment" },
 };
 
 const STEPS: Step[] = [

@@ -35,7 +35,7 @@ export default function VersionComparison() {
     <figure className={styles.card}>
       <figcaption className={styles.head}>
         <strong>Version 3 → version 4 of an invoice extractor</strong>
-        <span>Example · a golden set of 120 invoices with 412 invoice lines</span>
+        <span>Example · ground truth for 120 invoices with 412 invoice lines</span>
         <span className={styles.legend} aria-hidden="true">
           <span>
             <i className={styles.before} /> version 3

@@ -4,7 +4,7 @@ import Link from "@docusaurus/Link";
 import Heading from "@theme/Heading";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import CodeLines from "../CodeLines";
-import { goldenSetExample, invoiceExtractorExample, openApiExample, workflowExample } from "../../code/examples";
+import { groundTruthExample, invoiceExtractorExample, openApiExample, workflowExample } from "../../code/examples";
 import styles from "./styles.module.css";
 
 type StoryStep = {
@@ -61,15 +61,15 @@ const STEPS: StoryStep[] = [
     title: "Measure before you ship",
     body: (
       <p>
-        Run the agent on a golden set: real inputs with the answers you already know. The Aigentic Platform scores
+        Run the agent on real inputs you already know the answers to: your ground truth. The Aigentic Platform scores
         every output field, so you see how often the agent is right, and whether your next prompt or model makes it
         better or worse.
       </p>
     ),
     link: { label: "Follow an agent from prototype to production", to: "/docs/lifecycle" },
-    file: "GoldenSet.kt",
-    code: goldenSetExample,
-    highlight: ["platform {", "goldenSet.forEach", "expected = Expected("],
+    file: "GroundTruth.kt",
+    code: groundTruthExample,
+    highlight: ["platform {", "groundTruth.forEach", "expected = Expected("],
   },
 ];
 

@@ -131,7 +131,7 @@ suspend fun main() {
 }
 ```
 
-Open the agent on the platform. Under **Evaluations** you'll find `first-tickets`, with the accuracy of `category` and `urgent` over these three tickets. Three tickets is a start, not a measurement: [From prototype to production](/docs/lifecycle) shows how to grow it into a golden set and use it every time you change the agent.
+Open the agent on the platform. Under **Evaluations** you'll find `first-tickets`, with the accuracy of `category` and `urgent` over these three tickets. Three tickets is a start, not a measurement: [From prototype to production](/docs/lifecycle) shows how to build up ground truth for real inputs and use it every time you change the agent.
 
 ---
 
@@ -328,7 +328,7 @@ For detailed information about engine features, which one to choose and alternat
 Tools let an agent call your code. Here the agent gets a `getWeather` tool and decides on its own when to call it. It uses the imports from step 2, plus `community.flock.aigentic.core.annotations.Description`:
 
 ```kotlin
-// Describe the agents response type
+// Describe the agent's output type
 @AigenticParameter
 data class WeatherResponse(
     @Description("Current temperature in degrees Celsius")

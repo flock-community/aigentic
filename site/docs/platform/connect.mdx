@@ -70,7 +70,7 @@ val run = invoiceExtractor.start(Attachment.Base64.pdf(invoicePdf))
 
 After a run finishes, Aigentic sends one record with:
 
-- **The config**: task and instructions, system prompt, model and its settings (temperature, thinking, output limit, media resolution), the tool definitions and the JSON schema of your output type. The platform uses it to recognise [config versions](/docs/platform/runs#config-versions).
+- **The config**: task and instructions, system prompt, model and its settings (temperature, thinking, output limit, media resolution), the tool definitions and the JSON schema of your output type. The platform uses it to recognize [config versions](/docs/platform/runs#config-versions).
 - **Every message**: the input, the attachments and context files, the model's replies, each tool call with its result, and the final response.
 - **Every model request**: when it started and finished, and its input, output, thinking and cached tokens. The platform prices these as [costs](/docs/platform/runs#costs).
 - **The outcome**: `Finished` with the response, `Stuck` with the reason or `Fatal` with the error message.

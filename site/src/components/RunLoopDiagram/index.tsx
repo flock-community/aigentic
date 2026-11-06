@@ -78,7 +78,7 @@ export function PlatformDiagram() {
           <dt>Runs</dt>
           <dd>Every run with its messages, tool calls, cost and config version</dd>
           <dt>Evaluate</dt>
-          <dd>Accuracy per output field, against answers people confirmed</dd>
+          <dd>Accuracy per output field, against your ground truth</dd>
           <dt>Fix</dt>
           <dd>An assistant tries changes on your recorded inputs and proposes the best one</dd>
         </dl>
