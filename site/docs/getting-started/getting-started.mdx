@@ -83,7 +83,7 @@ export GEMINI_API_KEY=your-api-key
 Coroutines suspend instead of blocking, so thousands of them can share a handful of threads. Threads are managed by the operating system and cost far more to create and switch between.
 ```
 
-The answer comes from the model, so yours will be worded differently. Next, [see how the pieces fit together](/docs/concepts), [give the agent a tool](#add-a-tool) or [switch to another provider](/docs/dsl/providers).
+The answer comes from the model, so yours will be worded differently. Next, [see how the pieces fit together](/docs/concepts), [give the agent a tool](#add-a-tool) or [switch to another provider](/docs/dsl/providers). Once the agent does real work, the [Aigentic Platform](/docs/platform) shows you how often it gets the answer right.
 
 ---
 
@@ -121,7 +121,7 @@ dependencies {
     implementation("community.flock.aigentic:http:{{AIGENTIC_VERSION}}")
     implementation("community.flock.aigentic:openapi:{{AIGENTIC_VERSION}}")
 
-    // Platform module (optional): send runs to the Aigentic platform and run regression tests
+    // Platform module (optional): send runs to the Aigentic Platform to track, evaluate and improve your agent
     implementation("community.flock.aigentic:platform:{{AIGENTIC_VERSION}}")
 
     // Choose one of the following Ktor client engines depending on your platform

@@ -1,0 +1,82 @@
+---
+id: evaluations
+title: Evaluations
+sidebar_position: 3
+---
+
+# Evaluations
+
+An evaluation tells you how often your agent gets each output field right. You pick runs, choose the fields to score and confirm the right values once. The platform then reports the accuracy per field, lists every error and compares one config version with another.
+
+You don't need a data science background for this. If you can say what the right invoice number is, you can build an evaluation.
+
+## Ground truth belongs to the input
+
+The right answer for an invoice doesn't change when you change your prompt. So the platform stores the values you confirm, the **ground truth**, per input: the input and attachments you passed to `start()`. Every run on that same input, from any config version, is scored against the same ground truth.
+
+That's what makes versions comparable. Confirm the answers once, then run each new version of your agent on the same inputs and compare.
+
+:::tip Keep a fixed set of inputs
+Pick a few dozen representative inputs, including the tricky ones, and run every new version on them before you ship it. Their ground truth is already there, so the results are ready as soon as the runs are in.
+:::
+
+## Create an evaluation
+
+Under **Evaluations**, start a new evaluation. The wizard asks for three things:
+
+1. **A name and description.**
+2. **The runs to evaluate.** Filter by date, tag, config version or run id, and select runs one by one or all filtered runs at once. Their inputs make up the evaluation.
+3. **The fields to score**, as JSON paths into your output, like `$.invoiceNumber` or `$.items[*].sku`. The platform suggests paths from your output type, so you mostly pick from a list. Each field gets a type:
+   - **Categorical** for a fixed set of values, like a country code or a product category. These fields also get a confusion matrix.
+   - **Numeric** for numbers, like a total.
+   - **Text** for everything else, like a name.
+
+You can change the runs and fields later.
+
+### Ignore formatting differences
+
+By default, an extracted value must match the expected value exactly. When formatting doesn't matter, give the field a **value normalizer**. It's applied to both values before they're compared:
+
+| Field | Normalizer | Now counts as equal |
+| --- | --- | --- |
+| `$.mileage` | replace `\D` with nothing | `12.500 km` and `12500` |
+| `$.licensePlate` | replace `[^A-Za-z0-9]` with nothing | `AB-12-CD` and `AB12CD` |
+| `$.legalForm` | ignore case | `GmbH` and `GMBH` |
+
+The regex replacement runs first, then the lower-casing.
+
+### Lists
+
+A field inside a list, like `$.items[*].sku`, is scored per item. Before scoring, the platform pairs each expected item with the output item that matches it best, so the order of the items doesn't matter and one missing item counts as one error, not as a shifted list.
+
+When items look alike and get paired wrongly, give the list a key: the fields that identify an item, like `sku` for `$.items[*]`. Items with the same key are paired first. Output items without a match count as extra items, so a made-up line on an invoice shows up as an error.
+
+## Annotate the runs
+
+The **Annotations** tab walks you through the inputs. For each one you see the document or input next to the value the agent extracted for every field. Mark each value as correct or incorrect, and enter the right value when it's wrong.
+
+- **More than one right answer?** Enter several acceptable values. A match with any of them counts as correct. This helps for classifications where two codes are both valid.
+- **Should the field be empty?** Mark it as expected to be absent, for example a purchase order number on an invoice that doesn't have one.
+- **Want to explain a choice?** Add a comment for the other annotators.
+
+Progress shows how many inputs are fully annotated and takes you to the next one that isn't. Several people can annotate the same evaluation: every acceptable value anyone enters counts.
+
+Already know the right answers, or have people in your process who correct the agent's output anyway? Send the ground truth [from your code](/docs/platform/ground-truth) instead of clicking through it.
+
+## Read the results
+
+The **Evaluation Result** tab shows, for the config version you choose:
+
+- **the accuracy per field**: how often the extracted value matched the ground truth;
+- **every error**, with the extracted value next to the expected one;
+- **a confusion matrix** for categorical fields, so you see which values get mixed up.
+
+Open a field to see the inputs it went wrong on, and from there the run itself: its input, tool calls and response. A number is a starting point. The run tells you what to change.
+
+### Compare config versions
+
+Pick another version to compare against, and every field shows whether it improved or regressed, and by how much. Runs and inputs are matched for you: each version is scored on its runs for the evaluation's inputs, so you don't add the new runs to the evaluation yourself.
+
+This answers the questions that matter before you ship: did the new prompt fix the field you targeted, did it break another one, and does the cheaper model keep up?
+
+When a field stays wrong and you're not sure why, the [fix assistant](/docs/platform/fix-assistant) can take it from here.

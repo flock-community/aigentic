@@ -71,10 +71,7 @@ const STEPS: StoryStep[] = [
         platform and gives access on request.
       </p>
     ),
-    link: {
-      label: "See the testing example",
-      to: "https://github.com/flock-community/aigentic/tree/main/src/examples/testing",
-    },
+    link: { label: "Read about regression tests", to: "/docs/platform/regression-tests" },
     file: "WeatherAgentTest.kt",
     code: regressionTestExample,
     highlight: ["regressionTest {", "agent(weatherAgent)", "tags(", "numberOfIterations(", "}.start()", "check("],

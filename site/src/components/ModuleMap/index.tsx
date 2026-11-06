@@ -32,14 +32,11 @@ const GROUPS: Group[] = [
     modules: [
       {
         name: "platform",
-        text: "Send runs to the Aigentic platform and replay them as regression tests. Hosted by Flock, access on request.",
+        text: "Send runs to the Aigentic Platform to measure accuracy per field, compare versions and fix what's wrong. Hosted by Flock, access on request.",
       },
       { name: "google-cloud-function", text: "Deploy an agent as a Google Cloud Function. Node.js only." },
     ],
-    link: {
-      label: "Testing example",
-      to: "https://github.com/flock-community/aigentic/tree/main/src/examples/testing",
-    },
+    link: { label: "Platform docs", to: "/docs/platform" },
   },
 ];
 

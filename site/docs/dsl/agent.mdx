@@ -267,7 +267,7 @@ The error is also logged. By default that prints `Error: <message>`. To send it 
 
 ### Sending runs to the platform
 
-Add `platform { }` to send every run to the Aigentic platform. There you can review runs, tag the good ones and replay them as [regression tests](https://github.com/flock-community/aigentic/tree/main/src/examples/testing). Flock hosts the platform and gives access on request.
+Add `platform { }` to send every run to the [Aigentic Platform](/docs/platform). There you can see what each run did and cost, measure how accurate your agent's output is per field, compare config versions and let the fix assistant propose improvements. Flock hosts the platform and gives access on request.
 
 ```kotlin
 import community.flock.aigentic.platform.dsl.platform
@@ -281,7 +281,7 @@ val agent = agent<String, Answer> {
 }
 ```
 
-This needs the `platform` module, see [Installation](/docs/getting-started#installation).
+This needs the `platform` module and an agent created on the platform, see [Connect an agent](/docs/platform/connect).
 
 ## More Examples
 

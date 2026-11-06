@@ -60,6 +60,45 @@ export function RunLoopDiagram() {
   );
 }
 
+export function PlatformDiagram() {
+  return (
+    <figure className={styles.diagram} aria-label="How your agent and the Aigentic Platform work together">
+      <div className={styles.box}>
+        <span className={styles.label}>Your application</span>
+        <code>agent.start()</code>
+        <p>Your agent runs in your own code, with your own model key and tools. Each finished run goes to the platform.</p>
+      </div>
+      <Arrow />
+      <div className={`${styles.box} ${styles.agent}`}>
+        <span className={styles.label}>
+          <FlockMark />
+          Aigentic Platform
+        </span>
+        <dl className={styles.parts}>
+          <dt>Runs</dt>
+          <dd>Every run with its messages, tool calls, cost and config version</dd>
+          <dt>Evaluate</dt>
+          <dd>Accuracy per output field, against answers people confirmed</dd>
+          <dt>Fix</dt>
+          <dd>An assistant tries changes on your recorded inputs and proposes the best one</dd>
+        </dl>
+        <p className={styles.loop}>
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M13 8a5 5 0 1 1-1.5-3.6M13 2.5v2.5h-2.5" fill="none" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Every change is a new version, scored against the same ground truth
+        </p>
+      </div>
+      <Arrow />
+      <div className={styles.box}>
+        <span className={styles.label}>Back in your code</span>
+        <code>task("…") {"{ }"}</code>
+        <p>You decide what ships. Apply the change to your agent, and its runs show up as the next version.</p>
+      </div>
+    </figure>
+  );
+}
+
 export function WorkflowDiagram() {
   return (
     <figure className={styles.workflow} aria-label="How a workflow chains agents">

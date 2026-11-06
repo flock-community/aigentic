@@ -1,0 +1,80 @@
+---
+id: regression-tests
+title: Regression tests and example runs
+sidebar_position: 6
+---
+
+# Regression tests and example runs
+
+[Tags](/docs/platform/runs#tags) on the platform also work from your code. Tag runs that went right, then use them as examples for the model or replay them as tests after a change.
+
+## Example runs
+
+Add `tags()` to your agent, and at the start of each run it fetches the runs with that tag from the platform. Their messages go to the model before the real input, as examples of what a good run looks like.
+
+```kotlin
+val invoiceExtractor = agent<Unit, Invoice> {
+    // model and task as before
+    tags("good-example")
+    platform {
+        name("invoice-extractor")
+        secret(System.getenv("AIGENTIC_PLATFORM_SECRET"))
+    }
+}
+```
+
+This helps with formats the model has trouble getting right from instructions alone. Keep in mind that every example adds input tokens to every run.
+
+The example runs a run used are part of its config. Tag or untag a run, and the agent's next runs land on a new [config version](/docs/platform/runs#config-versions). That way the effect of your examples shows up in the evaluation like any other change. A run's page lists the example runs it used.
+
+## Regression tests
+
+A regression test replays tagged runs against your current agent. Use it after you change a prompt or a model, to check the agent still calls its tools the way it did in the runs you trust.
+
+```kotlin
+import community.flock.aigentic.platform.dsl.regressionTest
+import community.flock.aigentic.platform.testing.start
+
+suspend fun main() {
+    val report = regressionTest {
+        agent(invoiceExtractor)
+        tags("validated")
+        numberOfIterations(2)
+    }.start()
+}
+```
+
+For every run with the tag, the test:
+
+1. starts your current agent with the input of that run, with your current task and system prompt;
+2. answers every tool call with the result recorded in that run, so your real systems are never called;
+3. checks the arguments of each tool call against the recorded ones.
+
+A test passes when the agent finishes and calls every recorded tool call with the same arguments. It fails when the arguments differ or a tool call is missing, and it counts as an error when the run gets stuck or fails. Models don't answer the same way every time, so `numberOfIterations` runs each test more than once.
+
+The test runs the real model, with your own key, so you can run it in your build or as a regular test. At the end it prints the number of successes, failures and errors and the tokens used, and `start()` returns the same as a `TestReport`.
+
+```text title="Output (shortened)"
+🏃 12 runs found with tags: validated
+🚀 [1/24]: Starting test iteration: 1 for run …
+…
+🏁 Test finished:
+
+🟢 Successes: 23
+🔴 Failures: 1
+❌ Errors: 0
+```
+
+Two more options:
+
+- `addExpectationOverride(toolCallId, arguments)` expects other arguments for one recorded tool call. Use it for a run where the agent got a tool call wrong, after you've fixed the agent.
+- `contextMessageInterceptor { messages -> … }` changes the recorded input before it's replayed.
+
+See the [testing example](https://github.com/flock-community/aigentic/tree/main/src/examples/testing) for a complete project.
+
+## Regression tests or evaluations?
+
+They check different things, and they work well together.
+
+- **A regression test checks tool calls.** It tells you whether the agent still does the same thing with your systems, like saving the right invoice lines. It doesn't compare the final response with an expected one, so for an agent without tools it only checks that the run finishes.
+- **An [evaluation](/docs/platform/evaluations) checks the output.** It tells you how often each output field is right, across all your inputs, and how that changed between versions. It's also where the [fix assistant](/docs/platform/fix-assistant) starts.

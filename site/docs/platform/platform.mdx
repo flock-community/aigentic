@@ -1,0 +1,54 @@
+---
+id: platform
+title: Aigentic Platform
+sidebar_position: 2
+---
+
+import { PlatformDiagram } from "@site/src/components/RunLoopDiagram";
+
+# Aigentic Platform
+
+Building an agent that works on ten examples is the easy part. The hard part is knowing how often it gets the answer right, and keeping it right while you change prompts and models. The Aigentic Platform takes care of that part.
+
+Your agent keeps running in your own code. Add `platform { }` and every run goes to the platform, where you can:
+
+- **See every run**: the input and attachments, every tool call, the result and what it cost.
+- **Measure accuracy**: confirm the right answer for each output field once, and the platform reports the accuracy per field and lists every error.
+- **Compare versions**: each change to the prompt, model or tools becomes a new config version. You see per field whether it got better or worse.
+- **Fix what's wrong**: the fix assistant reads the errors, tries changes against the same inputs and proposes the best one, with its accuracy and cost per run.
+
+<PlatformDiagram />
+
+## How it works
+
+1. **Connect your agent.** Create the agent on the platform and add `platform { }` with its name and secret. [Connect an agent](/docs/platform/connect)
+2. **Let runs come in.** The platform records each run and recognises each distinct config as a version. [Runs, versions and costs](/docs/platform/runs)
+3. **Build an evaluation.** Pick runs and the output fields to score, then confirm the right values in the UI or send them from your code. [Evaluations](/docs/platform/evaluations) and [Ground truth from your code](/docs/platform/ground-truth)
+4. **Read the results.** See the accuracy per field and every error, and compare a version with the one before it.
+5. **Improve.** Change the agent yourself, or start the [fix assistant](/docs/platform/fix-assistant) and let it propose a change. Your next version is scored against the same ground truth, so you know whether it's better before you rely on it.
+
+## What it's built for
+
+The platform is built for **task agents**: one input goes in, the agent works on its own, possibly calling tools, and returns one structured result. Think of pulling fields out of invoices, classifying products or enriching records. The same inputs come back across versions, so accuracy can be measured and compared.
+
+That's why evaluations need an output type. Define your agent as `agent<Input, Output>` with an `@AigenticParameter` data class as `Output`, and the platform can score each of its fields.
+
+It's not built for chatbots and other conversational agents:
+
+- A run is one task with one result. There's no conversation that spans several turns.
+- Accuracy compares JSON output fields with expected values. A free-text reply has no fields to compare, and there's no LLM-as-judge scoring.
+- The fix assistant replays recorded inputs. In a conversation, the next message depends on the previous answer, so it can't be replayed with a changed agent.
+
+## Your agent stays in your code
+
+The platform observes, measures and proposes. You decide what ships.
+
+- It doesn't host or run your agent, and it never changes your agent's config. A proposal from the fix assistant is something you copy into your code.
+- Runs are sent after they finish, including the ones that end `Stuck` or `Fatal`. When sending fails, your run still returns as normal.
+- The only place the platform runs your agent's task is the fix assistant. It tries its proposals on Gemini, on the inputs and tool results recorded in your runs. Your tools are never called.
+
+## Getting access
+
+Flock hosts the Aigentic Platform in the EU, on Google Cloud in `europe-west4`, and gives access on request. Email [aigentic@flock.community](mailto:aigentic@flock.community?subject=Aigentic%20Platform%20access) and we'll help you connect your first agent.
+
+You can also work with the platform from an AI assistant such as Claude, see [Use it from an AI assistant](/docs/platform/mcp).

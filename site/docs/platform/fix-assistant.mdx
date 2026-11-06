@@ -1,0 +1,62 @@
+---
+id: fix-assistant
+title: Fix assistant
+sidebar_position: 5
+---
+
+# Fix assistant
+
+An evaluation tells you where your agent goes wrong. The fix assistant helps you find out why, and what to change. It reads the errors, forms an idea of what causes them, tries a changed agent on the same inputs, and keeps going until it can't improve the result any further. What you get back is a proposal with measured results, not a guess.
+
+## Start a session
+
+Open an evaluation, go to **Evaluation Result**, choose the config version to start from and click **Fix**. The session runs on the platform, so you can close the page and come back later. Everyone with access to the agent sees the same session, and there's one session per evaluation at a time.
+
+## What it does
+
+The assistant works in rounds. You can follow every step live in the session's timeline.
+
+1. **It reads the errors.** It looks at the evaluation's results for your version: every wrong value, per field.
+2. **It looks at runs.** It opens the runs behind the errors to see their input, tool calls and response.
+3. **It writes down a hypothesis**: the pattern it sees, the inputs that show it, and the fields a change should improve.
+4. **It tries a proposal** on every input of the evaluation and compares the outcome with your version, field by field: which inputs got fixed, which regressed, and what one run costs.
+5. **It repeats** with a better idea, until it can't improve the result any further.
+
+A proposal changes the task and its instructions first. When the task can't fix an error, the assistant can also propose a different model or settings: a higher media resolution when small print gets misread, more thinking or a stronger model for reasoning mistakes.
+
+It puts accuracy first, then cost. It tries the cheapest change that addresses a cause before a more expensive one. When two proposals are equally accurate, it puts forward the cheaper one, and the same accuracy at a lower cost per run counts as an improvement too. When the best accuracy costs more per run, it says so in its summary, so you can make that trade-off yourself.
+
+### How a proposal is tried
+
+- It runs on the platform, on the same inputs and attachments as your version's runs, with the same model settings unless the proposal changes them.
+- Tool calls are answered with the results recorded in the original run, so your own systems are never called. An input where the changed agent calls a tool differently can't be scored and counts as wrong. That's why proposals don't change your tools or your output type.
+- Nothing is saved as a run, so trials don't show up in your run list or create config versions.
+
+## When it needs you
+
+The assistant pauses and waits for you in two cases:
+
+- **It has a question.** Some errors depend on knowledge only you have, like whether two spellings of a company name mean the same company. It asks, and continues once you've answered.
+- **It wants to change the evaluation.** Sometimes the evaluation is wrong, not the agent. When `Garage Jansen` is extracted and `GARAGE JANSEN` was expected, the fix is a [value normalizer](/docs/platform/evaluations#ignore-formatting-differences) that ignores case, not a new prompt. The assistant proposes it with its reasoning, and the platform only applies it when you approve.
+
+You can stop a session at any time.
+
+## The result
+
+When the assistant is done, the session page shows:
+
+- a summary of what it changed and why;
+- the accuracy per field of your version next to the proposal's;
+- the difference between your config and the proposed one;
+- the cost per run, before and after;
+- the proposed task, and the model when it changed, as Aigentic Kotlin code you can paste into your agent;
+- the errors it couldn't fix, and why.
+
+The platform never changes your agent. Copy the proposal into your code, deploy it, run it on the evaluation's inputs and [compare the two versions](/docs/platform/evaluations#compare-config-versions). The comparison now uses your real agent, with your real tools.
+
+## Good to know
+
+- **Gemini only.** The platform tries proposals on Gemini, so the version you start from must run on a Gemini model. Your evaluation's inputs, attachments included, are sent to Gemini through the platform.
+- **An output type is required.** Proposals are scored on the JSON your agent returns, so the agent needs an output type: `agent<Input, Output>`.
+- **There's no spending limit per session.** The session page shows what it has cost so far, and you can stop it whenever you want.
+- **Sessions aren't stored yet.** When the platform restarts, a running session stops and you start a new one.

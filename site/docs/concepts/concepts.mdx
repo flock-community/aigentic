@@ -45,3 +45,7 @@ A workflow chains agents with `thenProcess`. The output type of one agent must b
 <WorkflowDiagram />
 
 [Workflows](/docs/workflow)
+
+## The platform
+
+The library builds and runs your agent. The Aigentic Platform tells you how well it works. Add `platform { }` and every run is sent there, with its config. The platform recognises each distinct config as a version, measures the accuracy of your output per field against ground truth people confirmed, and compares versions, so you know whether a change made the agent better or worse. Its fix assistant tries changes on your recorded inputs and proposes the best one. [Aigentic Platform](/docs/platform)
