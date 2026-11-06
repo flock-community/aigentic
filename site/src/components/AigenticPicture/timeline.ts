@@ -95,11 +95,12 @@ const easeOut = (p: number) => 1 - Math.pow(1 - p, 3);
 
 /*
  * Per lap and station: how long the pulse rests there, then how long it travels to the next station.
- * The first lap takes its time. The repeat laps hurry through Run and Record, which only repeat,
- * and keep Evaluate and Improve on screen for at least two seconds. The last lap ends at Evaluate.
+ * The first lap takes its time, starting with two seconds on Build. The repeat laps hurry through Run
+ * and Record, which only repeat (the center keeps showing the change meanwhile), and keep Evaluate and
+ * Improve on screen for at least two seconds. The last lap ends at Evaluate.
  */
 const LAPS: [number, number][][] = [
-  [[0.9, 0.8], [0.9, 0.8], [0.9, 0.8], [2.0, 0.6], [1.6, 1.1]],
+  [[2.0, 0.8], [0.9, 0.8], [0.9, 0.8], [2.0, 0.6], [1.6, 1.1]],
   [[1.1, 0.6], [0.4, 0.5], [0.4, 0.5], [2.0, 0.6], [1.6, 1.0]],
   [[1.1, 0.6], [0.4, 0.5], [0.4, 0.5], [2.0, 0]],
 ];
@@ -144,6 +145,8 @@ const changed = (version: string, detail: string): Center => ({
   detail,
   note: "You apply the change in your code",
 });
+const v2 = changed("v2", "+\u00a0addInstruction(…)");
+const v3 = changed("v3", "mediaResolution\u200b(HIGH)");
 /* \u200b marks where long code may wrap in the small center of the ring. */
 const CONTENT: Center[][] = [
   [
@@ -154,16 +157,16 @@ const CONTENT: Center[][] = [
     { version: "v1", name: "Improve", detail: "+\u00a0addInstruction(…)", note: "The fix assistant's best change" },
   ],
   [
-    changed("v2", "+\u00a0addInstruction(…)"),
-    { version: "v2", name: "Run", detail: "invoiceExtractor.\u200bstart(…)", note: "Same inputs, new version" },
-    { version: "v2", name: "Record", detail: "run #241 · $0.0040", note: "Every run, with its cost" },
+    v2,
+    v2,
+    v2,
     { version: "v2", name: "Evaluate", detail: "$.total 92%", note: "Up from 71%", score: true },
     { version: "v2", name: "Improve", detail: "mediaResolution\u200b(HIGH)", note: "Small print gets misread" },
   ],
   [
-    changed("v3", "mediaResolution\u200b(HIGH)"),
-    { version: "v3", name: "Run", detail: "invoiceExtractor.\u200bstart(…)", note: "Same inputs, new version" },
-    { version: "v3", name: "Record", detail: "run #362 · $0.0052", note: "Sharper images cost a bit more" },
+    v3,
+    v3,
+    v3,
     { version: "v3", name: "Evaluate", detail: "$.total 95%", note: "Up from 92%", score: true },
   ],
 ];
@@ -244,7 +247,28 @@ export function finishedFrame(): Frame {
   };
 }
 
-/* A frame that shows each step well when a visitor jumps to it: in the first lap, after the step has done its thing. */
-export const PEEKS = STOPS.filter((s) => s.lap === 0).map((s) =>
-  s.station === 3 ? landsAt(0) + DRAW + 0.1 : s.arrive + Math.min(0.5, s.leave - s.arrive),
-);
+/*
+ * Where a step button jumps to while the story is under way: that step in the current lap (the last lap
+ * has no Improve, so that one goes to the lap before), after the step has done its thing.
+ */
+export function peekAt(t: number, station: number): number {
+  const lap = STOPS[stopIndexAt(Math.min(t, SETTLE_START))].lap;
+  const stop =
+    STOPS.find((s) => s.lap === lap && s.station === station) ??
+    STOPS.find((s) => s.lap === lap - 1 && s.station === station)!;
+  if (station === 3) return landsAt(stop.lap) + DRAW + 0.1;
+  return stop.arrive + Math.min(0.5, stop.leave - stop.arrive);
+}
+
+/* After the finish, a step button explains that step and keeps the finished ring and chart. */
+const EXPLAINED: Center[] = [
+  { version: "v3", name: "Build", detail: "agent<Unit, Invoice>", note: "A typed agent, any model" },
+  { version: "v3", name: "Run", detail: "invoiceExtractor.\u200bstart(…)", note: "Inside your own app" },
+  { version: "v3", name: "Record", detail: "run #362 · $0.0052", note: "Every run, with its cost" },
+  { version: "v3", name: "Evaluate", detail: "$.total 95%", note: "Up from 71% in v1", score: true },
+  { version: "v3", name: "Improve", detail: "mediaResolution\u200b(HIGH)", note: "The fix assistant's change for v3" },
+];
+
+export function explainedFrame(station: number): Frame {
+  return { ...finishedFrame(), active: station, center: EXPLAINED[station], step: station };
+}

@@ -39,7 +39,17 @@
 @container aigentic (min-width: 761px) {
   .visual {
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    align-items: stretch;
+    align-items: center;
+  }
+}
+
+/* Stacked, the ring and the chart keep a readable size instead of filling a tablet's width. */
+@container aigentic (max-width: 760px) {
+  .ring,
+  .scores {
+    justify-self: center;
+    width: 100%;
+    max-width: 560px;
   }
 }
 
@@ -62,6 +72,7 @@
 
 .panelLib {
   border: 1px solid rgba(255, 255, 255, 0.09);
+  border-right-color: transparent;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.025);
 }
@@ -107,6 +118,20 @@
 
 .zonePlat strong {
   color: var(--amber);
+}
+
+.subShort {
+  display: none;
+}
+
+@container aigentic (max-width: 379px) {
+  .zonePlat .subLong {
+    display: none;
+  }
+
+  .zonePlat .subShort {
+    display: inline;
+  }
 }
 
 .art {
@@ -181,6 +206,13 @@
 
 .station.reached .label {
   fill: var(--text);
+}
+
+.labelNumber {
+  fill: var(--soft);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.68em;
+  font-weight: 500;
 }
 
 .glow {
@@ -400,12 +432,17 @@
   gap: 5px;
   padding: 0 4px;
   text-align: center;
-  opacity: 0.6;
-  transition: opacity 0.35s;
 }
 
-.version.versionIn {
-  opacity: 1;
+/* A version that has not been scored yet shows only its pill: its change and cost appear when it lands. */
+.version .change,
+.version .cost {
+  visibility: hidden;
+}
+
+.version.versionIn .change,
+.version.versionIn .cost {
+  visibility: visible;
 }
 
 .versionPill {
@@ -414,6 +451,33 @@
   border-radius: 999px;
   color: var(--amber);
   font: 500 12px/1 var(--ifm-font-family-monospace);
+}
+
+.version .versionPill {
+  border-style: dashed;
+  color: var(--soft);
+}
+
+.version.versionIn .versionPill {
+  border-style: solid;
+  color: var(--amber);
+}
+
+.delta {
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(240, 188, 66, 0.16);
+  color: var(--muted);
+  font-size: 14px;
+  visibility: hidden;
+}
+
+.delta.deltaIn {
+  visibility: visible;
+}
+
+.delta strong {
+  color: var(--amber);
 }
 
 .change {
@@ -455,6 +519,10 @@
 @container scores (max-width: 299px) {
   .axis {
     font-size: calc(10.5px * var(--k, 1.6));
+  }
+
+  .axis.axisMid {
+    display: none;
   }
 }
 
@@ -536,6 +604,8 @@
 }
 
 .chip.chipStatic {
+  padding: 0 10px;
+  border-color: transparent;
   cursor: default;
 }
 
@@ -575,10 +645,15 @@
   background: var(--amber);
 }
 
-.chip:focus-visible,
 .play:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
+}
+
+/* Light, so a focused step never looks like the amber border of the current step. */
+.chip:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
 }
 
 /* One line about the current step, with its docs */
@@ -628,7 +703,6 @@
   .halo,
   .label,
   .point,
-  .version,
   .chip,
   .play {
     transition: none;

@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import Link from "@docusaurus/Link";
 import useIsBrowser from "@docusaurus/useIsBrowser";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import useHydratedReducedMotion from "@site/src/hooks/useHydratedReducedMotion";
 import {
   ARC_RANGES,
@@ -13,7 +13,6 @@ import {
   CY,
   DURATION,
   GRID,
-  PEEKS,
   POINTS,
   R,
   SCORES,
@@ -21,8 +20,10 @@ import {
   STEPS,
   VIEW,
   arc,
+  explainedFrame,
   finishedFrame,
   frameAt,
+  peekAt,
   point,
   scoreY,
   type Center,
@@ -32,6 +33,11 @@ import styles from "./styles.module.css";
 
 const FINISHED = finishedFrame();
 const CENTER_TOP = ((CY - VIEW.y) / VIEW.height) * 100;
+const GAIN = SCORES[SCORES.length - 1] - SCORES[0];
+const EXTRA_COST = (parseFloat(COSTS[COSTS.length - 1].slice(1)) - parseFloat(COSTS[0].slice(1))).toFixed(4);
+/* It starts once most of it is in view, and keeps running until it has nearly left the screen. */
+const START_RATIO = 0.6;
+const KEEP_RATIO = 0.15;
 
 const DESCRIPTION =
   "The Aigentic loop. Build and Run happen in your code with the Aigentic library. Record, Evaluate and Improve happen on the Aigentic Platform. Every run goes to the platform, and every improvement comes back to your code as the next version. In the example, the accuracy of $.total of an invoice extractor goes from 71% in version 1 to 92% in version 2 and 95% in version 3, on the same 120 invoices.";
@@ -65,10 +71,13 @@ export default function AigenticPicture() {
   const isBrowser = useIsBrowser();
   const reduceMotion = useHydratedReducedMotion();
   const [phase, setPhase] = useState<Phase>("done");
-  const [inView, setInView] = useState(false);
+  const [played, setPlayed] = useState(false);
+  const [explained, setExplained] = useState<number | null>(null);
+  const [visibleRatio, setVisibleRatio] = useState(0);
   const [pageVisible, setPageVisible] = useState(true);
   const [step, setStep] = useState(-1);
-  const running = phase === "playing" && inView && pageVisible;
+  const docsId = useId();
+  const running = phase === "playing" && visibleRatio >= KEEP_RATIO && pageVisible;
 
   const figure = useRef<HTMLElement>(null);
   const visual = useRef<HTMLDivElement>(null);
@@ -88,6 +97,7 @@ export default function AigenticPicture() {
   const points = useRef<(SVGGElement | null)[]>([]);
   const dots = useRef<(SVGCircleElement | null)[]>([]);
   const versions = useRef<(HTMLLIElement | null)[]>([]);
+  const delta = useRef<HTMLParagraphElement>(null);
   const fills = useRef<(HTMLElement | null)[]>([]);
   const spark = useRef<HTMLSpanElement>(null);
   const time = useRef(DURATION);
@@ -131,6 +141,7 @@ export default function AigenticPicture() {
       g?.classList.toggle(styles.current, frame.current === i);
     });
     versions.current.forEach((li, i) => li?.classList.toggle(styles.versionIn, frame.landed[i]));
+    delta.current?.classList.toggle(styles.deltaIn, frame.landed[frame.landed.length - 1]);
 
     const sparkEl = spark.current;
     const target = frame.spark ? dots.current[frame.spark.lap] : null;
@@ -181,9 +192,11 @@ export default function AigenticPicture() {
   }, []);
 
   useEffect(() => {
-    const el = figure.current;
+    const el = visual.current;
     if (!el) return undefined;
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.3 });
+    const observer = new IntersectionObserver(([entry]) => setVisibleRatio(entry.intersectionRatio), {
+      threshold: [0, KEEP_RATIO, START_RATIO],
+    });
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -209,12 +222,13 @@ export default function AigenticPicture() {
   }, [reduceMotion, apply]);
 
   useEffect(() => {
-    if (phase === "waiting" && inView && !reduceMotion) setPhase("playing");
-  }, [phase, inView, reduceMotion]);
+    if (phase === "waiting" && visibleRatio >= START_RATIO && !reduceMotion) setPhase("playing");
+  }, [phase, visibleRatio, reduceMotion]);
 
   useEffect(() => {
     if (!running) return undefined;
     started.current = true;
+    setPlayed(true);
     let raf = 0;
     let last = performance.now();
     const tick = (now: number) => {
@@ -241,6 +255,7 @@ export default function AigenticPicture() {
       return;
     }
     if (phase === "done") {
+      setExplained(null);
       time.current = 0;
       apply(frameAt(0), false);
     }
@@ -248,16 +263,26 @@ export default function AigenticPicture() {
     setPhase("playing");
   };
 
+  /* After the finish a step only explains itself; clicking it again goes back to the result. Before that, it jumps within the current lap. */
   const jumpTo = (i: number) => {
+    if (phase === "done") {
+      const next = explained === i ? null : i;
+      setExplained(next);
+      apply(next === null ? FINISHED : explainedFrame(next), false);
+      return;
+    }
     started.current = true;
-    time.current = PEEKS[i];
-    apply(frameAt(PEEKS[i]), false);
+    time.current = peekAt(time.current, i);
+    apply(frameAt(time.current), false);
     setPhase("paused");
   };
 
+  const replay = phase === "done" && played;
   const playLabel =
-    phase === "playing" ? "Pause the animation" : phase === "done" ? "Replay the animation" : "Play the animation";
-  const current = step >= 0 ? STEPS[step] : null;
+    phase === "playing" ? "Pause the animation" : replay ? "Replay the animation" : "Play the animation";
+  /* While it plays, the caption stays general; a step is explained when paused or picked. */
+  const captionStep = phase === "paused" ? step : phase === "done" && explained !== null ? explained : -1;
+  const current = captionStep >= 0 ? STEPS[captionStep] : null;
   const f = FINISHED;
   const [headX, headY] = point(f.angle);
 
@@ -276,7 +301,10 @@ export default function AigenticPicture() {
             </p>
             <p className={styles.zonePlat}>
               <strong>Aigentic Platform</strong>
-              <span>Hosted by Flock or in your own environment</span>
+              <span>
+                <span className={styles.subLong}>Hosted by Flock or in your own environment</span>
+                <span className={styles.subShort}>Hosted by Flock or by you</span>
+              </span>
             </p>
           </div>
           <div className={styles.art}>
@@ -319,7 +347,7 @@ export default function AigenticPicture() {
                     <circle className={styles.halo} cx={x} cy={y} r={19} />
                     <circle ref={i === 3 ? evaluateNode : undefined} className={styles.node} cx={x} cy={y} r={8} />
                     <text className={styles.label} x={lx} y={ly} dy="0.35em" textAnchor={lib ? "end" : "start"}>
-                      {STEPS[i].name}
+                      <tspan className={styles.labelNumber}>{i + 1}</tspan> {STEPS[i].name}
                     </text>
                   </g>
                 );
@@ -370,7 +398,12 @@ export default function AigenticPicture() {
             {GRID.map((value) => (
               <g key={value}>
                 <line className={styles.gridLine} x1={0} x2={CHART.width} y1={scoreY(value)} y2={scoreY(value)} />
-                <text className={styles.axis} x={0} y={scoreY(value)} dy="-0.55em">
+                <text
+                  className={clsx(styles.axis, value !== GRID[0] && value !== GRID[GRID.length - 1] && styles.axisMid)}
+                  x={0}
+                  y={scoreY(value)}
+                  dy="-0.55em"
+                >
                   {value}%
                 </text>
               </g>
@@ -426,6 +459,9 @@ export default function AigenticPicture() {
               </li>
             ))}
           </ol>
+          <p ref={delta} className={clsx(styles.delta, f.landed[f.landed.length - 1] && styles.deltaIn)}>
+            From v1 to v{SCORES.length}: <strong>+{GAIN} points</strong> for ${EXTRA_COST} more per run
+          </p>
         </div>
         <span ref={spark} className={styles.spark} />
       </div>
@@ -433,7 +469,7 @@ export default function AigenticPicture() {
       <div className={styles.rail}>
         {isBrowser && (
           <button type="button" className={styles.play} onClick={togglePlay} aria-label={playLabel}>
-            <Icon d={phase === "playing" ? PAUSE : phase === "done" ? REPLAY : PLAY} />
+            <Icon d={phase === "playing" ? PAUSE : replay ? REPLAY : PLAY} />
           </button>
         )}
         <ol className={styles.steps}>
@@ -468,6 +504,7 @@ export default function AigenticPicture() {
                     onClick={() => jumpTo(i)}
                     aria-current={step === i ? "step" : undefined}
                     aria-label={`Show step ${i + 1}, ${s.name}`}
+                    aria-describedby={docsId}
                   >
                     {content}
                   </button>
@@ -479,7 +516,7 @@ export default function AigenticPicture() {
           })}
         </ol>
       </div>
-      <p className={styles.docs}>
+      <p id={docsId} className={styles.docs}>
         {current ? (
           <>
             <strong className={current.zone === "plat" ? styles.docsPlat : undefined}>{current.name}.</strong>{" "}
