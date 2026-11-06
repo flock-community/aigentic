@@ -11,6 +11,23 @@ import ProductionStory from "../components/ProductionStory";
 import FlockMark from "../components/FlockMark";
 import StartSection from "../components/StartSection";
 import FlockHero from "../components/FlockHero";
+import Lifecycle from "../components/Lifecycle";
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+const platformPoints = [
+  {
+    title: "Every run",
+    text: "recorded with its input, tool calls, cost and config version.",
+  },
+  {
+    title: "Accuracy per field",
+    text: "against answers people confirmed, or that your process already has.",
+  },
+  {
+    title: "A fix assistant",
+    text: "that tries changes on your recorded inputs and proposes the best one, with its cost per run.",
+  },
+];
 
 const dslPoints = [
   {
@@ -50,7 +67,7 @@ function HomepageHeader() {
           />
         </h1>
         <p className={clsx("hero__subtitle", styles.heroSubtitle)}>
-          A Kotlin DSL for AI agents that are typed, testable and work with any model
+          A Kotlin DSL for typed AI agents that work with any model, and a platform that shows how often they're right
         </p>
         <div className={styles.buttons}>
           <Link
@@ -71,11 +88,60 @@ function HomepageHeader() {
   );
 }
 
+function PlatformSection() {
+  const screenshot = useBaseUrl("/img/platform/fix-assistant-result.png");
+  return (
+    <section className={clsx("how", styles.platformSection)}>
+      <div className={clsx("container", styles.sectionIntro)}>
+        <SectionTitle centered>Know how often it's right</SectionTitle>
+        <p>
+          A demo shows your agent can get it right. The Aigentic Platform shows how often it does, field by field, and
+          whether your last change made it better or worse.
+        </p>
+      </div>
+      <div className="container">
+        <Lifecycle className={styles.lifecycle} />
+        <div className={clsx("row row--align-center", styles.platformProof)}>
+          <div className="col col--5">
+            <ul className={styles.proofPoints}>
+              {platformPoints.map(({ title, text }) => (
+                <li key={title}>
+                  <strong>{title}</strong> {text}
+                </li>
+              ))}
+            </ul>
+            <p className={styles.hosting}>Hosted by Flock in the EU, or in your own environment.</p>
+            <div className={styles.proofActions}>
+              <Link className={clsx(styles.button, styles.buttonPrimary)} to="/docs/platform">
+                Explore the platform
+              </Link>
+              <Link className={clsx(styles.button, styles.buttonDefault)} to="/docs/lifecycle">
+                Read the guide
+              </Link>
+            </div>
+          </div>
+          <div className="col col--7">
+            <img
+              className={styles.shot}
+              src={screenshot}
+              alt="A fix assistant result on the Aigentic Platform: $.invoiceNumber goes from 70% to 90% correct, $.total stays at 80%, a run costs $0.0062 instead of $0.0039, with the fixed and regressed inputs per field."
+              width={1300}
+              height={824}
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home(): JSX.Element {
   return (
     <Layout
       title="Aigentic: Kotlin DSL for AI Agents"
-      description="A Kotlin DSL for AI agents that are typed, testable and work with any model"
+      description="Build typed AI agents in Kotlin, then measure how often they're right and fix what isn't on the Aigentic Platform."
     >
       <HomepageHeader />
       <main className={clsx(styles.page)}>
@@ -113,8 +179,8 @@ export default function Home(): JSX.Element {
             <SectionTitle>Why Aigentic</SectionTitle>
             <p className={styles.lead}>
               Most agent libraries help you build the demo. Aigentic is built for what comes after: typed agents in
-              your existing Kotlin code, any provider, and regression tests from real runs. Here's the same weather
-              agent written both ways.
+              your existing Kotlin code, any provider, and a platform that measures how often they're right. Here's
+              the same weather agent written both ways.
             </p>
             <BeforeAfter />
             <div className={clsx("row row--align-center", styles.talk)}>
@@ -149,6 +215,7 @@ export default function Home(): JSX.Element {
             <ProductionStory />
           </div>
         </section>
+        <PlatformSection />
         <StartSection showModules />
       </main>
     </Layout>

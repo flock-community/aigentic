@@ -1,0 +1,343 @@
+/*
+ * One component, three layouts, picked by the width it gets (container queries):
+ * stacked cards on a phone, phases as rows in a docs column, phases as columns across a wide section.
+ * The platform lane carries the amber tint; the code lane stays neutral.
+ */
+
+.figure {
+  --sep: rgba(255, 255, 255, 0.08);
+  --amber: #f0bc42;
+  --amber-line: rgba(240, 188, 66, 0.28);
+  --amber-tint: rgba(240, 188, 66, 0.055);
+  --name-center: 1.55rem;
+
+  container: lifecycle / inline-size;
+  margin: 32px 0;
+}
+
+.lanes {
+  display: block;
+}
+
+.laneLabel,
+.loop {
+  display: none;
+}
+
+.phases {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.phases .phase {
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: #141414;
+  overflow: hidden;
+}
+
+.head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 10px;
+  row-gap: 2px;
+  padding: 16px 18px 14px;
+}
+
+.number {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 12px;
+  color: var(--amber);
+}
+
+.name {
+  font-family: "Funnel Display", sans-serif;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+.question {
+  grid-column: 2;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #a8a8a8;
+}
+
+.cell {
+  padding: 12px 18px 16px;
+  border-top: 1px solid var(--sep);
+
+  p {
+    margin: 8px 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #b8b8b8;
+  }
+}
+
+.cellLabel {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #a8a8a8;
+}
+
+.platform {
+  border-top-color: var(--amber-line);
+  background: var(--amber-tint);
+
+  .cellLabel {
+    color: var(--amber);
+  }
+}
+
+.cell code.chip,
+.chip {
+  display: inline-block;
+  max-width: 100%;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  vertical-align: baseline;
+  overflow-wrap: anywhere;
+}
+
+.cell code.chip {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #0c0c0c;
+  color: #e6e1d6;
+}
+
+.place {
+  border: 1px solid rgba(240, 188, 66, 0.35);
+  background: rgba(240, 188, 66, 0.08);
+  color: var(--amber);
+  font-weight: 500;
+}
+
+.caption {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #a8a8a8;
+
+  svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    stroke: var(--amber);
+  }
+
+  strong {
+    color: #e6e1d6;
+    font-weight: 500;
+  }
+}
+
+/* Phases as rows: a docs column or a tablet. */
+@container lifecycle (min-width: 620px) {
+  .lanes {
+    display: grid;
+    grid-template-columns: minmax(9.5rem, 0.8fr) minmax(0, 1fr) minmax(0, 1fr) 2.5rem;
+    grid-template-rows: auto repeat(5, auto);
+  }
+
+  .laneLabel {
+    display: block;
+    padding: 0 18px 10px;
+    font-size: 13px;
+    color: #a8a8a8;
+  }
+
+  .codeLabel {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .platformLabel {
+    grid-column: 3;
+    grid-row: 1;
+    color: var(--amber);
+  }
+
+  .phases {
+    grid-column: 1 / 4;
+    grid-row: 2 / 7;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    gap: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: #141414;
+    overflow: hidden;
+  }
+
+  .phases .phase {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .phases .phase + .phase {
+    border-top: 1px solid var(--sep);
+  }
+
+  .head {
+    align-content: start;
+    padding: 18px;
+  }
+
+  .cell {
+    padding: 18px;
+    border-top: 0;
+    border-left: 1px solid var(--sep);
+  }
+
+  .platform {
+    border-left-color: var(--amber-line);
+  }
+
+  .cellLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* Improve loops back to Validate: a bracket from row 5 up to row 3, ending in an arrow. */
+  .loop {
+    display: block;
+    position: relative;
+    grid-column: 4;
+    grid-row: 4 / 6;
+    width: 1.25rem;
+    margin: var(--name-center) 0 calc(var(--name-center) * -1) 0.5rem;
+    border: 1.5px solid var(--amber);
+    border-left: 0;
+    border-radius: 0 12px 12px 0;
+  }
+
+  .loop::before {
+    content: "";
+    position: absolute;
+    top: -5.5px;
+    left: -7px;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 7px solid var(--amber);
+  }
+
+  .loop::after {
+    content: "";
+    position: absolute;
+    bottom: -3.5px;
+    left: -3px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--amber);
+  }
+}
+
+/* Phases as columns: a wide homepage section. */
+@container lifecycle (min-width: 1000px) {
+  .lanes {
+    grid-template-columns: 8.5rem repeat(5, minmax(0, 1fr));
+    grid-template-rows: auto auto auto 2rem;
+  }
+
+  .laneLabel {
+    padding: 18px 16px 0 0;
+    text-align: right;
+  }
+
+  .codeLabel {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .platformLabel {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .phases {
+    grid-column: 2 / 7;
+    grid-row: 1 / 4;
+  }
+
+  .phases .phase {
+    grid-column: auto;
+    grid-row: 1 / -1;
+    grid-template-columns: none;
+    grid-template-rows: subgrid;
+  }
+
+  .phases .phase + .phase {
+    border-top: 0;
+    border-left: 1px solid var(--sep);
+  }
+
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 18px 18px 16px;
+  }
+
+  .question {
+    grid-column: 1;
+  }
+
+  .cell {
+    border-left: 0;
+    border-top: 1px solid var(--sep);
+  }
+
+  .platform {
+    border-top-color: var(--amber-line);
+  }
+
+  .loop {
+    grid-column: 4 / 7;
+    grid-row: 4;
+    width: auto;
+    height: 1.25rem;
+    margin: 0.5rem calc(100% / 6) 0;
+    border: 1.5px solid var(--amber);
+    border-top: 0;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .loop::before {
+    top: -7px;
+    left: -5.5px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 0;
+    border-bottom: 7px solid var(--amber);
+  }
+
+  .loop::after {
+    top: -3.5px;
+    right: -3.5px;
+    bottom: auto;
+    left: auto;
+  }
+}

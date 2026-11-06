@@ -8,9 +8,9 @@ sidebar_position: 0
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-Aigentic is a Kotlin Multiplatform library for building AI agents with a typed DSL. You'll have a working agent in three steps. The rest of this page covers the other modules, Maven, and adding tools.
+Aigentic is a Kotlin Multiplatform library for building AI agents with a typed DSL. You'll have a working agent in three steps, and a fourth shows you how often it gets the answer right. The rest of this page covers the other modules, Maven, and adding tools.
 
-## Your first agent in 3 steps
+## Your first agent, step by step
 
 ### 1. Add the dependencies
 
@@ -83,7 +83,55 @@ export GEMINI_API_KEY=your-api-key
 Coroutines suspend instead of blocking, so thousands of them can share a handful of threads. Threads are managed by the operating system and cost far more to create and switch between.
 ```
 
-The answer comes from the model, so yours will be worded differently. Next, [see how the pieces fit together](/docs/concepts), [give the agent a tool](#add-a-tool) or [switch to another provider](/docs/dsl/providers). Once the agent does real work, the [Aigentic Platform](/docs/platform) shows you how often it gets the answer right.
+The answer comes from the model, so yours will be worded differently. Next, [see how the pieces fit together](/docs/concepts), [give the agent a tool](#add-a-tool) or [switch to another provider](/docs/dsl/providers).
+
+### 4. Measure how often it's right
+
+One good answer doesn't tell you much. To know how often an agent is right, you need answers you can check, field by field. The [Aigentic Platform](/docs/platform) does that checking for you. This step needs access to the platform, see [Hosting and access](/docs/platform#hosting-and-access).
+
+Add `implementation("community.flock.aigentic:platform:{{AIGENTIC_VERSION}}")` to your dependencies, create an agent called `ticket-classifier` on the platform and keep its secret. Then run a small agent that sorts support tickets, together with the answers you expect:
+
+```kotlin title="src/main/kotlin/Main.kt"
+import community.flock.aigentic.core.agent.Expected
+import community.flock.aigentic.core.agent.start
+import community.flock.aigentic.core.annotations.AigenticParameter
+import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.gemini.dsl.geminiModel
+import community.flock.aigentic.gemini.model.GeminiModelIdentifier
+import community.flock.aigentic.platform.dsl.platform
+
+@AigenticParameter
+data class Ticket(val category: String, val urgent: Boolean)
+
+val ticketClassifier = agent<String, Ticket> {
+    geminiModel {
+        apiKey(System.getenv("GEMINI_API_KEY"))
+        modelIdentifier(GeminiModelIdentifier.Gemini3_5Flash)
+    }
+    task("Classify the support ticket") {
+        addInstruction("Use one of these categories: billing, delivery, product, other")
+        addInstruction("A ticket is urgent when the customer lost money or can't use the product")
+    }
+    platform {
+        name("ticket-classifier")
+        secret(System.getenv("AIGENTIC_PLATFORM_SECRET"))
+    }
+}
+
+val tickets = listOf(
+    "I was charged twice for my order" to Ticket("billing", urgent = true),
+    "My package is a week late, any news?" to Ticket("delivery", urgent = false),
+    "The app crashes every time I log in" to Ticket("product", urgent = true),
+)
+
+suspend fun main() {
+    tickets.forEach { (text, expected) ->
+        ticketClassifier.start(text, expected = Expected("first-tickets", expected))
+    }
+}
+```
+
+Open the agent on the platform. Under **Evaluations** you'll find `first-tickets`, with the accuracy of `category` and `urgent` over these three tickets. Three tickets is a start, not a measurement: [From prototype to production](/docs/lifecycle) shows how to grow it into a golden set and use it every time you change the agent.
 
 ---
 

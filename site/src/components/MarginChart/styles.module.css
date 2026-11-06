@@ -1,0 +1,211 @@
+.figure {
+  --surface: #141414;
+  --grid: rgba(255, 255, 255, 0.08);
+  --range: #b8871a;
+  --measured: #f0bc42;
+
+  margin: 28px 0;
+  padding: 20px 20px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.title {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 14px;
+
+  strong {
+    font-family: "Funnel Display", sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #ffffff;
+  }
+
+  span {
+    font-size: 14px;
+    line-height: 1.45;
+    color: #a8a8a8;
+  }
+}
+
+.figure .table {
+  display: table;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  thead,
+  tbody,
+  tfoot,
+  tr {
+    border: 0;
+    background: transparent;
+  }
+
+  th,
+  td {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    vertical-align: middle;
+  }
+
+  thead th {
+    padding-bottom: 6px;
+    font-size: 12px;
+    font-weight: 400;
+    text-align: left;
+    color: #a8a8a8;
+  }
+
+  thead th:first-child {
+    width: 6.5rem;
+  }
+
+  thead th:last-child {
+    width: 8.5rem;
+    text-align: right;
+  }
+
+  tbody th {
+    height: 40px;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    color: #e6e1d6;
+    font-variant-numeric: tabular-nums;
+  }
+
+  tbody tr:hover th,
+  tbody tr:hover .value {
+    color: #ffffff;
+  }
+
+  tbody tr:hover .tooltip {
+    opacity: 1;
+  }
+}
+
+.plot {
+  padding: 0 14px !important;
+}
+
+.track {
+  position: relative;
+  height: 40px;
+}
+
+.grid {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--grid);
+}
+
+.range {
+  position: absolute;
+  top: 50%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--range);
+  transform: translateY(-50%);
+}
+
+.dot {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--measured);
+  transform: translate(-50%, -50%);
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  z-index: 1;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: #0c0c0c;
+  color: #e6e1d6;
+  font-size: 12.5px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 120ms ease-out;
+  pointer-events: none;
+}
+
+.value {
+  font-size: 14px;
+  text-align: right;
+  color: #e6e1d6;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.axis {
+  position: relative;
+  height: 24px;
+
+  span {
+    position: absolute;
+    top: 6px;
+    font-size: 12px;
+    color: #a8a8a8;
+    font-variant-numeric: tabular-nums;
+    transform: translateX(-50%);
+  }
+}
+
+.plotHead {
+  padding: 0 14px 6px !important;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .figure {
+    padding: 16px 14px 10px;
+  }
+
+  .figure .table thead th:first-child {
+    width: 5.2rem;
+  }
+
+  .figure .table thead th:last-child {
+    width: 7.4rem;
+  }
+
+  .plot,
+  .plotHead {
+    padding-inline: 8px !important;
+  }
+
+  .value,
+  .figure .table tbody th {
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    transition: none;
+  }
+}

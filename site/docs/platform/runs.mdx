@@ -4,6 +4,8 @@ title: Runs, versions and costs
 sidebar_position: 2
 ---
 
+import { Screenshot } from "@site/src/components/PlatformMedia";
+
 # Runs, versions and costs
 
 Once your agent is [connected](/docs/platform/connect), every run lands on the platform. This page covers what you can do with them before you build an evaluation.
@@ -11,6 +13,13 @@ Once your agent is [connected](/docs/platform/connect), every run lands on the p
 ## Runs
 
 The **Runs** page lists every run of the agent. Search, sort, and filter by tag or config version, and see at a glance which runs you haven't opened yet.
+
+<Screenshot
+  src="/img/platform/runs.png"
+  alt="The run list: for each run its number, config version, input, start time, duration, tags and result."
+  width={1400}
+  height={526}
+/>
 
 Open a run to see what happened, step by step:
 
@@ -46,5 +55,12 @@ Versions are what make results comparable. The run list, the costs and every eva
 ## Costs
 
 The **Costs** page shows what the agent costs per day, in total and per run on average, for a date range you choose. Filter on a config version to compare, for example, a cheaper model with the one before it.
+
+<Screenshot
+  src="/img/platform/costs.png"
+  alt="The Costs page with demo data: total cost, number of runs, total tokens and average cost per run, the cumulative cost over four days, and the split between input, output, thinking and cached tokens."
+  width={1300}
+  height={608}
+/>
 
 The platform prices each model request from its input, output, thinking and cached tokens, using a built-in price table of OpenAI and Gemini models. Models that aren't in that table, such as local models through Ollama, count as zero.

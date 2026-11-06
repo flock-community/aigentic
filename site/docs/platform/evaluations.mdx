@@ -4,6 +4,8 @@ title: Evaluations
 sidebar_position: 3
 ---
 
+import { Screenshot } from "@site/src/components/PlatformMedia";
+
 # Evaluations
 
 An evaluation tells you how often your agent gets each output field right. You pick runs, choose the fields to score and confirm the right values once. The platform then reports the accuracy per field, lists every error and compares one config version with another.
@@ -33,6 +35,13 @@ Under **Evaluations**, start a new evaluation. The wizard asks for three things:
 
 You can change the runs and fields later.
 
+<Screenshot
+  src="/img/platform/select-runs.png"
+  alt="Selecting runs for an evaluation: the first four of six invoice runs are checked."
+  width={1400}
+  height={526}
+/>
+
 ### Ignore formatting differences
 
 By default, an extracted value must match the expected value exactly. When formatting doesn't matter, give the field a **value normalizer**. It's applied to both values before they're compared:
@@ -45,15 +54,38 @@ By default, an extracted value must match the expected value exactly. When forma
 
 The regex replacement runs first, then the lower-casing.
 
+<Screenshot
+  src="/img/platform/value-normalizer.png"
+  alt="Field accuracy for $.totalAmount at 6 correct, 0 incorrect: with a normalizer, 30000 matches 30.000 and 1250 matches 1.250,00."
+  width={440}
+  height={432}
+  narrow
+/>
+
 ### Lists
 
 A field inside a list, like `$.items[*].sku`, is scored per item. Before scoring, the platform pairs each expected item with the output item that matches it best, so the order of the items doesn't matter and one missing item counts as one error, not as a shifted list.
+
+<Screenshot
+  src="/img/platform/list-matching.png"
+  alt="Field accuracy for $.mechanical[*].value going from 25% to 100%: each annotated item is compared with the output item that matches it best, even when the output lists them in another order."
+  width={1044}
+  height={448}
+/>
 
 When items look alike and get paired wrongly, give the list a key: the fields that identify an item, like `sku` for `$.items[*]`. Items with the same key are paired first. Output items without a match count as extra items, so a made-up line on an invoice shows up as an error.
 
 ## Annotate the runs
 
 The **Annotations** tab walks you through the inputs. For each one you see the document or input next to the value the agent extracted for every field. Mark each value as correct or incorrect, and enter the right value when it's wrong.
+
+<Screenshot
+  src="/img/platform/annotate.png"
+  alt="Annotating a run: the invoice text on the left; on the right the extracted invoice number marked correct, and the extracted total marked incorrect with the expected value $987.65 and a comment explaining the swapped digits."
+  width={1040}
+  height={614}
+  caption={<>The <strong>via MCP</strong> tag marks values an AI assistant saved, until a person saves them on the platform.</>}
+/>
 
 - **More than one right answer?** Enter several acceptable values. A match with any of them counts as correct. This helps for classifications where two codes are both valid.
 - **Should the field be empty?** Mark it as expected to be absent, for example a purchase order number on an invoice that doesn't have one.

@@ -1,0 +1,18 @@
+.figure {
+  margin: 24px 0 28px;
+}
+
+.media {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: #141414;
+}
+
+.caption {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #a8a8a8;
+}

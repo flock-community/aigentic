@@ -301,3 +301,67 @@ body {
     font-size: 17px;
   }
 }
+
+.platformSection {
+  padding-top: 24px;
+}
+
+.lifecycle {
+  margin: 8px 0 0;
+}
+
+.platformProof {
+  margin-top: 64px;
+}
+
+.proofPoints {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    margin: 0;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 17px;
+    line-height: 1.55;
+    color: #c9c9c9;
+  }
+
+  li:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  strong {
+    font-weight: 500;
+    color: #ffffff;
+  }
+}
+
+.hosting {
+  margin: 20px 0 0;
+  font-size: 15px;
+  color: #a8a8a8;
+}
+
+.proofActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: #141414;
+
+  @media (max-width: 996px) {
+    margin-top: 32px;
+  }
+}
