@@ -38,8 +38,8 @@ You can change the runs and fields later.
 <Screenshot
   src="/img/platform/select-runs.png"
   alt="Selecting runs for an evaluation: the first four of six invoice runs are checked."
-  width={1400}
-  height={526}
+  width={818}
+  height={406}
 />
 
 ### Ignore formatting differences
@@ -69,8 +69,8 @@ A field inside a list, like `$.items[*].sku`, is scored per item. Before scoring
 <Screenshot
   src="/img/platform/list-matching.png"
   alt="Field accuracy for $.mechanical[*].value going from 25% to 100%: each annotated item is compared with the output item that matches it best, even when the output lists them in another order."
-  width={1044}
-  height={448}
+  width={938}
+  height={367}
 />
 
 When items look alike and get paired wrongly, give the list a key: the fields that identify an item, like `sku` for `$.items[*]`. Items with the same key are paired first. Output items without a match count as extra items, so a made-up line on an invoice shows up as an error.
@@ -82,8 +82,8 @@ The **Annotations** tab walks you through the inputs. For each one you see the d
 <Screenshot
   src="/img/platform/annotate.png"
   alt="Annotating a run: the invoice text on the left; on the right the extracted invoice number marked correct, and the extracted total marked incorrect with the expected value $987.65 and a comment explaining the swapped digits."
-  width={1040}
-  height={614}
+  width={977}
+  height={548}
   caption={<>The <strong>via MCP</strong> tag marks values an AI assistant saved, until a person saves them on the platform.</>}
 />
 

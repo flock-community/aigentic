@@ -53,8 +53,8 @@ The assistant pauses and waits for you in two cases:
 <Screenshot
   src="/img/platform/fix-assistant-approval.png"
   alt="The fix assistant proposes to ignore case on $.invoiceNumber, explains that only the casing differs, and waits for Approve or Reject with an optional comment."
-  width={1300}
-  height={824}
+  width={828}
+  height={558}
 />
 
 You can stop a session at any time.
@@ -72,10 +72,10 @@ When the assistant is done, the session page shows:
 
 <Screenshot
   src="/img/platform/fix-assistant-result.png"
-  alt="The result of a session: $.invoiceNumber goes from 70% to 90% and $.total stays at 80%, a run costs $0.0062 instead of $0.0039, and a table lists the fixed and regressed inputs per field."
-  width={1300}
-  height={824}
-  caption={<>Demo data on ten inputs. Two fixed inputs isn't proof yet: on a real golden set, see <a href="/docs/platform/measuring-well#is-the-new-version-really-better">how many changed inputs you need</a>.</>}
+  alt="Accuracy and cost of a proposal: $.invoiceNumber goes from 70% to 90% correct, $.total stays at 80%, and a run costs $0.0062 instead of $0.0039."
+  width={844}
+  height={300}
+  caption={<>Demo data on ten inputs. A gain of two inputs isn't proof yet: on a real golden set, see <a href="/docs/platform/measuring-well#is-the-new-version-really-better">how many changed inputs you need</a>.</>}
 />
 
 The platform never changes your agent. Copy the proposal into your code, deploy it, run it on the evaluation's inputs and [compare the two versions](/docs/platform/evaluations#compare-config-versions). The comparison now uses your real agent, with your real tools.

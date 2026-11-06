@@ -16,9 +16,9 @@ The **Runs** page lists every run of the agent. Search, sort, and filter by tag 
 
 <Screenshot
   src="/img/platform/runs.png"
-  alt="The run list: for each run its number, config version, input, start time, duration, tags and result."
-  width={1400}
-  height={526}
+  alt="Part of the run list: for each run its number, its config version with the input, and when it started."
+  width={818}
+  height={161}
 />
 
 Open a run to see what happened, step by step:
@@ -58,9 +58,9 @@ The **Costs** page shows what the agent costs per day, in total and per run on a
 
 <Screenshot
   src="/img/platform/costs.png"
-  alt="The Costs page with demo data: total cost, number of runs, total tokens and average cost per run, the cumulative cost over four days, and the split between input, output, thinking and cached tokens."
-  width={1300}
-  height={608}
+  alt="The cumulative cost of an agent over four days, from the Costs page, with demo data."
+  width={826}
+  height={409}
 />
 
 The platform prices each model request from its input, output, thinking and cached tokens, using a built-in price table of OpenAI and Gemini models. Models that aren't in that table, such as local models through Ollama, count as zero.
