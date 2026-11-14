@@ -23,8 +23,6 @@ Steel starts at a mill. Every batch that is melted there gets a **heat number**,
 the rest of its life. The mill rolls the batch into coils and ships each coil with an inspection certificate that
 states what the steel is made of.
 
-![From the mill to the customer, and the certificate has to travel along](/img/blog/steel-certificates.png)
-
 Our client buys those coils, embosses and cuts them, and sells the result. When a customer asks which certificate backs
 their product, the answer runs through the heat number: it is the one reference that links a sheet of steel back to the
 batch it was melted in.
