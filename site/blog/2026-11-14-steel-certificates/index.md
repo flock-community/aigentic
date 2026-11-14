@@ -71,8 +71,8 @@ for each value whether the agent got it right. Where it didn't, you fill in what
 ground truth, and from then on every version of the agent gets a score instead of an impression.
 
 For some twenty certificates that means reading 28 heat numbers and 38 coil numbers off dense scans. We didn't do that
-ourselves. Aigentic Platform is also an MCP server, so an assistant can do what a user can. We let Claude, a far more
-expensive model than the one doing the extraction, do the reading: render each page, crop and enlarge the right table
+ourselves. Aigentic Platform is also an MCP server, so an assistant can do what a user can. We let Claude, a frontier model,
+do the reading: render each page, crop and enlarge the right table
 cell, read every character, and save the annotation with a note on where it found the value.
 
 It was good at reading. What it could not do was decide what a value *means*, and those turned out to be the
@@ -160,17 +160,17 @@ during this project is being built into Aigentic Platform right now:
 - **Use in code.** When a version is the one you want, the platform gives you its task as Kotlin to copy into your
   agent.
 
-## Strong models to judge, light models to run
+## Frontier models to judge, light models to run
 
 The thing we'd tell anyone starting a project like this is where to spend your tokens.
 
-- **Use the strong model for analysing.** Building ground truth and working out why an extraction fails are hard
+- **Use the frontier model for analysing.** Building ground truth and working out why an extraction fails are hard
   tasks, and you do them once, on a sample.
 - **Use the light model for the bulk.** Reading every certificate that comes in is the work that never stops, so that is
   where the cost per document counts.
 
-The corrections connect the two. The strong model's annotations are checked by a person and stored as ground truth, so
-every version of the light model can be measured against them. You get the judgment of a strong model at the price of
+The corrections connect the two. The frontier model's annotations are checked by a person and stored as ground truth, so
+every version of the light model can be measured against them. You get the judgment of a frontier model at the price of
 a light one, and a number that tells you how close you are.
 
 For our client, the proof of concept is growing into a portal where employees, partners and customers find a
