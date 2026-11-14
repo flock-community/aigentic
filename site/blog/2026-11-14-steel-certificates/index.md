@@ -9,94 +9,100 @@ image: /img/blog/steel-certificates.png
 
 # Steel Certificates at 99.9%: Optimizing the Extraction with Aigentic Platform
 
-## The problem with steel certificates
+## The Challenge of Tracing Steel Certificates
 
-Every batch of steel that a mill melts gets a heat number. The mill rolls the batch into coils and sends an inspection
-certificate along with each coil, which says what the steel is made of. If a customer later wants to know which
-certificate belongs to their product, you need the heat number to find it.
+Steel starts at a mill. Every batch that is melted there gets a **heat number**, and that number follows the steel for
+the rest of its life. The mill rolls the batch into coils and ships each coil with an inspection certificate that
+states what the steel is made of. When a customer asks which certificate backs their product, the answer runs through
+the heat number.
 
-The certificates themselves are the problem. They come in as scanned PDFs from mills in many countries. Each mill uses
-its own layout and language, some pages have handwriting on them, and you can't search the text because there isn't
-any.
+In practice, that link is hard to follow. Certificates arrive as scanned PDFs from mills all over the world, each with
+its own layout, in several languages, some with handwriting on them. There is no text to search, so finding the right
+certificate is manual work.
 
 <!-- truncate -->
 
-## What our client needed
+## The Need for an Automated Solution
 
-One of our clients is a steel trader. They buy coils, process them and sell the result. Looking up certificates by
-hand kept about one full-time employee busy.
+We helped one of our clients, a steel trader that buys coils, processes them and sells the result, with this exact
+problem. Finding certificates by hand took them about one full-time employee.
 
-They asked us for something that could:
+They needed a solution that could:
 
-- Read scanned certificates from any mill, in any layout or language
-- Extract the heat and coil numbers, plus the data around them
+- Read scanned certificates from any mill, whatever the layout or language
+- Accurately extract the heat and coil numbers, and the data around them
 - Stay affordable when every incoming certificate is read
-- Tell them how accurate the extraction is
+- Show how accurate the extraction really is
 
-## The proof of concept
+## Building an AI Solution with Aigentic: The POC Approach
 
-We built an extraction agent with Aigentic. It sends the scanned PDF to a multimodal model and asks for structured
-output, so we always get the same fields back: issuer, certificate number, heats, coils and steel grade.
+For this POC, we built an extraction agent with Aigentic. The scanned PDF goes straight to a multimodal model, and
+Aigentic's structured output makes sure the answer always comes back in the same shape: issuer, certificate number,
+heats, coils, steel grade.
 
-We started with a light model, because the client will read a lot of certificates and the cost per document adds up.
-We also kept the first prompt simple. All runs were published to Aigentic Platform, including the document, the output
-and the cost.
+We chose a light model on purpose, so reading every certificate stays affordable. And we did not polish the first
+prompt by hand. Every run was published to Aigentic Platform, with its document, its output and its cost, so we could
+measure the agent instead of guessing.
 
-The first results looked good. But a heat number with one wrong character looks exactly like a correct one, so looking
-at the output didn't tell us much. We needed to measure it.
+That turned out to be necessary. The first results looked right, but a heat number with one wrong character looks just
+as convincing as a correct one.
 
-## Annotating with a frontier model
+## Building Ground Truth with a Frontier Model
 
-On Aigentic Platform you measure an agent with an evaluation. You select a set of runs and the fields you care about,
-and then you annotate: for each value you say whether it is correct, and if it isn't, what it should be. Later versions
-of the agent are scored against those annotations.
+Working with Aigentic Platform always starts with an annotation phase. You put runs in an evaluation, pick the fields
+that matter, and mark for each value whether the agent got it right. That ground truth is what every later version of
+the agent is scored against.
 
-Annotating certificates by hand takes a lot of time, so we had a frontier model do most of it. Aigentic Platform has an
-MCP server, and through it an assistant like Claude can open a certificate, compare each extracted value with the scan
-and save the annotation.
+Annotating is also the slow part, so we let a frontier model do the reading. Aigentic Platform is an MCP server, which
+means an assistant such as Claude can open each certificate, check every value against the scan and save the
+annotation. A person stays in charge of what correct means. One certificate, for example, had no coil number, only a
+crate number, and the agent had filled that in. Is a crate a coil? No: one coil yields many sheets, never the other
+way around. We decided that once, and it was written down as a rule for every later annotation.
 
-We still had to make the domain decisions ourselves. One certificate had a crate number where we expected a coil
-number, and the agent had put the crate number in the coil field. We checked how this works in practice. A crate holds
-cut sheets and a coil is cut into many sheets, so a crate number can't be a coil number. That became a rule the
-assistant applied to all other certificates.
+The newest work on the platform makes this a guided flow:
 
-Several features that make this easier are being added to the platform:
+- **AI-assisted evaluations**: A checklist takes you from connecting the assistant to calibrating, annotating and
+  reviewing
+- **Review queue**: The assistant's annotations wait for a person to confirm them, starting with the ones it was
+  unsure about
+- **Value locations**: Boxes on the document show where each value was read, so checking a field takes a glance
+- **Suggested normalizers**: When a value only differs in formatting, the assistant suggests the fix and you apply it
+  with one click
 
-- An AI-assisted evaluation has a checklist that walks you through connecting the assistant, calibrating on a few
-  documents, annotating the rest and reviewing
-- A review queue lists the assistant's annotations that a person still has to confirm, with the uncertain ones on top
-- The document shows a box around each value the assistant read, so you can check a field without searching for it
-- If a value is only formatted differently, the assistant suggests a normalizer that you can apply with one click
+## Experimenting Towards a Better Extraction
 
-## Experimenting with the extraction
+With ground truth in place, the first version got an honest score: 86% of the heat numbers correct. Then we gave the
+platform the freedom to optimize.
 
-Once the annotations were done we had our first real score. The first version got 86% of the heat numbers right.
+The platform's fix assistant looks at an evaluation, finds a pattern in what goes wrong, changes the agent's
+instructions and scores the new version on the same certificates. A change that helps is built on. A change that
+hurts is left behind. Not every improvement was a matter of wording: the model sometimes read an 8 as a 0 in small
+print, and letting it look at each page in higher resolution solved that.
 
-From there we let the platform's fix assistant work on it. The fix assistant reads the evaluation, looks for a pattern
-in the errors, changes the agent's instructions and runs the new version on the same certificates. Each version gets a
-score, so you can see whether a change helped. Some fixes had nothing to do with the prompt. The model kept reading an
-8 as a 0 in small print, and that went away when we let it read the pages at a higher resolution.
+The upcoming Experiments page shows this process at a glance:
 
-This is also where the new Experiments page helps. It shows the versions of an agent as a tree, so you can see which
-version a change was based on. Each version shows its score on the evaluation you pick and the difference with the
-version before it. Everything the fix assistant tried is kept, including the reason it tried it. When you have the
-version you want, you can copy it into your agent as Kotlin.
+- **Version tree**: See which version came from which, and whether it is in production, an experiment, or abandoned
+- **Scores per version**: Every version shows its accuracy and what it gained or lost
+- **Nothing is lost**: Every change the fix assistant tries is kept, with the reason it was tried
+- **Use in code**: Copy the best version into your agent as Kotlin
 
 ## Results
 
-The version we ended up with extracts 99.9% of the core fields correctly. It still runs on the light model.
+The version the fix assistant proposed extracts 99.9% of the core fields correctly, still on the light model. Because
+that number comes from an evaluation against checked ground truth, it is a measurement and not an impression.
 
-## Which model for which job
+## Frontier Models to Judge, Light Models to Run
 
-What we learned is that the two kinds of model are good for different parts of the work. A frontier model is worth its
-cost for annotating and for analysing why an extraction goes wrong, because you only do that on a sample. The light
-model does the bulk, which is reading every certificate that comes in.
+The main lesson from this POC is where to use which model. Building ground truth and working out why an extraction
+fails are hard tasks that you do once, on a sample, so that is where a frontier model pays off. Reading every incoming
+certificate is the bulk of the work, and that runs on a light model.
 
-The annotations are what make this work. They were made by a frontier model and checked by a person, and every version
-of the light model is scored against them.
+Aigentic Platform connects the two. The frontier model's annotations become ground truth, and every version of the
+light model is measured against them.
 
-## What's next
+## Looking Forward: From POC to Certificate Portal
 
-We are now turning the proof of concept into a portal for our client, where employees, partners and customers can look
-up a certificate by heat number. The AI-assisted evaluations and the Experiments page are still in development and
-will be released in Aigentic Platform soon.
+For our client, the POC is growing into a portal where employees, partners and customers find a certificate by its
+heat number. The AI-assisted evaluations and the Experiments page are being finished right now and will land in
+Aigentic Platform soon. For anyone who extracts structured data from documents, the approach carries over: annotate
+first, experiment second, and let the scores decide.
