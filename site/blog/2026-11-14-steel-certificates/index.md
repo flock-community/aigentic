@@ -11,9 +11,9 @@ image: /img/blog/steel-certificates.png
 
 It started with a folder of PDFs and a simple question from a steel trader: can AI read these?
 
-A few weeks later a light model read them with 99.9% of the core fields correct. The first version took an
-afternoon. Everything after that is the actual story: a crate that is not a coil, a model that would rather write
-nonsense than say "nothing here", and an 8 that kept turning into a 0.
+In the end a light model read them with 99.9% of the core fields correct. The first version was the easy part.
+Everything after that is the actual story: a crate that is not a coil, a model that would rather write nonsense than
+say "nothing here", and an 8 that kept turning into a 0.
 
 <!-- truncate -->
 
@@ -31,7 +31,7 @@ Then we opened the folder. Every certificate was a scan, without any text you ca
 mills all over the world, each with its own layout, in five languages, some with handwriting on them. Finding the right
 one for a customer was manual work, and it took about one full-time employee.
 
-## The afternoon version
+## The first version
 
 We skipped OCR. Turning a scan into text first throws away the table layout and the handwriting, and those are the hard
 parts of these documents. So the PDF itself goes to a multimodal model, and with Aigentic the model has to answer in a
@@ -58,7 +58,7 @@ We picked a light model on purpose, Gemini Flash. A certificate costs a few cent
 when every certificate that comes in has to be read. We also didn't polish the first prompt. It was something to
 measure, not something to get right by hand.
 
-By the end of the afternoon there was a table on screen: mill, certificate, heat, coil, grade. It looked done.
+The result was a table on screen: mill, certificate, heat, coil, grade. It looked done.
 
 It wasn't, and we couldn't see it. A heat number with one wrong character looks just as convincing as a correct one.
 So every run went to Aigentic Platform, with its PDF, its output and its cost, and we started on the part that tells
@@ -89,12 +89,12 @@ interesting cases:
 These are decisions for a person who knows the domain. Claude collected the open questions, we answered them once, and
 each answer was written down as a rule, so the next session annotates the same way.
 
-With the ground truth in place, the afternoon version finally got an honest score. Heat numbers: 20 out of 23, or 86%.
+With the ground truth in place, the first version finally got an honest score. Heat numbers: 20 out of 23, or 86%.
 
 ## One change at a time
 
 Now we could experiment. The rules were simple: one change per experiment, run it on the certificates that fail plus a
-few that are right today, and compare on the same documents.
+few that are already right, and compare on the same documents.
 
 **The first experiment** was the heat cell with two codes. One instruction: the heat number is the full code on the
 first line, never join the lines. The failing certificate was fixed, the controls stayed right, and on the whole set
@@ -166,7 +166,7 @@ The thing we'd tell anyone starting a project like this is where to spend your t
 
 - **Use the strong model for analysing.** Building ground truth and working out why an extraction fails are hard
   tasks, and you do them once, on a sample.
-- **Use the light model for the bulk.** Reading every certificate that comes in happens all day, every day, so that is
+- **Use the light model for the bulk.** Reading every certificate that comes in is the work that never stops, so that is
   where the cost per document counts.
 
 The corrections connect the two. The strong model's annotations are checked by a person and stored as ground truth, so
