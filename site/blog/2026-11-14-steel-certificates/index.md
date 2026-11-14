@@ -1,5 +1,5 @@
 ---
-title: "The Heat Number: How a Cheap Model Learned to Read Steel Certificates"
+title: "A Crate Is Not a Coil: Teaching a Light Model to Read Steel Certificates"
 slug: /steel-certificates
 description: The story of a proof of concept that reads scanned steel certificates, and how Aigentic Platform took a light model to 99.9% correct, one experiment at a time
 authors: [wilmveel]
@@ -7,11 +7,11 @@ tags: [AI, Aigentic, Aigentic Platform, Evaluations, Experiments, MCP, Document 
 image: /img/blog/steel-certificates.png
 ---
 
-# The Heat Number: How a Cheap Model Learned to Read Steel Certificates
+# A Crate Is Not a Coil: Teaching a Light Model to Read Steel Certificates
 
 It started with a folder of PDFs and a simple question from a steel trader: can AI read these?
 
-A few weeks later a light, cheap model read them with 99.9% of the core fields correct. The first version took an
+A few weeks later a light model read them with 99.9% of the core fields correct. The first version took an
 afternoon. Everything after that is the actual story: a crate that is not a coil, a model that would rather write
 nonsense than say "nothing here", and an 8 that kept turning into a 0.
 
@@ -160,18 +160,18 @@ during this project is being built into Aigentic Platform right now:
 - **Use in code.** When a version is the one you want, the platform gives you its task as Kotlin to copy into your
   agent.
 
-## Expensive models to judge, cheap models to run
+## Strong models to judge, light models to run
 
 The thing we'd tell anyone starting a project like this is where to spend your tokens.
 
-- **Use the expensive model for analysing.** Building ground truth and working out why an extraction fails are hard
+- **Use the strong model for analysing.** Building ground truth and working out why an extraction fails are hard
   tasks, and you do them once, on a sample.
-- **Use the cheap model for the bulk.** Reading every certificate that comes in happens all day, every day, so that is
+- **Use the light model for the bulk.** Reading every certificate that comes in happens all day, every day, so that is
   where the cost per document counts.
 
 The corrections connect the two. The strong model's annotations are checked by a person and stored as ground truth, so
-every version of the cheap model can be measured against them. You get the judgment of an expensive model at the price
-of a cheap one, and a number that tells you how close you are.
+every version of the light model can be measured against them. You get the judgment of a strong model at the price of
+a light one, and a number that tells you how close you are.
 
 For our client, the proof of concept is growing into a portal where employees, partners and customers find a
 certificate by its heat number. And the folder of PDFs nobody could search is now a table you can.
