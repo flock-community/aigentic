@@ -1,5 +1,5 @@
 ---
-title: "A Crate Is Not a Coil: Teaching a Light Model to Read Steel Certificates"
+title: "How Aigentic Platform Optimized Our Extraction Prompt to 99.9%"
 slug: /steel-certificates
 description: The story of a proof of concept that reads scanned steel certificates, and how Aigentic Platform took a light model to 99.9% correct, one experiment at a time
 authors: [wilmveel]
@@ -7,7 +7,7 @@ tags: [AI, Aigentic, Aigentic Platform, Evaluations, Experiments, MCP, Document 
 image: /img/blog/steel-certificates.png
 ---
 
-# A Crate Is Not a Coil: Teaching a Light Model to Read Steel Certificates
+# How Aigentic Platform Optimized Our Extraction Prompt to 99.9%
 
 It started with a folder of PDFs and a simple question from a steel trader: can AI read these?
 
