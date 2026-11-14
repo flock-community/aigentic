@@ -1,7 +1,7 @@
 ---
 title: "Reading Steel Certificates: Expensive Models to Judge, Cheap Models to Run"
 slug: /steel-certificates
-description: How we used Aigentic Platform to get a light model to 90.9% correct on scanned steel certificates, by annotating with a strong model and experimenting on the prompt
+description: How we used Aigentic Platform to get a light model to 99.9% correct on scanned steel certificates, by annotating with a strong model and experimenting on the prompt
 authors: [wilmveel]
 tags: [AI, Aigentic, Aigentic Platform, Evaluations, Experiments, MCP, Document Extraction]
 image: /img/blog/steel-certificates.png
@@ -10,7 +10,7 @@ image: /img/blog/steel-certificates.png
 # Reading Steel Certificates: Expensive Models to Judge, Cheap Models to Run
 
 A steel trader asked us a simple question: can AI read our certificates? A few weeks later we had a proof of concept
-that finds the right certificate by its heat number, running on a light model that gets 90.9% of the extraction right.
+that finds the right certificate by its heat number, running on a light model that gets 99.9% of the extraction right.
 
 This post is about how we got there. Not by writing a clever prompt, but by letting Aigentic Platform measure every
 prompt we tried, and by using an expensive model where it pays off: judging the output, not producing it.
@@ -121,7 +121,7 @@ This is where the upcoming **Experiments** page comes in:
 - **Use in code.** When a version is the one you want, the platform gives you its task as Kotlin to copy into your
   agent. Once production runs it unchanged, the experiment becomes a production version in the tree.
 
-In several steps, the assistant took the light model's extraction to **90.9% correct**. We didn't tune the prompt by
+In several steps, the assistant took the light model's extraction to **99.9% correct**. We didn't tune the prompt by
 hand in any of those steps. We looked at the scores and at the reason behind each try.
 
 ## Expensive models to judge, cheap models to run
