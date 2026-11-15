@@ -11,9 +11,9 @@ image: /img/blog/steel-certificates.png
 
 It started with a folder of PDFs and a simple question from a steel trader: can AI read these?
 
-In the end a light model read them with 99.9% of the core fields correct. The first version was the easy part.
-Everything after that is the actual story: a crate that is not a coil, a model that would rather write nonsense than
-say "nothing here", and an 8 that kept turning into a 0.
+In the end a light model read them with 99.9% of the core fields correct. The first version was quick to build. The
+work came after it: a crate that is not a coil, a model that wrote nonsense when it should have said "nothing here",
+and an 8 that kept turning into a 0.
 
 <!-- truncate -->
 
@@ -55,14 +55,12 @@ data class CertificateItem(
 ```
 
 We picked a light model on purpose, Gemini Flash. A certificate costs a few cents to read that way, and that matters
-when every certificate that comes in has to be read. We also didn't polish the first prompt. It was something to
-measure, not something to get right by hand.
+when every certificate that comes in has to be read. We also didn't polish the first prompt, because we wanted
+something to measure first.
 
-The result was a table on screen: mill, certificate, heat, coil, grade. It looked done.
-
-It wasn't, and we couldn't see it. A heat number with one wrong character looks just as convincing as a correct one.
-So every run went to Aigentic Platform, with its PDF, its output and its cost, and we started on the part that tells
-you how good an agent really is.
+The result was a table on screen: mill, certificate, heat, coil, grade. It looked done, but we couldn't see whether it
+was. A heat number with one wrong character looks just as convincing as a correct one. So every run went to Aigentic
+Platform, with its PDF, its output and its cost, and we started measuring how good the agent was.
 
 ## What is a coil number, anyway?
 
@@ -71,25 +69,24 @@ for each value whether the agent got it right. Where it didn't, you fill in what
 ground truth, and from then on every version of the agent gets a score instead of an impression.
 
 For some twenty certificates that means reading 28 heat numbers and 38 coil numbers off dense scans. We didn't do that
-ourselves. Aigentic Platform is also an MCP server, so an assistant can do what a user can. We let Claude, a frontier model,
-do the reading: render each page, crop and enlarge the right table
-cell, read every character, and save the annotation with a note on where it found the value.
+ourselves. Aigentic Platform is also an MCP server, so an assistant can do what a user can. We let Claude, a frontier
+model, do the reading: render each page, crop and enlarge the right table cell, read every character, and save the
+annotation with a note on where it found the value.
 
-It was good at reading. What it could not do was decide what a value *means*, and those turned out to be the
-interesting cases:
+It was good at reading. What it could not do was decide what a value *means*, and three cases needed that decision:
 
 - One mill prints two codes in the heat cell, a full one with a shorter form of it on the line below. The agent joined
-  them into one value. Which one is the heat number?
+  them into one value, and we had to decide which one is the heat number.
 - One certificate has no coil column at all, only a crate number, and the agent put the crate number in the coil
-  field. Is that wrong? A crate is a package of cut sheets. One coil yields many sheets, never the other way around.
-  So no: a crate is not a coil, and the right answer is that there is no coil number.
+  field. A crate is a package of cut sheets. One coil yields many sheets, never the other way around. So a crate is
+  not a coil, and the right answer is that there is no coil number.
 - Another certificate has no coil column either, but a test number printed next to the heat. That one does identify
   the coil.
 
 These are decisions for a person who knows the domain. Claude collected the open questions, we answered them once, and
 each answer was written down as a rule, so the next session annotates the same way.
 
-With the ground truth in place, the first version finally got an honest score. Heat numbers: 20 out of 23, or 86%.
+With the ground truth in place, the first version got its first score. Heat numbers: 20 out of 23, or 87%.
 
 ## One change at a time
 
@@ -100,21 +97,19 @@ few that are already right, and compare on the same documents.
 first line, never join the lines. The failing certificate was fixed, the controls stayed right, and on the whole set
 the score went to 27 out of 28.
 
-There was one surprise along the way. In the full run a different certificate suddenly came back wrong. We ran it three
-more times and it was right every time. That is when it sank in that every run is a sample. The model is not
-deterministic, so one run per document proves nothing on its own. From then on, anything that changed got re-run before
-we believed it.
+In the full run a different certificate suddenly came back wrong. We ran it three more times and it was right every
+time. Every run is a sample. The model is not deterministic, so one run per document proves nothing on its own. From
+then on, anything that changed got re-run before we believed it.
 
-**The second experiment** failed, and it taught us the most. We told the model that a crate number is not a coil
-number, and to return null when no coil number is printed. In four runs it did that once. The other three times it
-wrote the name of the next field into the coil number, or the steel grade, and every field after it shifted one place.
+**The second experiment** failed. We told the model that a crate number is not a coil number, and to return null when
+no coil number is printed. In four runs it did that once. The other three times it wrote the name of the next field
+into the coil number, or the steel grade, and every field after it shifted one place.
 
-A new wording would not have fixed that. The model wasn't misunderstanding the rule. It was struggling to say "nothing
-here" at all. The cause was in our own library: Aigentic marked optional fields as not required, but never told Gemini
-that null was an allowed answer. We fixed that in Aigentic, and the crate numbers came back as null without any
-instruction.
+A new wording would not have fixed that. The model understood the rule, but it could not say "nothing here" at all.
+The cause was in our own library: Aigentic marked optional fields as not required, but never told Gemini that null was
+an allowed answer. We fixed that in Aigentic, and the crate numbers came back as null without any instruction.
 
-**The third experiment** cleaned up after the second. Now that the model could say null, it used it too eagerly: the
+**The third experiment** cleaned up after the second. Now that the model could say null, it used it too often: the
 certificate with a test number instead of a coil column lost its coil number in four out of four runs. One more rule,
 straight from the annotation decisions, and the set was clean: 38 out of 38 coil numbers, 28 out of 28 heat numbers.
 
@@ -125,7 +120,7 @@ mechanical test results, dimensions, weights, order and delivery numbers.
 
 So for the full certificate we gave the platform the freedom to optimize. The **fix assistant** looks at an evaluation,
 finds a pattern in what goes wrong, changes the agent's task, runs the new version on the same documents and scores it
-against the ground truth. A change that helps is built on. A change that hurts is left behind.
+against the ground truth. It builds on a change that helps and drops one that hurts.
 
 Its ninth version was the one we shipped. Most of it was instructions like the ones we wrote by hand, only more of
 them: which number is the customer's order number and which the mill's, to keep only the English half of bilingual
@@ -135,7 +130,7 @@ One change was not about the prompt at all. In the small print of a scan the mod
 lost a decimal point. No instruction fixes that. Letting the model look at each page in higher resolution does, at
 about twice the input tokens per page. It is still the light model, and it still costs cents per certificate.
 
-That version scored **99.9% of the core fields correct**.
+That version scored 99.9% of the core fields correct.
 
 ## What we did by hand is now in the platform
 
@@ -162,9 +157,9 @@ during this project is being built into Aigentic Platform right now:
 
 ## Frontier models to judge, light models to run
 
-The thing we'd tell anyone starting a project like this is where to spend your tokens.
+If you start a project like this, think about where you spend your tokens.
 
-- **Use the frontier model for analysing.** Building ground truth and working out why an extraction fails are hard
+- **Use the frontier model for analyzing.** Building ground truth and working out why an extraction fails are hard
   tasks, and you do them once, on a sample.
 - **Use the light model for the bulk.** Reading every certificate that comes in is the work that never stops, so that is
   where the cost per document counts.
@@ -173,5 +168,5 @@ The corrections connect the two. The frontier model's annotations are checked by
 every version of the light model can be measured against them. You get the judgment of a frontier model at the price of
 a light one, and a number that tells you how close you are.
 
-For our client, the proof of concept is growing into a portal where employees, partners and customers find a
-certificate by its heat number. And the folder of PDFs nobody could search is now a table you can.
+For our client, the folder of PDFs nobody could search is now a table you can search. The proof of concept is growing
+into a portal where employees, partners and customers find a certificate by its heat number.
