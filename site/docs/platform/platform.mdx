@@ -8,7 +8,7 @@ import { PlatformDiagram } from "@site/src/components/RunLoopDiagram";
 
 # Aigentic Platform
 
-Building an agent that works on ten examples is the easy part. The hard part is knowing how often it gets the answer right, and keeping it right while you change prompts and models. That's what the Aigentic Platform is for. Your agent keeps running in your own code: add `platform { }` and every run goes to the platform.
+An agent that works on ten examples is quick to build. Knowing how often it gets the answer right, and keeping it right while you change prompts and models, is harder. The Aigentic Platform is built for that. Your agent keeps running in your own code: add `platform { }` and every run goes to the platform.
 
 <PlatformDiagram />
 
@@ -34,7 +34,7 @@ It's not built for chatbots and other conversational agents:
 
 ## Your agent stays in your code
 
-The platform observes, measures and proposes. You decide what ships.
+The platform observes, measures and proposes, and you decide what ships.
 
 - It doesn't host your agent or change its config. You copy a proposal from the fix assistant into your code yourself.
 - Runs are sent after they finish, including the ones that end `Stuck` or `Fatal`. When sending fails, your run still returns as normal.

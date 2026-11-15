@@ -8,12 +8,12 @@ import MarginChart from "@site/src/components/MarginChart";
 
 # Measuring well
 
-The platform does the counting. You decide what goes into it: which inputs get ground truth, how many, and when a difference between two versions is real. Here are rules of thumb for each, no statistics background needed.
+The platform does the counting, and you decide what goes into it: which inputs get ground truth, how many, and when a difference between two versions is real. Here are rules of thumb for each, no statistics background needed.
 
 ## Pick inputs like your real traffic
 
 - **Take them from production**, or from the documents you'll get in production. Made-up examples are cleaner than the real thing, so they flatter the agent.
-- **Keep the mix realistic.** If one in ten invoices is a scan, about one in ten of the inputs in your ground truth should be too. Want to stress-test the hard cases? Put them in a second evaluation, so the main one still tells you what production looks like.
+- **Keep the mix realistic.** If one in ten invoices is a scan, about one in ten of the inputs in your ground truth should be too. To stress-test the hard cases, put them in a second evaluation, so the main one still tells you what production looks like.
 - **Include fields that should be empty**, like a purchase order number on an invoice without one, and mark them as expected to be absent. Otherwise you never find out whether the agent makes things up.
 - **Keep the set stable.** You can add inputs, but run every version you compare on the new ones too.
 

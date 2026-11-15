@@ -63,11 +63,11 @@ The **Annotations** tab walks you through the inputs. For each one you see the i
   caption={<>The <strong>via MCP</strong> tag marks values an AI assistant saved, until a person saves them on the platform.</>}
 />
 
-- **More than one right answer?** Enter several acceptable values. A match with any of them counts as correct, for example when two codes are both valid.
-- **Should the field be empty?** Mark it as expected to be absent, like a purchase order number on an invoice that doesn't have one.
-- **Want to explain a choice?** Add a comment for the other annotators.
+- When more than one answer is right, enter several acceptable values. A match with any of them counts as correct, for example when two codes are both valid.
+- When the field should be empty, mark it as expected to be absent, like a purchase order number on an invoice that doesn't have one.
+- To explain a choice, add a comment for the other annotators.
 
-Progress shows how many inputs are fully annotated and takes you to the next one. Several people can annotate the same evaluation, and every acceptable value anyone enters counts. Already know the right answers? Send them [from your code](/docs/platform/ground-truth) instead.
+Progress shows how many inputs are fully annotated and takes you to the next one. Several people can annotate the same evaluation, and every acceptable value anyone enters counts. If you already know the right answers, send them [from your code](/docs/platform/ground-truth) instead.
 
 ## Read the results
 
@@ -77,7 +77,7 @@ The **Evaluation Result** tab shows, for the config version you choose:
 - **every error**, with the extracted value next to the expected one;
 - **a confusion matrix** for categorical fields, so you see which values get mixed up.
 
-Open a field to see the inputs it went wrong on, and from there the run itself: its input, tool calls and response. The number tells you where to look; the run tells you what to change.
+Open a field to see the inputs it went wrong on, and from there the run itself: its input, tool calls and response. The accuracy shows which field to look at, and the run shows what to change.
 
 ### Compare config versions
 

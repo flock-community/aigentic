@@ -69,7 +69,7 @@ groundTruth.forEach { (file, expected) ->
 }
 ```
 
-The platform puts these runs in an evaluation called `invoices-ground-truth` and stores your answers as its ground truth. No answers yet? Pick the runs on the platform and confirm the right value per field instead. See [Ground truth from your code](/docs/platform/ground-truth) and [Evaluations](/docs/platform/evaluations).
+The platform puts these runs in an evaluation called `invoices-ground-truth` and stores your answers as its ground truth. If you don't have answers yet, pick the runs on the platform and confirm the right value per field instead. See [Ground truth from your code](/docs/platform/ground-truth) and [Evaluations](/docs/platform/evaluations).
 
 ## 3. Validate: is it good enough to ship?
 
@@ -110,6 +110,6 @@ Sooner or later you change something: a new instruction for a supplier that keep
 2. Run the new version on the inputs you have ground truth for.
 3. Compare it with the previous version, field by field, and look at the cost per run. Did the field you targeted improve? Did another one get worse? Does the cheaper model keep up?
 
-Not sure what to change? The [fix assistant](/docs/platform/fix-assistant) tries changes on those inputs and proposes the one that scores best.
+If you're not sure what to change, the [fix assistant](/docs/platform/fix-assistant) tries changes on those inputs and proposes the one that scores best.
 
 Then you're back at step 3: every version is scored against the same ground truth, so you always know whether the agent got better or worse.

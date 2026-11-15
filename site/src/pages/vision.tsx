@@ -62,7 +62,7 @@ export default function VisionPage() {
   return (
     <Layout
       title="Vision"
-      description="Aigentic is built around a loop: build an agent, run it, record what it did, measure how often it's right, fix what's wrong and improve with confidence."
+      description="Aigentic is built around a loop: build an agent, run it, record what it did, measure how often it's right, fix what's wrong and check that the next version is better."
     >
       <main className={styles.visionMain}>
         <section className={styles.visionSection}>
