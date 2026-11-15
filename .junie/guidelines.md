@@ -193,6 +193,9 @@ Using `--no-build-cache clean` ensures everything is recompiled from scratch.
 ## Documentation Tone of Voice
 When writing or reviewing documentation for the `/site` website, use the `/tone-of-voice` skill for tone guidelines.
 
+## Blog Posts
+When writing, revising or reviewing a post in `site/blog`, use the `/blog` skill instead of the tone-of-voice guidelines.
+
 ## Git Conventions
 
 This project follows [Conventional Commits](https://www.conventionalcommits.org/). All commit messages must use the format:
