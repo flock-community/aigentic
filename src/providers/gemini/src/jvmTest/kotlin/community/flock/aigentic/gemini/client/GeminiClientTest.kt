@@ -118,11 +118,10 @@ class GeminiClientTest :
                         """{"candidates":[{"content":{"role":"model"},"finishReason":"STOP","index":0}],"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":5,"totalTokenCount":15}}""",
                     )
 
-                response.candidates!!.single().finishReason shouldBe FinishReason.STOP
+                val candidate = response.candidates!!.single()
+                candidate.finishReason shouldBe FinishReason.STOP
                 response.usageMetadata!!.candidatesTokenCount shouldBe 5
-                response.candidates!!
-                    .single()
-                    .content!!
+                candidate.content!!
                     .parts
                     .filterIsInstance<Part.Text>()
                     .joinToString("") { it.text } shouldBe """{"answer": "complete"}"""
@@ -142,6 +141,36 @@ class GeminiClientTest :
                     .filterIsInstance<Part.FunctionCall>()
                     .single()
                     .thoughtSignature shouldBe "sig-abc"
+            }
+
+            it("should keep the function call when the final chunk has no parts") {
+                val response =
+                    generateFromStream(
+                        """{"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"lookup","args":{"id":1}},"thoughtSignature":"sig-abc"}]}}]}""",
+                        """{"candidates":[{"content":{"role":"model"},"finishReason":"STOP","index":0}]}""",
+                    )
+
+                val candidate = response.candidates!!.single()
+                candidate.finishReason shouldBe FinishReason.STOP
+                candidate.content!!
+                    .parts
+                    .filterIsInstance<Part.FunctionCall>()
+                    .single()
+                    .thoughtSignature shouldBe "sig-abc"
+            }
+
+            it("should return a candidate without content when no chunk has parts") {
+                val response =
+                    generateFromStream(
+                        """{"candidates":[{"content":{"role":"model"}}]}""",
+                        """{"candidates":[{"content":{"role":"model"},"finishReason":"STOP"}]}""",
+                    )
+
+                val candidate = response.candidates!!.single()
+                candidate.finishReason shouldBe FinishReason.STOP
+                candidate.content shouldBe null
+                shouldThrow<Exception> { response.toModelResponse(isStructuredOutput = false) }.message shouldContain
+                    "Gemini returned candidate without content"
             }
 
             it("should fail when the stream contains an error") {

@@ -41,7 +41,8 @@ internal fun List<GenerateContentResponse>.merge(): GenerateContentResponse {
     }
 
     val contents = candidates.mapNotNull { it.content }
-    val content = contents.firstOrNull()?.let { Content(it.role, contents.flatMap(Content::parts)) }
+    val parts = contents.flatMap(Content::parts)
+    val content = contents.firstOrNull()?.takeIf { parts.isNotEmpty() }?.let { Content(it.role, parts) }
 
     return GenerateContentResponse(
         candidates = if (candidates.isEmpty()) null else listOf(Candidate(content, finishReason)),
