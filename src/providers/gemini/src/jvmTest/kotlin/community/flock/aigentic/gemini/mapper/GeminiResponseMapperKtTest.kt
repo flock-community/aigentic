@@ -133,6 +133,29 @@ class GeminiResponseMapperKtTest :
                     .response shouldBe """{"answer": "complete"}"""
             }
 
+            it("should fail with a clear message when a structured output response has content without text") {
+                val json =
+                    """
+                    {
+                      "candidates": [
+                        {
+                          "content": {
+                            "role": "model"
+                          },
+                          "finishReason": "STOP"
+                        }
+                      ],
+                      "usageMetadata": {}
+                    }
+                    """.trimIndent()
+
+                shouldThrow<Exception> {
+                    geminiJson
+                        .decodeFromString<GenerateContentResponse>(json)
+                        .toModelResponse(true)
+                }.message shouldContain "No text candidate found with structured output response."
+            }
+
             it("should join a structured output response that is split over several text parts") {
                 val json =
                     """

@@ -2,6 +2,8 @@ package community.flock.aigentic.gemini.client.model
 
 import community.flock.aigentic.core.exception.aigenticException
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
@@ -12,7 +14,9 @@ import kotlinx.serialization.json.jsonObject
 @Serializable
 data class Content(
     val role: Role,
-    val parts: List<Part>,
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.ALWAYS)
+    val parts: List<Part> = emptyList(),
 )
 
 @Serializable(PartSerializer::class)
