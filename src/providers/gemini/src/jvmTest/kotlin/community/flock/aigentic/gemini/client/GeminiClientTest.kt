@@ -109,6 +109,25 @@ class GeminiClientTest :
                 }
             }
 
+            it("should merge the text parts in order when the final chunk has no parts") {
+                val response =
+                    generateFromStream(
+                        """{"candidates":[{"content":{"role":"model","parts":[{"text":"{\"answer\":"}]}}]}""",
+                        """{"candidates":[{"content":{"role":"model","parts":[{"text":" \"complete\""}]}}]}""",
+                        """{"candidates":[{"content":{"role":"model","parts":[{"text":"}"}]}}]}""",
+                        """{"candidates":[{"content":{"role":"model"},"finishReason":"STOP","index":0}],"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":5,"totalTokenCount":15}}""",
+                    )
+
+                response.candidates!!.single().finishReason shouldBe FinishReason.STOP
+                response.usageMetadata!!.candidatesTokenCount shouldBe 5
+                response.candidates!!
+                    .single()
+                    .content!!
+                    .parts
+                    .filterIsInstance<Part.Text>()
+                    .joinToString("") { it.text } shouldBe """{"answer": "complete"}"""
+            }
+
             it("should keep the thought signature of a streamed function call") {
                 val response =
                     generateFromStream(
