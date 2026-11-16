@@ -2,7 +2,7 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import { aigenticTheme } from "./src/prism/aigenticTheme";
 
-const AIGENTIC_VERSION = "0.11.0";
+const AIGENTIC_VERSION = "0.12.0";
 const KTOR_VERSION = "3.4.3";
 
 const config: Config = {
