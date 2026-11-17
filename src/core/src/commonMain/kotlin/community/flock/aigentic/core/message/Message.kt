@@ -92,10 +92,38 @@ value class ToolCallId(
     val id: String,
 )
 
-@JvmInline
-value class ToolResultContent(
-    val result: String,
-)
+/**
+ * What a tool returned to the model: one or more [ToolResultPart]s, text and/or images. A provider that
+ * cannot show images to the model sends [result], which writes each image as a short placeholder.
+ */
+data class ToolResultContent(
+    val parts: List<ToolResultPart>,
+) {
+    constructor(result: String) : this(listOf(ToolResultPart.Text(result)))
+
+    val result: String
+        get() =
+            parts.joinToString("\n") {
+                when (it) {
+                    is ToolResultPart.Text -> it.text
+                    is ToolResultPart.Image -> "[image: ${it.mimeType.value}]"
+                }
+            }
+
+    val hasImages: Boolean get() = parts.any { it is ToolResultPart.Image }
+}
+
+sealed interface ToolResultPart {
+    data class Text(
+        val text: String,
+    ) : ToolResultPart
+
+    /** [base64Content] is the bare base64 of the file, without a `data:` prefix. */
+    data class Image(
+        val base64Content: String,
+        val mimeType: MimeType,
+    ) : ToolResultPart
+}
 
 sealed interface Sender {
     data object Agent : Sender

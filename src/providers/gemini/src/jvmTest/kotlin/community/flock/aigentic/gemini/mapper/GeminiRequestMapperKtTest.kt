@@ -6,6 +6,8 @@ import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
+import community.flock.aigentic.core.message.ToolResultContent
+import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
@@ -17,6 +19,8 @@ import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.gemini.client.geminiJson
 import community.flock.aigentic.gemini.client.model.BlobContent
 import community.flock.aigentic.gemini.client.model.Content
+import community.flock.aigentic.gemini.client.model.FunctionResponseContent
+import community.flock.aigentic.gemini.client.model.FunctionResponsePart
 import community.flock.aigentic.gemini.client.model.MediaResolution
 import community.flock.aigentic.gemini.client.model.MediaResolutionLevel
 import community.flock.aigentic.gemini.client.model.Part
@@ -48,6 +52,37 @@ class GeminiRequestMapperKtTest :
                     .run {
                         this.inlineData shouldBe BlobContent(mimeType = mimeType.value, data = base64Content)
                     }
+            }
+
+            it("should send the images of a tool result next to its text, and nothing extra for a text result") {
+                val withImage =
+                    Message.ToolResult(
+                        ToolCallId("1"),
+                        "GetPage",
+                        ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image("iVBORw0KGgoAAA==", MimeType.PNG))),
+                    )
+                val textOnly = Message.ToolResult(ToolCallId("2"), "ExtractText", ToolResultContent("Total 12.50"))
+
+                val responses =
+                    createGenerateContentRequest(
+                        listOf(withImage, textOnly),
+                        emptyList(),
+                        GenerationSettings.DEFAULT,
+                        null,
+                        GeminiModelIdentifier.Gemini2_5Flash,
+                    ).contents
+                        .map {
+                            it.parts
+                                .single()
+                                .shouldBeInstanceOf<Part.FunctionResponse>()
+                                .functionResponse
+                        }
+
+                responses[0].parts shouldBe listOf(FunctionResponsePart(BlobContent(MimeType.PNG.value, "iVBORw0KGgoAAA==")))
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), responses[0]) shouldContain "Page 1."
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), responses[0]) shouldNotContain "[image"
+                responses[1].parts shouldBe null
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), responses[1]) shouldNotContain "parts"
             }
 
             it("should format when base64 data url is provided") {
