@@ -16,9 +16,11 @@ import community.flock.aigentic.core.tool.ToolDescription
 import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.gemini.client.geminiJson
 import community.flock.aigentic.gemini.client.model.BlobContent
+import community.flock.aigentic.gemini.client.model.Content
 import community.flock.aigentic.gemini.client.model.MediaResolution
 import community.flock.aigentic.gemini.client.model.MediaResolutionLevel
 import community.flock.aigentic.gemini.client.model.Part
+import community.flock.aigentic.gemini.client.model.Role
 import community.flock.aigentic.gemini.model.GeminiMediaResolution
 import community.flock.aigentic.gemini.model.GeminiModelIdentifier
 import io.kotest.assertions.throwables.shouldThrow
@@ -152,6 +154,10 @@ class GeminiRequestMapperKtTest :
                     createGenerateContentRequest(listOf(toolCalls), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
 
                 geminiJson.encodeToString(request) shouldNotContain "thoughtSignature"
+            }
+
+            it("should keep the parts field of a content without parts in the request") {
+                geminiJson.encodeToString(Content(Role.User, emptyList())) shouldBe """{"role":"user","parts":[]}"""
             }
 
             it("should not serialize a max_output_tokens key when not configured") {
