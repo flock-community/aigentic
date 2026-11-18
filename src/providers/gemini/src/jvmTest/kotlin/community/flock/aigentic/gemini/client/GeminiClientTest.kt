@@ -109,6 +109,24 @@ class GeminiClientTest :
                 }
             }
 
+            it("should merge the text parts in order when the final chunk has no parts") {
+                val response =
+                    generateFromStream(
+                        """{"candidates":[{"content":{"role":"model","parts":[{"text":"{\"answer\":"}]}}]}""",
+                        """{"candidates":[{"content":{"role":"model","parts":[{"text":" \"complete\""}]}}]}""",
+                        """{"candidates":[{"content":{"role":"model","parts":[{"text":"}"}]}}]}""",
+                        """{"candidates":[{"content":{"role":"model"},"finishReason":"STOP","index":0}],"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":5,"totalTokenCount":15}}""",
+                    )
+
+                val candidate = response.candidates!!.single()
+                candidate.finishReason shouldBe FinishReason.STOP
+                response.usageMetadata!!.candidatesTokenCount shouldBe 5
+                candidate.content!!
+                    .parts
+                    .filterIsInstance<Part.Text>()
+                    .joinToString("") { it.text } shouldBe """{"answer": "complete"}"""
+            }
+
             it("should keep the thought signature of a streamed function call") {
                 val response =
                     generateFromStream(
@@ -123,6 +141,36 @@ class GeminiClientTest :
                     .filterIsInstance<Part.FunctionCall>()
                     .single()
                     .thoughtSignature shouldBe "sig-abc"
+            }
+
+            it("should keep the function call when the final chunk has no parts") {
+                val response =
+                    generateFromStream(
+                        """{"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"lookup","args":{"id":1}},"thoughtSignature":"sig-abc"}]}}]}""",
+                        """{"candidates":[{"content":{"role":"model"},"finishReason":"STOP","index":0}]}""",
+                    )
+
+                val candidate = response.candidates!!.single()
+                candidate.finishReason shouldBe FinishReason.STOP
+                candidate.content!!
+                    .parts
+                    .filterIsInstance<Part.FunctionCall>()
+                    .single()
+                    .thoughtSignature shouldBe "sig-abc"
+            }
+
+            it("should return a candidate without content when no chunk has parts") {
+                val response =
+                    generateFromStream(
+                        """{"candidates":[{"content":{"role":"model"}}]}""",
+                        """{"candidates":[{"content":{"role":"model"},"finishReason":"STOP"}]}""",
+                    )
+
+                val candidate = response.candidates!!.single()
+                candidate.finishReason shouldBe FinishReason.STOP
+                candidate.content shouldBe null
+                shouldThrow<Exception> { response.toModelResponse(isStructuredOutput = false) }.message shouldContain
+                    "Gemini returned candidate without content"
             }
 
             it("should fail when the stream contains an error") {
