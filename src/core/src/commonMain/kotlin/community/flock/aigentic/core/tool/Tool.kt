@@ -1,5 +1,6 @@
 package community.flock.aigentic.core.tool
 
+import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.util.modelOutputJson
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -26,7 +27,13 @@ value class ToolName(
 
 interface Tool :
     ToolDescription,
-    ToolHandler<JsonObject, String>
+    ToolHandler<JsonObject, String> {
+    /**
+     * What the model gets back. Defaults to the text [handler] returns; a tool that returns images
+     * overrides it (see [createContentTool]).
+     */
+    suspend fun execute(toolArguments: JsonObject): ToolResultContent = ToolResultContent(handler(toolArguments))
+}
 
 interface TypedTool<I : Any, O : Any> :
     ToolDescription,
@@ -72,4 +79,26 @@ inline fun <reified I : Any, reified O : Any> createTool(
                 else -> Json.encodeToString<O>(res)
             }
         }
+    }
+
+/**
+ * Like [createTool], for a tool that answers with [ToolResultContent] (text and images) instead of
+ * a value that is written as text. The text [Tool.handler] gets the content's [ToolResultContent.result].
+ */
+inline fun <reified I : Any> createContentTool(
+    name: String,
+    description: String? = null,
+    noinline handlerFn: suspend (I) -> ToolResultContent,
+): Tool =
+    object : Tool {
+        override val name: ToolName = ToolName(name)
+        override val description: String? = description
+        override val parameters: List<Parameter> =
+            when (val param = getParameter<I>()) {
+                is Parameter.Complex.Object -> param.parameters
+                else -> listOf(param)
+            }
+        override val handler: suspend (toolArguments: JsonObject) -> String = { execute(it).result }
+
+        override suspend fun execute(toolArguments: JsonObject): ToolResultContent = handlerFn(modelOutputJson.decodeFromJsonElement<I>(toolArguments))
     }

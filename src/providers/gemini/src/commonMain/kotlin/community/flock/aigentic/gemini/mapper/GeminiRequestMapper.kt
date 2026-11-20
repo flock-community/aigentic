@@ -3,6 +3,8 @@ package community.flock.aigentic.gemini.mapper
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
+import community.flock.aigentic.core.message.ToolResultContent
+import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
@@ -12,6 +14,7 @@ import community.flock.aigentic.gemini.client.model.FileDataContent
 import community.flock.aigentic.gemini.client.model.FunctionCallContent
 import community.flock.aigentic.gemini.client.model.FunctionDeclaration
 import community.flock.aigentic.gemini.client.model.FunctionResponseContent
+import community.flock.aigentic.gemini.client.model.FunctionResponsePart
 import community.flock.aigentic.gemini.client.model.GenerateContentRequest
 import community.flock.aigentic.gemini.client.model.GenerationConfig
 import community.flock.aigentic.gemini.client.model.HarmBlockThreshold
@@ -105,8 +108,9 @@ internal fun createGenerateContentRequest(
                                 FunctionResponseContent(
                                     message.toolName,
                                     buildJsonObject {
-                                        put("result", message.response.result)
+                                        put("result", message.response.textResult())
                                     },
+                                    message.response.images(),
                                 ),
                             ),
                         )
@@ -203,3 +207,12 @@ private fun List<ToolDescription>.toTools(): List<Tool> =
             },
         ),
     )
+
+private fun ToolResultContent.textResult(): String = parts.filterIsInstance<ToolResultPart.Text>().joinToString("\n") { it.text }
+
+/** The images of a tool result, or null when it has none, so a request without images is the same as before. */
+private fun ToolResultContent.images(): List<FunctionResponsePart>? =
+    parts
+        .filterIsInstance<ToolResultPart.Image>()
+        .map { FunctionResponsePart(BlobContent(mimeType = it.mimeType.value, data = it.base64Content)) }
+        .takeIf { it.isNotEmpty() }
