@@ -1,0 +1,24 @@
+---
+id: example-runs
+title: Example runs
+sidebar_position: 6
+---
+
+# Example runs
+
+Runs that went right make good examples. [Tag](/docs/platform/runs#tags) them on the platform, add the same tag to your agent, and at the start of each run it fetches those runs from the platform. Their messages go to the model before the real input, as examples of what a good run looks like.
+
+```kotlin
+val invoiceExtractor = agent<Unit, Invoice> {
+    // model and task as before
+    tags("good-example")
+    platform {
+        name("invoice-extractor")
+        secret(System.getenv("AIGENTIC_PLATFORM_SECRET"))
+    }
+}
+```
+
+This helps with formats the model has trouble getting right from instructions alone. Keep in mind that every example adds input tokens to every run.
+
+The example runs a run used are part of its config. Tag or untag a run, and the agent's next runs land on a new [config version](/docs/platform/runs#config-versions). That way the effect of your examples shows up in your [evaluations](/docs/platform/evaluations) like any other change. A run's page lists the example runs it used.

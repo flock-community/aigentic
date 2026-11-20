@@ -16,7 +16,8 @@ Aigentic is a Kotlin Multiplatform library that provides a powerful DSL for buil
 - **Model Agnostic** - supports OpenAI, Gemini, Ollama, VertexAI, and more
 - **Type-Safe Tools** with @AigenticParameter annotation
 - **Comprehensive Integration** with OpenAPI specifications
-- **Cross-Platform** - works on JVM, Android, iOS, and JavaScript
+- **Cross-Platform** - runs on the JVM and on Node.js, with TypeScript definitions (the VertexAI provider is JVM only)
+- **Aigentic Platform** - send every run to the platform, hosted by Flock or in your own environment, to track costs, measure accuracy per output field, compare versions and get proposed fixes ([docs](https://aigentic.io/docs/platform))
 
 
 Create agents in a fully type-safe way:
@@ -64,6 +65,7 @@ For complete documentation, examples, and guides, visit **[aigentic.io](https://
 - [Agent DSL](https://aigentic.io/docs/dsl/agent)
 - [Tools & Integrations](https://aigentic.io/docs/dsl/tools)
 - [Provider Configuration](https://aigentic.io/docs/dsl/providers)
+- [Aigentic Platform](https://aigentic.io/docs/platform)
 
 ## Examples
 
