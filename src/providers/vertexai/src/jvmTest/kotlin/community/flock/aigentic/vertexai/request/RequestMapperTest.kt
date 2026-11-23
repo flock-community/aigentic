@@ -1,6 +1,7 @@
 package community.flock.aigentic.vertexai.request
 
 import com.google.genai.types.PartMediaResolutionLevel
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -31,7 +32,7 @@ class RequestMapperTest :
             it("should set the media resolution on every media part when configured, with HIGH for a PDF at ULTRA_HIGH") {
                 val messages =
                     listOf(
-                        Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION),
+                        Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION),
                         Message.Url(Sender.Agent, "gs://bucket/scan.pdf", MimeType.PDF, MessageCategory.EXECUTION),
                     )
 
@@ -49,7 +50,7 @@ class RequestMapperTest :
             }
 
             it("should serialize every media resolution as its Gemini level") {
-                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION)
 
                 mapOf(
                     VertexAIMediaResolution.LOW to "MEDIA_RESOLUTION_LOW",
@@ -64,7 +65,7 @@ class RequestMapperTest :
             }
 
             it("should not set a media resolution when not configured") {
-                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION)
 
                 createRequestContents(listOf(base64Message))
                     .single()

@@ -65,7 +65,7 @@ internal fun createGenerateContentRequest(
                     is Message.Base64 -> {
                         listOf(
                             Part.Blob(
-                                BlobContent(mimeType = message.mimeType.value, data = formatBase64Content(message)),
+                                BlobContent(mimeType = message.mimeType.value, data = message.base64Content.value),
                                 mediaResolution = mediaResolution?.toMediaResolution(message.mimeType),
                             ),
                         )
@@ -156,8 +156,6 @@ private fun GeminiMediaResolution.toMediaResolution(mimeType: MimeType): MediaRe
         },
     )
 
-private fun formatBase64Content(message: Message.Base64) = message.base64Content.substringAfter("base64,")
-
 private fun getSystemInstruction(messages: List<Message>): Content =
     messages
         .filterIsInstance<Message.SystemPrompt>()
@@ -213,4 +211,4 @@ private fun ToolResultContent.text(): String = parts.filterIsInstance<ToolResult
 private fun ToolResultContent.images(): List<FunctionResponsePart> =
     parts
         .filterIsInstance<ToolResultPart.Image>()
-        .map { FunctionResponsePart(BlobContent(mimeType = it.mimeType.value, data = it.base64Content)) }
+        .map { FunctionResponsePart(BlobContent(mimeType = it.mimeType.value, data = it.base64Content.value)) }

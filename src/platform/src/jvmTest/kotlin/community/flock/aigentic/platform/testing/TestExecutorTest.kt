@@ -9,6 +9,7 @@ import community.flock.aigentic.core.agent.RunTag
 import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -175,7 +176,7 @@ class TestExecutorTest :
             it("should use context of run to initialize test agent") {
 
                 val textContextMessage = Message.Text(Sender.Agent, "Some context message", MessageCategory.CONFIG_CONTEXT)
-                val base64ContextMessage = Message.Base64(Sender.Agent, "base64content", MimeType.PDF, MessageCategory.CONFIG_CONTEXT)
+                val base64ContextMessage = Message.Base64(Sender.Agent, Base64Content("base64content"), MimeType.PDF, MessageCategory.CONFIG_CONTEXT)
 
                 val platformMock =
                     createMockPlatform(

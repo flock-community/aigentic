@@ -24,6 +24,7 @@ import community.flock.aigentic.core.agent.tool.Outcome
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.logging.Logger
 import community.flock.aigentic.core.logging.SimpleLogger
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.ContextMessage
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.Message.Base64
@@ -318,7 +319,7 @@ internal fun Context.toMessage(): Message =
         is Context.Base64 -> {
             Base64(
                 sender = Sender.Agent,
-                base64Content = base64,
+                base64Content = Base64Content(base64),
                 mimeType = mimeType,
                 category = MessageCategory.CONFIG_CONTEXT,
             )
@@ -339,7 +340,7 @@ internal fun Attachment.toMessage(): Message =
         is Attachment.Base64 -> {
             Base64(
                 sender = Sender.Agent,
-                base64Content = base64Content,
+                base64Content = Base64Content(base64Content),
                 mimeType = mimeType,
                 category = MessageCategory.RUN_CONTEXT,
             )

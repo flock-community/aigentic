@@ -128,12 +128,14 @@ agent {
         ToolResultContent(
             listOf(
                 ToolResultPart.Text("Crop of page ${request.page}"),
-                ToolResultPart.Image(cropPage(request), MimeType.PNG),
+                ToolResultPart.Image(Base64Content(cropPage(request)), MimeType.PNG),
             )
         )
     }
 }
 ```
+
+`Base64Content` takes plain base64 or a data URL like `data:image/png;base64,...`.
 
 Gemini shows the images to the model. OpenAI and VertexAI get the text, with a placeholder like `[image: image/png]` for each image.
 

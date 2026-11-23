@@ -16,6 +16,7 @@ import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.logging.Logger
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -166,7 +167,7 @@ class AgentExecutorTest :
                             Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT),
                             Message.Base64(
                                 sender = Sender.Agent,
-                                base64Content = expectedImageContextBase64,
+                                base64Content = Base64Content(expectedImageContextBase64),
                                 mimeType = expectedImageContextMimeType,
                                 category = MessageCategory.CONFIG_CONTEXT,
                             ),
@@ -215,7 +216,8 @@ class AgentExecutorTest :
 
             it("should add the images an inline tool returns to its ToolResult") {
                 val toolCall = ToolCall(ToolCallId("1"), "getPage", "{}")
-                val pageContent = ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image("iVBORw0KGgoAAA==", MimeType.PNG)))
+                val pageContent =
+                    ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image(Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG)))
 
                 val modelMock =
                     mockk<Model>().apply {
@@ -393,7 +395,7 @@ class AgentExecutorTest :
                         runContextMessages[0] shouldBe
                             Message.Base64(
                                 Sender.Agent,
-                                expectedBase64Attachment,
+                                Base64Content(expectedBase64Attachment),
                                 MimeType.PNG,
                                 MessageCategory.RUN_CONTEXT,
                             )
@@ -429,7 +431,7 @@ class AgentExecutorTest :
                             this[2] shouldBe
                                 Message.Base64(
                                     Sender.Agent,
-                                    expectedBase64Attachment,
+                                    Base64Content(expectedBase64Attachment),
                                     MimeType.PNG,
                                     MessageCategory.RUN_CONTEXT,
                                 )
@@ -455,7 +457,7 @@ class AgentExecutorTest :
                             this[2] shouldBe
                                 Message.Base64(
                                     Sender.Agent,
-                                    expectedBase64Attachment,
+                                    Base64Content(expectedBase64Attachment),
                                     MimeType.PNG,
                                     MessageCategory.RUN_CONTEXT,
                                 )

@@ -1,6 +1,7 @@
 package community.flock.aigentic.core.tool
 
 import community.flock.aigentic.core.annotations.AigenticParameter
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.message.ToolResultPart
@@ -28,10 +29,10 @@ class CreateToolTest :
             it("passes text and image parts through to the model") {
                 val tool =
                     createTool<CropInput, ToolResultContent>("Crop", "Crop a page") { input ->
-                        ToolResultContent(listOf(ToolResultPart.Text("page ${input.page}"), ToolResultPart.Image("QUJD", MimeType.PNG)))
+                        ToolResultContent(listOf(ToolResultPart.Text("page ${input.page}"), ToolResultPart.Image(Base64Content("QUJD"), MimeType.PNG)))
                     }
 
-                tool.handler(arguments).parts shouldBe listOf(ToolResultPart.Text("page 2"), ToolResultPart.Image("QUJD", MimeType.PNG))
+                tool.handler(arguments).parts shouldBe listOf(ToolResultPart.Text("page 2"), ToolResultPart.Image(Base64Content("QUJD"), MimeType.PNG))
             }
 
             it("answers a string as one text part") {
@@ -45,6 +46,12 @@ class CreateToolTest :
             it("answers an object as its json in one text part") {
                 createTool<CropInput, CropOutput>("Object") { CropOutput(it.page, "cover") }.handler(arguments) shouldBe
                     ToolResultContent("""{"page":2,"label":"cover"}""")
+            }
+        }
+
+        describe("Base64Content") {
+            it("strips a data url prefix") {
+                Base64Content("data:image/png;base64,QUJD") shouldBe Base64Content("QUJD")
             }
         }
     })

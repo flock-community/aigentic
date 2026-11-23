@@ -2,6 +2,7 @@ package community.flock.aigentic.platform.mapper
 
 import community.flock.aigentic.core.agent.AgentRun
 import community.flock.aigentic.core.agent.tool.Outcome
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -30,7 +31,7 @@ internal fun RunDetailsDto.toRun(): AgentRun<String> {
         messages.map {
             when (it) {
                 is Base64MessageDto -> {
-                    Message.Base64(it.sender.map(), it.base64Content, it.mimeType.map(), it.category.map())
+                    Message.Base64(it.sender.map(), Base64Content(it.base64Content), it.mimeType.map(), it.category.map())
                 }
 
                 is SystemPromptMessageDto -> {

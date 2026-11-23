@@ -2,6 +2,7 @@ package community.flock.aigentic.openai.request
 
 import com.aallam.openai.api.chat.ImagePart
 import com.aallam.openai.api.chat.ListContent
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -27,7 +28,7 @@ class ChatCompletionsRequestTest :
             it("should send the configured image detail on image messages") {
                 val request =
                     createChatCompletionsRequest(
-                        listOf(Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)),
+                        listOf(Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION)),
                         emptyList(),
                         OpenAIModelIdentifier.GPT5_5,
                         GenerationSettings.DEFAULT,

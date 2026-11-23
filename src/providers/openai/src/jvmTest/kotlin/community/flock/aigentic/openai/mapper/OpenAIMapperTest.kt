@@ -4,6 +4,7 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.ImagePart
 import com.aallam.openai.api.chat.ListContent
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -33,7 +34,7 @@ class OpenAIMapperTest :
             it("Should format data url when raw base64 content is provided") {
                 val base64Content = "iVBORw0KGgoAAA=="
                 val mimeType = MimeType.PNG
-                val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Model, Base64Content(base64Content), mimeType, MessageCategory.EXECUTION)
 
                 val chatMessage = base64Message.toOpenAIMessage()
 
@@ -50,7 +51,7 @@ class OpenAIMapperTest :
 
                 val base64Content = "data:image/png;base64,iVBORw0KGgoAAA=="
                 val mimeType = MimeType.PNG
-                val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Model, Base64Content(base64Content), mimeType, MessageCategory.EXECUTION)
 
                 val chatMessage = base64Message.toOpenAIMessage()
 
@@ -65,7 +66,7 @@ class OpenAIMapperTest :
 
             it("should set the image detail on base64 and url images when configured") {
                 listOf(
-                    Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION),
+                    Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION),
                     Message.Url(Sender.Agent, "https://example.com/receipt.jpeg", MimeType.JPEG, MessageCategory.EXECUTION),
                 ).forEach { message ->
                     message
@@ -81,7 +82,7 @@ class OpenAIMapperTest :
             }
 
             it("should map every image detail to its OpenAI value") {
-                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION)
 
                 mapOf(
                     OpenAIImageDetail.AUTO to "auto",
@@ -103,7 +104,7 @@ class OpenAIMapperTest :
 
             it("should throw for base64 and url PDF attachments") {
                 listOf(
-                    Message.Base64(Sender.Agent, "JVBERi0=", MimeType.PDF, MessageCategory.RUN_CONTEXT),
+                    Message.Base64(Sender.Agent, Base64Content("JVBERi0="), MimeType.PDF, MessageCategory.RUN_CONTEXT),
                     Message.Url(Sender.Agent, "https://example.com/invoice.pdf", MimeType.PDF, MessageCategory.RUN_CONTEXT),
                 ).forEach { message ->
                     shouldThrow<Exception> {
@@ -114,7 +115,7 @@ class OpenAIMapperTest :
 
             it("should not set an image detail when not configured") {
                 Message
-                    .Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+                    .Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION)
                     .toOpenAIMessage()
                     .messageContent
                     .shouldBeInstanceOf<ListContent>()

@@ -209,7 +209,7 @@ private fun Message.toDto(): MessageDto? =
             Base64MessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
-                base64Content = base64Content,
+                base64Content = base64Content.value,
                 mimeType = mimeType.toDto(),
                 category = category.toDto(),
             )

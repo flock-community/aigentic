@@ -136,9 +136,7 @@ object OpenAIMapper {
         }
     }
 
-    private fun Message.Base64.formatDataUrl(): String =
-        base64Content.takeIf { it.startsWith("data:") }
-            ?: "data:${mimeType.value};base64,$base64Content"
+    private fun Message.Base64.formatDataUrl(): String = "data:${mimeType.value};base64,${base64Content.value}"
 
     private fun Message.mapChatTextRole(): ChatRole =
         when (this) {

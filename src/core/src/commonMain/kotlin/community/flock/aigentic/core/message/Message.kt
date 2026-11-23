@@ -37,7 +37,7 @@ sealed class Message(
 
     data class Base64(
         override val sender: Sender,
-        val base64Content: String,
+        val base64Content: Base64Content,
         val mimeType: MimeType,
         override val category: MessageCategory,
     ) : Message(Sender.Agent, category),
@@ -106,9 +106,18 @@ sealed interface ToolResultPart {
     ) : ToolResultPart
 
     data class Image(
-        val base64Content: String,
+        val base64Content: Base64Content,
         val mimeType: MimeType,
     ) : ToolResultPart
+}
+
+@JvmInline
+value class Base64Content private constructor(
+    val value: String,
+) {
+    companion object {
+        operator fun invoke(content: String): Base64Content = Base64Content(content.substringAfter("base64,"))
+    }
 }
 
 sealed interface Sender {

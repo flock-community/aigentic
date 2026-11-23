@@ -1,5 +1,6 @@
 package community.flock.aigentic.gemini.mapper
 
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -43,7 +44,7 @@ class GeminiRequestMapperKtTest :
             it("Should not format when raw base64 content is provided") {
                 val base64Content = "iVBORw0KGgoAAA=="
                 val mimeType = MimeType.PNG
-                val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Model, Base64Content(base64Content), mimeType, MessageCategory.EXECUTION)
 
                 createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
                     .contents[0]
@@ -60,7 +61,7 @@ class GeminiRequestMapperKtTest :
                         .ToolResult(
                             ToolCallId("1"),
                             "GetPage",
-                            ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image("iVBORw0KGgoAAA==", MimeType.PNG))),
+                            ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image(Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG))),
                         ).toFunctionResponse()
 
                 response.parts shouldBe listOf(FunctionResponsePart(BlobContent(MimeType.PNG.value, "iVBORw0KGgoAAA==")))
@@ -77,7 +78,7 @@ class GeminiRequestMapperKtTest :
             it("should format when base64 data url is provided") {
                 val base64Content = "data:image/png;base64,iVBORw0KGgoAAA=="
                 val mimeType = MimeType.PNG
-                val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Model, Base64Content(base64Content), mimeType, MessageCategory.EXECUTION)
 
                 createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
                     .contents[0]
@@ -91,7 +92,7 @@ class GeminiRequestMapperKtTest :
             it("should set the media resolution on every media part when configured, with HIGH for a PDF at ULTRA_HIGH") {
                 val messages =
                     listOf(
-                        Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION),
+                        Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION),
                         Message.Url(Sender.Agent, "https://example.com/scan.pdf", MimeType.PDF, MessageCategory.EXECUTION),
                     )
                 val parts =
@@ -110,7 +111,7 @@ class GeminiRequestMapperKtTest :
             }
 
             it("should serialize every media resolution as its Gemini level") {
-                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION)
 
                 mapOf(
                     GeminiMediaResolution.LOW to "MEDIA_RESOLUTION_LOW",
@@ -133,7 +134,7 @@ class GeminiRequestMapperKtTest :
             }
 
             it("should not serialize a mediaResolution key when not configured") {
-                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION)
                 val request =
                     createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini3_8Flash)
 

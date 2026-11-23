@@ -48,7 +48,7 @@ internal fun createRequestContents(
                 is Message.Base64 -> {
                     listOf(
                         Part
-                            .fromBytes(Base64.getDecoder().decode(message.base64Content), message.mimeType.value)
+                            .fromBytes(Base64.getDecoder().decode(message.base64Content.value), message.mimeType.value)
                             .withMediaResolution(mediaResolution, message.mimeType),
                     )
                 }
