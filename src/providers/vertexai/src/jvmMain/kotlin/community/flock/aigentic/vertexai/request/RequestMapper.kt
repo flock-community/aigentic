@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.google.genai.JsonSerializable
 import com.google.genai.types.Content
 import com.google.genai.types.FunctionDeclaration
+import com.google.genai.types.FunctionResponse
+import com.google.genai.types.FunctionResponseBlob
+import com.google.genai.types.FunctionResponsePart
 import com.google.genai.types.GenerateContentConfig
 import com.google.genai.types.HarmBlockThreshold
 import com.google.genai.types.HarmCategory
@@ -77,12 +80,20 @@ internal fun createRequestContents(
 
                 is Message.ToolResult -> {
                     listOf(
-                        Part.fromFunctionResponse(
-                            message.toolName,
-                            buildJsonObject {
-                                put("result", message.response.textWithImagePlaceholders())
-                            },
-                        ),
+                        Part
+                            .builder()
+                            .functionResponse(
+                                FunctionResponse
+                                    .builder()
+                                    .name(message.toolName)
+                                    .response(buildJsonObject { put("result", message.response.text()) })
+                                    .apply {
+                                        message.response
+                                            .images()
+                                            .takeIf { it.isNotEmpty() }
+                                            ?.let { parts(it) }
+                                    }.build(),
+                            ).build(),
                     )
                 }
 
@@ -248,10 +259,18 @@ private fun Sender.toVertexRole(): String =
 
 inline fun <reified T> T.toJsonNode(): JsonNode = JsonSerializable.stringToJsonNode(Json.encodeToString(this))
 
-private fun ToolResultContent.textWithImagePlaceholders(): String =
-    parts.joinToString("\n") {
-        when (it) {
-            is ToolResultPart.Text -> it.text
-            is ToolResultPart.Image -> "[image: ${it.mimeType.value}]"
+private fun ToolResultContent.text(): String = parts.filterIsInstance<ToolResultPart.Text>().joinToString("\n") { it.text }
+
+private fun ToolResultContent.images(): List<FunctionResponsePart> =
+    parts
+        .filterIsInstance<ToolResultPart.Image>()
+        .map {
+            FunctionResponsePart
+                .builder()
+                .inlineData(
+                    FunctionResponseBlob
+                        .builder()
+                        .mimeType(it.mimeType.value)
+                        .data(Base64.getDecoder().decode(it.base64Content.value)),
+                ).build()
         }
-    }

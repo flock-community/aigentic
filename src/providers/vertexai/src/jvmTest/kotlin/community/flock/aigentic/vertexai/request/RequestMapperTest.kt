@@ -1,11 +1,15 @@
 package community.flock.aigentic.vertexai.request
 
+import com.google.genai.types.FunctionResponse
 import com.google.genai.types.PartMediaResolutionLevel
 import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
+import community.flock.aigentic.core.message.ToolCallId
+import community.flock.aigentic.core.message.ToolResultContent
+import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
@@ -22,6 +26,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import kotlinx.serialization.json.Json
+import java.util.Base64
 import java.util.Optional
 
 class RequestMapperTest :
@@ -70,6 +75,35 @@ class RequestMapperTest :
                 createRequestContents(listOf(base64Message))
                     .single()
                     .toJson() shouldNotContain "mediaResolution"
+            }
+
+            it("should send the images of a tool result next to its text") {
+                val response =
+                    Message
+                        .ToolResult(
+                            ToolCallId("1"),
+                            "GetPage",
+                            ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image(Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG))),
+                        ).toFunctionResponse()
+
+                val image =
+                    response
+                        .parts()
+                        .get()
+                        .single()
+                        .inlineData()
+                        .get()
+                image.mimeType() shouldBe Optional.of(MimeType.PNG.value)
+                image.data().get().toList() shouldBe Base64.getDecoder().decode("iVBORw0KGgoAAA==").toList()
+                response.toJson() shouldContain "Page 1."
+                response.toJson() shouldNotContain "[image"
+            }
+
+            it("should not send parts for a tool result without images") {
+                Message
+                    .ToolResult(ToolCallId("1"), "ExtractText", ToolResultContent("Total 12.50"))
+                    .toFunctionResponse()
+                    .parts() shouldBe Optional.empty()
             }
 
             it("should set max output tokens when configured") {
@@ -527,3 +561,12 @@ class RequestMapperTest :
             }
         }
     })
+
+private fun Message.ToolResult.toFunctionResponse(): FunctionResponse =
+    createRequestContents(listOf(this))
+        .single()
+        .parts()
+        .get()
+        .single()
+        .functionResponse()
+        .get()
