@@ -54,35 +54,24 @@ class GeminiRequestMapperKtTest :
                     }
             }
 
-            it("should send the images of a tool result next to its text, and nothing extra for a text result") {
-                val withImage =
-                    Message.ToolResult(
-                        ToolCallId("1"),
-                        "GetPage",
-                        ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image("iVBORw0KGgoAAA==", MimeType.PNG))),
-                    )
-                val textOnly = Message.ToolResult(ToolCallId("2"), "ExtractText", ToolResultContent("Total 12.50"))
+            it("should send the images of a tool result next to its text") {
+                val response =
+                    Message
+                        .ToolResult(
+                            ToolCallId("1"),
+                            "GetPage",
+                            ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image("iVBORw0KGgoAAA==", MimeType.PNG))),
+                        ).toFunctionResponse()
 
-                val responses =
-                    createGenerateContentRequest(
-                        listOf(withImage, textOnly),
-                        emptyList(),
-                        GenerationSettings.DEFAULT,
-                        null,
-                        GeminiModelIdentifier.Gemini2_5Flash,
-                    ).contents
-                        .map {
-                            it.parts
-                                .single()
-                                .shouldBeInstanceOf<Part.FunctionResponse>()
-                                .functionResponse
-                        }
+                response.parts shouldBe listOf(FunctionResponsePart(BlobContent(MimeType.PNG.value, "iVBORw0KGgoAAA==")))
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldContain "Page 1."
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldNotContain "[image"
+            }
 
-                responses[0].parts shouldBe listOf(FunctionResponsePart(BlobContent(MimeType.PNG.value, "iVBORw0KGgoAAA==")))
-                geminiJson.encodeToString(FunctionResponseContent.serializer(), responses[0]) shouldContain "Page 1."
-                geminiJson.encodeToString(FunctionResponseContent.serializer(), responses[0]) shouldNotContain "[image"
-                responses[1].parts shouldBe null
-                geminiJson.encodeToString(FunctionResponseContent.serializer(), responses[1]) shouldNotContain "parts"
+            it("should not send parts for a tool result without images") {
+                val response = Message.ToolResult(ToolCallId("1"), "ExtractText", ToolResultContent("Total 12.50")).toFunctionResponse()
+
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldNotContain "parts"
             }
 
             it("should format when base64 data url is provided") {
@@ -686,3 +675,12 @@ class GeminiRequestMapperKtTest :
             }
         }
     })
+
+private fun Message.ToolResult.toFunctionResponse(): FunctionResponseContent =
+    createGenerateContentRequest(listOf(this), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
+        .contents
+        .single()
+        .parts
+        .single()
+        .shouldBeInstanceOf<Part.FunctionResponse>()
+        .functionResponse

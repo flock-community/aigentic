@@ -210,9 +210,7 @@ private fun List<ToolDescription>.toTools(): List<Tool> =
 
 private fun ToolResultContent.textResult(): String = parts.filterIsInstance<ToolResultPart.Text>().joinToString("\n") { it.text }
 
-/** The images of a tool result, or null when it has none, so a request without images is the same as before. */
-private fun ToolResultContent.images(): List<FunctionResponsePart>? =
+private fun ToolResultContent.images(): List<FunctionResponsePart> =
     parts
         .filterIsInstance<ToolResultPart.Image>()
         .map { FunctionResponsePart(BlobContent(mimeType = it.mimeType.value, data = it.base64Content)) }
-        .takeIf { it.isNotEmpty() }

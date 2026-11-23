@@ -54,8 +54,7 @@ sealed interface Part {
 data class FunctionResponseContent(
     val name: String,
     val response: JsonElement,
-    /** Images the function returned, shown to the model next to [response]; only models that take them accept it. */
-    val parts: List<FunctionResponsePart>? = null,
+    val parts: List<FunctionResponsePart> = emptyList(),
 )
 
 @Serializable
