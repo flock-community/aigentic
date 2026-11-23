@@ -137,10 +137,10 @@ agent {
 
 `Base64Content` takes plain base64 or a data URL like `data:image/png;base64,...`.
 
-How the model gets the images depends on the provider:
+This works with every provider, as long as the model accepts images:
 
-- **Gemini and VertexAI** get the images as part of the tool result. This works on Gemini 3 and later models.
-- **OpenAI and Ollama** only accept text in a tool result. The tool result gets a placeholder like `[image: image/png]`, and the images follow in a user message right after the tool results. They don't accept PDFs here, so a tool that returns a PDF ends the run with `Outcome.Fatal`.
+- **Gemini and VertexAI**: Gemini 3 and later models.
+- **OpenAI and Ollama**: any model that accepts images. PDFs aren't supported here, so a tool that returns a PDF ends the run with `Outcome.Fatal`.
 
 ## Best Practices
 
