@@ -137,7 +137,7 @@ agent {
 
 `Base64Content` takes plain base64 or a data URL like `data:image/png;base64,...`.
 
-Gemini and VertexAI show the images to the model. OpenAI gets the text, with a placeholder like `[image: image/png]` for each image.
+Gemini and VertexAI show the images to the model as part of the tool result. OpenAI only accepts text in a tool result, so it gets a placeholder like `[image: image/png]` there, and the images follow in a user message right after the tool results.
 
 ## Best Practices
 
