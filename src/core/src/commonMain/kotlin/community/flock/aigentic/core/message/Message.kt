@@ -96,16 +96,9 @@ data class ToolResultContent(
     val parts: List<ToolResultPart>,
 ) {
     constructor(result: String) : this(listOf(ToolResultPart.Text(result)))
-
-    val result: String
-        get() =
-            parts.joinToString("\n") {
-                when (it) {
-                    is ToolResultPart.Text -> it.text
-                    is ToolResultPart.Image -> "[image: ${it.mimeType.value}]"
-                }
-            }
 }
+
+internal fun ToolResultContent.text(): String = parts.filterIsInstance<ToolResultPart.Text>().joinToString("\n") { it.text }
 
 sealed interface ToolResultPart {
     data class Text(
@@ -142,7 +135,7 @@ fun List<Message>.mapToTextMessages(): List<Message.ExampleToolMessage> {
     val messageResults: List<Message.ExampleToolMessage> =
         this
             .filterIsInstance<Message.ToolResult>()
-            .map { Message.ExampleToolMessage(id = it.toolCallId, text = "Tool call result: " + it.response.result, sender = Sender.Agent) }
+            .map { Message.ExampleToolMessage(id = it.toolCallId, text = "Tool call result: " + it.response.text(), sender = Sender.Agent) }
 
     val joinedMessages = messageArguments.zip(messageResults).flatMap { listOf(it.first, it.second) }
     return joinedMessages

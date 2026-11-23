@@ -108,7 +108,7 @@ internal fun createGenerateContentRequest(
                                 FunctionResponseContent(
                                     message.toolName,
                                     buildJsonObject {
-                                        put("result", message.response.textResult())
+                                        put("result", message.response.text())
                                     },
                                     message.response.images(),
                                 ),
@@ -208,7 +208,7 @@ private fun List<ToolDescription>.toTools(): List<Tool> =
         ),
     )
 
-private fun ToolResultContent.textResult(): String = parts.filterIsInstance<ToolResultPart.Text>().joinToString("\n") { it.text }
+private fun ToolResultContent.text(): String = parts.filterIsInstance<ToolResultPart.Text>().joinToString("\n") { it.text }
 
 private fun ToolResultContent.images(): List<FunctionResponsePart> =
     parts

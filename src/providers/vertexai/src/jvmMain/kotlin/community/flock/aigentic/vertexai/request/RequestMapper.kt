@@ -16,6 +16,8 @@ import com.google.genai.types.Tool
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
+import community.flock.aigentic.core.message.ToolResultContent
+import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ThinkingConfig
@@ -78,7 +80,7 @@ internal fun createRequestContents(
                         Part.fromFunctionResponse(
                             message.toolName,
                             buildJsonObject {
-                                put("result", message.response.result)
+                                put("result", message.response.textWithImagePlaceholders())
                             },
                         ),
                     )
@@ -245,3 +247,11 @@ private fun Sender.toVertexRole(): String =
     }
 
 inline fun <reified T> T.toJsonNode(): JsonNode = JsonSerializable.stringToJsonNode(Json.encodeToString(this))
+
+private fun ToolResultContent.textWithImagePlaceholders(): String =
+    parts.joinToString("\n") {
+        when (it) {
+            is ToolResultPart.Text -> it.text
+            is ToolResultPart.Image -> "[image: ${it.mimeType.value}]"
+        }
+    }

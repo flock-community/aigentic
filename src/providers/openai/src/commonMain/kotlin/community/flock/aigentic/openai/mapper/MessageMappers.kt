@@ -15,6 +15,7 @@ import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
+import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.openai.model.OpenAIImageDetail
 import com.aallam.openai.api.chat.ToolCall as OpenAIToolCall
 
@@ -121,7 +122,7 @@ object OpenAIMapper {
                     role = role,
                     toolCallId = ToolId(toolCallId.id),
                     name = toolName,
-                    content = response.result,
+                    content = response.textWithImagePlaceholders(),
                 )
             }
         }
@@ -162,3 +163,11 @@ object OpenAIMapper {
                 )
             }
 }
+
+private fun ToolResultContent.textWithImagePlaceholders(): String =
+    parts.joinToString("\n") {
+        when (it) {
+            is ToolResultPart.Text -> it.text
+            is ToolResultPart.Image -> "[image: ${it.mimeType.value}]"
+        }
+    }
