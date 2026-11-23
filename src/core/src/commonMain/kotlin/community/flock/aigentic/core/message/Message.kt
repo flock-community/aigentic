@@ -109,8 +109,6 @@ data class ToolResultContent(
                     is ToolResultPart.Image -> "[image: ${it.mimeType.value}]"
                 }
             }
-
-    val hasImages: Boolean get() = parts.any { it is ToolResultPart.Image }
 }
 
 sealed interface ToolResultPart {
