@@ -27,13 +27,7 @@ value class ToolName(
 
 interface Tool :
     ToolDescription,
-    ToolHandler<JsonObject, String> {
-    /**
-     * What the model gets back. Defaults to the text [handler] returns; a tool that returns images
-     * overrides it (see [createContentTool]).
-     */
-    suspend fun execute(toolArguments: JsonObject): ToolResultContent = ToolResultContent(handler(toolArguments))
-}
+    ToolHandler<JsonObject, ToolResultContent>
 
 interface TypedTool<I : Any, O : Any> :
     ToolDescription,
@@ -68,33 +62,13 @@ inline fun <reified I : Any, reified O : Any> createTool(
                 is Parameter.Complex.Object -> param.parameters
                 else -> listOf(param)
             }
-        override val handler: suspend (toolArguments: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> ToolResultContent = {
             val obj = modelOutputJson.decodeFromJsonElement<I>(it)
-            val res = handlerFn(obj)
-            when (res) {
-                is String -> res
-                is Number -> res.toString()
-                is Boolean -> res.toString()
-                is Char -> res.toString()
-                else -> Json.encodeToString<O>(res)
+            when (val res = handlerFn(obj)) {
+                is ToolResultContent -> res
+                is String -> ToolResultContent(res)
+                is Number, is Boolean, is Char -> ToolResultContent(res.toString())
+                else -> ToolResultContent(Json.encodeToString<O>(res))
             }
         }
-    }
-
-inline fun <reified I : Any> createContentTool(
-    name: String,
-    description: String? = null,
-    noinline handlerFn: suspend (I) -> ToolResultContent,
-): Tool =
-    object : Tool {
-        override val name: ToolName = ToolName(name)
-        override val description: String? = description
-        override val parameters: List<Parameter> =
-            when (val param = getParameter<I>()) {
-                is Parameter.Complex.Object -> param.parameters
-                else -> listOf(param)
-            }
-        override val handler: suspend (toolArguments: JsonObject) -> String = { execute(it).result }
-
-        override suspend fun execute(toolArguments: JsonObject): ToolResultContent = handlerFn(modelOutputJson.decodeFromJsonElement<I>(toolArguments))
     }

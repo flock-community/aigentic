@@ -23,6 +23,7 @@ import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
+import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.model.Usage
@@ -210,6 +211,29 @@ class AgentExecutorTest :
                         )
                     messages[3] shouldBe Message.ToolCalls(listOf(finishedTaskToolCall))
                 }
+            }
+
+            it("should add the images an inline tool returns to its ToolResult") {
+                val toolCall = ToolCall(ToolCallId("1"), "getPage", "{}")
+                val pageContent = ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image("iVBORw0KGgoAAA==", MimeType.PNG)))
+
+                val modelMock =
+                    mockk<Model>().apply {
+                        coEvery { sendRequest(any(), any(), any()) } returnsMany
+                            listOf(
+                                toolCall,
+                                finishedTaskToolCall,
+                            ).toModelResponse()
+                    }
+
+                val agent =
+                    agent {
+                        model(modelMock)
+                        task("Execute some task") {}
+                        addTool<Unit, ToolResultContent>(toolCall.name) { pageContent }
+                    }
+
+                agent.start().messages[2] shouldBe Message.ToolResult(toolCall.id, toolCall.name, pageContent)
             }
 
             it("should execute first finish any ToolCalls before FinishTask when both are received in the same message") {

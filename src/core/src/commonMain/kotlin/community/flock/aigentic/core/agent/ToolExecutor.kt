@@ -35,7 +35,7 @@ internal suspend inline fun <I : Any, reified O : Any> executeTool(
 
         else -> {
             val tool = agent.tools[ToolName(toolCall.name)] ?: aigenticException("Tool not registered: $toolCall")
-            val result = tool.execute(toolCall.argumentsAsJson())
+            val result = tool.handler(toolCall.argumentsAsJson())
             ToolResult(Message.ToolResult(toolCall.id, toolCall.name, result))
         }
     }

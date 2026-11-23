@@ -118,6 +118,25 @@ agent {
 }
 ```
 
+### Returning Images
+
+A tool can show the model an image, such as a page or a crop of one. Return `ToolResultContent` with text and image parts:
+
+```kotlin
+agent {
+    addTool<CropRequest, ToolResultContent>("cropPage", "Shows a zoomed-in crop of a page") { request ->
+        ToolResultContent(
+            listOf(
+                ToolResultPart.Text("Crop of page ${request.page}"),
+                ToolResultPart.Image(cropPage(request), MimeType.PNG),
+            )
+        )
+    }
+}
+```
+
+Gemini shows the images to the model. OpenAI and VertexAI get the text, with a placeholder like `[image: image/png]` for each image.
+
 ## Best Practices
 
 When creating tools for Aigentic agents, follow these best practices:
