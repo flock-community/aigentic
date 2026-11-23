@@ -92,10 +92,6 @@ value class ToolCallId(
     val id: String,
 )
 
-/**
- * What a tool returned to the model: one or more [ToolResultPart]s, text and/or images. A provider that
- * cannot show images to the model sends [result], which writes each image as a short placeholder.
- */
 data class ToolResultContent(
     val parts: List<ToolResultPart>,
 ) {
@@ -116,7 +112,6 @@ sealed interface ToolResultPart {
         val text: String,
     ) : ToolResultPart
 
-    /** [base64Content] is the bare base64 of the file, without a `data:` prefix. */
     data class Image(
         val base64Content: String,
         val mimeType: MimeType,

@@ -81,10 +81,6 @@ inline fun <reified I : Any, reified O : Any> createTool(
         }
     }
 
-/**
- * Like [createTool], for a tool that answers with [ToolResultContent] (text and images) instead of
- * a value that is written as text. The text [Tool.handler] gets the content's [ToolResultContent.result].
- */
 inline fun <reified I : Any> createContentTool(
     name: String,
     description: String? = null,
