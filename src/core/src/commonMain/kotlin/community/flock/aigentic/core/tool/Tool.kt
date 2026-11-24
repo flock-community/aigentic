@@ -1,9 +1,11 @@
 package community.flock.aigentic.core.tool
 
+import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.util.modelOutputJson
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 import kotlin.jvm.JvmInline
 
 interface ToolHandler<A, T> {
@@ -26,7 +28,7 @@ value class ToolName(
 
 interface Tool :
     ToolDescription,
-    ToolHandler<JsonObject, String>
+    ToolHandler<JsonObject, ToolResultContent>
 
 interface TypedTool<I : Any, O : Any> :
     ToolDescription,
@@ -61,15 +63,13 @@ inline fun <reified I : Any, reified O : Any> createTool(
                 is Parameter.Complex.Object -> param.parameters
                 else -> listOf(param)
             }
-        override val handler: suspend (toolArguments: JsonObject) -> String = {
+        override val handler: suspend (toolArguments: JsonObject) -> ToolResultContent = {
             val obj = modelOutputJson.decodeFromJsonElement<I>(it)
-            val res = handlerFn(obj)
-            when (res) {
-                is String -> res
-                is Number -> res.toString()
-                is Boolean -> res.toString()
-                is Char -> res.toString()
-                else -> Json.encodeToString<O>(res)
+            when (val res = handlerFn(obj)) {
+                is ToolResultContent -> res
+                is String -> ToolResultContent(res)
+                is Number, is Boolean, is Char -> ToolResultContent(res.toString())
+                else -> Json.encodeToJsonElement<O>(res).toToolResultContent()
             }
         }
     }

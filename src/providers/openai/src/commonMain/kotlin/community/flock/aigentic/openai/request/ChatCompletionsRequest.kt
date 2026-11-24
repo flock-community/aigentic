@@ -9,7 +9,7 @@ import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.tool.ToolDescription
-import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessage
+import community.flock.aigentic.openai.mapper.OpenAIMapper.toOpenAIMessages
 import community.flock.aigentic.openai.mapper.toOpenAITool
 import community.flock.aigentic.openai.model.OpenAIImageDetail
 import community.flock.aigentic.openai.model.OpenAIModelIdentifier
@@ -40,7 +40,7 @@ internal fun createChatCompletionsRequest(
             if (openAIModelIdentifier.usesMaxCompletionTokens()) maxCompletionTokens = it else maxTokens = it
         }
         model = ModelId(openAIModelIdentifier.stringValue)
-        this.messages = messages.map { it.toOpenAIMessage(imageDetail) }
+        this.messages = messages.toOpenAIMessages(imageDetail)
         this.tools = tools.map { it.toOpenAITool() }
         toolChoice = ToolChoice.Auto
         generationSettings.thinkingConfig?.thinkingLevel?.let { level ->

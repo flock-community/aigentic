@@ -13,6 +13,7 @@ import community.flock.aigentic.core.tool.InternalTool
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
+import kotlinx.serialization.Serializable
 
 data class Task(
     val description: String,
@@ -39,6 +40,7 @@ sealed interface Context {
     ) : Context
 }
 
+@Serializable(with = AttachmentSerializer::class)
 sealed interface Attachment {
     data class Base64(
         val base64Content: String,

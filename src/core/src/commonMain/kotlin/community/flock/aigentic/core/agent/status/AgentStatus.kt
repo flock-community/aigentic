@@ -46,7 +46,7 @@ sealed interface AgentStatus {
     data class ToolResult(
         val result: Message.ToolResult,
     ) : AgentStatus {
-        override val text = "🦾 Tool result ${result.toolName}: ${result.response.result}"
+        override val text = "🦾 Tool result ${result.toolName}: ${result.response.text}"
     }
 
     data object PublishedRunSuccess : AgentStatus {

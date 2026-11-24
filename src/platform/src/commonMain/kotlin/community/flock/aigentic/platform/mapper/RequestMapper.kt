@@ -10,6 +10,7 @@ import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
+import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
@@ -207,7 +208,7 @@ private fun Message.toDto(): MessageDto? =
             Base64MessageDto(
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
-                base64Content = base64Content,
+                base64Content = base64Content.value,
                 mimeType = mimeType.toDto(),
                 category = category.toDto(),
             )
@@ -255,7 +256,7 @@ private fun Message.toDto(): MessageDto? =
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 toolCallId = toolCallId.id,
-                response = response.result,
+                response = response.text,
                 toolName = toolName,
                 category = category.toDto(),
             )

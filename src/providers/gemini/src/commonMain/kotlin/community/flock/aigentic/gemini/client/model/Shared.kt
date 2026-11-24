@@ -54,7 +54,21 @@ sealed interface Part {
 data class FunctionResponseContent(
     val name: String,
     val response: JsonElement,
+    val parts: List<FunctionResponsePart> = emptyList(),
 )
+
+@Serializable(FunctionResponsePartSerializer::class)
+sealed interface FunctionResponsePart {
+    @Serializable
+    data class InlineData(
+        @SerialName("inline_data") val inlineData: BlobContent,
+    ) : FunctionResponsePart
+
+    @Serializable
+    data class FileData(
+        @SerialName("file_data") val fileData: FileDataContent,
+    ) : FunctionResponsePart
+}
 
 @Serializable
 data class FunctionCallContent(
@@ -96,6 +110,17 @@ object PartSerializer : JsonContentPolymorphicSerializer<Part>(Part::class) {
             "functionCall" in jsonObject -> Part.FunctionCall.serializer()
             "functionResponse" in jsonObject -> Part.FunctionResponse.serializer()
             else -> aigenticException("Unknown Part type")
+        }
+    }
+}
+
+object FunctionResponsePartSerializer : JsonContentPolymorphicSerializer<FunctionResponsePart>(FunctionResponsePart::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<FunctionResponsePart> {
+        val jsonObject = element.jsonObject
+        return when {
+            "inline_data" in jsonObject -> FunctionResponsePart.InlineData.serializer()
+            "file_data" in jsonObject -> FunctionResponsePart.FileData.serializer()
+            else -> aigenticException("Unknown FunctionResponsePart type")
         }
     }
 }

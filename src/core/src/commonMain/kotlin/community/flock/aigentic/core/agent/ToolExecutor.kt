@@ -9,7 +9,6 @@ import community.flock.aigentic.core.agent.tool.stuckWithTaskTool
 import community.flock.aigentic.core.exception.aigenticException
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCall
-import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.message.argumentsAsJson
 import community.flock.aigentic.core.tool.ToolName
 
@@ -37,7 +36,7 @@ internal suspend inline fun <I : Any, reified O : Any> executeTool(
         else -> {
             val tool = agent.tools[ToolName(toolCall.name)] ?: aigenticException("Tool not registered: $toolCall")
             val result = tool.handler(toolCall.argumentsAsJson())
-            ToolResult(Message.ToolResult(toolCall.id, toolCall.name, ToolResultContent(result)))
+            ToolResult(Message.ToolResult(toolCall.id, toolCall.name, result))
         }
     }
 

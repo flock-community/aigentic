@@ -1,5 +1,6 @@
 package community.flock.aigentic.gemini.model
 
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -83,7 +84,7 @@ class GeminiModelTest :
                     geminiClient = geminiClient,
                     mediaResolution = GeminiMediaResolution.HIGH,
                 ).sendRequest(
-                    listOf(Message.Base64(Sender.Agent, "JVBERi0=", MimeType.PDF, MessageCategory.EXECUTION)),
+                    listOf(Message.Base64(Sender.Agent, Base64Content("JVBERi0="), MimeType.PDF, MessageCategory.EXECUTION)),
                     emptyList(),
                     null,
                 )

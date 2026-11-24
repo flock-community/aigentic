@@ -2,6 +2,7 @@ package community.flock.aigentic.platform.testing.mock
 
 import ToolCallExpectation
 import community.flock.aigentic.core.agent.Agent
+import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.message.argumentsAsJson
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
@@ -20,7 +21,7 @@ data class ToolMock(
 ) : Tool {
     val invocations: MutableList<JsonElement> = mutableListOf()
 
-    override val handler: suspend (toolArguments: JsonObject) -> String = { arguments ->
+    override val handler: suspend (toolArguments: JsonObject) -> ToolResultContent = { arguments ->
 
         val sanitizedArguments = JsonObject(arguments.filterValues { it !is JsonNull })
 
@@ -36,7 +37,7 @@ data class ToolMock(
                     actual = sanitizedArguments,
                 )
 
-        result.response.result
+        result.response
     }
 }
 

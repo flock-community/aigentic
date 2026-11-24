@@ -1,5 +1,6 @@
 package community.flock.aigentic.openai.model
 
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -88,7 +89,7 @@ class OpenAIModelTest :
 
                 shouldThrow<Exception> {
                     model.sendRequest(
-                        listOf(Message.Base64(Sender.Agent, "JVBERi0=", MimeType.PDF, MessageCategory.RUN_CONTEXT)),
+                        listOf(Message.Base64(Sender.Agent, Base64Content("JVBERi0="), MimeType.PDF, MessageCategory.RUN_CONTEXT)),
                         emptyList(),
                         null,
                     )

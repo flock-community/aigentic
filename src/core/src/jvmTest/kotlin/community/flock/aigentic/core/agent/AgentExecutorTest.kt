@@ -16,6 +16,7 @@ import community.flock.aigentic.core.annotations.AigenticParameter
 import community.flock.aigentic.core.dsl.agent
 import community.flock.aigentic.core.exception.AigenticException
 import community.flock.aigentic.core.logging.Logger
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -165,7 +166,7 @@ class AgentExecutorTest :
                             Message.Text(Sender.Agent, expectedTextContext, MessageCategory.CONFIG_CONTEXT),
                             Message.Base64(
                                 sender = Sender.Agent,
-                                base64Content = expectedImageContextBase64,
+                                base64Content = Base64Content(expectedImageContextBase64),
                                 mimeType = expectedImageContextMimeType,
                                 category = MessageCategory.CONFIG_CONTEXT,
                             ),
@@ -210,6 +211,33 @@ class AgentExecutorTest :
                         )
                     messages[3] shouldBe Message.ToolCalls(listOf(finishedTaskToolCall))
                 }
+            }
+
+            it("should add the attachments an inline tool returns to its ToolResult") {
+                val toolCall = ToolCall(ToolCallId("1"), "getPage", "{}")
+
+                val modelMock =
+                    mockk<Model>().apply {
+                        coEvery { sendRequest(any(), any(), any()) } returnsMany
+                            listOf(
+                                toolCall,
+                                finishedTaskToolCall,
+                            ).toModelResponse()
+                    }
+
+                val agent =
+                    agent {
+                        model(modelMock)
+                        task("Execute some task") {}
+                        addTool<Unit, PageImage>(toolCall.name) { PageImage(1, Attachment.Base64.png("iVBORw0KGgoAAA==")) }
+                    }
+
+                agent.start().messages[2] shouldBe
+                    Message.ToolResult(
+                        toolCall.id,
+                        toolCall.name,
+                        ToolResultContent("""{"page":1,"image":"[attachment 1]"}""", listOf(Attachment.Base64.png("iVBORw0KGgoAAA=="))),
+                    )
             }
 
             it("should execute first finish any ToolCalls before FinishTask when both are received in the same message") {
@@ -369,7 +397,7 @@ class AgentExecutorTest :
                         runContextMessages[0] shouldBe
                             Message.Base64(
                                 Sender.Agent,
-                                expectedBase64Attachment,
+                                Base64Content(expectedBase64Attachment),
                                 MimeType.PNG,
                                 MessageCategory.RUN_CONTEXT,
                             )
@@ -405,7 +433,7 @@ class AgentExecutorTest :
                             this[2] shouldBe
                                 Message.Base64(
                                     Sender.Agent,
-                                    expectedBase64Attachment,
+                                    Base64Content(expectedBase64Attachment),
                                     MimeType.PNG,
                                     MessageCategory.RUN_CONTEXT,
                                 )
@@ -431,7 +459,7 @@ class AgentExecutorTest :
                             this[2] shouldBe
                                 Message.Base64(
                                     Sender.Agent,
-                                    expectedBase64Attachment,
+                                    Base64Content(expectedBase64Attachment),
                                     MimeType.PNG,
                                     MessageCategory.RUN_CONTEXT,
                                 )
@@ -651,4 +679,10 @@ data class NewsEvent(
 @AigenticParameter
 data class AgentResponse(
     val message: String,
+)
+
+@AigenticParameter
+data class PageImage(
+    val page: Int,
+    val image: Attachment,
 )

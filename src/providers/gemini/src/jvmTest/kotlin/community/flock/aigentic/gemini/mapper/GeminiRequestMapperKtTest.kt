@@ -1,11 +1,14 @@
 package community.flock.aigentic.gemini.mapper
 
+import community.flock.aigentic.core.agent.Attachment
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
+import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
@@ -17,6 +20,9 @@ import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.gemini.client.geminiJson
 import community.flock.aigentic.gemini.client.model.BlobContent
 import community.flock.aigentic.gemini.client.model.Content
+import community.flock.aigentic.gemini.client.model.FileDataContent
+import community.flock.aigentic.gemini.client.model.FunctionResponseContent
+import community.flock.aigentic.gemini.client.model.FunctionResponsePart
 import community.flock.aigentic.gemini.client.model.MediaResolution
 import community.flock.aigentic.gemini.client.model.MediaResolutionLevel
 import community.flock.aigentic.gemini.client.model.Part
@@ -39,7 +45,7 @@ class GeminiRequestMapperKtTest :
             it("Should not format when raw base64 content is provided") {
                 val base64Content = "iVBORw0KGgoAAA=="
                 val mimeType = MimeType.PNG
-                val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Model, Base64Content(base64Content), mimeType, MessageCategory.EXECUTION)
 
                 createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
                     .contents[0]
@@ -50,10 +56,39 @@ class GeminiRequestMapperKtTest :
                     }
             }
 
+            it("should send the attachments of a tool result next to its text") {
+                val response =
+                    Message
+                        .ToolResult(
+                            ToolCallId("1"),
+                            "GetPage",
+                            ToolResultContent(
+                                "Page 1.",
+                                listOf(Attachment.Base64.png("data:image/png;base64,iVBORw0KGgoAAA=="), Attachment.Url.png("https://example.com/page-2.png")),
+                            ),
+                        ).toFunctionResponse()
+
+                response.parts shouldBe
+                    listOf(
+                        FunctionResponsePart.InlineData(BlobContent(MimeType.PNG.value, "iVBORw0KGgoAAA==")),
+                        FunctionResponsePart.FileData(FileDataContent(MimeType.PNG.value, "https://example.com/page-2.png")),
+                    )
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldContain "Page 1."
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldContain
+                    """"parts":[{"inline_data":{"mime_type":"image/png","data":"iVBORw0KGgoAAA=="}},{"file_data":{"mime_type":"image/png","file_uri":"https://example.com/page-2.png"}}]"""
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldNotContain "[image"
+            }
+
+            it("should not send parts for a tool result without attachments") {
+                val response = Message.ToolResult(ToolCallId("1"), "ExtractText", ToolResultContent("Total 12.50")).toFunctionResponse()
+
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldNotContain "parts"
+            }
+
             it("should format when base64 data url is provided") {
                 val base64Content = "data:image/png;base64,iVBORw0KGgoAAA=="
                 val mimeType = MimeType.PNG
-                val base64Message = Message.Base64(Sender.Model, base64Content, mimeType, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Model, Base64Content(base64Content), mimeType, MessageCategory.EXECUTION)
 
                 createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
                     .contents[0]
@@ -67,7 +102,7 @@ class GeminiRequestMapperKtTest :
             it("should set the media resolution on every media part when configured, with HIGH for a PDF at ULTRA_HIGH") {
                 val messages =
                     listOf(
-                        Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION),
+                        Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION),
                         Message.Url(Sender.Agent, "https://example.com/scan.pdf", MimeType.PDF, MessageCategory.EXECUTION),
                     )
                 val parts =
@@ -86,7 +121,7 @@ class GeminiRequestMapperKtTest :
             }
 
             it("should serialize every media resolution as its Gemini level") {
-                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION)
 
                 mapOf(
                     GeminiMediaResolution.LOW to "MEDIA_RESOLUTION_LOW",
@@ -109,7 +144,7 @@ class GeminiRequestMapperKtTest :
             }
 
             it("should not serialize a mediaResolution key when not configured") {
-                val base64Message = Message.Base64(Sender.Agent, "iVBORw0KGgoAAA==", MimeType.PNG, MessageCategory.EXECUTION)
+                val base64Message = Message.Base64(Sender.Agent, Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG, MessageCategory.EXECUTION)
                 val request =
                     createGenerateContentRequest(listOf(base64Message), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini3_8Flash)
 
@@ -651,3 +686,12 @@ class GeminiRequestMapperKtTest :
             }
         }
     })
+
+private fun Message.ToolResult.toFunctionResponse(): FunctionResponseContent =
+    createGenerateContentRequest(listOf(this), emptyList(), GenerationSettings.DEFAULT, null, GeminiModelIdentifier.Gemini2_5Flash)
+        .contents
+        .single()
+        .parts
+        .single()
+        .shouldBeInstanceOf<Part.FunctionResponse>()
+        .functionResponse

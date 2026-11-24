@@ -2,12 +2,16 @@ package community.flock.aigentic.openai.mapper
 
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
+import com.aallam.openai.api.chat.ContentPart
 import com.aallam.openai.api.chat.FunctionCall
 import com.aallam.openai.api.chat.ImagePart
 import com.aallam.openai.api.chat.TextContent
+import com.aallam.openai.api.chat.TextPart
 import com.aallam.openai.api.chat.ToolId
 import com.aallam.openai.api.core.Role
+import community.flock.aigentic.core.agent.Attachment
 import community.flock.aigentic.core.exception.aigenticException
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -79,6 +83,48 @@ object DomainMapper {
 }
 
 object OpenAIMapper {
+    internal fun List<Message>.toOpenAIMessages(imageDetail: OpenAIImageDetail? = null): List<ChatMessage> =
+        groupConsecutiveToolResults().flatMap { group ->
+            group.map { it.toOpenAIMessage(imageDetail) } + group.toolResultAttachmentsMessage(imageDetail)
+        }
+
+    private fun List<Message>.groupConsecutiveToolResults(): List<List<Message>> =
+        fold(emptyList()) { groups, message ->
+            val last = groups.lastOrNull()
+            if (message is Message.ToolResult && last?.last() is Message.ToolResult) {
+                groups.dropLast(1) + listOf(last + message)
+            } else {
+                groups + listOf(listOf(message))
+            }
+        }
+
+    private fun List<Message>.toolResultAttachmentsMessage(imageDetail: OpenAIImageDetail?): List<ChatMessage> =
+        filterIsInstance<Message.ToolResult>()
+            .flatMap { it.attachmentParts(imageDetail) }
+            .takeIf { it.isNotEmpty() }
+            ?.let { listOf(ChatMessage(role = ChatRole.User, it)) }
+            ?: emptyList()
+
+    private fun Message.ToolResult.attachmentParts(imageDetail: OpenAIImageDetail?): List<ContentPart> =
+        response.attachments
+            .map { it.toImagePart(imageDetail) }
+            .takeIf { it.isNotEmpty() }
+            ?.let { listOf(TextPart("Attachments returned by tool call ${toolCallId.id} ($toolName), in order:")) + it }
+            ?: emptyList()
+
+    private fun Attachment.toImagePart(imageDetail: OpenAIImageDetail?): ImagePart =
+        when (this) {
+            is Attachment.Base64 -> {
+                mimeType.requireImage()
+                ImagePart("data:${mimeType.value};base64,${Base64Content(base64Content).value}", imageDetail?.name?.lowercase())
+            }
+
+            is Attachment.Url -> {
+                mimeType.requireImage()
+                ImagePart(url, imageDetail?.name?.lowercase())
+            }
+        }
+
     internal fun Message.toOpenAIMessage(imageDetail: OpenAIImageDetail? = null): ChatMessage {
         val role = mapChatTextRole()
         return when (this) {
@@ -121,7 +167,7 @@ object OpenAIMapper {
                     role = role,
                     toolCallId = ToolId(toolCallId.id),
                     name = toolName,
-                    content = response.result,
+                    content = response.text,
                 )
             }
         }
@@ -135,9 +181,7 @@ object OpenAIMapper {
         }
     }
 
-    private fun Message.Base64.formatDataUrl(): String =
-        base64Content.takeIf { it.startsWith("data:") }
-            ?: "data:${mimeType.value};base64,$base64Content"
+    private fun Message.Base64.formatDataUrl(): String = "data:${mimeType.value};base64,${base64Content.value}"
 
     private fun Message.mapChatTextRole(): ChatRole =
         when (this) {

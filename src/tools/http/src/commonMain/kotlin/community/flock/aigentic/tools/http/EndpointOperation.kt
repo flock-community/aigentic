@@ -1,5 +1,6 @@
 package community.flock.aigentic.tools.http
 
+import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.Tool
 import community.flock.aigentic.core.tool.ToolName
@@ -27,8 +28,8 @@ fun EndpointOperation.toToolDefinition(
         override val name = ToolName(this@toToolDefinition.name)
         override val description = this@toToolDefinition.description
         override val parameters = allParameterDefinitions
-        override val handler: suspend (toolArguments: JsonObject) -> String = {
-            restClientExecutor.execute(operation = this@toToolDefinition, callArguments = it, headers = headers)
+        override val handler: suspend (toolArguments: JsonObject) -> ToolResultContent = {
+            ToolResultContent(restClientExecutor.execute(operation = this@toToolDefinition, callArguments = it, headers = headers))
         }
     }
 }

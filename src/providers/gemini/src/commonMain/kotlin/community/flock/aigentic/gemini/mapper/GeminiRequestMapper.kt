@@ -1,8 +1,11 @@
 package community.flock.aigentic.gemini.mapper
 
+import community.flock.aigentic.core.agent.Attachment
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
+import community.flock.aigentic.core.message.ToolResultContent
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
@@ -12,6 +15,7 @@ import community.flock.aigentic.gemini.client.model.FileDataContent
 import community.flock.aigentic.gemini.client.model.FunctionCallContent
 import community.flock.aigentic.gemini.client.model.FunctionDeclaration
 import community.flock.aigentic.gemini.client.model.FunctionResponseContent
+import community.flock.aigentic.gemini.client.model.FunctionResponsePart
 import community.flock.aigentic.gemini.client.model.GenerateContentRequest
 import community.flock.aigentic.gemini.client.model.GenerationConfig
 import community.flock.aigentic.gemini.client.model.HarmBlockThreshold
@@ -62,7 +66,7 @@ internal fun createGenerateContentRequest(
                     is Message.Base64 -> {
                         listOf(
                             Part.Blob(
-                                BlobContent(mimeType = message.mimeType.value, data = formatBase64Content(message)),
+                                BlobContent(mimeType = message.mimeType.value, data = message.base64Content.value),
                                 mediaResolution = mediaResolution?.toMediaResolution(message.mimeType),
                             ),
                         )
@@ -105,8 +109,9 @@ internal fun createGenerateContentRequest(
                                 FunctionResponseContent(
                                     message.toolName,
                                     buildJsonObject {
-                                        put("result", message.response.result)
+                                        put("result", message.response.text)
                                     },
+                                    message.response.mediaParts(),
                                 ),
                             ),
                         )
@@ -151,8 +156,6 @@ private fun GeminiMediaResolution.toMediaResolution(mimeType: MimeType): MediaRe
             }
         },
     )
-
-private fun formatBase64Content(message: Message.Base64) = message.base64Content.substringAfter("base64,")
 
 private fun getSystemInstruction(messages: List<Message>): Content =
     messages
@@ -203,3 +206,11 @@ private fun List<ToolDescription>.toTools(): List<Tool> =
             },
         ),
     )
+
+private fun ToolResultContent.mediaParts(): List<FunctionResponsePart> =
+    attachments.map {
+        when (it) {
+            is Attachment.Base64 -> FunctionResponsePart.InlineData(BlobContent(mimeType = it.mimeType.value, data = Base64Content(it.base64Content).value))
+            is Attachment.Url -> FunctionResponsePart.FileData(FileDataContent(mimeType = it.mimeType.value, fileUri = it.url))
+        }
+    }
