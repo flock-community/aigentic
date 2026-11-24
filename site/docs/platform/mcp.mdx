@@ -1,0 +1,55 @@
+---
+id: mcp
+title: Use it from an AI assistant
+sidebar_position: 7
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Use it from an AI assistant
+
+The platform is also an MCP server, so an AI assistant such as Claude can work on it for you. It signs in as you and can do what you can in the UI, nothing more: only the agents you have access to.
+
+Some things you can ask:
+
+- "Which fields of the invoice evaluation got worse in the latest version?"
+- "Create an evaluation of last week's runs that scores the invoice number and the total."
+- "Annotate the runs in this evaluation. The right values are in this spreadsheet."
+- "Start the fix assistant on this evaluation and tell me when it has a question."
+
+Annotations an assistant saves show a **via MCP** tag in the UI until a person saves them there, so you can tell which ground truth nobody has checked yet. Deleting an agent, managing who has access and generating a new agent secret stay in the UI.
+
+## Connect
+
+The **Connect via MCP** button in the platform's sidebar shows these steps with the right address filled in.
+
+<Tabs>
+<TabItem value="claude-code" label="Claude Code">
+
+Add the server:
+
+```bash
+claude mcp add --transport http --client-id aigentic-mcp --callback-port 33418 aigentic https://platform.aigentic.io/mcp
+```
+
+Then run `/mcp` in Claude Code and sign in.
+
+</TabItem>
+<TabItem value="claude-ai" label="claude.ai">
+
+1. Open **Customize → Connectors → Add custom connector**. On a Team or Enterprise plan, an owner adds it under the organization settings.
+2. Use `https://platform.aigentic.io/mcp` as the server URL.
+3. Choose **Use your own OAuth client**, enter `aigentic-mcp` as the client ID and leave the secret empty.
+4. Connect, and sign in.
+
+</TabItem>
+<TabItem value="other" label="Other clients">
+
+- Server URL (Streamable HTTP): `https://platform.aigentic.io/mcp`
+- OAuth client ID: `aigentic-mcp`, a public client with PKCE and no secret
+
+</TabItem>
+</Tabs>
+
+You sign in with the same account you use for the platform.

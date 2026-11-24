@@ -593,6 +593,7 @@ table tr:nth-child(2n) {
   background-color: rgba(255, 223, 0, 0.3);
   border-radius: 100%;
   filter: blur(300px);
+  pointer-events: none;
 }
 
 .card-flock-wrap {

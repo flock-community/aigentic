@@ -130,11 +130,11 @@ class EvaluationSubmissionTest :
                     run.toDto(
                         agent,
                         serializer<String>(),
-                        Expected(evaluationSet = "golden-set", output = "the-expected-output"),
+                        Expected(evaluationSet = "ground-truth", output = "the-expected-output"),
                     )
 
                 val evaluation = dto.evaluation.shouldNotBeNull()
-                evaluation.evaluationSet shouldBe "golden-set"
+                evaluation.evaluationSet shouldBe "ground-truth"
                 evaluation.expectedResponse shouldBe Json.encodeToString(serializer<String>(), "the-expected-output")
             }
 
@@ -173,13 +173,13 @@ class EvaluationSubmissionTest :
                 val agent = structuredAgent(mockPlatform(engine))
 
                 agent.start(
-                    expected = Expected(evaluationSet = "invoice-golden-set", output = finishedInvoice),
+                    expected = Expected(evaluationSet = "invoice-ground-truth", output = finishedInvoice),
                 )
 
                 val body = capturedBody.shouldNotBeNull()
                 val runDto = lenientJson.decodeFromString(RunDto.serializer(), body)
                 val evaluation = runDto.evaluation.shouldNotBeNull()
-                evaluation.evaluationSet shouldBe "invoice-golden-set"
+                evaluation.evaluationSet shouldBe "invoice-ground-truth"
                 evaluation.expectedResponse shouldBe Json.encodeToString(serializer<InvoiceFields>(), finishedInvoice)
             }
 
@@ -247,7 +247,7 @@ class EvaluationSubmissionTest :
                 val result =
                     agent.addToEvaluationSet(
                         runId = "run-99",
-                        evaluationSet = "golden",
+                        evaluationSet = "ground-truth",
                         expected = InvoiceFields("INV-009", "9.99"),
                     )
 
@@ -255,7 +255,7 @@ class EvaluationSubmissionTest :
                 capturedPath shouldBe "/gateway/runs/run-99/annotations"
                 val body = capturedBody.shouldNotBeNull()
                 val evaluationDto = lenientJson.decodeFromString(RunEvaluationDto.serializer(), body)
-                evaluationDto.evaluationSet shouldBe "golden"
+                evaluationDto.evaluationSet shouldBe "ground-truth"
                 evaluationDto.expectedResponse shouldBe
                     Json.encodeToString(serializer<InvoiceFields>(), InvoiceFields("INV-009", "9.99"))
             }

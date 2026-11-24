@@ -1,0 +1,68 @@
+---
+id: ground-truth
+title: Ground truth from your code
+sidebar_position: 4
+---
+
+# Ground truth from your code
+
+Annotating in the UI works well for a few dozen runs. Often you already have the right answers somewhere else:
+
+- a folder of documents with the fields that should come out of them, from before you built the agent;
+- people in your process who check the agent's output and correct it, like an employee who approves each invoice.
+
+In both cases you can send the expected output from your code. The platform adds the run to a named evaluation and stores your values as ground truth, so there's nothing to annotate.
+
+## Up front, when you start the run
+
+Pass an `Expected` to `start()`, with the name of the evaluation and the output you expect:
+
+```kotlin
+import community.flock.aigentic.core.agent.Expected
+
+val run = invoiceExtractor.start(
+    null,
+    Attachment.Base64.pdf(invoicePdf),
+    expected = Expected(
+        evaluationSet = "invoices-ground-truth",
+        output = Invoice(invoiceNumber = "INV-2026-0042", total = 1250.0),
+    ),
+)
+```
+
+The first argument is the agent's input, `null` here because `invoiceExtractor` takes its invoice as an attachment. Loop over your folder of documents like this and you have an evaluation with ground truth for every one of them.
+
+## Later, when someone has checked the result
+
+When the right answer only becomes known after the run, keep the run's platform id and send the expected output once it's there:
+
+```kotlin
+import community.flock.aigentic.core.agent.addToEvaluationSet
+
+// When the run finishes, store its platform id with the invoice
+val run = invoiceExtractor.start(Attachment.Base64.pdf(invoicePdf))
+invoice.platformRunId = run.platformRunId?.value
+
+// Later, when an employee has approved or corrected the invoice
+invoice.platformRunId?.let { runId ->
+    invoiceExtractor.addToEvaluationSet(
+        runId = runId,
+        evaluationSet = "invoices-production",
+        expected = approvedInvoice,
+    )
+}
+```
+
+Here `invoice` stands for your own record of the invoice, wherever you keep it. `addToEvaluationSet` returns `EvaluationSubmitResult.Success`, `Unauthorized`, `NotFound` when the platform doesn't know the run, or `Error` with a message. The agent needs `platform { }` for it.
+
+Every invoice an employee checks then adds to the ground truth, so you see how accurate the agent is in production, field by field, without anyone annotating on the platform.
+
+## What the platform does with it
+
+- It finds the evaluation with that name for your agent, or creates it, and adds the run to it.
+- Every field of the expected output becomes a field to score, as text. List items are scored per item, like `$.items[*].sku`. You can change the field types and add [value normalizers](/docs/platform/value-normalizers) afterwards.
+- A `null` value means the field is expected to be absent.
+- The values become the ground truth for the run's input, annotated by "SDK". Sending again for the same input replaces them, which is also how you correct a value you sent.
+- Values sent from code and values people enter in the UI both count as acceptable.
+- Ground truth belongs to the run's input, so a run started without an input or attachments can't get any.
+- When the expected output can't be stored, the run itself is still saved.
