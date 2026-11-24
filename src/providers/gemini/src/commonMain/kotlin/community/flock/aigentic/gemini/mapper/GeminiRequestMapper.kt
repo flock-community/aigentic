@@ -1,10 +1,11 @@
 package community.flock.aigentic.gemini.mapper
 
+import community.flock.aigentic.core.agent.Attachment
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ToolDescription
@@ -108,9 +109,9 @@ internal fun createGenerateContentRequest(
                                 FunctionResponseContent(
                                     message.toolName,
                                     buildJsonObject {
-                                        put("result", message.response.text())
+                                        put("result", message.response.text)
                                     },
-                                    message.response.images(),
+                                    message.response.mediaParts(),
                                 ),
                             ),
                         )
@@ -206,9 +207,10 @@ private fun List<ToolDescription>.toTools(): List<Tool> =
         ),
     )
 
-private fun ToolResultContent.text(): String = parts.filterIsInstance<ToolResultPart.Text>().joinToString("\n") { it.text }
-
-private fun ToolResultContent.images(): List<FunctionResponsePart> =
-    parts
-        .filterIsInstance<ToolResultPart.Image>()
-        .map { FunctionResponsePart(BlobContent(mimeType = it.mimeType.value, data = it.base64Content.value)) }
+private fun ToolResultContent.mediaParts(): List<FunctionResponsePart> =
+    attachments.map {
+        when (it) {
+            is Attachment.Base64 -> FunctionResponsePart.InlineData(BlobContent(mimeType = it.mimeType.value, data = Base64Content(it.base64Content).value))
+            is Attachment.Url -> FunctionResponsePart.FileData(FileDataContent(mimeType = it.mimeType.value, fileUri = it.url))
+        }
+    }

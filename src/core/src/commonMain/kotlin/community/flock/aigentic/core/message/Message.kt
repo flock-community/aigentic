@@ -1,5 +1,6 @@
 package community.flock.aigentic.core.message
 
+import community.flock.aigentic.core.agent.Attachment
 import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -93,23 +94,9 @@ value class ToolCallId(
 )
 
 data class ToolResultContent(
-    val parts: List<ToolResultPart>,
-) {
-    constructor(result: String) : this(listOf(ToolResultPart.Text(result)))
-}
-
-internal fun ToolResultContent.text(): String = parts.filterIsInstance<ToolResultPart.Text>().joinToString("\n") { it.text }
-
-sealed interface ToolResultPart {
-    data class Text(
-        val text: String,
-    ) : ToolResultPart
-
-    data class Image(
-        val base64Content: Base64Content,
-        val mimeType: MimeType,
-    ) : ToolResultPart
-}
+    val text: String,
+    val attachments: List<Attachment> = emptyList(),
+)
 
 @JvmInline
 value class Base64Content private constructor(
@@ -144,7 +131,7 @@ fun List<Message>.mapToTextMessages(): List<Message.ExampleToolMessage> {
     val messageResults: List<Message.ExampleToolMessage> =
         this
             .filterIsInstance<Message.ToolResult>()
-            .map { Message.ExampleToolMessage(id = it.toolCallId, text = "Tool call result: " + it.response.text(), sender = Sender.Agent) }
+            .map { Message.ExampleToolMessage(id = it.toolCallId, text = "Tool call result: " + it.response.text, sender = Sender.Agent) }
 
     val joinedMessages = messageArguments.zip(messageResults).flatMap { listOf(it.first, it.second) }
     return joinedMessages

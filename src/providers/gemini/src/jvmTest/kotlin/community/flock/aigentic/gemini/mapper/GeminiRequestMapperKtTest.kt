@@ -1,5 +1,6 @@
 package community.flock.aigentic.gemini.mapper
 
+import community.flock.aigentic.core.agent.Attachment
 import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
@@ -8,7 +9,6 @@ import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
@@ -20,6 +20,7 @@ import community.flock.aigentic.core.tool.ToolName
 import community.flock.aigentic.gemini.client.geminiJson
 import community.flock.aigentic.gemini.client.model.BlobContent
 import community.flock.aigentic.gemini.client.model.Content
+import community.flock.aigentic.gemini.client.model.FileDataContent
 import community.flock.aigentic.gemini.client.model.FunctionResponseContent
 import community.flock.aigentic.gemini.client.model.FunctionResponsePart
 import community.flock.aigentic.gemini.client.model.MediaResolution
@@ -55,21 +56,30 @@ class GeminiRequestMapperKtTest :
                     }
             }
 
-            it("should send the images of a tool result next to its text") {
+            it("should send the attachments of a tool result next to its text") {
                 val response =
                     Message
                         .ToolResult(
                             ToolCallId("1"),
                             "GetPage",
-                            ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image(Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG))),
+                            ToolResultContent(
+                                "Page 1.",
+                                listOf(Attachment.Base64.png("data:image/png;base64,iVBORw0KGgoAAA=="), Attachment.Url.png("https://example.com/page-2.png")),
+                            ),
                         ).toFunctionResponse()
 
-                response.parts shouldBe listOf(FunctionResponsePart(BlobContent(MimeType.PNG.value, "iVBORw0KGgoAAA==")))
+                response.parts shouldBe
+                    listOf(
+                        FunctionResponsePart.InlineData(BlobContent(MimeType.PNG.value, "iVBORw0KGgoAAA==")),
+                        FunctionResponsePart.FileData(FileDataContent(MimeType.PNG.value, "https://example.com/page-2.png")),
+                    )
                 geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldContain "Page 1."
+                geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldContain
+                    """"parts":[{"inline_data":{"mime_type":"image/png","data":"iVBORw0KGgoAAA=="}},{"file_data":{"mime_type":"image/png","file_uri":"https://example.com/page-2.png"}}]"""
                 geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldNotContain "[image"
             }
 
-            it("should not send parts for a tool result without images") {
+            it("should not send parts for a tool result without attachments") {
                 val response = Message.ToolResult(ToolCallId("1"), "ExtractText", ToolResultContent("Total 12.50")).toFunctionResponse()
 
                 geminiJson.encodeToString(FunctionResponseContent.serializer(), response) shouldNotContain "parts"

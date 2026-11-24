@@ -11,7 +11,6 @@ import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.ParameterType.Primitive
@@ -257,7 +256,7 @@ private fun Message.toDto(): MessageDto? =
                 createdAt = createdAt.toString(),
                 sender = sender.toDto(),
                 toolCallId = toolCallId.id,
-                response = response.text(),
+                response = response.text,
                 toolName = toolName,
                 category = category.toDto(),
             )
@@ -325,5 +324,3 @@ private fun <O : Any> Outcome<O>.toDto(outputSerializer: KSerializer<O>) =
             )
         }
     }
-
-private fun ToolResultContent.text(): String = parts.filterIsInstance<ToolResultPart.Text>().joinToString("\n") { it.text }

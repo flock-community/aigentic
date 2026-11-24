@@ -118,24 +118,31 @@ agent {
 }
 ```
 
-### Returning Images
+### Returning Images and PDFs
 
-A tool can show the model an image, such as a page or a crop of one. Return `ToolResultContent` with text and image parts:
+A tool can show the model an image or a PDF, such as a page or a crop of one. Put an `Attachment` in the tool's output type, the same type you pass to `agent.start()`:
 
 ```kotlin
+@AigenticParameter
+data class Crop(
+    val page: Int,
+    val image: Attachment,
+)
+
 agent {
-    addTool<CropRequest, ToolResultContent>("cropPage", "Shows a zoomed-in crop of a page") { request ->
-        ToolResultContent(
-            listOf(
-                ToolResultPart.Text("Crop of page ${request.page}"),
-                ToolResultPart.Image(Base64Content(cropPage(request)), MimeType.PNG),
-            )
-        )
+    addTool<CropRequest, Crop>("cropPage", "Shows a zoomed-in crop of a page") { request ->
+        Crop(request.page, Attachment.Base64.png(cropPage(request)))
     }
 }
 ```
 
-`Base64Content` takes plain base64 or a data URL like `data:image/png;base64,...`.
+The model gets the output as JSON, with a reference in place of each attachment, and the attachments themselves as images or files:
+
+```json
+{"page":3,"image":"[attachment 1]"}
+```
+
+An attachment can be anywhere in the output: in a list, in a nested object, as a nullable property, or as the whole output, as in `addTool<ScreenshotRequest, Attachment>`. Use `Attachment.Base64` for content you have, which can be plain base64 or a data URL like `data:image/png;base64,...`, and `Attachment.Url` for a file the provider can download.
 
 This works with every provider, as long as the model accepts images:
 

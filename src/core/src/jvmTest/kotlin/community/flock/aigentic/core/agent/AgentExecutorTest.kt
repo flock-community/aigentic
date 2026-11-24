@@ -24,7 +24,6 @@ import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.model.Model
 import community.flock.aigentic.core.model.ModelResponse
 import community.flock.aigentic.core.model.Usage
@@ -214,10 +213,8 @@ class AgentExecutorTest :
                 }
             }
 
-            it("should add the images an inline tool returns to its ToolResult") {
+            it("should add the attachments an inline tool returns to its ToolResult") {
                 val toolCall = ToolCall(ToolCallId("1"), "getPage", "{}")
-                val pageContent =
-                    ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image(Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG)))
 
                 val modelMock =
                     mockk<Model>().apply {
@@ -232,10 +229,15 @@ class AgentExecutorTest :
                     agent {
                         model(modelMock)
                         task("Execute some task") {}
-                        addTool<Unit, ToolResultContent>(toolCall.name) { pageContent }
+                        addTool<Unit, PageImage>(toolCall.name) { PageImage(1, Attachment.Base64.png("iVBORw0KGgoAAA==")) }
                     }
 
-                agent.start().messages[2] shouldBe Message.ToolResult(toolCall.id, toolCall.name, pageContent)
+                agent.start().messages[2] shouldBe
+                    Message.ToolResult(
+                        toolCall.id,
+                        toolCall.name,
+                        ToolResultContent("""{"page":1,"image":"[attachment 1]"}""", listOf(Attachment.Base64.png("iVBORw0KGgoAAA=="))),
+                    )
             }
 
             it("should execute first finish any ToolCalls before FinishTask when both are received in the same message") {
@@ -677,4 +679,10 @@ data class NewsEvent(
 @AigenticParameter
 data class AgentResponse(
     val message: String,
+)
+
+@AigenticParameter
+data class PageImage(
+    val page: Int,
+    val image: Attachment,
 )

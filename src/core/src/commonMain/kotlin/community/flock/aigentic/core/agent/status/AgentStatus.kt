@@ -4,7 +4,6 @@ import community.flock.aigentic.core.agent.tool.FINISHED_TASK_TOOL_NAME
 import community.flock.aigentic.core.agent.tool.STUCK_WITH_TASK_TOOL_NAME
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.ToolCall
-import community.flock.aigentic.core.message.text
 
 @Suppress("ktlint:standard:max-line-length")
 sealed interface AgentStatus {
@@ -47,7 +46,7 @@ sealed interface AgentStatus {
     data class ToolResult(
         val result: Message.ToolResult,
     ) : AgentStatus {
-        override val text = "🦾 Tool result ${result.toolName}: ${result.response.text()}"
+        override val text = "🦾 Tool result ${result.toolName}: ${result.response.text}"
     }
 
     data object PublishedRunSuccess : AgentStatus {

@@ -5,6 +5,7 @@ import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.ImagePart
 import com.aallam.openai.api.chat.ListContent
 import com.aallam.openai.api.chat.TextPart
+import community.flock.aigentic.core.agent.Attachment
 import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
@@ -13,7 +14,6 @@ import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.tool.Parameter
 import community.flock.aigentic.core.tool.ParameterType
 import community.flock.aigentic.core.tool.PrimitiveValue
@@ -119,35 +119,39 @@ class OpenAIMapperTest :
                 }
             }
 
-            it("should send the images of consecutive tool results in one user message after them") {
+            it("should send the attachments of consecutive tool results in one user message after them") {
                 val withImage =
                     Message.ToolResult(
                         ToolCallId("1"),
                         "GetPage",
-                        ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image(Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG))),
+                        ToolResultContent(
+                            "Page 1.",
+                            listOf(Attachment.Base64.png("data:image/png;base64,iVBORw0KGgoAAA=="), Attachment.Url.png("https://example.com/page-2.png")),
+                        ),
                     )
                 val textOnly = Message.ToolResult(ToolCallId("2"), "ExtractText", ToolResultContent("Total 12.50"))
 
                 val chatMessages = listOf(withImage, textOnly).toOpenAIMessages(OpenAIImageDetail.HIGH)
 
                 chatMessages.map { it.role } shouldBe listOf(ChatRole.Tool, ChatRole.Tool, ChatRole.User)
-                chatMessages[0].content shouldBe "Page 1.\n[image: image/png]"
+                chatMessages[0].content shouldBe "Page 1."
                 chatMessages[2]
                     .messageContent
                     .shouldBeInstanceOf<ListContent>()
                     .content shouldBe
                     listOf(
-                        TextPart("Images returned by tool call 1 (GetPage):"),
+                        TextPart("Attachments returned by tool call 1 (GetPage), in order:"),
                         ImagePart("data:image/png;base64,iVBORw0KGgoAAA==", "high"),
+                        ImagePart("https://example.com/page-2.png", "high"),
                     )
             }
 
-            it("should add a user message after each run of tool results that has images") {
+            it("should add a user message after each run of tool results that has attachments") {
                 fun pageResult(id: String) =
                     Message.ToolResult(
                         ToolCallId(id),
                         "GetPage",
-                        ToolResultContent(listOf(ToolResultPart.Image(Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG))),
+                        ToolResultContent("", listOf(Attachment.Base64.png("iVBORw0KGgoAAA=="))),
                     )
                 val toolCalls = Message.ToolCalls(listOf(ToolCall(ToolCallId("3"), "GetPage", "{}")))
 
@@ -157,22 +161,21 @@ class OpenAIMapperTest :
                     listOf(ChatRole.Tool, ChatRole.Tool, ChatRole.User, ChatRole.Assistant, ChatRole.Tool, ChatRole.User)
             }
 
-            it("should not add a user message for tool results without images") {
+            it("should not add a user message for tool results without attachments") {
                 listOf(Message.ToolResult(ToolCallId("1"), "ExtractText", ToolResultContent("Total 12.50")))
                     .toOpenAIMessages()
                     .map { it.role } shouldBe listOf(ChatRole.Tool)
             }
 
-            it("should throw for a PDF returned by a tool") {
-                shouldThrow<Exception> {
-                    listOf(
-                        Message.ToolResult(
-                            ToolCallId("1"),
-                            "GetFile",
-                            ToolResultContent(listOf(ToolResultPart.Image(Base64Content("JVBERi0="), MimeType.PDF))),
-                        ),
-                    ).toOpenAIMessages()
-                }.message shouldContain "PDF attachments are not supported on OpenAI-compatible models"
+            it("should throw for a base64 and url PDF returned by a tool") {
+                listOf(
+                    Attachment.Base64.pdf("JVBERi0="),
+                    Attachment.Url.pdf("https://example.com/invoice.pdf"),
+                ).forEach { attachment ->
+                    shouldThrow<Exception> {
+                        listOf(Message.ToolResult(ToolCallId("1"), "GetFile", ToolResultContent("", listOf(attachment)))).toOpenAIMessages()
+                    }.message shouldContain "PDF attachments are not supported on OpenAI-compatible models"
+                }
             }
 
             it("should not set an image detail when not configured") {

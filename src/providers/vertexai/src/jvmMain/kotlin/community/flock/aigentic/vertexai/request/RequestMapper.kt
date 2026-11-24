@@ -6,6 +6,7 @@ import com.google.genai.types.Content
 import com.google.genai.types.FunctionDeclaration
 import com.google.genai.types.FunctionResponse
 import com.google.genai.types.FunctionResponseBlob
+import com.google.genai.types.FunctionResponseFileData
 import com.google.genai.types.FunctionResponsePart
 import com.google.genai.types.GenerateContentConfig
 import com.google.genai.types.HarmBlockThreshold
@@ -16,11 +17,12 @@ import com.google.genai.types.PartMediaResolutionLevel
 import com.google.genai.types.SafetySetting
 import com.google.genai.types.Schema
 import com.google.genai.types.Tool
+import community.flock.aigentic.core.agent.Attachment
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ModelIdentifier
 import community.flock.aigentic.core.model.ThinkingConfig
@@ -86,10 +88,10 @@ internal fun createRequestContents(
                                 FunctionResponse
                                     .builder()
                                     .name(message.toolName)
-                                    .response(buildJsonObject { put("result", message.response.text()) })
+                                    .response(buildJsonObject { put("result", message.response.text) })
                                     .apply {
                                         message.response
-                                            .images()
+                                            .mediaParts()
                                             .takeIf { it.isNotEmpty() }
                                             ?.let { parts(it) }
                                     }.build(),
@@ -259,18 +261,29 @@ private fun Sender.toVertexRole(): String =
 
 inline fun <reified T> T.toJsonNode(): JsonNode = JsonSerializable.stringToJsonNode(Json.encodeToString(this))
 
-private fun ToolResultContent.text(): String = parts.filterIsInstance<ToolResultPart.Text>().joinToString("\n") { it.text }
+private fun ToolResultContent.mediaParts(): List<FunctionResponsePart> =
+    attachments.map {
+        when (it) {
+            is Attachment.Base64 -> {
+                FunctionResponsePart
+                    .builder()
+                    .inlineData(
+                        FunctionResponseBlob
+                            .builder()
+                            .mimeType(it.mimeType.value)
+                            .data(Base64.getDecoder().decode(Base64Content(it.base64Content).value)),
+                    ).build()
+            }
 
-private fun ToolResultContent.images(): List<FunctionResponsePart> =
-    parts
-        .filterIsInstance<ToolResultPart.Image>()
-        .map {
-            FunctionResponsePart
-                .builder()
-                .inlineData(
-                    FunctionResponseBlob
-                        .builder()
-                        .mimeType(it.mimeType.value)
-                        .data(Base64.getDecoder().decode(it.base64Content.value)),
-                ).build()
+            is Attachment.Url -> {
+                FunctionResponsePart
+                    .builder()
+                    .fileData(
+                        FunctionResponseFileData
+                            .builder()
+                            .mimeType(it.mimeType.value)
+                            .fileUri(it.url),
+                    ).build()
+            }
         }
+    }

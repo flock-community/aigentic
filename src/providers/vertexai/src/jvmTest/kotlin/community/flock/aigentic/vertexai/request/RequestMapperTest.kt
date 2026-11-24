@@ -2,6 +2,7 @@ package community.flock.aigentic.vertexai.request
 
 import com.google.genai.types.FunctionResponse
 import com.google.genai.types.PartMediaResolutionLevel
+import community.flock.aigentic.core.agent.Attachment
 import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
@@ -9,7 +10,6 @@ import community.flock.aigentic.core.message.MimeType
 import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.core.model.GenerationSettings
 import community.flock.aigentic.core.model.ThinkingConfig
 import community.flock.aigentic.core.model.ThinkingLevel
@@ -77,29 +77,30 @@ class RequestMapperTest :
                     .toJson() shouldNotContain "mediaResolution"
             }
 
-            it("should send the images of a tool result next to its text") {
+            it("should send the attachments of a tool result next to its text") {
                 val response =
                     Message
                         .ToolResult(
                             ToolCallId("1"),
                             "GetPage",
-                            ToolResultContent(listOf(ToolResultPart.Text("Page 1."), ToolResultPart.Image(Base64Content("iVBORw0KGgoAAA=="), MimeType.PNG))),
+                            ToolResultContent(
+                                "Page 1.",
+                                listOf(Attachment.Base64.png("data:image/png;base64,iVBORw0KGgoAAA=="), Attachment.Url.png("gs://bucket/page-2.png")),
+                            ),
                         ).toFunctionResponse()
 
-                val image =
-                    response
-                        .parts()
-                        .get()
-                        .single()
-                        .inlineData()
-                        .get()
+                val (base64Part, urlPart) = response.parts().get()
+                val image = base64Part.inlineData().get()
                 image.mimeType() shouldBe Optional.of(MimeType.PNG.value)
                 image.data().get().toList() shouldBe Base64.getDecoder().decode("iVBORw0KGgoAAA==").toList()
+                val file = urlPart.fileData().get()
+                file.mimeType() shouldBe Optional.of(MimeType.PNG.value)
+                file.fileUri() shouldBe Optional.of("gs://bucket/page-2.png")
                 response.toJson() shouldContain "Page 1."
                 response.toJson() shouldNotContain "[image"
             }
 
-            it("should not send parts for a tool result without images") {
+            it("should not send parts for a tool result without attachments") {
                 Message
                     .ToolResult(ToolCallId("1"), "ExtractText", ToolResultContent("Total 12.50"))
                     .toFunctionResponse()

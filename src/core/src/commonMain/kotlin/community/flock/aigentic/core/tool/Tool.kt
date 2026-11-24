@@ -5,6 +5,7 @@ import community.flock.aigentic.core.util.modelOutputJson
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 import kotlin.jvm.JvmInline
 
 interface ToolHandler<A, T> {
@@ -68,7 +69,7 @@ inline fun <reified I : Any, reified O : Any> createTool(
                 is ToolResultContent -> res
                 is String -> ToolResultContent(res)
                 is Number, is Boolean, is Char -> ToolResultContent(res.toString())
-                else -> ToolResultContent(Json.encodeToString<O>(res))
+                else -> Json.encodeToJsonElement<O>(res).toToolResultContent()
             }
         }
     }

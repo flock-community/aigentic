@@ -9,7 +9,9 @@ import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.api.chat.TextPart
 import com.aallam.openai.api.chat.ToolId
 import com.aallam.openai.api.core.Role
+import community.flock.aigentic.core.agent.Attachment
 import community.flock.aigentic.core.exception.aigenticException
+import community.flock.aigentic.core.message.Base64Content
 import community.flock.aigentic.core.message.Message
 import community.flock.aigentic.core.message.MessageCategory
 import community.flock.aigentic.core.message.MimeType
@@ -17,7 +19,6 @@ import community.flock.aigentic.core.message.Sender
 import community.flock.aigentic.core.message.ToolCall
 import community.flock.aigentic.core.message.ToolCallId
 import community.flock.aigentic.core.message.ToolResultContent
-import community.flock.aigentic.core.message.ToolResultPart
 import community.flock.aigentic.openai.model.OpenAIImageDetail
 import com.aallam.openai.api.chat.ToolCall as OpenAIToolCall
 
@@ -84,7 +85,7 @@ object DomainMapper {
 object OpenAIMapper {
     internal fun List<Message>.toOpenAIMessages(imageDetail: OpenAIImageDetail? = null): List<ChatMessage> =
         groupConsecutiveToolResults().flatMap { group ->
-            group.map { it.toOpenAIMessage(imageDetail) } + group.toolResultImagesMessage(imageDetail)
+            group.map { it.toOpenAIMessage(imageDetail) } + group.toolResultAttachmentsMessage(imageDetail)
         }
 
     private fun List<Message>.groupConsecutiveToolResults(): List<List<Message>> =
@@ -97,25 +98,32 @@ object OpenAIMapper {
             }
         }
 
-    private fun List<Message>.toolResultImagesMessage(imageDetail: OpenAIImageDetail?): List<ChatMessage> =
+    private fun List<Message>.toolResultAttachmentsMessage(imageDetail: OpenAIImageDetail?): List<ChatMessage> =
         filterIsInstance<Message.ToolResult>()
-            .flatMap { it.imageParts(imageDetail) }
+            .flatMap { it.attachmentParts(imageDetail) }
             .takeIf { it.isNotEmpty() }
             ?.let { listOf(ChatMessage(role = ChatRole.User, it)) }
             ?: emptyList()
 
-    private fun Message.ToolResult.imageParts(imageDetail: OpenAIImageDetail?): List<ContentPart> =
-        response.parts
-            .filterIsInstance<ToolResultPart.Image>()
+    private fun Message.ToolResult.attachmentParts(imageDetail: OpenAIImageDetail?): List<ContentPart> =
+        response.attachments
+            .map { it.toImagePart(imageDetail) }
             .takeIf { it.isNotEmpty() }
-            ?.let { images ->
-                listOf(TextPart("Images returned by tool call ${toolCallId.id} ($toolName):")) +
-                    images.map {
-                        it.mimeType.requireImage()
-                        ImagePart("data:${it.mimeType.value};base64,${it.base64Content.value}", imageDetail?.name?.lowercase())
-                    }
-            }
+            ?.let { listOf(TextPart("Attachments returned by tool call ${toolCallId.id} ($toolName), in order:")) + it }
             ?: emptyList()
+
+    private fun Attachment.toImagePart(imageDetail: OpenAIImageDetail?): ImagePart =
+        when (this) {
+            is Attachment.Base64 -> {
+                mimeType.requireImage()
+                ImagePart("data:${mimeType.value};base64,${Base64Content(base64Content).value}", imageDetail?.name?.lowercase())
+            }
+
+            is Attachment.Url -> {
+                mimeType.requireImage()
+                ImagePart(url, imageDetail?.name?.lowercase())
+            }
+        }
 
     internal fun Message.toOpenAIMessage(imageDetail: OpenAIImageDetail? = null): ChatMessage {
         val role = mapChatTextRole()
@@ -159,7 +167,7 @@ object OpenAIMapper {
                     role = role,
                     toolCallId = ToolId(toolCallId.id),
                     name = toolName,
-                    content = response.textWithImagePlaceholders(),
+                    content = response.text,
                 )
             }
         }
@@ -172,14 +180,6 @@ object OpenAIMapper {
             )
         }
     }
-
-    private fun ToolResultContent.textWithImagePlaceholders(): String =
-        parts.joinToString("\n") {
-            when (it) {
-                is ToolResultPart.Text -> it.text
-                is ToolResultPart.Image -> "[image: ${it.mimeType.value}]"
-            }
-        }
 
     private fun Message.Base64.formatDataUrl(): String = "data:${mimeType.value};base64,${base64Content.value}"
 
